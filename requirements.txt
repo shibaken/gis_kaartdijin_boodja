@@ -5,7 +5,7 @@ whitenoise==5.3.0
 django-cron==0.5.0
 git+https://github.com/dbca-wa/dbca-utils.git#egg=dbca-utils
 gunicorn==19.9.0
-gevent==21.1.2
+gevent==21.12.0
 git+https://github.com/dbca-wa/django-media-serv.git#egg=django_media_serv
 django-crispy-forms==1.14.0
 django-countries==7.2.1
