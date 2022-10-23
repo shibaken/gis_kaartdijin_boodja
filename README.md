@@ -68,9 +68,7 @@ To run a development server:
 $ npm run dev
 ```
 
-### Configuration
-The frontend requires the following environment variables to be set:
-...
+
 
 ### Structure
 The frontend is broadly split into 3 layers.
