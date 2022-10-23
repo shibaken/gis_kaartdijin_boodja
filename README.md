@@ -5,8 +5,7 @@ publishing them for the Department of Biodiversity, Conservation and Attractions
 ## Backend
 The backend of Kaartdijin Boodja is a [Python](https://www.python.org/) [Django](https://www.djangoproject.com/) project
 using [Django REST Framework](https://www.django-rest-framework.org/) backed by a [PostgreSQL](https://www.postgresql.org/)
-database. The backend uses [Poetry](https://python-poetry.org/) to manage its dependencies, and is linted, type-checked
-& unit-tested using `flake8`, `mypy` and `pytest`.
+database. The backend uses [PIP] to manage its dependencies,
 
 ### Requirements
 * [Python 3.10](https://www.python.org/downloads/release/python-3100/)
