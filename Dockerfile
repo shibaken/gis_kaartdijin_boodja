@@ -17,9 +17,20 @@ RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
 RUN apt-get install --no-install-recommends -y rsyslog
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN apt-get install --no-install-recommends -y software-properties-common 
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt update
+RUN apt-get install --no-install-recommends -y  python3.10
 
+RUN update-ca-certificates
+# install node 18
+RUN touch install_node.sh
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x -o install_node.sh
+RUN chmod +x install_node.sh && ./install_node.sh
+RUN apt-get install -y nodejs
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
 RUN pip install --upgrade pip
+
 # Install Python libs from requirements.txt.
 FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
 WORKDIR /app
