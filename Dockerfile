@@ -55,8 +55,8 @@ COPY gunicorn.ini manage.py ./
 RUN touch /app/.env
 COPY .git ./.git
 COPY govapp ./govapp
-RUN cd /app/govapp/frontend
-RUN npm run build
+RUN cd /app/govapp/frontend; npm install
+RUN cd /app/govapp/frontend; npm run build
 RUN python manage.py collectstatic --noinput
 RUN apt-get install --no-install-recommends -y python3-pil
 EXPOSE 8080

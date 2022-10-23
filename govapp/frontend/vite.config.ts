@@ -10,7 +10,7 @@ export default defineConfig({
   },
   build: {
 	outDir: "../static/webapp",
-	emptyOutDir: true,
+	emptyOutDir: false,
 	manifest: false,
 	sourcemap: false,
         rollupOptions: {
@@ -20,13 +20,6 @@ export default defineConfig({
             assetFileNames: `assets/[name].[ext]`
           }
         }
-
- 	//rollupOptions: {
-	//     chunkFileNames: "../static/webapp/[name].js",
-	//     assetFileNames: "../static/webapp/[name].[ext]",
-	//     cache: false,
-	//},
-
   },
   server: {
     host: true,
@@ -39,10 +32,5 @@ export default defineConfig({
       },
      }
   }
-  
-  //rollupOptions: { 
-  //   input: '/js/app.js',	  
-  //   chunkFileNames: "[name].js"
-  //} 
 })
 
