@@ -1,0 +1,44 @@
+{
+  "name": "kaartdijin_boodja",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev-mock": "vite --mode mock",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "npm build && vite preview",
+    "test": "vitest",
+    "lint": "eslint --ext .ts,.vue --ignore-path .gitignore --fix src",
+    "format": "prettier .  --write",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.6",
+    "bootstrap": "^5.2.2",
+    "luxon": "^3.0.4",
+    "pinia": "^2.0.22",
+    "vue": "^3.2.37"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.39.0",
+    "@typescript-eslint/parser": "^5.39.0",
+    "@vitejs/plugin-vue": "^3.1.0",
+    "@vue/eslint-config-typescript": "^11.0.2",
+    "@vue/test-utils": "^2.1.0",
+    "autoprefixer": "10.4.12",
+    "eslint": "^8.24.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-vue": "^9.6.0",
+    "happy-dom": "^6.0.4",
+    "postcss": "^8.4.16",
+    "prettier": "2.7.1",
+    "sass": "^1.55.0",
+    "typescript": "^4.6.4",
+    "vite": "^3.1.0",
+    "vitest": "^0.23.4",
+    "vue-router": "^4.1.5",
+    "vue-tsc": "^0.40.4"
+  }
+}
