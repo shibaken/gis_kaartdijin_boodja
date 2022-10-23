@@ -2,23 +2,6 @@
 Kaartdijin Boodja (_meaning "Knowledge of Country"_) is a web application for managing a catalogue of GIS layers and
 publishing them for the Department of Biodiversity, Conservation and Attractions (DBCA).
 
-## Table of Contents
-1. [Backend](#backend)
-    1. [Requirements](#requirements)
-    2. [Development](#development)
-        1. [Installation](#installation)
-        2. [Usage](#usage)
-    3. [Configuration](#configuration)
-    4. [Structure](#structure)
-2. [Frontend](#frontend)
-    1. [Requirements](#requirements-1)
-    2. [Development](#development-1)
-        1. [Installation](#installation-1)
-        2. [Building](#building)
-        2. [Development Environment](#development-environment)
-    3. [Configuration](#configuration-1)
-    4. [Structure](#structure-1)
-
 ## Backend
 The backend of Kaartdijin Boodja is a [Python](https://www.python.org/) [Django](https://www.djangoproject.com/) project
 using [Django REST Framework](https://www.django-rest-framework.org/) backed by a [PostgreSQL](https://www.postgresql.org/)
