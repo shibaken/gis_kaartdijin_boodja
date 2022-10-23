@@ -23,7 +23,7 @@ Python 3.10.4
 # Create a virtual environment and install dependencies using Poetry
 # The dependencies are installed from the `poetry.lock` file, providing
 # consistent and reproducible installations across any machine.
-$ pip install
+$ pip install -r requirements.txt
 ```
 To run a development server, use the `Django` `manage.py` script:
 ```shell
