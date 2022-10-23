@@ -70,9 +70,8 @@ $ npm run dev
 
 
 ### Structure
-The frontend is broadly split into 3 layers.
 They are:
 - `govapp`
-  - contains the department base templates and base packages 
+  - contains the department base templates and base packages and backend code
 - `govapp/frontend` 
-  - Contains node web app
+  - Contains node web app frontend code
