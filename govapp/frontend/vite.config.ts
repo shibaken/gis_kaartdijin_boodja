@@ -9,15 +9,15 @@ export default defineConfig({
     environment: 'happy-dom'
   },
   build: {
-	outDir: "../static/webapp",
+	outDir: "../",
 	emptyOutDir: false,
 	manifest: false,
 	sourcemap: false,
         rollupOptions: {
           output: {
-            entryFileNames: `assets/[name].js`,
-            chunkFileNames: `assets/[name].js`,
-            assetFileNames: `assets/[name].[ext]`
+            entryFileNames: `static/webapp/assets/[name].js`,
+            chunkFileNames: `static/webapp/assets/[name].js`,
+            assetFileNames: `static/webapp/assets/[name].[ext]`
           }
         }
   },
