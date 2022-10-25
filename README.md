@@ -66,8 +66,10 @@ To run a development server:
 ```shell
 $ npm run dev
 ```
-
-
+or to use a different port:
+```shell
+$ PORT=9072 npm run dev
+```
 
 ### Structure
 They are:
