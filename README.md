@@ -73,6 +73,6 @@ $ PORT=9072 npm run dev
 ### Structure
 They are:
 - `govapp`
-  - contains the department base templates and base packages and backend code
+  - contains the department base templates, base packages and backend code
 - `govapp/frontend` 
   - Contains node web app frontend code
