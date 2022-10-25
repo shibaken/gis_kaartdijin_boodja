@@ -1,0 +1,89 @@
+[tool.poetry]
+name = "kaartdijin-boodja"
+version = "0.1.0"
+description = "DBCA CDDP Catalogue and Publishing Django REST API"
+authors = ["Gaia Resources <dev@gaiaresources.com.au>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^3.2.16"
+djangorestframework = "^3.14.0"
+python-decouple = "^3.6"
+dj-database-url = "^1.0.0"
+psycopg2 = "^2.9.4"
+dbca-utils = {git = "https://github.com/dbca-wa/dbca-utils.git"}
+webtemplate_dbca = {git = "https://github.com/dbca-wa/webtemplate2.git"}
+drf-spectacular = "^0.24.2"
+django-filter = "^22.1"
+whitenoise = "5.3.0"
+django_media_serv = {git = "https://github.com/dbca-wa/django-media-serv.git" }
+django-confy = "^1.0.4"
+
+[tool.poetry.group.dev.dependencies]
+poethepoet = "^0.16.2"
+mypy = "^0.961"
+django-stubs = {extras = ["compatible-mypy"], version = "^1.12.0"}
+djangorestframework-stubs = {extras = ["compatible-mypy"], version = "^1.7.0"}
+flake8 = "^5.0.4"
+flake8-bandit = "^4.1.1"
+flake8-bugbear = "^22.9.23"
+flake8-builtins = "^1.5.3"
+flake8-django = "^1.1.5"
+flake8-docstrings = "^1.6.0"
+flake8-pyproject = "^1.1.0"
+flake8-pytest-style = "^1.6.0"
+pytest = "^7.1.3"
+pytest-cov = "^4.0.0"
+pytest-mock = "^3.10.0"
+pytest-django = "^4.5.2"
+django-coverage-plugin = "^2.0.3"
+
+[tool.poe.tasks]
+manage = "python3 manage.py"
+dev = "python3 manage.py runserver"
+test = "pytest tests"
+type = "mypy tests kaartdijin_boodja"
+lint = "flake8 tests kaartdijin_boodja"
+clean = "rm -rf **/.coverage **/.mypy_cache **/.pytest_cache **/__pycache__"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+disallow_any_unimported = false
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_ignores = true
+no_implicit_optional = true
+show_error_codes = true
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "kaartdijin_boodja.settings"
+
+[tool.flake8]
+max-line-length = 120
+exclude = [".git", "__pycache__", ".pytest_cache", ".mypy_cache", "migrations"]
+per-file-ignores = ["__init__.py:F401", "tests/*.py:S101"]
+enable-extensions = "G"
+docstring-convention = "google"
+
+[tool.pytest.ini_options]
+addopts = "--verbose --cov=kaartdijin_boodja"
+log_cli_level = "DEBUG"
+log_cli_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] (%(name)-11s): %(message)s"
+log_cli_date_format = "%Y%m%dT%H%M%S"
+DJANGO_SETTINGS_MODULE = "tests.settings"
+
+[tool.coverage.run]
+branch = true
+plugins = ["django_coverage_plugin"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = ["if __name__ == .__main__.:"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

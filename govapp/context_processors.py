@@ -12,5 +12,7 @@ def variables(request):
     return {
         'template_group' : 'parks',
         'template_title' : '',
+        'app_build_url' : settings.DEV_APP_BUILD_URL,
+        'GIT_COMMIT_HASH': settings.GIT_COMMIT_HASH
     }
 

@@ -12,14 +12,25 @@ ENV BPAY_ALLOWED=False
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install --no-install-recommends -y wget git libmagic-dev gcc binutils libproj-dev gdal-bin python3 python3-setuptools python3-dev python3-pip tzdata libreoffice cron 
+RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils libproj-dev gdal-bin python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent 
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
 RUN apt-get install --no-install-recommends -y rsyslog
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN apt-get install --no-install-recommends -y software-properties-common 
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt update
+RUN apt-get install --no-install-recommends -y  python3.10
 
+RUN update-ca-certificates
+# install node 18
+RUN touch install_node.sh
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x -o install_node.sh
+RUN chmod +x install_node.sh && ./install_node.sh
+RUN apt-get install -y nodejs
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
 RUN pip install --upgrade pip
+
 # Install Python libs from requirements.txt.
 FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
 WORKDIR /app
@@ -44,6 +55,8 @@ COPY gunicorn.ini manage.py ./
 RUN touch /app/.env
 COPY .git ./.git
 COPY govapp ./govapp
+RUN cd /app/govapp/frontend; npm install
+RUN cd /app/govapp/frontend; npm run build
 RUN python manage.py collectstatic --noinput
 RUN apt-get install --no-install-recommends -y python3-pil
 EXPOSE 8080

@@ -14,6 +14,11 @@ from pathlib import Path
 from confy import env, database
 import os
 
+# Project specific settings
+PROJECT_TITLE = "Kaartdijin Boodja"
+PROJECT_DESCRIPTION = "DBCA CDDP Catalogue and Publishing Django REST API"
+PROJECT_VERSION = "v1"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -44,7 +49,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'webtemplate_dbca',
     'govapp',
-    'crispy_forms',
+    'govapp.apps.accounts',
+    'govapp.apps.catalogue',
+    'govapp.apps.publisher',
+    'govapp.apps.swagger',
+    'rest_framework',
+    #'crispy_forms',
+    'drf_spectacular'
 ]
 
 MIDDLEWARE = [
@@ -139,8 +150,9 @@ CACHES = {
     }
 }
 
+DEV_APP_BUILD_URL = env('DEV_APP_BUILD_URL')
 LEDGER_TEMPLATE = 'bootstrap5'
-print (BASE_DIR)
+
 # Use git commit hash for purging cache in browser for deployment changes
 GIT_COMMIT_HASH = ''
 GIT_COMMIT_DATE = ''
@@ -153,3 +165,4 @@ if len(GIT_COMMIT_HASH) == 0:
        print ("ERROR: No git hash provided")
 
 VERSION_NO='2.00'
+ENABLE_DJANGO_LOGIN=env('ENABLE_DJANGO_LOGIN', False)
