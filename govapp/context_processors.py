@@ -1,18 +1,27 @@
-from django.conf import settings
-from govapp import models
-from django.core.cache import cache
-import json
+"""Context processors for the Django project."""
 
-def variables(request):
-    session_id = request.COOKIES.get('sessionid', None)
-    is_authenticated = False
-    if request.user.is_authenticated is True:
-        is_authenticated = request.user.is_authenticated
 
+# Third-Party
+from django import conf
+from django import http
+
+# Typing
+from typing import Any
+
+
+def variables(request: http.HttpRequest) -> dict[str, Any]:
+    """Constructs a context dictionary to be passed to the templates.
+
+    Args:
+        request (http.HttpRequest): HTTP request object.
+
+    Returns:
+        dict[str, Any]: Context for the templates.
+    """
+    # Construct and return context
     return {
-        'template_group' : 'parks',
-        'template_title' : '',
-        'app_build_url' : settings.DEV_APP_BUILD_URL,
-        'GIT_COMMIT_HASH': settings.GIT_COMMIT_HASH
+        "template_group": "parks",
+        "template_title": "",
+        "app_build_url": conf.settings.DEV_APP_BUILD_URL,
+        "GIT_COMMIT_HASH": conf.settings.GIT_COMMIT_HASH
     }
-
