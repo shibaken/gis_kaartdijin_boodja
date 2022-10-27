@@ -79,6 +79,7 @@ DJANGO_SETTINGS_MODULE = "tests.settings"
 
 [tool.coverage.run]
 branch = true
+omit = ["*/frontend/*", "*/static/*", "*/templates/*", "*.html"]
 plugins = ["django_coverage_plugin"]
 
 [tool.coverage.report]
