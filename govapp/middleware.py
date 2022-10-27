@@ -1,24 +1,58 @@
-import re
-import datetime
-from django.urls import reverse
-from django.http import Http404, HttpResponse, JsonResponse, HttpResponseRedirect
-from django.utils import timezone
+"""DBCA Django Project Middleware."""
 
-class CacheControl(object):
 
-    def __init__(self, get_response):
-            self.get_response = get_response
+# Third-Party
+from django import http
 
-    def __call__(self, request):
-       response= self.get_response(request)
-       if request.path[:5] == '/api/':
-            response['Cache-Control'] = 'private, no-store'
-       elif request.path[:8] == '/static/':
-            response['Cache-Control'] = 'public, max-age=86400'
-       elif request.path[:7] == '/media/':
-            response['Cache-Control'] = 'public, max-age=86400'
-       else:
+# Typing
+from typing import Callable
+
+
+# Type Shortcuts
+GetResponseFunction = Callable[[http.HttpRequest], http.HttpResponse]
+
+
+class CacheControl:
+    """DBCA Cache Control Middleware."""
+
+    def __init__(self, get_response: GetResponseFunction) -> None:
+        """Instantiates the CacheControl middleware.
+
+        Args:
+            get_response (GetResponseFunction): The 'get_response' function
+                injected by Django at middleware load-time.
+        """
+        # Set the `get_response` method.
+        self.get_response = get_response
+
+    def __call__(self, request: http.HttpRequest) -> http.HttpResponse:
+        """Handles the functionality of the middleware.
+
+        Args:
+            request (http.HttpRequest): HTTP request to handle.
+
+        Returns:
+            http.HttpResponse: The handled response.
+        """
+        # Retrieve the response to the request
+        response = self.get_response(request)
+
+        # Check the request path
+        if request.path[:5] == "/api/":
+            # Do not cache /api/ calls
+            response["Cache-Control"] = "private, no-store"
+
+        elif request.path[:8] == "/static/":
+            # Cache all /static/ calls for 1 day
+            response["Cache-Control"] = "public, max-age=86400"
+
+        elif request.path[:7] == "/media/":
+            # Cache all /media/ calls for 1 day
+            response["Cache-Control"] = "public, max-age=86400"
+
+        else:
+            # Ignore other paths
             pass
-            #response['Cache-Control'] = 'private, no-store'
-       return response
 
+        # Return handled response
+        return response
