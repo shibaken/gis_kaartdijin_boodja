@@ -28,6 +28,9 @@ Python 3.10.4
 # The dependencies are installed from the `poetry.lock` file, providing
 # consistent and reproducible installations across any machine.
 $ poetry install
+
+# Remember to enter the virtual environment shell after installation
+$ poetry shell
 ```
 
 #### Running
