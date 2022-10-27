@@ -1,0 +1,38 @@
+[
+    {
+        "model": "catalogue.LayerSubmission",
+        "pk": 1,
+        "fields": {
+            "name": "Layer Submission 1",
+            "description": "This is the first example layer submission",
+            "file": "https://www.google.com/",
+            "status": 1,
+            "submitted_at": "2022-10-13T04:11:05.195734+00:00",
+            "catalogue_entry": 1
+        }
+    },
+    {
+        "model": "catalogue.LayerSubmission",
+        "pk": 2,
+        "fields": {
+            "name": "Layer Submission 2",
+            "description": "This is the second example layer submission",
+            "file": "https://www.yahoo.com/",
+            "status": 2,
+            "submitted_at": "2022-10-12T07:56:15.665294+00:00",
+            "catalogue_entry": 2
+        }
+    },
+    {
+        "model": "catalogue.LayerSubmission",
+        "pk": 3,
+        "fields": {
+            "name": "Layer Submission 3",
+            "description": "This is the third example layer submission",
+            "file": "https://www.bing.com/",
+            "status": 3,
+            "submitted_at": "2022-10-11T11:24:42.816585+00:00",
+            "catalogue_entry": 3
+        }
+    }
+]

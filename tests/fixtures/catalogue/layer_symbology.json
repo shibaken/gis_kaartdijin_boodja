@@ -1,0 +1,29 @@
+[
+    {
+        "model": "catalogue.LayerSymbology",
+        "pk": 1,
+        "fields": {
+            "name": "Layer Symbology 1",
+            "file": "https://www.github.com/",
+            "layer": 1
+        }
+    },
+    {
+        "model": "catalogue.LayerSymbology",
+        "pk": 2,
+        "fields": {
+            "name": "Layer Symbology 2",
+            "file": "https://about.gitlab.com/",
+            "layer": 2
+        }
+    },
+    {
+        "model": "catalogue.LayerSymbology",
+        "pk": 3,
+        "fields": {
+            "name": "Layer Symbology 3",
+            "file": "https://bitbucket.org/",
+            "layer": 3
+        }
+    }
+]

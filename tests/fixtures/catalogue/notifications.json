@@ -1,0 +1,62 @@
+[
+    {
+        "model": "catalogue.EmailNotification",
+        "pk": 1,
+        "fields": {
+            "name": "Email Notification 1",
+            "type": 1,
+            "email": "cat@example.com",
+            "catalogue_entry": 1
+        }
+    },
+    {
+        "model": "catalogue.EmailNotification",
+        "pk": 2,
+        "fields": {
+            "name": "Email Notification 2",
+            "type": 2,
+            "email": "dog@example.com",
+            "catalogue_entry": 2
+        }
+    },
+    {
+        "model": "catalogue.EmailNotification",
+        "pk": 3,
+        "fields": {
+            "name": "Email Notification 3",
+            "type": 3,
+            "email": "bird@example.com",
+            "catalogue_entry": 3
+        }
+    },
+    {
+        "model": "catalogue.WebhookNotification",
+        "pk": 1,
+        "fields": {
+            "name": "Webhook Notification 1",
+            "type": 1,
+            "url": "https://www.dbca.wa.gov.au/",
+            "catalogue_entry": 1
+        }
+    },
+    {
+        "model": "catalogue.WebhookNotification",
+        "pk": 2,
+        "fields": {
+            "name": "Webhook Notification 2",
+            "type": 2,
+            "url": "https://www.dpaw.wa.gov.au/",
+            "catalogue_entry": 2
+        }
+    },
+    {
+        "model": "catalogue.WebhookNotification",
+        "pk": 3,
+        "fields": {
+            "name": "Webhook Notification 3",
+            "type": 3,
+            "url": "https://www.dcceew.gov.au/",
+            "catalogue_entry": 3
+        }
+    }
+]
