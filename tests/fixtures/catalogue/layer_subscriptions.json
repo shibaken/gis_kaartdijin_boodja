@@ -1,0 +1,38 @@
+[
+    {
+        "model": "catalogue.LayerSubscription",
+        "pk": 1,
+        "fields": {
+            "name": "Layer Subscription 1",
+            "url": "https://www.abc.net.au/",
+            "frequency": "1 11:11:11",
+            "status": 1,
+            "subscribed_at": "2022-10-13T02:11:02.818232+00:00",
+            "catalogue_entry": 1
+        }
+    },
+    {
+        "model": "catalogue.LayerSubscription",
+        "pk": 2,
+        "fields": {
+            "name": "Layer Subscription 2",
+            "url": "https://www.sbs.com.au/",
+            "frequency": "2 22:22:22",
+            "status": 2,
+            "subscribed_at": "2022-10-12T23:53:32.756754+00:00",
+            "catalogue_entry": 2
+        }
+    },
+    {
+        "model": "catalogue.LayerSubscription",
+        "pk": 3,
+        "fields": {
+            "name": "Layer Subscription 3",
+            "url": "https://www.nit.com.au/",
+            "frequency": "3 33:33:33",
+            "status": 3,
+            "subscribed_at": "2022-10-11T13:27:12.345346+00:00",
+            "catalogue_entry": 3
+        }
+    }
+]

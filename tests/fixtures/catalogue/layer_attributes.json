@@ -1,0 +1,92 @@
+[
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 1,
+        "fields": {
+            "name": "Layer Attribute 1A",
+            "type": 1,
+            "order": 1,
+            "layer": 1
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 2,
+        "fields": {
+            "name": "Layer Attribute 1B",
+            "type": 2,
+            "order": 2,
+            "layer": 1
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 3,
+        "fields": {
+            "name": "Layer Attribute 1C",
+            "type": 3,
+            "order": 3,
+            "layer": 1
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 4,
+        "fields": {
+            "name": "Layer Attribute 2A",
+            "type": 4,
+            "order": 1,
+            "layer": 2
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 5,
+        "fields": {
+            "name": "Layer Attribute 2B",
+            "type": 5,
+            "order": 2,
+            "layer": 2
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 6,
+        "fields": {
+            "name": "Layer Attribute 2C",
+            "type": 6,
+            "order": 3,
+            "layer": 2
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 7,
+        "fields": {
+            "name": "Layer Attribute 3A",
+            "type": 7,
+            "order": 1,
+            "layer": 3
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 8,
+        "fields": {
+            "name": "Layer Attribute 3B",
+            "type": 8,
+            "order": 2,
+            "layer": 3
+        }
+    },
+    {
+        "model": "catalogue.LayerAttribute",
+        "pk": 9,
+        "fields": {
+            "name": "Layer Attribute 3C",
+            "type": 9,
+            "order": 3,
+            "layer": 3
+        }
+    }
+]

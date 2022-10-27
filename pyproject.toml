@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "kaartdijin-boodja"
+name = "govapp"
 version = "0.1.0"
 description = "DBCA CDDP Catalogue and Publishing Django REST API"
 authors = ["Gaia Resources <dev@gaiaresources.com.au>"]
@@ -42,8 +42,8 @@ django-coverage-plugin = "^2.0.3"
 manage = "python3 manage.py"
 dev = "python3 manage.py runserver"
 test = "pytest tests"
-type = "mypy tests kaartdijin_boodja"
-lint = "flake8 tests kaartdijin_boodja"
+type = "mypy tests govapp"
+lint = "flake8 tests govapp"
 clean = "rm -rf **/.coverage **/.mypy_cache **/.pytest_cache **/__pycache__"
 
 [tool.mypy]
@@ -60,7 +60,7 @@ show_error_codes = true
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 
 [tool.django-stubs]
-django_settings_module = "kaartdijin_boodja.settings"
+django_settings_module = "govapp.settings"
 
 [tool.flake8]
 max-line-length = 120
@@ -70,7 +70,7 @@ enable-extensions = "G"
 docstring-convention = "google"
 
 [tool.pytest.ini_options]
-addopts = "--verbose --cov=kaartdijin_boodja"
+addopts = "--verbose --cov=govapp"
 log_cli_level = "DEBUG"
 log_cli_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] (%(name)-11s): %(message)s"
 log_cli_date_format = "%Y%m%dT%H%M%S"
@@ -78,6 +78,7 @@ DJANGO_SETTINGS_MODULE = "tests.settings"
 
 [tool.coverage.run]
 branch = true
+omit = ["*/frontend/*", "*/static/*", "*/templates/*"]
 plugins = ["django_coverage_plugin"]
 
 [tool.coverage.report]
