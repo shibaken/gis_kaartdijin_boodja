@@ -31,11 +31,15 @@ RUN apt-get install -y nodejs
 RUN ln -s /usr/bin/python3.10 /usr/bin/python
 RUN pip install --upgrade pip
 
-# Install Python libs from requirements.txt.
+# Install Python libs using pyproject.toml and poetry.lock
 FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
 WORKDIR /app
-COPY requirements.txt ./
-RUN pip3 install --no-cache-dir -r requirements.txt && rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
+ENV POETRY_VERSION=1.2.1
+RUN pip install "poetry==$POETRY_VERSION"
+RUN poetry config virtualenvs.create false
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-dev --no-interaction --no-ansi
+RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
 # Install the project (ensure that frontend projects have been built prior to this step).
 FROM python_libs_gis_kaartdijin_boodja

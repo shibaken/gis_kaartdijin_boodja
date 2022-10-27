@@ -1,6 +1,7 @@
 .settings/
 .env
 venv/
+.venv/
 node_modules/
 .ropeproject/
 

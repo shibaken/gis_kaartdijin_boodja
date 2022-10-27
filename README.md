@@ -5,26 +5,35 @@ publishing them for the Department of Biodiversity, Conservation and Attractions
 ## Backend
 The backend of Kaartdijin Boodja is a [Python](https://www.python.org/) [Django](https://www.djangoproject.com/) project
 using [Django REST Framework](https://www.django-rest-framework.org/) backed by a [PostgreSQL](https://www.postgresql.org/)
-database. The backend uses [PIP] to manage its dependencies,
+database. The backend uses Poetry to manage its dependencies.
 
 ### Requirements
 * [Python 3.10](https://www.python.org/downloads/release/python-3100/)
-* [pip]
-* [poetry]
+* [Pip](https://pypi.org/project/pip/)
+* [Poetry](https://python-poetry.org/)
 
 ### Development
 #### Installation
 To get a standard development environment up and running using Poetry and virtual environments:
 ```shell
-# Ensure that Python 3.10 is currently activated
+# Ensure Poetry is installed
+$ poetry --version
+Poetry (version 1.2.1)
+
+# Ensure Python 3.10 is currently activated
 $ python3 --version
 Python 3.10.4
 
 # Create a virtual environment and install dependencies using Poetry
 # The dependencies are installed from the `poetry.lock` file, providing
 # consistent and reproducible installations across any machine.
-$ pip install -r requirements.txt
+$ poetry install
+
+# Remember to enter the virtual environment shell after installation
+$ poetry shell
 ```
+
+#### Running
 To run a development server, use the `Django` `manage.py` script:
 ```shell
 $ DEBUG=True python3 manage.py runserver
