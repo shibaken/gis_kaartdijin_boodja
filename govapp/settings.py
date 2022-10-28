@@ -133,11 +133,11 @@ CACHES = {
 
 # DBCA Template Settings
 # https://github.com/dbca-wa/django-base-template/blob/main/govapp/settings.py
-DEV_APP_BUILD_URL = decouple.config("DEV_APP_BUILD_URL")
+DEV_APP_BUILD_URL = decouple.config("DEV_APP_BUILD_URL", default=None)
 ENABLE_DJANGO_LOGIN = decouple.config("ENABLE_DJANGO_LOGIN", default=False, cast=bool)
 LEDGER_TEMPLATE = "bootstrap5"
-GIT_COMMIT_HASH = os.popen(f"cd {BASE_DIR}; git log -1 --format=%cd").read()  # noqa: S605
-GIT_COMMIT_DATE = os.popen(f"cd {BASE_DIR}; git log -1 --format=%H").read()  # noqa: S605
+GIT_COMMIT_HASH = os.popen(f"cd {BASE_DIR}; git log -1 --format=%H").read()  # noqa: S605
+GIT_COMMIT_DATE = os.popen(f"cd {BASE_DIR}; git log -1 --format=%cd").read()  # noqa: S605
 VERSION_NO = "2.00"
 
 # Django REST Framework Settings
