@@ -68,13 +68,14 @@ warn_unused_ignores = true
 no_implicit_optional = true
 show_error_codes = true
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+exclude = ["frontend", "static", "templates"]
 
 [tool.django-stubs]
 django_settings_module = "govapp.settings"
 
 [tool.flake8]
 max-line-length = 120
-exclude = [".git", "__pycache__", ".pytest_cache", ".mypy_cache", "migrations"]
+exclude = [".git", "__pycache__", ".pytest_cache", ".mypy_cache", "migrations", "frontend", "static", "templates"]
 per-file-ignores = ["__init__.py:F401", "tests/*.py:S101"]
 enable-extensions = "G"
 docstring-convention = "google"

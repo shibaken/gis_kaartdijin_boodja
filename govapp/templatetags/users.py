@@ -1,4 +1,9 @@
-from django.template import Library
+"""Django Users Template Tag."""
 
-register = Library()
 
+# Third-Party
+from django import template
+
+
+# Register Template Tag
+register = template.Library()
