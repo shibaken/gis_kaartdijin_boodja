@@ -3,9 +3,9 @@
 {% block content %}
 <div id="app"></div>
 {% if app_build_url %}
-<script type="module"  type="text/javascript" src="{{ app_build_url }}"></script>
+<script type="module" type="text/javascript" src="{{ app_build_url }}"></script>
 {% else %}
-<script type="module"  type="text/javascript" src="/static/webapp/assets/index.js?ver={{ GIT_COMMIT_HASH }}"></script>
+<script type="module" type="text/javascript" src="/static/webapp/assets/index.js?ver={{ GIT_COMMIT_HASH }}"></script>
 {% endif %}
 <script type="text/javascript" src="/static/webapp/assets/index.css?ver={{ GIT_COMMIT_HASH }}"></script>
 

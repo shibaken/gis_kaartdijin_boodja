@@ -6,6 +6,7 @@ node_modules/
 .ropeproject/
 .mypy_cache/
 .pytest_cache/
+cache/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

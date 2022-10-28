@@ -3,47 +3,45 @@
 {% block content %}
 
 <div class="login">
-    <div class="form">
-	 <h1>Development Login</h1>
-        <form class="registration-form">
-            <input type="text" placeholder="name" />
-            <input type="password" placeholder="password" />
-            <input type="text" placeholder="email" />
-            <button>Create</button>
-            <p><a href="#">Log In</a></p>
-        </form>
-        <form class="login-form" method="post">
-             {% csrf_token %}
-         {{ form.as_p }}
+  <div class="form">
+    <h1>Development Login</h1>
+    <form class="registration-form">
+      <input type="text" placeholder="name" />
+      <input type="password" placeholder="password" />
+      <input type="text" placeholder="email" />
+      <button>Create</button>
+      <p><a href="#">Log In</a></p>
+    </form>
+    <form class="login-form" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
 
-            <button>Login</button>
-            <input type='hidden' name='next' value='{% if next %}{{ next }}{% else %}/{% endif %}'>
-        </form>
-    </div>
+      <button>Login</button>
+      <input type='hidden' name='next' value='{% if next %}{{ next }}{% else %}/{% endif %}'>
+    </form>
+  </div>
 </div>
 
 <style>
+  /* path -> static/css/login.css  */
 
-/* path -> static/css/login.css  */
+  @import url(https://fonts.googleapis.com/css?family=Lato:300);
 
-@import url(https://fonts.googleapis.com/css?family=Lato:300);
-.errorlist {
+  .errorlist {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: red;
+    font-weight: bold;
+  }
 
-}
-.errorlist {
-list-style-type: none;
-padding: 0; 
-margin: 0;
-color: red;
-font-weight: bold;
-}
+  .login {
+    width: 500px;
+    padding: 10% 0 0;
+    margin: auto;
+  }
 
-.login {
-  width: 500px;
-  padding: 10% 0 0;
-  margin: auto;
-}
-.form {
+  .form {
     position: relative;
     z-index: 1;
     background: #FFFFFF;
@@ -54,7 +52,7 @@ font-weight: bold;
     box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
   }
 
-.form input {
+  .form input {
     font-family: "Lato", sans-serif;
     outline: 0;
     background: #e7e4e4;
@@ -66,7 +64,7 @@ font-weight: bold;
     font-size: 14px;
   }
 
-.form button {
+  .form button {
     font-family: "Lato", sans-serif;
     text-transform: uppercase;
     outline: 0;
@@ -81,21 +79,22 @@ font-weight: bold;
     cursor: pointer;
   }
 
-.form button:hover,.form button:active,.form button:focus {
+  .form button:hover,
+  .form button:active,
+  .form button:focus {
     background: #3d3d3d;
   }
 
-.form .registration-form {
+  .form .registration-form {
     display: none;
   }
 
-body {
-    background: #3d3d3d; 
-    font-family: "Lato", sans-serif;     
+  body {
+    background: #3d3d3d;
+    font-family: "Lato", sans-serif;
   }
 
-/* baltlogs.com */
-
+  /* baltlogs.com */
 </style>
 
 
