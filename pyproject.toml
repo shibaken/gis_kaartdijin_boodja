@@ -88,7 +88,7 @@ log_cli_date_format = "%Y%m%dT%H%M%S"
 DJANGO_SETTINGS_MODULE = "tests.settings"
 
 [tool.coverage.run]
-branch = true
+branch = false
 omit = ["*/frontend/*", "*/static/*", "*/templates/*"]
 plugins = ["django_coverage_plugin"]
 

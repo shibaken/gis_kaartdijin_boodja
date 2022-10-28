@@ -131,18 +131,11 @@ CACHES = {
 # DBCA Template Settings
 # https://github.com/dbca-wa/django-base-template/blob/main/govapp/settings.py
 DEV_APP_BUILD_URL = decouple.config("DEV_APP_BUILD_URL")
-LEDGER_TEMPLATE = "bootstrap5"
-GIT_COMMIT_HASH = ""  # Use git commit hash for purging cache in browser for deployment changes
-GIT_COMMIT_DATE = ""
-if os.path.isdir(str(BASE_DIR)+"/.git/") is True:
-    GIT_COMMIT_DATE = os.popen("cd "+str(BASE_DIR)+" ; git log -1 --format=%cd").read()  # noqa: S605
-    GIT_COMMIT_HASH = os.popen("cd  "+str(BASE_DIR)+" ; git log -1 --format=%H").read()  # noqa: S605
-if len(GIT_COMMIT_HASH) == 0:
-    GIT_COMMIT_HASH = os.popen("cat /app/git_hash").read()  # noqa: S605,S607
-    if len(GIT_COMMIT_HASH) == 0:
-        print("ERROR: No git hash provided")
-VERSION_NO = "2.00"
 ENABLE_DJANGO_LOGIN = decouple.config("ENABLE_DJANGO_LOGIN", default=False, cast=bool)
+LEDGER_TEMPLATE = "bootstrap5"
+GIT_COMMIT_HASH = os.popen(f"cd {BASE_DIR}; git log -1 --format=%cd").read()  # noqa: S605
+GIT_COMMIT_DATE = os.popen(f"cd {BASE_DIR}; git log -1 --format=%H").read()  # noqa: S605
+VERSION_NO = "2.00"
 
 # Django REST Framework Settings
 # https://www.django-rest-framework.org/api-guide/settings/
