@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-var port = 5173;
+var port = 9072;
 if (process.env.PORT) {
     port = process.env.PORT;
 }
@@ -29,12 +29,6 @@ export default defineConfig({
     host: true,
     port: port,
     strictPort: true,
-    //proxy: {
-    //  '/api': {
-    //    target: `http://localhost:9071`,
-    //    changeOrigin: true,
-    //  },
-    // }
   }
 })
 
