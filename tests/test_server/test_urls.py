@@ -29,3 +29,29 @@ def test_admin_authorized(admin_client: test.Client) -> None:
 
     # Assert status code
     assert response.status_code == 200
+
+
+def test_home_unauthorized(client: test.Client) -> None:
+    """Tests that the home panel is accessible unauthorized.
+
+    Args:
+        client (test.Client): Django test client fixture.
+    """
+    # Retrieve response
+    response = client.get("/")
+
+    # Assert status code
+    assert response.status_code == 200
+
+
+def test_home_authorized(admin_client: test.Client) -> None:
+    """Tests that the home panel is accessible.
+
+    Args:
+        admin_client (test.Client): Django admin test client fixture.
+    """
+    # Retrieve response
+    response = admin_client.get("/")
+
+    # Assert status code
+    assert response.status_code == 200
