@@ -8,24 +8,10 @@ from django.db import models
 from . import layer_submissions
 
 
-class LayerAttributeType(models.IntegerChoices):
-    """Enumeration for a Layer Attribute Type."""
-    SHORT = 1
-    LONG = 2
-    FLOAT = 3
-    DOUBLE = 4
-    TEXT = 5
-    DATE = 6
-    BLOB = 7
-    OBJECT_ID = 8
-    GLOBAL_ID = 9
-    GEOMETRY = 10
-
-
 class LayerAttribute(models.Model):
     """Model for a Layer Attribute."""
     name = models.TextField()
-    type = models.IntegerField(choices=LayerAttributeType.choices)  # noqa: A003
+    type = models.TextField()  # noqa: A003
     order = models.PositiveIntegerField()
     layer = models.ForeignKey(
         layer_submissions.LayerSubmission,
