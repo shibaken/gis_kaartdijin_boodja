@@ -1,19 +1,20 @@
-<script lang="ts" setup>
-  import DataTable from './DataTable.vue';
-  import PlusCircleFill from '../icons/plusCircleFill.vue';
-  import CollapsibleRow from './CollapsibleRow.vue';
-  import { useCatalogueEntryStore } from '../../stores/CatalogueEntryStore';
-  import { storeToRefs } from 'pinia';
-  import DataTablePagination from './DataTablePagination.vue';
-  import {onMounted} from "vue";
+<script lang="ts" setup async>
+  import DataTable from "./DataTable.vue";
+  import PlusCircleFill from "../icons/plusCircleFill.vue";
+  import CollapsibleRow from "./CollapsibleRow.vue";
+  import { useCatalogueEntryStore } from "../../stores/CatalogueEntryStore";
+  import { storeToRefs } from "pinia";
+  import DataTablePagination from "./DataTablePagination.vue";
+  import { onMounted } from "vue";
+  import { DateTime } from "luxon";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
-  const { catalogueEntries, numPages, pageSize, currentPage, filter } = storeToRefs(catalogueEntryStore);
+  const { catalogueEntries, numPages, pageSize, currentPage, filters } = storeToRefs(catalogueEntryStore);
   const { getCatalogueEntries } = catalogueEntryStore;
 
   function setPage (pageNumber: number) {
-    filter.value.set('pageNumber', pageNumber);
+    filters.value.set("pageNumber", pageNumber);
   }
 
   onMounted(() => {
@@ -37,15 +38,15 @@
       </tr>
     </template>
     <template #data>
-      <CollapsibleRow v-for="(row, index) in catalogueEntries" :id="index">
+      <CollapsibleRow v-for="(row, index) in catalogueEntries" :id="index" :key="index">
         <template #cells>
           <td>{{ row.id }}</td>
           <td>{{ row.name }}</td>
-          <td>{{ row.custodian }}</td>
-          <td>{{ row.status }}</td>
-          <td>{{ row.updatedAt }}</td>
-          <td>{{ row.updatedAt }}</td>
-          <td>{{ row.assignedTo }}</td>
+          <td>{{ row.custodian?.username }}</td>
+          <td>{{ row.status.label }}</td>
+          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('dd/MM/yyyy')}}</td>
+          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('HH:mm') }}</td>
+          <td>{{ row.assignedTo?.username }}</td>
           <td><a href="#">View</a><a href="#">History</a></td>
         </template>
         <template #content>
@@ -59,8 +60,8 @@
       </tr>
     </template>
     <template #pagination>
-      <DataTablePagination :currentPage="currentPage" :numPages="numPages" :pageSize="pageSize"
-                           :total="catalogueEntries.length" @setPage="setPage"/>
+      <DataTablePagination :current-page="currentPage" :num-pages="numPages" :page-size="pageSize"
+                           :total="catalogueEntries.length" @set-page="setPage"/>
     </template>
   </data-table>
 </template>

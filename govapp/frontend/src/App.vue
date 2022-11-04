@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import CataloguePage from './components/CataloguePage.vue'
+  import CataloguePage from "./components/CataloguePage.vue";
 </script>
 
 <template>

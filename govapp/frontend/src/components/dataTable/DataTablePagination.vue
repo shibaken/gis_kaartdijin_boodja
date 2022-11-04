@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-  const { currentPage, numPages, pageSize, total } = defineProps<{
+  const props = defineProps<{
     currentPage: number,
     numPages: number,
     pageSize: number,
     total: number
-  }>()
+  }>();
+  const { total } = $(props);
 
   const emit = defineEmits<{
-    (e: 'set-page', pageNumber: number): void
-  }>()
+    (e: "set-page", pageNumber: number): void
+  }>();
 </script>
 
 <template>
@@ -19,18 +20,19 @@
   <nav aria-label="Table navigation" class="d-flex justify-content-end">
     <ul class="pagination">
       <li class="page-item">
-        <a class="page-link" href="#" @click="currentPage > 1 && emit('set-page', currentPage--)">
+        <a class="page-link" href="#" @click="currentPage > 1 && emit('set-page', currentPage - 1)">
           Previous
         </a>
       </li>
-      <li v-for="pageNumber in numPages" class="page-item" :class="{ active: pageNumber === currentPage }">
+      <li v-for="pageNumber in numPages" :key="pageNumber" class="page-item" :class="{ active: pageNumber === currentPage }">
         <a class="page-link" href="#" @click="emit('set-page', pageNumber)">
           {{ pageNumber }}
         </a>
       </li>
       <li class="page-item">
-        <a class="page-link" href="#"
-           @click="currentPage < numPages && emit('set-page', currentPage++)">
+        <a
+class="page-link" href="#"
+           @click="currentPage < numPages && emit('set-page', currentPage + 1)">
           Next
         </a>
       </li>

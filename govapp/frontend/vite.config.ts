@@ -1,16 +1,17 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
 
-var port = 9072;
-if (process.env.PORT) {
-    port = process.env.PORT;
-}
+const port = process.env.PORT ? parseInt(process.env.PORT) : 9072;
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue({
+    reactivityTransform: true
+  })],
   test: {
     globals: true,
-    environment: 'happy-dom'
+    environment: "happy-dom"
   },
   build: {
 	outDir: "../",
@@ -19,16 +20,16 @@ export default defineConfig({
 	sourcemap: false,
         rollupOptions: {
           output: {
-            entryFileNames: `static/webapp/assets/[name].js`,
-            chunkFileNames: `static/webapp/assets/[name].js`,
-            assetFileNames: `static/webapp/assets/[name].[ext]`
+            entryFileNames: "static/webapp/assets/[name].js",
+            chunkFileNames: "static/webapp/assets/[name].js",
+            assetFileNames: "static/webapp/assets/[name].[ext]"
           }
         }
   },
   server: {
     host: true,
-    port: port,
-    strictPort: true,
+    port,
+    strictPort: true
   }
-})
+});
 

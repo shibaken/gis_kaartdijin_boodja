@@ -1,21 +1,21 @@
-import { Filter } from './filterComposable.api';
-import { ref, Ref, UnwrapRef } from 'vue';
-import { PaginationFilter } from '../backend/backend.api';
+import { Filter } from "./filterComposable.api";
+import { ref, Ref, UnwrapRef } from "vue";
+import { PaginationFilter } from "../backend/backend.api";
 
 export function useTableFilterComposable<T extends PaginationFilter> () {
-  const tableFilters: Ref<UnwrapRef<T>> = ref(new Map() as T);
+  const filters: Ref<UnwrapRef<T>> = ref(new Map() as T);
 
-  function setFilter ({ name, value }: Filter) {
-    if (typeof value === 'undefined') {
-      tableFilters.value.delete(name);
+  function setFilter ({ field, value }: Filter) {
+    if (typeof value === "undefined" || value === "") {
+      filters.value.delete(field);
     } else {
-      tableFilters.value.set(name, value);
+      filters.value.set(field, value);
     }
   }
 
   function clearFilter (name: string) {
-    setFilter({ name });
+    setFilter({ field: name });
   }
 
-  return { tableFilters, setFilter, clearFilter };
+  return { filters, setFilter, clearFilter };
 }

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import LayerSubscriptionDataTable from './dataTable/LayerSubscriptionDataTable.vue';
-  import CatalogueEntryDataTable from './dataTable/CatalogueEntryDataTable.vue';
-  import CatalogueEntryFilter from './widgets/CatalogueEntryFilter.vue';
-  import LayerSubscriptionFilter from './widgets/LayerSubscriptionFilter.vue';
-  import type { Ref } from 'vue';
+  import { ref } from "vue";
+  import LayerSubscriptionDataTable from "./dataTable/LayerSubscriptionDataTable.vue";
+  import CatalogueEntryDataTable from "./dataTable/CatalogueEntryDataTable.vue";
+  import CatalogueEntryFilter from "./widgets/CatalogueEntryFilter.vue";
+  import LayerSubscriptionFilter from "./widgets/LayerSubscriptionFilter.vue";
+  import type { Ref } from "vue";
 
-  type SelectedTab = 'catalogueEntries'|'layerSubmissions'|'layerSubscriptions';
+  type SelectedTab = "catalogueEntries"|"layerSubmissions"|"layerSubscriptions";
 
-  const selectedTab: Ref<SelectedTab> = ref('catalogueEntries');
+  const selectedTab: Ref<SelectedTab> = ref("catalogueEntries");
 
   function setSelectedTab (tab: SelectedTab) {
     selectedTab.value = tab;
@@ -59,12 +59,10 @@
 </template>
 
 <style lang="scss" scoped>
-  #layerSubscriptionAccordion {
-    .accordion-item {
-      .accordion-body .form-floating {
-        select, input {
-          min-width: 15rem;
-        }
+  #collapseFilters {
+    .accordion-body {
+      form {
+        overflow-x: auto;
       }
     }
   }

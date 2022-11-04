@@ -8,6 +8,7 @@ from rest_framework import viewsets
 
 # Local
 from . import serializers
+from . import filters
 
 
 # Shortcuts
@@ -19,6 +20,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """User View Set."""
     queryset = UserModel.objects.all()
     serializer_class = serializers.UserSerializer
+    filterset_class = filters.UserFilter
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):

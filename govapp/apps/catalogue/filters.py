@@ -16,7 +16,7 @@ class CatalogueEntryFilter(filters.FilterSet):
     class Meta:
         """Catalogue Entry Filter Metadata."""
         model = models.catalogue_entries.CatalogueEntry
-        fields = ("assigned_to", "custodian", "status", "updated")
+        fields = {"assigned_to": ["exact"], "custodian": ["exact"], "status": ["in", "exact"]}
 
 
 class LayerAttributeFilter(filters.FilterSet):

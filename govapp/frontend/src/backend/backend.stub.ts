@@ -1,6 +1,6 @@
 import { BackendService } from "./backend.service";
-import {
-  RawCatalogueEntry, RawLayerSubscription, PaginationFilter, PaginatedRecord, RecordStatus } from './backend.api';
+import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus,
+  User, StatusType } from "./backend.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -18,8 +18,8 @@ const DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "description": "This is the first example catalogue entry",
     "status": 1,
     "updated_at": "2022-10-13T04:26:24.629841Z",
-    "custodian": null,
-    "assigned_to": null,
+    "custodian": 1,
+    "assigned_to": 1,
     "subscription": 1,
     "active_layer": 1,
     "layers": [1],
@@ -84,22 +84,40 @@ const DUMMY_LAYER_SUBSCRIPTIONS: Array<RawLayerSubscription> = [
   }
 ];
 
-const DUMMY_STATUSES = [
+const DUMMY_STATUSES: Array<RecordStatus<unknown>> = [
   { "id": 1, "label": "Draft" },
   { "id": 2, "label": "Locked" },
   { "id": 3, "label": "Cancelled" }
 ];
 
+const DUMMY_USERS: Array<User> = [
+  { "id": 1, "username": "Raoul Wallenberg", "groups": [] },
+  { "id": 2, "username": "Carl Lutz", "groups": [] },
+  { "id": 3, "username": "Chiune Sugihara", "groups": [] }
+];
+
 export class BackendServiceStub implements BackendService {
-  public getLayerSubscriptions (tableFilter: PaginationFilter): Promise<PaginatedRecord<RawLayerSubscription>> {
+  public getLayerSubscriptions (): Promise<PaginatedRecord<RawLayerSubscription>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_LAYER_SUBSCRIPTIONS));
   }
 
-  public getCatalogueEntries (tableFilter: PaginationFilter): Promise<PaginatedRecord<RawCatalogueEntry>> {
+  public getCatalogueEntries (): Promise<PaginatedRecord<RawCatalogueEntry>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_CATALOGUE_ENTRIES));
   }
 
-  public async getStatuses(): Promise<PaginatedRecord<RecordStatus>> {
-    return Promise.resolve(wrapPaginatedRecord(DUMMY_STATUSES) as PaginatedRecord<RecordStatus>);
+  public async getStatuses<T> (): Promise<PaginatedRecord<RecordStatus<T>>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_STATUSES) as PaginatedRecord<RecordStatus<T>>);
+  }
+
+  async getStatus<T> (_statusType: StatusType, statusId: number): Promise<RecordStatus<T>> {
+    return Promise.resolve(DUMMY_STATUSES.find(({ id }) => id === statusId) as RecordStatus<T>);
+  }
+
+  async getUser (userId: number): Promise<User> {
+    return Promise.resolve(DUMMY_USERS.find(({ id }) => id === userId) as User);
+  }
+
+  async getUsers (): Promise<PaginatedRecord<User>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_USERS));
   }
 }

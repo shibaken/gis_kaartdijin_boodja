@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-  import DataTable from './DataTable.vue';
-  import PlusCircleFill from '../icons/plusCircleFill.vue';
-  import CollapsibleRow from './CollapsibleRow.vue';
-  import DataTablePagination from './DataTablePagination.vue';
-  import { onMounted } from 'vue';
-  import { useLayerSubscriptionStore } from '../../stores/LayerSubscriptionStore';
-  import { storeToRefs } from 'pinia';
+  import DataTable from "./DataTable.vue";
+  import PlusCircleFill from "../icons/plusCircleFill.vue";
+  import CollapsibleRow from "./CollapsibleRow.vue";
+  import DataTablePagination from "./DataTablePagination.vue";
+  import { onMounted } from "vue";
+  import { useLayerSubscriptionStore } from "../../stores/LayerSubscriptionStore";
+  import { storeToRefs } from "pinia";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubscriptionStore = useLayerSubscriptionStore();
@@ -13,7 +13,7 @@
   const { getLayerSubscriptions } = layerSubscriptionStore;
 
   function setPage (pageNumber: number) {
-    filter.value.set('pageNumber', pageNumber);
+    filter.value.set("pageNumber", pageNumber);
   }
 
   onMounted(() => {
@@ -36,7 +36,7 @@
       </tr>
     </template>
     <template #data>
-      <CollapsibleRow v-for="(row, index) in layerSubscriptions" :id="index">
+      <CollapsibleRow v-for="(row, index) in layerSubscriptions" :key="index" :id="index">
         <template #cells>
           <td>
             {{ row.id }}
@@ -44,8 +44,8 @@
           <td>{{ row.name }}</td>
           <td>{{ row.subscribedDate }}</td>
           <td>{{ row.subscribedTime }}</td>
-          <td>{{ row.url }}</td>
-          <td>{{ row.status }}</td>
+          <td><a :href="row.url">{{ row.url }}</a></td>
+          <td>{{ row.status.label }}</td>
           <td>
             <a href="#">View</a>
             <a href="#">History</a>
@@ -63,7 +63,7 @@
       </tr>
     </template>
     <template #pagination>
-      <DataTablePagination :currentPage="currentPage" :numPages="numPages" :pageSize="pageSize"
+      <DataTablePagination :current-page="currentPage" :num-pages="numPages" :page-size="pageSize"
                            :total="layerSubscriptions.length" @setPage="setPage"/>
     </template>
   </data-table>

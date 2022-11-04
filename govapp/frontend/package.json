@@ -9,8 +9,9 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "npm build && vite preview",
     "test": "vitest",
-    "lint": "eslint --ext .ts,.vue --ignore-path .gitignore --fix src",
-    "format": "prettier .  --write",
+    "lint": "esw --ext .ts,.vue --ignore-path .gitignore src",
+    "lint:watch": "esw --ext .ts,.vue --ignore-path .gitignore --watch src",
+    "format": "eslint --ext .ts,.vue --ignore-path .gitignore --fix src",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
@@ -22,13 +23,14 @@
   },
   "devDependencies": {
     "@types/luxon": "^3.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.39.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.39.0",
     "@vitejs/plugin-vue": "^3.1.0",
     "@vue/eslint-config-typescript": "^11.0.2",
     "@vue/test-utils": "^2.1.0",
     "autoprefixer": "10.4.12",
     "eslint": "^8.24.0",
+    "eslint-watch": "^8.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-vue": "^9.6.0",
     "happy-dom": "^6.0.4",
