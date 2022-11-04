@@ -16,10 +16,12 @@
       value: DateTime.fromISO(dateString).toISO({ suppressMilliseconds: true, includeOffset: false })
     });
   }
+
+  const statuses = await subscriptionStatuses;
 </script>
 
 <template>
-  <form-select field="status" name="Status" :values="subscriptionStatuses.map(status => [status.label, status.id])" :value="filters.status"
+  <form-select field="status" name="Status" :values="statuses.map(status => [status.label, status.id])"
                @value-updated="(field, value) => setFilter({ field, value })"/>
   <form-input field="subscribedFrom" name="Subscribed from" type="date" placeholder="DD/MM/YYYY"
               :value="filters.subscribedFrom" @value-updated="(name, value) => setDateFilter(name, value)"/>

@@ -26,12 +26,14 @@
       value: DateTime.fromISO(dateString).toISO({ suppressMilliseconds: true, includeOffset: false })
     });
   }
+
+  const statuses = await entryStatuses;
 </script>
 
 <template>
   <form-select field="custodian" name="Custodian" :values="custodians.map(custodian => [custodian.username, custodian.id])"
           :value="filters.custodian" @value-updated="(field, value) => setFilter({ field, value })"/>
-  <form-select field="status" name="Status" :values="entryStatuses.map(status => [status.label, status.id])" :value="filters.status"
+  <form-select field="status" name="Status" :values="statuses.map(status => [status.label, status.id])" :value="filters.status"
           @value-updated="(field, value) => setFilter({ field, value })"/>
   <form-input field="updateFrom" name="Last Updated From" type="date" placeholder="DD/MM/YYYY" :value="filters.updateFrom"
          @value-updated="(field, value) => setDateFilter(field, value)"/>

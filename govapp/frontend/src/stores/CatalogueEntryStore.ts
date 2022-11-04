@@ -11,7 +11,7 @@ const catalogueEntryProvider: CatalogueEntryProvider = new CatalogueEntryProvide
 const statusProvider = new StatusProvider();
 
 // Status shouldn't need to change so pass it as a static list
-export const entryStatuses = await statusProvider.fetchStatuses<CatalogueEntryStatus>("entries");
+export const entryStatuses = statusProvider.fetchStatuses<CatalogueEntryStatus>("entries");
 
 export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   const catalogueEntries: Ref<Array<CatalogueEntry>> = ref([]);
