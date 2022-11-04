@@ -9,19 +9,17 @@ export class LayerSubscriptionProvider {
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
   private statusProvider: StatusProvider = new StatusProvider();
 
-  public async fetchLayerSubscriptions ({ subscribedFrom, subscribedTo, status }: LayerSubscriptionFilter):
-    Promise<PaginatedRecord<LayerSubscription>> {
-    // TODO: error handling for multiple
+  public async fetchLayerSubscriptions (layerSubscriptionFilter: LayerSubscriptionFilter):
+      Promise<PaginatedRecord<LayerSubscription>> {
+    const { subscribedFrom, subscribedTo, status } = Object.fromEntries(layerSubscriptionFilter.entries());
     const rawFilter = {
       status,
       subscribed_before: subscribedTo,
       subscribed_after: subscribedFrom
     } as RawLayerSubscriptionFilter;
 
-
-
     const { previous, next, count, results } = await this.backend.getLayerSubscriptions(rawFilter);
-    const entryStatuses = await this.statusProvider.fetchStatuses("entries");
+    const entryStatuses = await this.statusProvider.fetchStatuses("layers/subscriptions");
 
     const layerSubscriptions = results.map(rawSubscription => ({
       id: rawSubscription.id,

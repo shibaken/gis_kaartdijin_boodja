@@ -18,11 +18,7 @@ export class StatusProvider {
   // We don't need to paginate here so unwrap the results
   public getRecordStatusFromId<T> (statusId: number, statuses: Array<RecordStatus<T>>): RecordStatus<T> {
     const statusMatch = statuses.find(status => status.id === statusId);
-    if (!statusMatch) {
-      throw new Error("Status not found.");
-    } else {
-      return statusMatch;
-    }
+    return statusMatch ?? { id: statusId, label: "Status not found" };
   }
 
   public static getUniqueStatuses<T> (statusList: Array<RecordStatus<T>>): Array<RecordStatus<T>> {

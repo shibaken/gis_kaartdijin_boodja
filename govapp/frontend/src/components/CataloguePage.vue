@@ -45,8 +45,8 @@
           <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilter" data-bs-parent="#layerSubscriptionAccordion">
             <div class="accordion-body">
               <form class="form d-flex gap-3">
-                <CatalogueEntryFilter v-if="selectedTab === 'catalogueEntries'"/>
-                <LayerSubscriptionFilter v-if="selectedTab === 'layerSubscriptions'"/>
+                <catalogue-entry-filter v-if="selectedTab === 'catalogueEntries'"/>
+                <layer-subscription-filter v-if="selectedTab === 'layerSubscriptions'"/>
               </form>
             </div>
           </div>

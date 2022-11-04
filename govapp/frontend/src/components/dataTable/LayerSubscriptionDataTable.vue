@@ -9,11 +9,11 @@
 
   // get Stores and fetch with `storeToRef` to
   const layerSubscriptionStore = useLayerSubscriptionStore();
-  const { layerSubscriptions, numPages, currentPage, filter, pageSize } = storeToRefs(layerSubscriptionStore);
+  const { layerSubscriptions, numPages, currentPage, filters, pageSize } = storeToRefs(layerSubscriptionStore);
   const { getLayerSubscriptions } = layerSubscriptionStore;
 
   function setPage (pageNumber: number) {
-    filter.value.set("pageNumber", pageNumber);
+    filters.value.set("pageNumber", pageNumber);
   }
 
   onMounted(() => {
@@ -54,7 +54,6 @@
         <template #content>
           <td colspan="8">
             <span class="fw-bold small">Catalogue layer description: </span>
-
           </td>
         </template>
       </CollapsibleRow>

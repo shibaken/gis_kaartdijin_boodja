@@ -71,10 +71,10 @@ export interface PaginationState {
 
 export interface RecordStatus<T> {
   id: number;
-  label: T;
+  label: T | "Status not found";
 }
 
-export type StatusType = "entries"|"layers"|"subscriptions";
+export type StatusType = "entries"|"layers/submissions"|"layers/subscriptions";
 export type LayerSubscriptionStatus = "Active"|"Disabled";
 export type CatalogueEntryStatus = "Draft"|"Locked"|"Cancelled";
 export type LayerSubmissionStatus = "Submitted"|"Accepted"|"Declined";

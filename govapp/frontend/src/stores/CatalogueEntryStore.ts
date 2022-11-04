@@ -3,15 +3,15 @@ import { Ref, ref, computed, ComputedRef, watch, toRefs } from "vue";
 import { CatalogueEntry, CatalogueEntryFilter } from "../providers/catalogueEntryProvider.api";
 import { CatalogueEntryProvider } from "../providers/catalogueEntryProvider";
 import { StatusProvider } from "../providers/statusProvider";
-import { PaginatedRecord } from "../backend/backend.api";
+import { CatalogueEntryStatus, PaginatedRecord } from "../backend/backend.api";
 import { useTableFilterComposable } from "../tools/filterComposable";
 
 // Get the backend stub if the test flag is used.
 const catalogueEntryProvider: CatalogueEntryProvider = new CatalogueEntryProvider();
-const statusProvider: StatusProvider = new StatusProvider();
+const statusProvider = new StatusProvider();
 
 // Status shouldn't need to change so pass it as a static list
-export const entryStatuses = await statusProvider.fetchStatuses("entries");
+export const entryStatuses = await statusProvider.fetchStatuses<CatalogueEntryStatus>("entries");
 
 export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   const catalogueEntries: Ref<Array<CatalogueEntry>> = ref([]);
