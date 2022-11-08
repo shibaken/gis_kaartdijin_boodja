@@ -1,6 +1,6 @@
 import { Filter } from "./filterComposable.api";
 import { ref, Ref, UnwrapRef } from "vue";
-import { PaginationFilter } from "../backend/backend.api";
+import { PaginationFilter } from "../providers/providerCommon.api";
 
 export function useTableFilterComposable<T extends PaginationFilter> () {
   const filters: Ref<UnwrapRef<T>> = ref(new Map() as T);
