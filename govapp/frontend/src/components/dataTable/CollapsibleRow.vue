@@ -6,7 +6,7 @@
 </script>
 
 <template>
-  <tr data-bs-toggle="collapse" :data-bs-target="`#row-${id}`">
+  <tr data-bs-toggle="collapse" :data-bs-target="`#row-${id}`" :class="{ 'table-active': id % 2 === 0 }">
     <th scope="row"><PlusCircleFill colour="#4284BC" class="me-2" /></th>
     <slot name="cells" />
   </tr>

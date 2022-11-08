@@ -1,6 +1,6 @@
 <template>
   <div class="table-responsive">
-    <table class="table table-bordered table-striped table-hover accordion mb-1">
+    <table class="table table-bordered table-hover accordion mb-1">
       <thead>
         <slot name="headers"/>
       </thead>

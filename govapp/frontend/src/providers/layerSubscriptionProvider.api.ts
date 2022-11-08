@@ -9,7 +9,6 @@ export interface LayerSubscription {
   frequency: string;
   status: RecordStatus<LayerSubscriptionStatus>;
   subscribedDate: string;
-  subscribedTime: string;
   catalogueEntry: number;
 }
 

@@ -1,6 +1,6 @@
 import { BackendService } from "./backend.service";
-import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus,
-  User, StatusType } from "./backend.api";
+import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, User, StatusType,
+  RawLayerSubmission } from "./backend.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -84,6 +84,57 @@ const DUMMY_LAYER_SUBSCRIPTIONS: Array<RawLayerSubscription> = [
   }
 ];
 
+const DUMMY_LAYER_SUBMISSIONS: Array<RawLayerSubmission> = [
+  {
+    "id": 1,
+    "name": "Layer Submission 1",
+    "description": "This is the first example layer submission",
+    "file": "https://www.google.com/",
+    "status": 1,
+    "submitted_at": "2022-10-13T04:11:05.195734Z",
+    "catalogue_entry": 1,
+    "attributes": [
+      1,
+      2,
+      3
+    ],
+    "metadata": 1,
+    "symbology": 1
+  },
+  {
+    "id": 2,
+    "name": "Layer Submission 2",
+    "description": "This is the second example layer submission",
+    "file": "https://www.yahoo.com/",
+    "status": 2,
+    "submitted_at": "2022-10-12T07:56:15.665294Z",
+    "catalogue_entry": 2,
+    "attributes": [
+      4,
+      5,
+      6
+    ],
+    "metadata": 2,
+    "symbology": 2
+  },
+  {
+    "id": 3,
+    "name": "Layer Submission 3",
+    "description": "This is the third example layer submission",
+    "file": "https://www.bing.com/",
+    "status": 3,
+    "submitted_at": "2022-10-11T11:24:42.816585Z",
+    "catalogue_entry": 3,
+    "attributes": [
+      7,
+      8,
+      9
+    ],
+    "metadata": 3,
+    "symbology": 3
+  }
+];
+
 const DUMMY_STATUSES: Array<RecordStatus<unknown>> = [
   { "id": 1, "label": "Draft" },
   { "id": 2, "label": "Locked" },
@@ -103,6 +154,10 @@ export class BackendServiceStub implements BackendService {
 
   public getCatalogueEntries (): Promise<PaginatedRecord<RawCatalogueEntry>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_CATALOGUE_ENTRIES));
+  }
+
+  public async getLayerSubmissions (): Promise<PaginatedRecord<RawLayerSubmission>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_LAYER_SUBMISSIONS));
   }
 
   public async getStatuses<T> (): Promise<PaginatedRecord<RecordStatus<T>>> {

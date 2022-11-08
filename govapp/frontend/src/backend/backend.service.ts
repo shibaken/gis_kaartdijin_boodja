@@ -1,5 +1,5 @@
 import { RecordStatus, RawCatalogueEntryFilter, RawCatalogueEntry, RawLayerSubscription,
-  RawLayerSubscriptionFilter, RawUserFilter } from "./backend.api";
+  RawLayerSubscriptionFilter, RawUserFilter, RawLayerSubmissionFilter, RawLayerSubmission } from "./backend.api";
 import type { PaginatedRecord, Params, StatusType, User } from "./backend.api";
 
 export function stripNullParams<T extends object> (filter: T): Params {
@@ -22,6 +22,11 @@ export class BackendService {
     const params = stripNullParams<RawCatalogueEntryFilter>(filter);
     const response = await fetch("/api/catalogue/entries/?" + new URLSearchParams(params) );
     return await response.json() as PaginatedRecord<RawCatalogueEntry>;
+  }
+  public async getLayerSubmissions (filter: RawLayerSubmissionFilter): Promise<PaginatedRecord<RawLayerSubmission>> {
+    const params = stripNullParams<RawCatalogueEntryFilter>(filter);
+    const response = await fetch("/api/catalogue/layers/submissions/?" + new URLSearchParams(params) );
+    return await response.json() as PaginatedRecord<RawLayerSubmission>;
   }
 
   public async getStatus<T> (statusType: StatusType, statusId: number): Promise<RecordStatus<T>> {

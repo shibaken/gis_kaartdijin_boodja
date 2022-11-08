@@ -14,7 +14,7 @@
 
 <template>
   <span v-if="total > 0" class="ms-2 small fw-bold">
-    Showing {{ ( currentPage - 1 ) * pageSize + 1 }} to {{ (currentPage) * pageSize }} of {{ total }} entries
+    Showing {{ ( currentPage - 1 ) * pageSize + 1 }} to {{ Math.min((currentPage) * pageSize, total) }} of {{ total }} entries
   </span>
   <span v-else class="ms-2 small fw-bold">No results</span>
   <nav aria-label="Table navigation" class="d-flex justify-content-end">

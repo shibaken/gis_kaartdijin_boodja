@@ -1,16 +1,19 @@
 <script lang="ts" setup>
-  import { computed } from "vue";
+  import { computed, onMounted, ref, Ref } from "vue";
   import { useCatalogueEntryStore, entryStatuses } from "../../stores/CatalogueEntryStore";
   import FormInput from "./FormInput.vue";
   import FormSelect from "./FormSelect.vue";
   import { storeToRefs } from "pinia";
   import { UserProvider } from "../../providers/userProvider";
   import { DateTime } from "luxon";
+  import { CatalogueEntryStatus, RecordStatus } from "../../backend/backend.api";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
   const { filters, catalogueEntries } = storeToRefs(catalogueEntryStore);
   const { setFilter } = catalogueEntryStore;
+  const statuses: Ref<RecordStatus<CatalogueEntryStatus>[]> = ref([]);
+
   const custodians = computed(() => {
     const allCustodians = catalogueEntries.value.map(({ custodian }) => custodian);
     return UserProvider.getUniqueUsers(allCustodians);
@@ -27,7 +30,9 @@
     });
   }
 
-  const statuses = await entryStatuses;
+  onMounted(async () => {
+    return statuses.value = await entryStatuses;
+  });
 </script>
 
 <template>

@@ -33,9 +33,17 @@ export interface RawCatalogueEntry {
   webhook_notifications: Array<number>;
 }
 
-export interface PaginationFilter extends Map<string, unknown> {
-  offset?: number;
-  limit?: number;
+export interface RawLayerSubmission {
+  id: number;
+  name: string;
+  description: string;
+  file: string;
+  status: number;
+  submitted_at: string;
+  catalogue_entry: number;
+  attributes: Array<number>;
+  metadata: number;
+  symbology: number;
 }
 
 export interface RawPaginationFilter extends Record<string, unknown> {
@@ -50,11 +58,18 @@ export interface RawLayerSubscriptionFilter extends RawPaginationFilter {
 }
 
 export interface RawCatalogueEntryFilter extends RawPaginationFilter {
+  id__in?: Array<number>;
   status?: string;
   custodian?: string;
   assigned_to?: string;
   updated_before?: string;
   updated_after?: string;
+}
+
+export interface RawLayerSubmissionFilter extends RawPaginationFilter {
+  status?: string;
+  submitted_before?: string;
+  submitted_after?: string;
 }
 
 export interface RawUserFilter extends RawPaginationFilter {

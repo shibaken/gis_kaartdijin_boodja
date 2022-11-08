@@ -14,9 +14,10 @@ export class CatalogueEntryProvider {
 
   public async fetchCatalogueEntries (catalogueEntryFilter: CatalogueEntryFilter):
       Promise<PaginatedRecord<CatalogueEntry>>{
-    const { custodian, status, assignedTo, updateFrom, updateTo } = Object.fromEntries(catalogueEntryFilter.entries());
+    const { ids, custodian, status, assignedTo, updateFrom, updateTo } = Object.fromEntries(catalogueEntryFilter.entries());
 
     const rawFilter = {
+      id__in: ids,
       custodian,
       status,
       assigned_to: assignedTo,
@@ -49,5 +50,4 @@ export class CatalogueEntryProvider {
 
    return { previous, next, count, results: catalogueEntries } as PaginatedRecord<CatalogueEntry>;
   }
-
 }

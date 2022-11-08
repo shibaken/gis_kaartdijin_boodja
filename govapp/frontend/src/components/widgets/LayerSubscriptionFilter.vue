@@ -4,11 +4,14 @@
   import FormSelect from "./FormSelect.vue";
   import { storeToRefs } from "pinia";
   import { DateTime } from "luxon";
+  import { onMounted, ref, Ref } from "vue";
+  import { LayerSubscriptionStatus, RecordStatus } from "../../backend/backend.api";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubscriptionStore = useLayerSubscriptionStore();
   const { filters } = storeToRefs(layerSubscriptionStore);
   const { setFilter } = layerSubscriptionStore;
+  const statuses: Ref<RecordStatus<LayerSubscriptionStatus>[]> = ref([]);
 
   function setDateFilter (field: string, dateString: string) {
     setFilter({
@@ -17,7 +20,9 @@
     });
   }
 
-  const statuses = await subscriptionStatuses;
+  onMounted(async () => {
+    return statuses.value = await subscriptionStatuses;
+  });
 </script>
 
 <template>

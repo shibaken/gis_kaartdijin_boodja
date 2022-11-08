@@ -6,6 +6,7 @@
   import { onMounted } from "vue";
   import { useLayerSubscriptionStore } from "../../stores/LayerSubscriptionStore";
   import { storeToRefs } from "pinia";
+  import { DateTime } from "luxon";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubscriptionStore = useLayerSubscriptionStore();
@@ -38,16 +39,14 @@
     <template #data>
       <CollapsibleRow v-for="(row, index) in layerSubscriptions" :key="index" :id="index">
         <template #cells>
-          <td>
-            {{ row.id }}
-          </td>
+          <td>{{ row.id }}</td>
           <td>{{ row.name }}</td>
-          <td>{{ row.subscribedDate }}</td>
-          <td>{{ row.subscribedTime }}</td>
+          <td>{{ DateTime.fromISO(row.subscribedDate).toFormat('dd/MM/yyyy')}}</td>
+          <td>{{ DateTime.fromISO(row.subscribedDate).toFormat('HH:mm') }}</td>
           <td><a :href="row.url">{{ row.url }}</a></td>
           <td>{{ row.status.label }}</td>
           <td>
-            <a href="#">View</a>
+            <a href="#" class="me-2">View</a>
             <a href="#">History</a>
           </td>
         </template>

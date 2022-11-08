@@ -19,16 +19,15 @@ export class LayerSubscriptionProvider {
     } as RawLayerSubscriptionFilter;
 
     const { previous, next, count, results } = await this.backend.getLayerSubscriptions(rawFilter);
-    const entryStatuses = await this.statusProvider.fetchStatuses("layers/subscriptions");
+    const subscriptionStatuses = await this.statusProvider.fetchStatuses("layers/subscriptions");
 
     const layerSubscriptions = results.map(rawSubscription => ({
       id: rawSubscription.id,
       name: rawSubscription.name,
       url: rawSubscription.url,
-      status:  this.statusProvider.getRecordStatusFromId(rawSubscription.status, entryStatuses),
+      status:  this.statusProvider.getRecordStatusFromId(rawSubscription.status, subscriptionStatuses),
       frequency: rawSubscription.frequency,
       subscribedDate: rawSubscription.subscribed_at,
-      subscribedTime: rawSubscription.subscribed_at,
       catalogueEntry: rawSubscription.catalogue_entry
     })) as Array<LayerSubscription>;
 

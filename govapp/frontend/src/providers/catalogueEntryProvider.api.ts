@@ -17,6 +17,7 @@ export interface CatalogueEntry {
 }
 
 export interface CatalogueEntryFilter extends PaginationFilter {
+  ids?: Array<number>;
   custodian?: string;
   status?: string;
   assignedTo?: string;

@@ -1,24 +1,24 @@
-<script lang="ts" setup async>
+<script lang="ts" setup>
   import DataTable from "./DataTable.vue";
   import PlusCircleFill from "../icons/plusCircleFill.vue";
   import CollapsibleRow from "./CollapsibleRow.vue";
-  import { useCatalogueEntryStore } from "../../stores/CatalogueEntryStore";
-  import { storeToRefs } from "pinia";
   import DataTablePagination from "./DataTablePagination.vue";
   import { onMounted } from "vue";
+  import { useLayerSubmissionStore } from "../../stores/LayerSubmissionStore";
+  import { storeToRefs } from "pinia";
   import { DateTime } from "luxon";
 
   // get Stores and fetch with `storeToRef` to
-  const catalogueEntryStore = useCatalogueEntryStore();
-  const { catalogueEntries, numPages, pageSize, currentPage, filters } = storeToRefs(catalogueEntryStore);
-  const { getCatalogueEntries } = catalogueEntryStore;
+  const layerSubmissionStore = useLayerSubmissionStore();
+  const { layerSubmissions, numPages, currentPage, filters, pageSize } = storeToRefs(layerSubmissionStore);
+  const { getLayerSubmissions } = layerSubmissionStore;
 
   function setPage (pageNumber: number) {
     filters.value.set("pageNumber", pageNumber);
   }
 
   onMounted(() => {
-    getCatalogueEntries();
+    getLayerSubmissions();
   });
 </script>
 
@@ -29,42 +29,39 @@
         <th></th>
         <th>Number</th>
         <th>Name</th>
-        <th>Custodian</th>
-        <th>Status</th>
-        <th>Last Updated</th>
+        <th>Submitted Date</th>
         <th>Time</th>
-        <th>Assigned To</th>
+        <th>Catalogue</th>
+        <th>Status</th>
         <th>Action</th>
       </tr>
     </template>
     <template #data>
-      <CollapsibleRow v-for="(row, index) in catalogueEntries" :id="index" :key="index">
+      <CollapsibleRow v-for="(row, index) in layerSubmissions" :key="index" :id="index">
         <template #cells>
           <td>{{ row.id }}</td>
           <td>{{ row.name }}</td>
-          <td>{{ row.custodian?.username }}</td>
+          <td>{{ DateTime.fromISO(row.submittedDate).toFormat('dd/MM/yyyy')}}</td>
+          <td>{{ DateTime.fromISO(row.submittedDate).toFormat('HH:mm') }}</td>
+          <td>{{ row.catalogueEntry }}</td>
           <td>{{ row.status.label }}</td>
-          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('dd/MM/yyyy')}}</td>
-          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('HH:mm') }}</td>
-          <td>{{ row.assignedTo?.username }}</td>
           <td>
-            <a href="#" class="me-2">View</a>
-            <a href="#">History</a>
+            <a href="#">View</a>
           </td>
         </template>
         <template #content>
           <td colspan="9">
-            <span class="fw-bold small">Catalogue layer description: </span>{{ row.description }}
+            <span class="fw-bold small">Catalogue layer description: </span>
           </td>
         </template>
       </CollapsibleRow>
       <tr>
-        <td colspan="9"><PlusCircleFill colour="#4284BC"></PlusCircleFill></td>
+        <td colspan="8"><PlusCircleFill colour="#4284BC"></PlusCircleFill></td>
       </tr>
     </template>
     <template #pagination>
       <DataTablePagination :current-page="currentPage" :num-pages="numPages" :page-size="pageSize"
-                           :total="catalogueEntries.length" @set-page="setPage"/>
+                           :total="layerSubmissions.length" @setPage="setPage"/>
     </template>
   </data-table>
 </template>
