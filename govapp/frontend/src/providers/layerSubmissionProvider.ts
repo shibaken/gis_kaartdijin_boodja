@@ -25,7 +25,7 @@ export class LayerSubmissionProvider {
     } as RawLayerSubmissionFilter;
 
     const { previous, next, count, results } = await this.backend.getLayerSubmissions(rawFilter);
-    const submissionStatuses = await this.statusProvider.fetchStatuses("layers/subscriptions");
+    const submissionStatuses = await this.statusProvider.fetchStatuses("layers/submissions");
 
     // TODO: cache this
     const fetchedEntries: Array<CatalogueEntry> = useCatalogueEntryStore().catalogueEntries;

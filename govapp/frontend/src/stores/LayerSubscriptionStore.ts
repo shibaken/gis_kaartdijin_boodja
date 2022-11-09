@@ -12,7 +12,7 @@ const layerSubscriptionProvider: LayerSubscriptionProvider = new LayerSubscripti
 const statusProvider = new StatusProvider();
 
 // Status shouldn't need to change so pass it as a static list
-export const subscriptionStatuses = statusProvider.fetchStatuses<LayerSubscriptionStatus>("entries");
+export const subscriptionStatuses = statusProvider.fetchStatuses<LayerSubscriptionStatus>("layers/subscriptions");
 
 export const useLayerSubscriptionStore = defineStore("layerSubscription", () => {
   const layerSubscriptions: Ref<Array<LayerSubscription>> = ref([]);
