@@ -76,15 +76,35 @@ class Absorber:
         # Log
         log.info(f"Extracting data from layer: '{layer}'")
 
-        # Extract attributes, metadata and symbology
-        attributes = readers.utils.attributes(filepath, layer)
+        # Extract metadata
         metadata = readers.utils.metadata(filepath, layer)
-        symbology = readers.utils.symbology(filepath, layer)
 
-        # Create Archived GIS File and Symbology
+        # Attempt to extract attributes
+        try:
+            # Extract attributes
+            attributes = readers.utils.attributes(filepath, layer)
+
+        except ValueError:
+            # Could not extract attributes
+            attributes = None
+
+        # Attempt to extract symbology
+        try:
+            # Extract symbology
+            symbology = readers.utils.symbology(filepath, layer)
+
+        except ValueError:
+            # Could not extract symbology
+            symbology = None
+
+        # Create Archived GIS File
         archive = f"{conf.settings.SHAREPOINT_ARCHIVE_AREA}/{datetime.date.today().year}"
         gpkg = self.storage.put(f"{archive}/{metadata.name}.gpkg", filepath.read_bytes())
-        sld = self.storage.put(f"{archive}/{metadata.name}.xml", symbology.sld.encode("UTF-8"))
+
+        # Check Symbology
+        if symbology:
+            # Create archived symbology
+            sld = self.storage.put(f"{archive}/{metadata.name}.xml", symbology.sld.encode("UTF-8"))
 
         # Enter Atomic Database Transaction
         with transaction.atomic():
@@ -113,19 +133,23 @@ class Absorber:
                 layer=layer_submission
             )
 
-            # Create Layer Symbology
-            models.layer_symbology.LayerSymbology.objects.create(
-                name=symbology.name,
-                file=sld,
-                layer=layer_submission,
-            )
-
-            # Loop through attributes
-            for attribute in attributes:
-                # Create Attribute
-                models.layer_attributes.LayerAttribute.objects.create(
-                    name=attribute.name,
-                    type=attribute.type,
-                    order=attribute.order,
+            # Check symbology
+            if symbology:
+                # Create Layer Symbology
+                models.layer_symbology.LayerSymbology.objects.create(
+                    name=symbology.name,
+                    file=sld,
                     layer=layer_submission,
                 )
+
+            # Check attributes
+            if attributes:
+                # Loop through attributes
+                for attribute in attributes:
+                    # Create Attribute
+                    models.layer_attributes.LayerAttribute.objects.create(
+                        name=attribute.name,
+                        type=attribute.type,
+                        order=attribute.order,
+                        layer=layer_submission,
+                    )
