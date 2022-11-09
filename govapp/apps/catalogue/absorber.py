@@ -42,11 +42,22 @@ class Absorber:
         # Log
         log.info(f"Retrieving '{path}' from storage")
 
-        # Retrieve File
+        # Retrieve file from remote storage
+        # This retrieves and writes the file to our own temporary filesystem
         filepath = self.storage.get(path)
+
+        # Move the file on the remote storage into the archive area
+        # The file is renamed to include a UTC timestamp, to avoid collisions
+        timestamp = datetime.datetime.utcnow()
+        timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
+        archive_directory = f"{conf.settings.SHAREPOINT_ARCHIVE_AREA}/{timestamp.year}"
+        archive_path = f"{archive_directory}/{filepath.stem}.{timestamp_str}{filepath.suffix}"
+        archive = self.storage.put(archive_path, filepath.read_bytes())  # Move file to archive
+        self.storage.delete(path)  # Delete file in staging area
 
         # Log
         log.info(f"Retrieved '{path}' -> '{filepath}'")
+        log.info(f"Archived '{path}' -> {archive_path} ({archive})")
 
         # Determine the layers in the file
         layers = readers.utils.layers(filepath)
@@ -60,18 +71,18 @@ class Absorber:
             log.info(f"Absorbing layer '{layer}' from '{filepath}'")
 
             # Absorb layer
-            self.absorb_layer(filepath, layer)
+            self.absorb_layer(filepath, layer, archive)
 
-        # Delete Files
-        self.storage.delete(path)
+        # Delete Local Copy
         filepath.unlink()
 
-    def absorb_layer(self, filepath: pathlib.Path, layer: str) -> None:
+    def absorb_layer(self, filepath: pathlib.Path, layer: str, archive: str) -> None:
         """Absorbs a layer into the system.
 
         Args:
             filepath (pathlib.Path): File to absorb layer from.
             layer (str): Layer to absorb.
+            archive (str): URL to the archived file for this layer.
         """
         # Log
         log.info(f"Extracting data from layer: '{layer}'")
@@ -97,15 +108,6 @@ class Absorber:
             # Could not extract symbology
             symbology = None
 
-        # Create Archived GIS File
-        archive = f"{conf.settings.SHAREPOINT_ARCHIVE_AREA}/{datetime.date.today().year}"
-        gpkg = self.storage.put(f"{archive}/{metadata.name}.gpkg", filepath.read_bytes())
-
-        # Check Symbology
-        if symbology:
-            # Create archived symbology
-            sld = self.storage.put(f"{archive}/{metadata.name}.xml", symbology.sld.encode("UTF-8"))
-
         # Enter Atomic Database Transaction
         with transaction.atomic():
             # Create Catalogue Entry
@@ -118,7 +120,7 @@ class Absorber:
             layer_submission = models.layer_submissions.LayerSubmission.objects.create(
                 name=metadata.name,
                 description=metadata.description,
-                file=gpkg,
+                file=archive,
                 catalogue_entry=catalogue_entry,
             )
 
@@ -138,7 +140,7 @@ class Absorber:
                 # Create Layer Symbology
                 models.layer_symbology.LayerSymbology.objects.create(
                     name=symbology.name,
-                    file=sld,
+                    sld=symbology.sld,
                     layer=layer_submission,
                 )
 
