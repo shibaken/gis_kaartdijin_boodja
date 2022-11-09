@@ -73,7 +73,7 @@ class Absorber:
             # Absorb layer
             self.absorb_layer(filepath, layer, archive)
 
-        # Delete Local Copy
+        # Delete local temporary copy of file
         filepath.unlink()
 
     def absorb_layer(self, filepath: pathlib.Path, layer: str, archive: str) -> None:
