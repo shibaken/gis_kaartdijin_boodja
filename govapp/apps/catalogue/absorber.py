@@ -2,15 +2,18 @@
 
 
 # Standard
+import datetime
 import logging
 import pathlib
 
 # Third-Party
+from django import conf
 from django.db import transaction
 
 # Local
 from . import models
 from . import readers
+from . import storage
 
 
 # Logging
@@ -20,13 +23,32 @@ log = logging.getLogger(__name__)
 class Absorber:
     """Absorbs new layers into the system."""
 
-    def absorb(self, filepath: pathlib.Path) -> None:
+    def __init__(self) -> None:
+        """Instantiates the Absorber."""
+        # Storage
+        self.storage = storage.sharepoint.SharepointStorage(
+            url=conf.settings.SHAREPOINT_URL,
+            root=conf.settings.SHAREPOINT_LIST,
+            username=conf.settings.SHAREPOINT_USERNAME,
+            password=conf.settings.SHAREPOINT_PASSWORD,
+        )
+
+    def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
 
         Args:
-            filepath (pathlib.Path): File to absorb.
+            path (str): File to absorb.
         """
-        # Determine number of layers in the file
+        # Log
+        log.info(f"Retrieving '{path}' from storage")
+
+        # Retrieve File
+        filepath = self.storage.get(path)
+
+        # Log
+        log.info(f"Retrieved '{path}' -> '{filepath}'")
+
+        # Determine the layers in the file
         layers = readers.utils.layers(filepath)
 
         # Log
@@ -39,6 +61,10 @@ class Absorber:
 
             # Absorb layer
             self.absorb_layer(filepath, layer)
+
+        # Delete Files
+        self.storage.delete(path)
+        filepath.unlink()
 
     def absorb_layer(self, filepath: pathlib.Path, layer: str) -> None:
         """Absorbs a layer into the system.
@@ -55,6 +81,11 @@ class Absorber:
         metadata = readers.utils.metadata(filepath, layer)
         symbology = readers.utils.symbology(filepath, layer)
 
+        # Create Archived GIS File and Symbology
+        archive = f"{conf.settings.SHAREPOINT_ARCHIVE_AREA}/{datetime.date.today().year}"
+        gpkg = self.storage.put(f"{archive}/{metadata.name}.gpkg", filepath.read_bytes())
+        sld = self.storage.put(f"{archive}/{metadata.name}.xml", symbology.sld.encode("UTF-8"))
+
         # Enter Atomic Database Transaction
         with transaction.atomic():
             # Create Catalogue Entry
@@ -67,7 +98,7 @@ class Absorber:
             layer_submission = models.layer_submissions.LayerSubmission.objects.create(
                 name=metadata.name,
                 description=metadata.description,
-                file=str(filepath),
+                file=gpkg,
                 catalogue_entry=catalogue_entry,
             )
 
@@ -85,7 +116,7 @@ class Absorber:
             # Create Layer Symbology
             models.layer_symbology.LayerSymbology.objects.create(
                 name=symbology.name,
-                file=str(filepath),
+                file=sld,
                 layer=layer_submission,
             )
 

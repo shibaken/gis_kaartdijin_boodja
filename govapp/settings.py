@@ -174,3 +174,11 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+# Sharepoint Settings
+SHAREPOINT_URL = decouple.config("SHAREPOINT_URL")
+SHAREPOINT_USERNAME = decouple.config("SHAREPOINT_USERNAME")
+SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD")
+SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST")
+SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA")
+SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA")
