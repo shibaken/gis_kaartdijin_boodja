@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "govapp",
     "govapp.apps.accounts",
     "govapp.apps.catalogue",
+    "govapp.apps.emails",
     "govapp.apps.publisher",
     "govapp.apps.swagger",
     "rest_framework",
@@ -182,3 +183,7 @@ SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD")
 SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST")
 SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA")
 SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA")
+
+# Email
+DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # TODO: Production email settings
