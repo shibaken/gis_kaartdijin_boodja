@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 # Standard
 import os
 import pathlib
+import sys
+import platform
 
 # Third-Party
 import decouple
@@ -158,3 +160,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": True,
     "POSTPROCESSING_HOOKS": [],
 }
+
+if platform.machine() == 'arm64':
+    GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
+    GEOS_LIBRARY_PATH = "/opt/homebrew/opt/geos/lib/libgeos_c.dylib"
