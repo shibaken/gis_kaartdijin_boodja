@@ -13,4 +13,4 @@ class LayerSymbologySerializer(serializers.ModelSerializer):
     class Meta:
         """Layer Symbology Model Serializer Metadata."""
         model = models.layer_symbology.LayerSymbology
-        fields = ("id", "name", "file", "layer")
+        fields = ("id", "name", "sld", "layer")

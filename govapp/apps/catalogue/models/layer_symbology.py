@@ -11,7 +11,7 @@ from . import layer_submissions
 class LayerSymbology(models.Model):
     """Model for a Layer Symbology."""
     name = models.TextField()
-    file = models.URLField()
+    sld = models.TextField()
     layer = models.OneToOneField(
         layer_submissions.LayerSubmission,
         related_name="symbology",

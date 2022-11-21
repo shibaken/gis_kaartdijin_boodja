@@ -23,6 +23,9 @@ class CatalogueEntry(models.Model):
     description = models.TextField()
     active_layer = models.OneToOneField(
         "catalogue.LayerSubmission",
+        default=None,
+        blank=True,
+        null=True,
         related_name="+",  # No backwards relation
         on_delete=models.PROTECT,
     )

@@ -161,6 +161,31 @@ SPECTACULAR_SETTINGS = {
     "POSTPROCESSING_HOOKS": [],
 }
 
-if platform.machine() == 'arm64':
+# Logging
+# https://docs.djangoproject.com/en/3.2/topics/logging/
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
+
+# Sharepoint Settings
+SHAREPOINT_URL = decouple.config("SHAREPOINT_URL")
+SHAREPOINT_USERNAME = decouple.config("SHAREPOINT_USERNAME")
+SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD")
+SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST")
+SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA")
+SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA")
+
+# Temporary Fix for ARM Architecture
+if platform.machine() == "arm64":
     GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
     GEOS_LIBRARY_PATH = "/opt/homebrew/opt/geos/lib/libgeos_c.dylib"

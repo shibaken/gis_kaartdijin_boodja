@@ -4,7 +4,7 @@
         "pk": 1,
         "fields": {
             "name": "Layer Symbology 1",
-            "file": "https://www.github.com/",
+            "sld": "This is some fake SLD XML",
             "layer": 1
         }
     },
@@ -13,7 +13,7 @@
         "pk": 2,
         "fields": {
             "name": "Layer Symbology 2",
-            "file": "https://about.gitlab.com/",
+            "sld": "This is some fake SLD XML",
             "layer": 2
         }
     },
@@ -22,7 +22,7 @@
         "pk": 3,
         "fields": {
             "name": "Layer Symbology 3",
-            "file": "https://bitbucket.org/",
+            "sld": "This is some fake SLD XML",
             "layer": 3
         }
     }
