@@ -179,12 +179,12 @@ LOGGING = {
 }
 
 # Sharepoint Settings
-SHAREPOINT_URL = decouple.config("SHAREPOINT_URL")
-SHAREPOINT_USERNAME = decouple.config("SHAREPOINT_USERNAME")
-SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD")
-SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST")
-SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA")
-SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA")
+SHAREPOINT_URL = decouple.config("SHAREPOINT_URL", default="https://dpaw.sharepoint.com/teams/KaartdijinBoodja-dev")
+SHAREPOINT_USERNAME = decouple.config("SHAREPOINT_USERNAME", default=None)  # TODO: Credentials?
+SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD", default=None)  # TODO: Credentials?
+SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST", default="Shared Documents")
+SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA", default="Staging")
+SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA", default="KaartdijinBoodjaLayerSubmissionArchive")
 
 # Email
 DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
