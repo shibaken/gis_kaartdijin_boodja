@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    {% block greetings %}
+    <p>
+        Dear Sir/Madam,
+    </p>
+    {% endblock %}
+    {% block content %}
+    <p>
+        This is example content.
+    </p>
+    {% endblock %}
+    {% block signature %}
+    <p>
+        Regards,
+        DBCA
+    </p>
+    {% endblock %}
+</body>
+
+</html>

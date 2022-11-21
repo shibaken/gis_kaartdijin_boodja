@@ -1,0 +1,10 @@
+{% block greetings %}
+Dear Sir/Madam,
+{% endblock %}
+{% block content %}
+This is example content.
+{% endblock %}
+{% block signature %}
+Regards,
+DBCA
+{% endblock %}
