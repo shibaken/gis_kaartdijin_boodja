@@ -1,4 +1,4 @@
 export interface Filter {
-  name: string
-  value?: any
+  field: string
+  value?: unknown
 }

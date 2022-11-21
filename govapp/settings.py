@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 # Standard
 import os
 import pathlib
+import sys
+import platform
 
 # Third-Party
 import decouple
@@ -187,3 +189,8 @@ SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA")
 # Email
 DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # TODO: Production email settings
+
+# Temporary Fix for ARM Architecture
+if platform.machine() == "arm64":
+    GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
+    GEOS_LIBRARY_PATH = "/opt/homebrew/opt/geos/lib/libgeos_c.dylib"

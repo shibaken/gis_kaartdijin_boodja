@@ -1,6 +1,6 @@
 import { BackendService } from "./backend.service";
-import {
-  RawCatalogueEntry, RawLayerSubscription, PaginationFilter, PaginatedRecord, RecordStatus } from './backend.api';
+import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, User, StatusType,
+  RawLayerSubmission } from "./backend.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -18,8 +18,8 @@ const DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "description": "This is the first example catalogue entry",
     "status": 1,
     "updated_at": "2022-10-13T04:26:24.629841Z",
-    "custodian": null,
-    "assigned_to": null,
+    "custodian": 1,
+    "assigned_to": 1,
     "subscription": 1,
     "active_layer": 1,
     "layers": [1],
@@ -84,22 +84,95 @@ const DUMMY_LAYER_SUBSCRIPTIONS: Array<RawLayerSubscription> = [
   }
 ];
 
-const DUMMY_STATUSES = [
+const DUMMY_LAYER_SUBMISSIONS: Array<RawLayerSubmission> = [
+  {
+    "id": 1,
+    "name": "Layer Submission 1",
+    "description": "This is the first example layer submission",
+    "file": "https://www.google.com/",
+    "status": 1,
+    "submitted_at": "2022-10-13T04:11:05.195734Z",
+    "catalogue_entry": 1,
+    "attributes": [
+      1,
+      2,
+      3
+    ],
+    "metadata": 1,
+    "symbology": 1
+  },
+  {
+    "id": 2,
+    "name": "Layer Submission 2",
+    "description": "This is the second example layer submission",
+    "file": "https://www.yahoo.com/",
+    "status": 2,
+    "submitted_at": "2022-10-12T07:56:15.665294Z",
+    "catalogue_entry": 2,
+    "attributes": [
+      4,
+      5,
+      6
+    ],
+    "metadata": 2,
+    "symbology": 2
+  },
+  {
+    "id": 3,
+    "name": "Layer Submission 3",
+    "description": "This is the third example layer submission",
+    "file": "https://www.bing.com/",
+    "status": 3,
+    "submitted_at": "2022-10-11T11:24:42.816585Z",
+    "catalogue_entry": 3,
+    "attributes": [
+      7,
+      8,
+      9
+    ],
+    "metadata": 3,
+    "symbology": 3
+  }
+];
+
+const DUMMY_STATUSES: Array<RecordStatus<unknown>> = [
   { "id": 1, "label": "Draft" },
   { "id": 2, "label": "Locked" },
   { "id": 3, "label": "Cancelled" }
 ];
 
+const DUMMY_USERS: Array<User> = [
+  { "id": 1, "username": "Raoul Wallenberg", "groups": [] },
+  { "id": 2, "username": "Carl Lutz", "groups": [] },
+  { "id": 3, "username": "Chiune Sugihara", "groups": [] }
+];
+
 export class BackendServiceStub implements BackendService {
-  public getLayerSubscriptions (tableFilter: PaginationFilter): Promise<PaginatedRecord<RawLayerSubscription>> {
+  public getLayerSubscriptions (): Promise<PaginatedRecord<RawLayerSubscription>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_LAYER_SUBSCRIPTIONS));
   }
 
-  public getCatalogueEntries (tableFilter: PaginationFilter): Promise<PaginatedRecord<RawCatalogueEntry>> {
+  public getCatalogueEntries (): Promise<PaginatedRecord<RawCatalogueEntry>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_CATALOGUE_ENTRIES));
   }
 
-  public async getStatuses(): Promise<PaginatedRecord<RecordStatus>> {
-    return Promise.resolve(wrapPaginatedRecord(DUMMY_STATUSES) as PaginatedRecord<RecordStatus>);
+  public async getLayerSubmissions (): Promise<PaginatedRecord<RawLayerSubmission>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_LAYER_SUBMISSIONS));
+  }
+
+  public async getStatuses<T> (): Promise<PaginatedRecord<RecordStatus<T>>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_STATUSES) as PaginatedRecord<RecordStatus<T>>);
+  }
+
+  async getStatus<T> (_statusType: StatusType, statusId: number): Promise<RecordStatus<T>> {
+    return Promise.resolve(DUMMY_STATUSES.find(({ id }) => id === statusId) as RecordStatus<T>);
+  }
+
+  async getUser (userId: number): Promise<User> {
+    return Promise.resolve(DUMMY_USERS.find(({ id }) => id === userId) as User);
+  }
+
+  async getUsers (): Promise<PaginatedRecord<User>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_USERS));
   }
 }
