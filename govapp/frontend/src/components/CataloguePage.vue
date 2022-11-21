@@ -1,14 +1,16 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import LayerSubscriptionDataTable from './dataTable/LayerSubscriptionDataTable.vue';
-  import CatalogueEntryDataTable from './dataTable/CatalogueEntryDataTable.vue';
-  import CatalogueEntryFilter from './widgets/CatalogueEntryFilter.vue';
-  import LayerSubscriptionFilter from './widgets/LayerSubscriptionFilter.vue';
-  import type { Ref } from 'vue';
+  import { ref } from "vue";
+  import LayerSubscriptionDataTable from "./dataTable/LayerSubscriptionDataTable.vue";
+  import CatalogueEntryDataTable from "./dataTable/CatalogueEntryDataTable.vue";
+  import CatalogueEntryFilter from "./widgets/CatalogueEntryFilter.vue";
+  import LayerSubscriptionFilter from "./widgets/LayerSubscriptionFilter.vue";
+  import LayerSubmissionDataTable from "./dataTable/LayerSubmissionDataTable.vue";
+  import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
+  import type { Ref } from "vue";
 
-  type SelectedTab = 'catalogueEntries'|'layerSubmissions'|'layerSubscriptions';
+  type SelectedTab = "Catalogue Entries" | "Layer Submissions" | "Layer Subscriptions";
 
-  const selectedTab: Ref<SelectedTab> = ref('catalogueEntries');
+  const selectedTab: Ref<SelectedTab> = ref("Catalogue Entries");
 
   function setSelectedTab (tab: SelectedTab) {
     selectedTab.value = tab;
@@ -18,21 +20,21 @@
 <template>
   <ul class="nav nav-pills mb-4">
     <li class="nav-item">
-      <button class="nav-link" aria-current="page" href="#" :class='{ active: selectedTab === "catalogueEntries" }'
-              @click='setSelectedTab("catalogueEntries")'>Catalogue Entries</button>
+      <button class="nav-link" aria-current="page" href="#" :class='{ active: selectedTab === "Catalogue Entries" }'
+              @click='setSelectedTab("Catalogue Entries")'>Catalogue Entries</button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" href="#" :class='{ active: selectedTab === "layerSubmissions" }'
-              @click='setSelectedTab("layerSubmissions")'>Layer Submissions</button>
+      <button class="nav-link" href="#" :class='{ active: selectedTab === "Layer Submissions" }'
+              @click='setSelectedTab("Layer Submissions")'>Layer Submissions</button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" href="#" :class='{ active: selectedTab === "layerSubscriptions" }'
-              @click='setSelectedTab("layerSubscriptions")'>Layer Subscriptions</button>
+      <button class="nav-link" href="#" :class='{ active: selectedTab === "Layer Subscriptions" }'
+              @click='setSelectedTab("Layer Subscriptions")'>Layer Subscriptions</button>
     </li>
   </ul>
   <div class="card">
     <div class="card-header">
-      <h4>Layer Subscriptions</h4>
+      <h4>{{ selectedTab }}</h4>
     </div>
     <div class="card-body">
       <div id="layerSubscriptionAccordion" class="accordion">
@@ -45,26 +47,26 @@
           <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilter" data-bs-parent="#layerSubscriptionAccordion">
             <div class="accordion-body">
               <form class="form d-flex gap-3">
-                <CatalogueEntryFilter v-if="selectedTab === 'catalogueEntries'"/>
-                <LayerSubscriptionFilter v-if="selectedTab === 'layerSubscriptions'"/>
+                <catalogue-entry-filter v-if="selectedTab === 'Catalogue Entries'"/>
+                <layer-subscription-filter v-if="selectedTab === 'Layer Subscriptions'"/>
+                <layer-submission-filter v-if="selectedTab === 'Layer Submissions'"/>
               </form>
             </div>
           </div>
         </div>
       </div>
-      <catalogue-entry-data-table v-if='selectedTab === "catalogueEntries"'/>
-      <layer-subscription-data-table v-if='selectedTab === "layerSubscriptions"'/>
+      <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"'/>
+      <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"'/>
+      <layer-submission-data-table v-if='selectedTab === "Layer Submissions"'/>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-  #layerSubscriptionAccordion {
-    .accordion-item {
-      .accordion-body .form-floating {
-        select, input {
-          min-width: 15rem;
-        }
+  #collapseFilters {
+    .accordion-body {
+      form {
+        overflow-x: auto;
       }
     }
   }

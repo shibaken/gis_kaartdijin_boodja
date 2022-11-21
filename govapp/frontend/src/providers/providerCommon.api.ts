@@ -1,4 +1,4 @@
-export interface PaginationFilter extends Map<string, any> {
+export interface PaginationFilter extends Map<string, unknown> {
   offset?: number
   limit?: number
 }

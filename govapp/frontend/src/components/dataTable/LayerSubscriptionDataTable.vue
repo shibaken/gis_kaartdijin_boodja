@@ -1,19 +1,20 @@
 <script lang="ts" setup>
-  import DataTable from './DataTable.vue';
-  import PlusCircleFill from '../icons/plusCircleFill.vue';
-  import CollapsibleRow from './CollapsibleRow.vue';
-  import DataTablePagination from './DataTablePagination.vue';
-  import { onMounted } from 'vue';
-  import { useLayerSubscriptionStore } from '../../stores/LayerSubscriptionStore';
-  import { storeToRefs } from 'pinia';
+  import DataTable from "./DataTable.vue";
+  import PlusCircleFill from "../icons/plusCircleFill.vue";
+  import CollapsibleRow from "./CollapsibleRow.vue";
+  import DataTablePagination from "./DataTablePagination.vue";
+  import { onMounted } from "vue";
+  import { useLayerSubscriptionStore } from "../../stores/LayerSubscriptionStore";
+  import { storeToRefs } from "pinia";
+  import { DateTime } from "luxon";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubscriptionStore = useLayerSubscriptionStore();
-  const { layerSubscriptions, numPages, currentPage, filter, pageSize } = storeToRefs(layerSubscriptionStore);
+  const { layerSubscriptions, numPages, currentPage, filters, pageSize } = storeToRefs(layerSubscriptionStore);
   const { getLayerSubscriptions } = layerSubscriptionStore;
 
   function setPage (pageNumber: number) {
-    filter.value.set('pageNumber', pageNumber);
+    filters.value.set("pageNumber", pageNumber);
   }
 
   onMounted(() => {
@@ -36,25 +37,22 @@
       </tr>
     </template>
     <template #data>
-      <CollapsibleRow v-for="(row, index) in layerSubscriptions" :id="index">
+      <CollapsibleRow v-for="(row, index) in layerSubscriptions" :key="index" :id="index">
         <template #cells>
-          <td>
-            {{ row.id }}
-          </td>
+          <td>{{ row.id }}</td>
           <td>{{ row.name }}</td>
-          <td>{{ row.subscribedDate }}</td>
-          <td>{{ row.subscribedTime }}</td>
-          <td>{{ row.url }}</td>
-          <td>{{ row.status }}</td>
+          <td>{{ DateTime.fromISO(row.subscribedDate).toFormat('dd/MM/yyyy')}}</td>
+          <td>{{ DateTime.fromISO(row.subscribedDate).toFormat('HH:mm') }}</td>
+          <td><a :href="row.url">{{ row.url }}</a></td>
+          <td>{{ row.status.label }}</td>
           <td>
-            <a href="#">View</a>
+            <a href="#" class="me-2">View</a>
             <a href="#">History</a>
           </td>
         </template>
         <template #content>
           <td colspan="8">
             <span class="fw-bold small">Catalogue layer description: </span>
-
           </td>
         </template>
       </CollapsibleRow>
@@ -63,7 +61,7 @@
       </tr>
     </template>
     <template #pagination>
-      <DataTablePagination :currentPage="currentPage" :numPages="numPages" :pageSize="pageSize"
+      <DataTablePagination :current-page="currentPage" :num-pages="numPages" :page-size="pageSize"
                            :total="layerSubscriptions.length" @setPage="setPage"/>
     </template>
   </data-table>

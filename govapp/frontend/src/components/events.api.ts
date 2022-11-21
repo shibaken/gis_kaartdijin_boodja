@@ -1,4 +1,4 @@
 export type HTMLElementEvent<T extends HTMLElement> = Event & {
-  target: T,
-  currentTarget: T
-}
+  target: T;
+  currentTarget: T;
+};

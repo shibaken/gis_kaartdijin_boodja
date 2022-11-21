@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 # Standard
 import os
 import pathlib
+import sys
+import platform
 
 # Third-Party
 import decouple
@@ -182,3 +184,8 @@ SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD")
 SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST")
 SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA")
 SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA")
+
+# Temporary Fix for ARM Architecture
+if platform.machine() == "arm64":
+    GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
+    GEOS_LIBRARY_PATH = "/opt/homebrew/opt/geos/lib/libgeos_c.dylib"
