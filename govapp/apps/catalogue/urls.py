@@ -10,6 +10,7 @@ from . import views
 
 # Router
 router = routers.DefaultRouter()
+router.register("custodians", views.CustodianViewSet)
 router.register("entries", views.CatalogueEntryViewSet)
 router.register("layers/attributes", views.LayerAttributeViewSet)
 router.register("layers/metadata", views.LayerMetadataViewSet)
