@@ -15,6 +15,9 @@ from . import models
 from . import readers
 from . import storage
 
+# Typing
+from typing import Optional, cast
+
 
 # Logging
 log = logging.getLogger(__name__)
@@ -108,6 +111,36 @@ class Absorber:
             # Could not extract symbology
             symbology = None
 
+        # Retrieve existing catalogue entry from the database
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()
+
+        # Check existing catalogue entry
+        if not catalogue_entry:
+            # Create
+            self.create_catalogue_entry(metadata, attributes, symbology, archive)
+
+        else:
+            # Update
+            self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
+
+    def create_catalogue_entry(
+        self,
+        metadata: readers.types.metadata.Metadata,
+        attributes: Optional[list[readers.types.attributes.Attribute]],
+        symbology: Optional[readers.types.symbology.Symbology],
+        archive: str,
+    ) -> None:
+        """Creates a new catalogue entry with the supplied values.
+
+        Args:
+            metadata (Metadata): Metadata for the entry.
+            attributes (Optional[list[Attribute]]): Attributes for the entry.
+            symbology (Optional[Symbology]): Symbology for the entry.
+            archive (str): Archive URL for the entry
+        """
+        # Log
+        log.info("Creating new catalogue entry")
+
         # Enter Atomic Database Transaction
         with transaction.atomic():
             # Create Catalogue Entry
@@ -155,3 +188,107 @@ class Absorber:
                         order=attribute.order,
                         catalogue_entry=catalogue_entry,
                     )
+
+    def update_catalogue_entry(
+        self,
+        catalogue_entry: models.catalogue_entries.CatalogueEntry,
+        metadata: readers.types.metadata.Metadata,
+        attributes: Optional[list[readers.types.attributes.Attribute]],
+        symbology: Optional[readers.types.symbology.Symbology],
+        archive: str,
+    ) -> None:
+        """Creates a new catalogue entry with the supplied values.
+
+        Args:
+            catalogue_entry (CatalogueEntry): Catalogue entry to update.
+            metadata (Metadata): Metadata for the entry.
+            attributes (Optional[list[Attribute]]): Attributes for the entry.
+            symbology (Optional[Symbology]): Symbology for the entry.
+            archive (str): Archive URL for the entry
+        """
+        # Log
+        log.info("Updating existing catalogue entry")
+
+        # Check the created date?
+        # TODO
+        ...
+
+        # Retrieve the Catalogue Entry attributes for comparison
+        # We also cast the type here to help `mypy` with the Django backwards relation
+        current_attributes = list(catalogue_entry.attributes.all())
+        current_attributes = cast(list[models.layer_attributes.LayerAttribute], current_attributes)
+
+        # Compare Attributes
+        attributes_match = self.compare_attributes(current_attributes, attributes)
+
+        # Check if they match!
+        if attributes_match:
+            # Log
+            log.info("Attributes match, updating catalogue entry")
+
+            # Update!
+            # Create Layer Submission with Status ACCEPTED
+            # Update Catalogue Entry active layer to new Layer Submission
+            layer_submission = models.layer_submissions.LayerSubmission.objects.create(
+                name=metadata.name,
+                description=metadata.description,
+                file=archive,
+                catalogue_entry=catalogue_entry,
+                status=models.layer_submissions.LayerSubmissionStatus.ACCEPTED,  # Accepted?
+            )
+            catalogue_entry.active_layer = layer_submission
+            catalogue_entry.save()
+
+        else:
+            # Log
+            log.info("Attributes do not match, layer submission failed")
+
+            # Failure!
+            # Create Layer Submission with Status DECLINED
+            # Do not update Catalogue Entry
+            models.layer_submissions.LayerSubmission.objects.create(
+                name=metadata.name,
+                description=metadata.description,
+                file=archive,
+                catalogue_entry=catalogue_entry,
+                status=models.layer_submissions.LayerSubmissionStatus.DECLINED,  # Declined?
+            )
+
+    def compare_attributes(
+        self,
+        current_attributes: Optional[list[models.layer_attributes.LayerAttribute]],
+        new_attributes: Optional[list[readers.types.attributes.Attribute]],
+    ) -> bool:
+        """Compares existing current attributes with new attributes.
+
+        Args:
+            current_attributes (Optional[list[LayerAttribute]]): Current attributes
+            new_attributes (Optional[list[Attribute]]): New attributes
+
+        Returns:
+            bool: Whether the attributes match
+        """
+        # Check that attributes exist
+        # Replace with an empty list if they are None so the comparison is easier
+        new_attributes = [] if not new_attributes else new_attributes
+        current_attributes = [] if not current_attributes else current_attributes
+
+        # Compare the number of attributes
+        if not len(current_attributes) == len(new_attributes):
+            # They can't match!
+            return False
+
+        # First, sort the attributes by their "order"
+        # This is just in case the order of the lists is not determinstic
+        current_attributes = sorted(current_attributes, key=lambda x: x.order)
+        new_attributes = sorted(new_attributes, key=lambda x: x.order)
+
+        # Compare the attributes
+        for (current, new) in zip(current_attributes, new_attributes):
+            # Compare
+            if (current.name, current.type, current.order) != (new.name, new.type, new.order):
+                # They can't match!
+                return False
+
+        # They match!
+        return True
