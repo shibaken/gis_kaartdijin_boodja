@@ -10,6 +10,7 @@ from . import models
 
 # Register Models
 admin.site.register(models.catalogue_entries.CatalogueEntry)
+admin.site.register(models.custodians.Custodian)
 admin.site.register(models.layer_attributes.LayerAttribute)
 admin.site.register(models.layer_metadata.LayerMetadata)
 admin.site.register(models.layer_submissions.LayerSubmission)

@@ -19,6 +19,14 @@ class CatalogueEntryFilter(filters.FilterSet):
         fields = {"id": ["in"], "assigned_to": ["exact"], "custodian": ["exact"], "status": ["in", "exact"]}
 
 
+class CustodianFilter(filters.FilterSet):
+    """Custodian Filter."""
+    class Meta:
+        """Custodian Filter Metadata."""
+        model = models.custodians.Custodian
+        fields = ()
+
+
 class LayerAttributeFilter(filters.FilterSet):
     """Layer Attribute Filter."""
     class Meta:
