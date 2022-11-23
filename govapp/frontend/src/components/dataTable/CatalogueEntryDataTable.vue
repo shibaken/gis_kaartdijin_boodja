@@ -7,11 +7,17 @@
   import DataTablePagination from "./DataTablePagination.vue";
   import { onMounted } from "vue";
   import { DateTime } from "luxon";
+  import { CatalogueView } from "../viewState.api";
+  import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
   const { catalogueEntries, numPages, pageSize, currentPage, filters } = storeToRefs(catalogueEntryStore);
   const { getCatalogueEntries } = catalogueEntryStore;
+
+  const emit = defineEmits<{
+    (e: "show-view", view: CatalogueView, catalogueEntry: CatalogueEntry): void
+  }>();
 
   function setPage (pageNumber: number) {
     filters.value.set("pageNumber", pageNumber);
@@ -48,7 +54,7 @@
           <td>{{ DateTime.fromISO(row.updatedAt).toFormat('HH:mm') }}</td>
           <td>{{ row.assignedTo?.username }}</td>
           <td>
-            <a href="#" class="me-2">View</a>
+            <a href="#" class="me-2" @click="emit('show-view', 'view', row)">View</a>
             <a href="#">History</a>
           </td>
         </template>
