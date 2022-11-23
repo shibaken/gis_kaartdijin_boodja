@@ -13,4 +13,4 @@ class LayerMetadataSerializer(serializers.ModelSerializer):
     class Meta:
         """Layer Metadata Model Serializer Metadata."""
         model = models.layer_metadata.LayerMetadata
-        fields = ("id", "name", "created_at", "layer")
+        fields = ("id", "name", "created_at", "catalogue_entry")

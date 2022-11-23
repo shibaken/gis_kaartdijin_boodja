@@ -22,6 +22,18 @@ def test_catalogue_entry_str() -> None:
 
 @pytest.mark.django_db()
 @pytest.mark.usefixtures("db_fixtures")
+def test_custodian_str() -> None:
+    """Tests the string representation of a Custodian."""
+    # Retrieve Object
+    instance = models.custodians.Custodian.objects.first()
+
+    # Assert String Representation
+    assert instance
+    assert str(instance) == instance.name
+
+
+@pytest.mark.django_db()
+@pytest.mark.usefixtures("db_fixtures")
 def test_layer_attribute_str() -> None:
     """Tests the string representation of a Layer Attribute."""
     # Retrieve Object

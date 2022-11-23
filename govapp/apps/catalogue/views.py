@@ -18,6 +18,13 @@ class CatalogueEntryViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     filterset_class = filters.CatalogueEntryFilter
 
 
+class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+    """Custodian View Set."""
+    queryset = models.custodians.Custodian.objects.all()
+    serializer_class = serializers.custodians.CustodianSerializer
+    filterset_class = filters.CustodianFilter
+
+
 class LayerAttributeViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     """Layer Attribute View Set."""
     queryset = models.layer_attributes.LayerAttribute.objects.all()

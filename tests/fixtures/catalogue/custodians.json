@@ -1,0 +1,22 @@
+[
+    {
+        "model": "catalogue.Custodian",
+        "pk": 1,
+        "fields": {
+            "name": "Department of Custodian Number 1",
+            "contact_name": "Paddy O'Furniture",
+            "contact_email": "paddy.o@email.com",
+            "contact_phone": "+61 123 456 789"
+        }
+    },
+    {
+        "model": "catalogue.Custodian",
+        "pk": 2,
+        "fields": {
+            "name": "Department of Custodian Number 2",
+            "contact_name": "Teri Dactyl",
+            "contact_email": "teri.d@email.com",
+            "contact_phone": "+61 555 555 555"
+        }
+    }
+]

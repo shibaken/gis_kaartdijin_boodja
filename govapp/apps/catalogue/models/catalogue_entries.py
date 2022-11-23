@@ -5,6 +5,9 @@
 from django.contrib import auth
 from django.db import models
 
+# Local
+from . import custodians
+
 
 # Shortcuts
 UserModel = auth.get_user_model()  # TODO -> Does this work with SSO?
@@ -23,13 +26,16 @@ class CatalogueEntry(models.Model):
     description = models.TextField()
     active_layer = models.OneToOneField(
         "catalogue.LayerSubmission",
+        default=None,
+        blank=True,
+        null=True,
         related_name="+",  # No backwards relation
         on_delete=models.PROTECT,
     )
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.DRAFT)
     updated_at = models.DateTimeField(auto_now=True)
     custodian = models.ForeignKey(
-        UserModel,
+        custodians.Custodian,
         default=None,
         blank=True,
         null=True,

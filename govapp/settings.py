@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 # Standard
 import os
 import pathlib
-import sys
 import platform
 
 # Third-Party
@@ -51,6 +50,7 @@ INSTALLED_APPS = [
     "govapp",
     "govapp.apps.accounts",
     "govapp.apps.catalogue",
+    "govapp.apps.emails",
     "govapp.apps.publisher",
     "govapp.apps.swagger",
     "rest_framework",
@@ -117,7 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    BASE_DIR / "govapp/frontend/static"  # Look for static files in the frontend
+    BASE_DIR / "govapp/static"  # Look for static files in the frontend
 ]
 
 # Default primary key field type
@@ -161,6 +161,35 @@ SPECTACULAR_SETTINGS = {
     "POSTPROCESSING_HOOKS": [],
 }
 
-if platform.machine() == 'arm64':
+# Logging
+# https://docs.djangoproject.com/en/3.2/topics/logging/
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
+
+# Sharepoint Settings
+SHAREPOINT_URL = decouple.config("SHAREPOINT_URL", default="https://dpaw.sharepoint.com/teams/KaartdijinBoodja-dev")
+SHAREPOINT_USERNAME = decouple.config("SHAREPOINT_USERNAME", default=None)  # TODO: Credentials?
+SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD", default=None)  # TODO: Credentials?
+SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST", default="Shared Documents")
+SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA", default="Staging")
+SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA", default="KaartdijinBoodjaLayerSubmissionArchive")
+
+# Email
+DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # TODO: Production email settings
+
+# Temporary Fix for ARM Architecture
+if platform.machine() == "arm64":
     GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
     GEOS_LIBRARY_PATH = "/opt/homebrew/opt/geos/lib/libgeos_c.dylib"
