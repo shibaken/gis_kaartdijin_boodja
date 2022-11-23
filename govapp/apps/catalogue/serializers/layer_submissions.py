@@ -21,7 +21,4 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "status",
             "submitted_at",
             "catalogue_entry",
-            "attributes",
-            "metadata",
-            "symbology",
         )

@@ -5,7 +5,7 @@
 from django.db import models
 
 # Local
-from . import layer_submissions
+from . import catalogue_entries
 
 
 class LayerAttribute(models.Model):
@@ -13,8 +13,8 @@ class LayerAttribute(models.Model):
     name = models.TextField()
     type = models.TextField()  # noqa: A003
     order = models.PositiveIntegerField()
-    layer = models.ForeignKey(
-        layer_submissions.LayerSubmission,
+    catalogue_entry = models.ForeignKey(
+        catalogue_entries.CatalogueEntry,
         related_name="attributes",
         on_delete=models.CASCADE,
     )

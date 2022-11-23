@@ -26,4 +26,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "layers",
             "email_notifications",
             "webhook_notifications",
+            "attributes",
+            "metadata",
+            "symbology",
         )

@@ -5,7 +5,7 @@
         "fields": {
             "name": "Layer Symbology 1",
             "sld": "This is some fake SLD XML",
-            "layer": 1
+            "catalogue_entry": 1
         }
     },
     {
@@ -14,7 +14,7 @@
         "fields": {
             "name": "Layer Symbology 2",
             "sld": "This is some fake SLD XML",
-            "layer": 2
+            "catalogue_entry": 2
         }
     },
     {
@@ -23,7 +23,7 @@
         "fields": {
             "name": "Layer Symbology 3",
             "sld": "This is some fake SLD XML",
-            "layer": 3
+            "catalogue_entry": 3
         }
     }
 ]

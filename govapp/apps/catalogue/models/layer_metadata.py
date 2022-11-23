@@ -5,15 +5,15 @@
 from django.db import models
 
 # Local
-from . import layer_submissions
+from . import catalogue_entries
 
 
 class LayerMetadata(models.Model):
     """Model for a Layer Metadata."""
     name = models.TextField()
     created_at = models.DateTimeField()
-    layer = models.OneToOneField(
-        layer_submissions.LayerSubmission,
+    catalogue_entry = models.OneToOneField(
+        catalogue_entries.CatalogueEntry,
         related_name="metadata",
         on_delete=models.CASCADE,
     )

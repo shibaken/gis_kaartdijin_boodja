@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 # Standard
 import os
 import pathlib
-import sys
 import platform
 
 # Third-Party
