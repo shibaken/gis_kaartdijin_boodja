@@ -16,7 +16,7 @@ from typing import Any
 
 
 class Command(base.BaseCommand):
-    """Wait-for-Database Management Command."""
+    """Absorb Management Command."""
     # Help string
     help = "Absorbs a file"  # noqa: A003
 
