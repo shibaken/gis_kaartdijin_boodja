@@ -132,7 +132,7 @@ class Absorber:
             models.layer_metadata.LayerMetadata.objects.create(
                 name=metadata.name,
                 created_at=metadata.created_at,
-                layer=layer_submission
+                catalogue_entry=catalogue_entry,
             )
 
             # Check symbology
@@ -141,7 +141,7 @@ class Absorber:
                 models.layer_symbology.LayerSymbology.objects.create(
                     name=symbology.name,
                     sld=symbology.sld,
-                    layer=layer_submission,
+                    catalogue_entry=catalogue_entry,
                 )
 
             # Check attributes
@@ -153,5 +153,5 @@ class Absorber:
                         name=attribute.name,
                         type=attribute.type,
                         order=attribute.order,
-                        layer=layer_submission,
+                        catalogue_entry=catalogue_entry,
                     )
