@@ -25,4 +25,4 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         """Group Model Serializer Metadata."""
         model = GroupModel
-        fields = ("name", "permissions")
+        fields = ("id", "name", "permissions")
