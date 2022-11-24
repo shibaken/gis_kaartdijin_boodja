@@ -30,8 +30,7 @@
         </a>
       </li>
       <li class="page-item">
-        <a
-class="page-link" href="#"
+        <a class="page-link" href="#"
            @click="currentPage < numPages && emit('set-page', currentPage + 1)">
           Next
         </a>

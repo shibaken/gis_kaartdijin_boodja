@@ -1,6 +1,7 @@
-import { RecordStatus, RawCatalogueEntryFilter, RawCatalogueEntry, RawLayerSubscription,
-  RawLayerSubscriptionFilter, RawUserFilter, RawLayerSubmissionFilter, RawLayerSubmission } from "./backend.api";
 import type { PaginatedRecord, Params, StatusType, User } from "./backend.api";
+import { NotificationRequestType, NotificationType, RawCatalogueEntry, RawCatalogueEntryFilter, RawLayerSubmission,
+  RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter, RawNotification, RawUserFilter,
+  RecordStatus } from "./backend.api";
 
 export function stripNullParams<T extends object> (filter: T): Params {
   return Object.fromEntries(
@@ -48,5 +49,17 @@ export class BackendService {
     const params = stripNullParams<RawUserFilter>(filter);
     const response = await fetch("/api/accounts/users/?" + new URLSearchParams(params));
     return await response.json() as PaginatedRecord<User>;
+  }
+
+  public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {
+    const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
+    const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/`);
+    return await response.json() as PaginatedRecord<RawNotification>;
+  }
+
+  public async getNotificationTypes (notificationType: NotificationRequestType): Promise<PaginatedRecord<NotificationType>> {
+    const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
+    const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/type/`);
+    return await response.json() as PaginatedRecord<NotificationType>;
   }
 }

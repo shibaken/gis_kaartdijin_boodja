@@ -6,19 +6,50 @@
   import LayerSubscriptionFilter from "./widgets/LayerSubscriptionFilter.vue";
   import LayerSubmissionDataTable from "./dataTable/LayerSubmissionDataTable.vue";
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
-  import type { Ref } from "vue";
+  import CatalogueEntryDetails from "./detailViews/CatalogueEntryDetailView.vue";
+  import { CatalogueTab, CatalogueView } from "./viewState.api";
+  import Card from "./widgets/Card.vue";
+  import Accordion from "./widgets/Accordion.vue";
+  import SideBarLeft from "./SideBarLeft.vue";
+  import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
+  import { LayerSubscription } from "../providers/layerSubscriptionProvider.api";
+  import { LayerSubmission } from "../providers/layerSubmissionProvider.api";
 
-  type SelectedTab = "Catalogue Entries" | "Layer Submissions" | "Layer Subscriptions";
+  const selectedTab = ref<CatalogueTab>("Catalogue Entries");
+  const selectedView = ref<CatalogueView>("list");
+  const selectedViewEntry = ref<CatalogueEntry | undefined>();
+  const selectedViewSubmission = ref<LayerSubmission | undefined>();
+  const selectedViewSubscription = ref<LayerSubscription | undefined>();
 
-  const selectedTab: Ref<SelectedTab> = ref("Catalogue Entries");
-
-  function setSelectedTab (tab: SelectedTab) {
+  function setSelectedTab (tab: CatalogueTab) {
     selectedTab.value = tab;
+  }
+
+  enum RecordType {
+    CatalogueEntry,
+    LayerSubscription,
+    LayerSubmission
+  }
+  function setSelectedView<T> (view: CatalogueView, record: T, recordType: RecordType) {
+    selectedView.value = view;
+    selectedViewEntry.value = undefined;
+    selectedViewSubmission.value = undefined;
+    selectedViewSubscription.value = undefined;
+
+    if (recordType === RecordType.CatalogueEntry) {
+      selectedViewEntry.value = record as CatalogueEntry;
+    } else if (recordType === RecordType.LayerSubscription) {
+      selectedViewSubscription.value = record as LayerSubscription;
+    } else if (recordType === RecordType.LayerSubmission) {
+      selectedViewSubmission.value = record as LayerSubmission;
+    } else if (!!record || !!recordType) {
+      console.error("Selected view record was not a recognised type");
+    }
   }
 </script>
 
 <template>
-  <ul class="nav nav-pills mb-4">
+  <ul class="nav nav-pills mb-4" v-if="selectedView === 'list'">
     <li class="nav-item">
       <button class="nav-link" aria-current="page" href="#" :class='{ active: selectedTab === "Catalogue Entries" }'
               @click='setSelectedTab("Catalogue Entries")'>Catalogue Entries</button>
@@ -32,42 +63,51 @@
               @click='setSelectedTab("Layer Subscriptions")'>Layer Subscriptions</button>
     </li>
   </ul>
-  <div class="card">
-    <div class="card-header">
-      <h4>{{ selectedTab }}</h4>
+
+  <div class="d-flex flex-row">
+    <div id="side-bar-wrapper" v-if="selectedView === 'view'">
+      <side-bar-left/>
     </div>
-    <div class="card-body">
-      <div id="layerSubscriptionAccordion" class="accordion">
-        <div class="accordion-item">
-          <h2 id="headingFilter" class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
-              Filters
-            </button>
-          </h2>
-          <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilter" data-bs-parent="#layerSubscriptionAccordion">
-            <div class="accordion-body">
+    <div class="w-100">
+      <card v-if="selectedView === 'list'">
+        <template #header>
+          <h4>{{ selectedTab }}</h4>
+        </template>
+        <template #body>
+          <accordion id-prefix="filter" header-text="Filters">
+            <template #body>
               <form class="form d-flex gap-3">
                 <catalogue-entry-filter v-if="selectedTab === 'Catalogue Entries'"/>
                 <layer-subscription-filter v-if="selectedTab === 'Layer Subscriptions'"/>
                 <layer-submission-filter v-if="selectedTab === 'Layer Submissions'"/>
               </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"'/>
-      <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"'/>
-      <layer-submission-data-table v-if='selectedTab === "Layer Submissions"'/>
+
+              <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"'
+                @show-view="(view: CatalogueView, record: CatalogueEntry) => setSelectedView<CatalogueEntry>(view, record, RecordType.CatalogueEntry)"/>
+              <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"'
+                @show-view="(view: CatalogueView, record: LayerSubmission) => setSelectedView<LayerSubmission>(view, record, RecordType.LayerSubscription)"/>
+              <layer-submission-data-table v-if='selectedTab === "Layer Submissions"'
+                @show-view="(view: CatalogueView, record: LayerSubscription) => setSelectedView<LayerSubscription>(view, record, selectedViewSubmission, RecordType.LayerSubmission)"/>
+            </template>
+          </accordion>
+        </template>
+      </card>
+      <catalogue-entry-details v-if="selectedView === 'view'" :catalogue-entry="selectedViewEntry"
+                               @exit-details="setSelectedView('list', undefined, undefined)"/>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped>
-  #collapseFilters {
+<style lang="scss">
+  .accordion-collapse {
     .accordion-body {
       form {
         overflow-x: auto;
       }
     }
+  }
+
+  #side-bar-wrapper {
+    width: 24rem;
   }
 </style>

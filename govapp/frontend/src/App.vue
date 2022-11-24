@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div class="container">
-    <CataloguePage class="mt-4"/>
+  <div class="mx-4">
+    <CataloguePage/>
   </div>
 </template>

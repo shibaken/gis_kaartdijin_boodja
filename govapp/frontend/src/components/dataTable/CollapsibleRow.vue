@@ -6,8 +6,10 @@
 </script>
 
 <template>
-  <tr data-bs-toggle="collapse" :data-bs-target="`#row-${id}`" :class="{ 'table-active': id % 2 === 0 }">
-    <th scope="row"><PlusCircleFill colour="#4284BC" class="me-2" /></th>
+  <tr :class="{ 'table-active': id % 2 === 0 }">
+    <th data-bs-toggle="collapse" :data-bs-target="`#row-${id}`" scope="col">
+      <PlusCircleFill colour="#4284BC" class="me-2" />
+    </th>
     <slot name="cells" />
   </tr>
   <tr :id="`row-${id}`" class="collapse accordion-collapse" data-bs-parent=".table">

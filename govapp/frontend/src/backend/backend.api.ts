@@ -99,3 +99,25 @@ export interface User {
   username: string;
   groups: Array<number>;
 }
+
+export enum NotificationRequestType {
+  Email,
+  Webhook,
+}
+
+export interface RawNotification {
+  id: number;
+  name: string;
+  type: number;
+  catalogue_entry: number;
+  email?: string
+  url?: string
+}
+
+export type RawEmailNotification = RawNotification;
+export type RawWebhookNotification = RawNotification;
+
+export interface NotificationType {
+  id: number;
+  label: string;
+}

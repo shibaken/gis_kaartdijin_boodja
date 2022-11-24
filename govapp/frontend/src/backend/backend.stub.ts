@@ -1,6 +1,8 @@
 import { BackendService } from "./backend.service";
-import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, User, StatusType,
-  RawLayerSubmission } from "./backend.api";
+import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus,
+  User, StatusType, RawLayerSubmission, NotificationRequestType,
+  RawNotification, NotificationType, RawWebhookNotification,
+  RawEmailNotification } from "./backend.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -147,6 +149,84 @@ const DUMMY_USERS: Array<User> = [
   { "id": 3, "username": "Chiune Sugihara", "groups": [] }
 ];
 
+const DUMMY_EMAIL_NOTIFICATIONS: Array<RawEmailNotification> = [
+  {
+    "id": 1,
+    "name": "Email Notification 1",
+    "type": 1,
+    "email": "cat@example.com",
+    "catalogue_entry": 1
+  },
+  {
+    "id": 2,
+    "name": "Email Notification 2",
+    "type": 2,
+    "email": "dog@example.com",
+    "catalogue_entry": 2
+  },
+  {
+    "id": 3,
+    "name": "Email Notification 3",
+    "type": 3,
+    "email": "bird@example.com",
+    "catalogue_entry": 3
+  }
+];
+
+const DUMMY_WEBHOOK_NOTIFICATIONS: Array<RawWebhookNotification> = [
+  {
+    "id": 1,
+    "name": "Webhook Notification 1",
+    "type": 1,
+    "url": "https://www.dbca.wa.gov.au/",
+    "catalogue_entry": 1
+  },
+  {
+    "id": 2,
+    "name": "Webhook Notification 2",
+    "type": 2,
+    "url": "https://www.dpaw.wa.gov.au/",
+    "catalogue_entry": 2
+  },
+  {
+    "id": 3,
+    "name": "Webhook Notification 3",
+    "type": 3,
+    "url": "https://www.dcceew.gov.au/",
+    "catalogue_entry": 3
+  }
+];
+
+const DUMMY_EMAIL_NOTIFICATION_TYPES: Array<NotificationType> = [
+  {
+    "id": 1,
+    "label": "On Approve"
+  },
+  {
+    "id": 2,
+    "label": "On Lock"
+  },
+  {
+    "id": 3,
+    "label": "Both"
+  }
+];
+
+const DUMMY_WEBHOOK_NOTIFICATION_TYPES: Array<NotificationType> = [
+  {
+    "id": 1,
+    "label": "On Approve"
+  },
+  {
+    "id": 2,
+    "label": "On Lock"
+  },
+  {
+    "id": 3,
+    "label": "Both"
+  }
+];
+
 export class BackendServiceStub implements BackendService {
   public getLayerSubscriptions (): Promise<PaginatedRecord<RawLayerSubscription>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_LAYER_SUBSCRIPTIONS));
@@ -174,5 +254,19 @@ export class BackendServiceStub implements BackendService {
 
   async getUsers (): Promise<PaginatedRecord<User>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_USERS));
+  }
+
+  public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {
+    const notifications = notificationType === NotificationRequestType.Email ?
+      DUMMY_EMAIL_NOTIFICATIONS :
+      DUMMY_WEBHOOK_NOTIFICATIONS;
+    return Promise.resolve(wrapPaginatedRecord(notifications));
+  }
+
+  public async getNotificationTypes (notificationType: NotificationRequestType): Promise<PaginatedRecord<NotificationType>> {
+    const notifications = notificationType === NotificationRequestType.Email ?
+      DUMMY_EMAIL_NOTIFICATION_TYPES :
+      DUMMY_WEBHOOK_NOTIFICATION_TYPES;
+    return Promise.resolve(wrapPaginatedRecord(notifications));
   }
 }
