@@ -31,18 +31,34 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
         # Check read permissions
         read_is_permitted = request.method in permissions.SAFE_METHODS
 
-        # Check Catalogue Entry specific permissions
+        # Check Catalogue Entry specific write permissions
+        # This might seem strange, but we allow `POST` requests without the
+        # `status` of "DRAFT", as these requests actually control the status.
         # 1. Object is a Catalogue Entry
         # 2. Catalogue Entry is `assigned_to` the request user
-        # 3. The user is in the Catalogue Editor group
+        # 3. User is in the Catalogue Editor group
+        write_is_permitted = (
+            request.method == "POST"
+            and isinstance(obj, models.catalogue_entries.CatalogueEntry)
+            and obj.assigned_to == request.user
+            and utils.is_catalogue_editor(request.user)
+        )
+
+        # Check Catalogue Entry specific update permissions
+        # 1. Object is a Catalogue Entry
+        # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+        # 3. Catalogue Entry is `assigned_to` the request user
+        # 4. User is in the Catalogue Editor group
         modify_is_permitted = (
-            isinstance(obj, models.catalogue_entries.CatalogueEntry)
+            request.method in ("PATCH", "PUT")
+            and isinstance(obj, models.catalogue_entries.CatalogueEntry)
+            and obj.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
             and obj.assigned_to == request.user
             and utils.is_catalogue_editor(request.user)
         )
 
         # Check permissions and return
-        return read_is_permitted or modify_is_permitted
+        return read_is_permitted or write_is_permitted or modify_is_permitted
 
 
 class HasCatalogueEntryPermissions(permissions.BasePermission):
@@ -82,8 +98,12 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             return True
 
         # Check Catalogue Entry Permissions
+        # 1. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+        # 2. Catalogue Entry is `assigned_to` the request user
+        # 3. User is in the Catalogue Editor group
         if (
-            catalogue_entry.assigned_to == request.user
+            catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
+            and catalogue_entry.assigned_to == request.user
             and utils.is_catalogue_editor(request.user)
         ):
             return True
@@ -106,12 +126,14 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
         read_is_permitted = request.method in permissions.SAFE_METHODS
 
         # Check  specific permissions
-        # 1. Object is has a Catalogue Entry attached to it
-        # 2. The Catalogue Entry is `assigned_to` the request user
-        # 3. The user is in the Catalogue Editor group
+        # 1. Object has a Catalogue Entry attached to it
+        # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+        # 3. Catalogue Entry is `assigned_to` the request user
+        # 4. User is in the Catalogue Editor group
         modify_is_permitted = (
             hasattr(obj, "catalogue_entry")
             and isinstance(obj.catalogue_entry, models.catalogue_entries.CatalogueEntry)
+            and obj.catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
             and obj.catalogue_entry.assigned_to == request.user
             and utils.is_catalogue_editor(request.user)
         )
