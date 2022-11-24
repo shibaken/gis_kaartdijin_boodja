@@ -189,6 +189,10 @@ SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA", default="Ka
 DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # TODO: Production email settings
 
+# Group Settings
+GROUP_ADMINISTRATOR = 1  # Primary Key for the Administrator Group
+GROUP_CATALOGUE_EDITOR = 2  # Primary Key for the Catalogue Editor Group
+
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":
     GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
