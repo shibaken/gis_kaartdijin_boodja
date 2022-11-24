@@ -31,29 +31,25 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
         Returns:
             bool: Whether permission is allowed.
         """
-        # Create and Delete
-        # Creates and Deletes are not allowed by anyone
-        create_and_delete = False
+        # Check Action
+        if view.action in ("create", "delete"):
+            # Creates and Deletes are not allowed by anyone
+            allowed = False
 
-        # Retrieve and List
-        # Retrieves and Lists are always allowed by anyone
-        retrieve_and_list = view.action in ("list", "retrieve")
+        elif view.action in ("list", "retrieve", "update", "partial_update", "lock", "unlock"):
+            # Retrieves and Lists are always allowed by anyone
+            # Updates might be allowed, but we delegate it to `has_object_permission`
+            # Locking and Unlocking might be allowed, but we delegate it to `has_object_permission`
+            allowed = True
 
-        # Update and Partial Update
-        # Updates might be allowed, but we delegate it to `has_object_permission`
-        update_and_partial_update = view.action in ("update", "partial_update")
+        else:
+            # Allow all other actions by default
+            # This allows dynamically generated actions such as the custom
+            # 'choice' actions to be used by anyone
+            allowed = True
 
-        # Lock and Unlock
-        # Locking and Unlocking might be allowed, but we delegate it to `has_object_permission`
-        lock_and_unlock = view.action in ("lock", "unlock")
-
-        # Check permissions and Return
-        return (
-            create_and_delete
-            or retrieve_and_list
-            or update_and_partial_update
-            or lock_and_unlock
-        )
+        # Return
+        return allowed
 
     def has_object_permission(  # type: ignore
         self,
@@ -71,46 +67,48 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
         Returns:
             bool: Whether permission is allowed.
         """
-        # Create and Delete
-        # Creates and Deletes are not allowed by anyone
-        create_and_delete = False
+        # Check Action
+        if view.action in ("create", "delete"):
+            # Creates and Deletes are not allowed by anyone
+            allowed = False
 
-        # Retrieve and List
-        # Retrieves and Lists are always allowed by anyone
-        retrieve_and_list = view.action in ("list", "retrieve")
+        elif view.action in ("list", "retrieve"):
+            # Retrieves and Lists are always allowed by anyone
+            allowed = True
 
-        # Update and Partial Update
-        # Check Catalogue Entry specific permissions
-        # 1. Object is a Catalogue Entry
-        # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
-        # 3. Catalogue Entry is `assigned_to` the request user
-        # 4. User is in the Catalogue Editor group
-        update_and_partial_update = (
-            view.action in ("update", "partial_update")
-            and isinstance(obj, models.catalogue_entries.CatalogueEntry)
-            and obj.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
-            and obj.assigned_to == request.user
-            and utils.is_catalogue_editor(request.user)
-        )
+        elif view.action in ("update", "partial_update"):
+            # Update and Partial Update
+            # Check Catalogue Entry specific permissions
+            # 1. Object is a Catalogue Entry
+            # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+            # 3. Catalogue Entry is `assigned_to` the request user
+            # 4. User is in the Catalogue Editor group
+            allowed = (
+                isinstance(obj, models.catalogue_entries.CatalogueEntry)
+                and obj.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
+                and obj.assigned_to == request.user
+                and utils.is_catalogue_editor(request.user)
+            )
 
-        # Lock and Unlock
-        # 1. Object is a Catalogue Entry
-        # 2. Catalogue Entry is `assigned_to` the request user
-        # 3. User is in the Catalogue Editor group
-        lock_and_unlock = (
-            view.action in ("lock", "unlock")
-            and isinstance(obj, models.catalogue_entries.CatalogueEntry)
-            and obj.assigned_to == request.user
-            and utils.is_catalogue_editor(request.user)
-        )
+        elif view.action in ("lock", "unlock"):
+            # Lock and Unlock
+            # 1. Object is a Catalogue Entry
+            # 2. Catalogue Entry is `assigned_to` the request user
+            # 3. User is in the Catalogue Editor group
+            allowed = (
+                isinstance(obj, models.catalogue_entries.CatalogueEntry)
+                and obj.assigned_to == request.user
+                and utils.is_catalogue_editor(request.user)
+            )
 
-        # Check permissions and Return
-        return (
-            create_and_delete
-            or retrieve_and_list
-            or update_and_partial_update
-            or lock_and_unlock
-        )
+        else:
+            # Allow all other actions by default
+            # This allows dynamically generated actions such as the custom
+            # 'choice' actions to be used by anyone
+            allowed = True
+
+        # Return
+        return allowed
 
 
 class HasCatalogueEntryPermissions(permissions.BasePermission):
@@ -130,40 +128,36 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
         Returns:
             bool: Whether permission is allowed.
         """
-        # Create
-        # Check Catalogue Entry specific permissions
-        # 1. Request contains a reference to a Catalogue Entry
-        # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
-        # 3. Catalogue Entry is `assigned_to` the request user
-        # 4. User is in the Catalogue Editor group
-        catalogue_entry = utils.catalogue_entry_from_request(request)
-        create = (
-            view.action == "create"
-            and catalogue_entry is not None
-            and catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
-            and catalogue_entry.assigned_to == request.user
-            and utils.is_catalogue_editor(request.user)
-        )
+        # Check Action
+        if view.action == "create":
+            # Create
+            # Check Catalogue Entry specific permissions
+            # 1. Request contains a reference to a Catalogue Entry
+            # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+            # 3. Catalogue Entry is `assigned_to` the request user
+            # 4. User is in the Catalogue Editor group
+            catalogue_entry = utils.catalogue_entry_from_request(request)
+            allowed = (
+                catalogue_entry is not None
+                and catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
+                and catalogue_entry.assigned_to == request.user
+                and utils.is_catalogue_editor(request.user)
+            )
 
-        # Delete
-        # Deletes might be allowed, but we delegate it to `has_object_permission`
-        delete = view.action == "delete"
+        elif view.action in ("delete", "list", "retrieve", "update", "partial_update"):
+            # Deletes might be allowed, but we delegate it to `has_object_permission`
+            # Retrieves and Lists are always allowed by anyone
+            # Updates might be allowed, but we delegate it to `has_object_permission`
+            allowed = True
 
-        # Retrieve and List
-        # Retrieves and Lists are always allowed by anyone
-        retrieve_and_list = view.action in ("list", "retrieve")
+        else:
+            # Allow all other actions by default
+            # This allows dynamically generated actions such as the custom
+            # 'choice' actions to be used by anyone
+            allowed = True
 
-        # Update and Partial Update
-        # Updates might be allowed, but we delegate it to `has_object_permission`
-        update_and_partial_update = view.action in ("update", "partial_update")
-
-        # Check permissions and Return
-        return (
-            create
-            or delete
-            or retrieve_and_list
-            or update_and_partial_update
-        )
+        # Return
+        return allowed
 
     def has_object_permission(  # type: ignore
         self,
@@ -181,27 +175,31 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
         Returns:
             bool: Whether permission is allowed.
         """
-        # Retrieve and List
-        # Retrieves and Lists are always allowed by anyone
-        retrieve_and_list = view.action in ("list", "retrieve")
+        # Check Action
+        if view.action in ("list", "retrieve"):
+            # Retrieves and Lists are always allowed by anyone
+            allowed = True
 
-        # Update and Partial Update
-        # Check Catalogue Entry specific permissions
-        # 1. Object has a Catalogue Entry attached to it
-        # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
-        # 3. Catalogue Entry is `assigned_to` the request user
-        # 4. User is in the Catalogue Editor group
-        update_and_partial_update_and_delete = (
-            view.action in ("update", "partial_update", "delete")
-            and hasattr(obj, "catalogue_entry")
-            and isinstance(obj.catalogue_entry, models.catalogue_entries.CatalogueEntry)
-            and obj.catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
-            and obj.catalogue_entry.assigned_to == request.user
-            and utils.is_catalogue_editor(request.user)
-        )
+        elif view.action in ("delete", "update", "partial_update"):
+            # Delete, Update and Partial Update
+            # Check Catalogue Entry specific permissions
+            # 1. Object has a Catalogue Entry attached to it
+            # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+            # 3. Catalogue Entry is `assigned_to` the request user
+            # 4. User is in the Catalogue Editor group
+            allowed = (
+                hasattr(obj, "catalogue_entry")
+                and isinstance(obj.catalogue_entry, models.catalogue_entries.CatalogueEntry)
+                and obj.catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
+                and obj.catalogue_entry.assigned_to == request.user
+                and utils.is_catalogue_editor(request.user)
+            )
 
-        # Check permissions and Return
-        return (
-            retrieve_and_list
-            or update_and_partial_update_and_delete
-        )
+        else:
+            # Allow all other actions by default
+            # This allows dynamically generated actions such as the custom
+            # 'choice' actions to be used by anyone
+            allowed = True
+
+        # Return
+        return allowed
