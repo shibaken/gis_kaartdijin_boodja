@@ -32,8 +32,8 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             bool: Whether permission is allowed.
         """
         # Check Action
-        if view.action in ("create", "delete"):
-            # Creates and Deletes are not allowed by anyone
+        if view.action in ("create", "destroy"):
+            # Creates and Destroys are not allowed by anyone
             allowed = False
 
         elif view.action in ("list", "retrieve", "update", "partial_update", "lock", "unlock"):
@@ -68,8 +68,8 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             bool: Whether permission is allowed.
         """
         # Check Action
-        if view.action in ("create", "delete"):
-            # Creates and Deletes are not allowed by anyone
+        if view.action in ("create", "destroy"):
+            # Creates and Destroys are not allowed by anyone
             allowed = False
 
         elif view.action in ("list", "retrieve"):
@@ -144,8 +144,8 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
                 and utils.is_catalogue_editor(request.user)
             )
 
-        elif view.action in ("delete", "list", "retrieve", "update", "partial_update"):
-            # Deletes might be allowed, but we delegate it to `has_object_permission`
+        elif view.action in ("destroy", "list", "retrieve", "update", "partial_update"):
+            # Destroys might be allowed, but we delegate it to `has_object_permission`
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
             allowed = True
@@ -180,8 +180,8 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             # Retrieves and Lists are always allowed by anyone
             allowed = True
 
-        elif view.action in ("delete", "update", "partial_update"):
-            # Delete, Update and Partial Update
+        elif view.action in ("destroy", "update", "partial_update"):
+            # Destroy, Update and Partial Update
             # Check Catalogue Entry specific permissions
             # 1. Object has a Catalogue Entry attached to it
             # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
