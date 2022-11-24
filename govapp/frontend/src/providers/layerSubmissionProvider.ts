@@ -1,6 +1,6 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { PaginatedRecord, RawLayerSubmissionFilter } from "../backend/backend.api";
+import { LayerSubmissionStatus, PaginatedRecord, RawLayerSubmissionFilter } from "../backend/backend.api";
 import { LayerSubmission, LayerSubmissionFilter } from "./layerSubmissionProvider.api";
 import { StatusProvider } from "./statusProvider";
 import { CatalogueEntryProvider } from "./catalogueEntryProvider";
@@ -14,6 +14,27 @@ export class LayerSubmissionProvider {
   private statusProvider: StatusProvider = new StatusProvider();
   private catalogueEntryProvider: CatalogueEntryProvider = new CatalogueEntryProvider();
 
+  public async fetchLayerSubmission (id: number): Promise<LayerSubmission> {
+    const rawSubmission = await this.backend.getLayerSubmission(id);
+    const submissionStatuses = await this.statusProvider
+      .fetchStatuses<LayerSubmissionStatus>("layers/submissions");
+
+    const submissionEntry = await useCatalogueEntryStore().getOrFetch(rawSubmission.catalogue_entry);
+
+    return {
+      id: rawSubmission.id,
+      name: rawSubmission.name,
+      description: rawSubmission.description,
+      file: rawSubmission.file,
+      status: this.statusProvider.getRecordStatusFromId(rawSubmission.status, submissionStatuses),
+      submittedDate: rawSubmission.submitted_at,
+      catalogueEntry: submissionEntry?.name,
+      attributes: rawSubmission.attributes,
+      metadata: rawSubmission.metadata,
+      symbology: rawSubmission.symbology
+    } as LayerSubmission;
+  }
+
   public async fetchLayerSubmissions (layerSubmissionFilter: LayerSubmissionFilter):
       Promise<PaginatedRecord<LayerSubmission>> {
 
@@ -25,7 +46,8 @@ export class LayerSubmissionProvider {
     } as RawLayerSubmissionFilter;
 
     const { previous, next, count, results } = await this.backend.getLayerSubmissions(rawFilter);
-    const submissionStatuses = await this.statusProvider.fetchStatuses("layers/submissions");
+    const submissionStatuses = await this.statusProvider
+      .fetchStatuses<LayerSubmissionStatus>("layers/submissions");
 
     // TODO: cache this
     const fetchedEntries: Array<CatalogueEntry> = useCatalogueEntryStore().catalogueEntries;

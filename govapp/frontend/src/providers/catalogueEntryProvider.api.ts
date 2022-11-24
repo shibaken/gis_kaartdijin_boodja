@@ -8,7 +8,7 @@ export interface CatalogueEntry {
   status: RecordStatus<CatalogueEntryStatus>;
   updatedAt: string;
   custodian: User;
-  assignedTo: User;
+  assignedTo?: User;
   subscription: number;
   activeLayer: number;
   layers: Array<number>;

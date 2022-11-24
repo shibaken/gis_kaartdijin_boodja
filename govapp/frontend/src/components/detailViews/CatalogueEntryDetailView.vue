@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-  import { ref, defineEmits } from "vue";
-  import { CatalogueDetailViewTabs } from "../viewState.api";
+  import { ref } from "vue";
+  import { CatalogueTab, CatalogueView, CatalogueDetailViewTabs, NavigationEmits } from "../viewState.api";
   import Accordion from "../widgets/Accordion.vue";
   import FormInput from "../widgets/FormInput.vue";
   import FormTextarea from "../widgets/FormTextarea.vue";
@@ -8,14 +8,13 @@
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
 
   defineProps<{
-    catalogueEntry: CatalogueEntry
+    catalogueEntry: CatalogueEntry | undefined
   }>();
 
-  defineEmits<{
-    (e: "exit-details"): void
-  }>();
+  interface NavEmits extends NavigationEmits {}
+  const emit = defineEmits<NavEmits>();
 
-  const activeTab = ref<CatalogueDetailViewTabs>("details");
+  const activeTab = ref<CatalogueDetailViewTabs>(CatalogueDetailViewTabs.Details);
 
   function onTabClick (tab: CatalogueDetailViewTabs) {
     activeTab.value = tab;
@@ -24,22 +23,26 @@
 
 <template>
   <nav class="nav nav-tabs">
-    <a class="nav-link" :class="{ active: activeTab === 'details' }" aria-current="page" href="#"
-       @click="onTabClick('details')">
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.Details }" aria-current="page" href="#"
+       @click="onTabClick(CatalogueDetailViewTabs.Details)">
       Details
     </a>
-    <a class="nav-link" :class="{ active: activeTab === 'attributeTable'}" aria-current="page" href="#"
-       @click="onTabClick('attributeTable')">
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.AttributeTable}" aria-current="page"
+       href="#" @click="onTabClick(CatalogueDetailViewTabs.AttributeTable)">
       Attribute Table
     </a>
-    <a class="nav-link" :class="{ active: activeTab === 'symbology'}" aria-current="page" href="#"
-       @click="onTabClick('symbology')">
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.Symbology}" aria-current="page" href="#"
+       @click="onTabClick(CatalogueDetailViewTabs.Symbology)">
       Symbology
     </a>
-    <a class="nav-link" :class="{ active: activeTab === 'metadata'}" aria-current="page" href="#"
-       @click="onTabClick('symbology')">
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.Metadata}" aria-current="page" href="#"
+       @click="onTabClick(CatalogueDetailViewTabs.Metadata)">
       Metadata
     </a>
+    <button class="btn btn-outline-secondary mb-1 mt-1 ms-auto"
+      @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.List)">
+      Back
+    </button>
   </nav>
   <accordion id-prefix="details" header-text="Details" class="mt-4">
     <template #body>

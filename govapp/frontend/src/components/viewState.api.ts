@@ -1,3 +1,27 @@
-export type CatalogueTab = "Catalogue Entries" | "Layer Submissions" | "Layer Subscriptions";
-export type CatalogueDetailViewTabs = "details" | "attributeTable" | "symbology" | "metadata"
-export type CatalogueView = "list" | "view" | "history"
+export enum CatalogueTab {
+  CatalogueEntries = "Catalogue Entries",
+  LayerSubmissions = "Layer Submissions",
+  LayerSubscriptions = "Layer Subscriptions"
+}
+export enum CatalogueDetailViewTabs {
+  Details,
+  AttributeTable,
+  Symbology,
+  Metadata
+}
+export enum CatalogueView {
+  List,
+  View,
+  History
+}
+
+export type NavigateEmitsOptions = {
+    viewTab?: CatalogueDetailViewTabs,
+    recordId: number
+}
+export type NavigationEmits = (
+  e: "navigate",
+  tab: CatalogueTab,
+  view: CatalogueView,
+  options?: NavigateEmitsOptions
+) => void;

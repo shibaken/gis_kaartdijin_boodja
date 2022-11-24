@@ -35,6 +35,11 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
     return entries;
   }
 
+  async function getOrFetch(id: number): Promise<CatalogueEntry> {
+    const storeMatch = catalogueEntries.value.find(entry => entry.id === id);
+    return !!storeMatch ? Promise.resolve(storeMatch) : catalogueEntryProvider.fetchCatalogueEntry(id);
+  }
+
   return { catalogueEntries, currentPage, pageSize, numPages, filters, setFilter, clearFilter, entryStatuses,
-    getCatalogueEntries };
+    getCatalogueEntries, getOrFetch };
 });
