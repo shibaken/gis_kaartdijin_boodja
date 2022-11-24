@@ -13,6 +13,26 @@ from rest_framework import serializers
 from rest_framework import viewsets
 
 
+class MultipleSerializersMixin:
+    """Allows for multiple serializers for different actions on a viewset."""
+
+    # The inheriting class must have the following defined
+    serializer_classes: dict[str, type[serializers.Serializer]]
+    action: str
+
+    def get_serializer_class(self) -> type[serializers.Serializer]:
+        """Retrieves the serializer class.
+
+        Returns:
+            type[serializers.Serializer]: Retrieved serializer class.
+        """
+        # Retrieve Serializer Class and Return
+        return self.serializer_classes.get(
+            self.action,
+            super().get_serializer_class(),  # type: ignore[misc]
+        )
+
+
 class ChoicesMixin:
     """Retrieve and list the choices associated with a queryset model."""
 
