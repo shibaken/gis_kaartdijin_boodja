@@ -86,7 +86,7 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
         if create:
             # Check if a layer submission has been passed in
             # If not, use the most recent layer
-            active_layer = extracted or self.layers.filter()
+            active_layer = extracted or self.layers.order_by("submitted_at").last()
 
             # Set the active layer
             self.active_layer = active_layer
