@@ -26,13 +26,13 @@ class CatalogueEntryViewSet(
     viewsets.mixins.RetrieveModelMixin,
     viewsets.mixins.ListModelMixin,
     viewsets.mixins.UpdateModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     """Catalogue Entry View Set."""
     queryset = models.catalogue_entries.CatalogueEntry.objects.all()
     serializer_class = serializers.catalogue_entries.CatalogueEntrySerializer
     filterset_class = filters.CatalogueEntryFilter
-    permission_classes = [permissions.CatalogueEntryPermissions]
+    permission_classes = [permissions.IsCatalogueEntryPermissions]
 
     @utils.extend_schema(request=None, responses={status.HTTP_200_OK: None})
     @decorators.action(detail=True, methods=["POST"])
@@ -92,19 +92,37 @@ class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
 
 
 @utils.extend_schema(tags=["Catalogue - Layer Attributes"])
-class LayerAttributeViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+class LayerAttributeViewSet(
+    mixins.ChoicesMixin,
+    mixins.MultipleSerializersMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """Layer Attribute View Set."""
     queryset = models.layer_attributes.LayerAttribute.objects.all()
     serializer_class = serializers.layer_attributes.LayerAttributeSerializer
+    serializer_classes = {"create": serializers.layer_attributes.LayerAttributeCreateSerializer}
     filterset_class = filters.LayerAttributeFilter
+    permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
 @utils.extend_schema(tags=["Catalogue - Layer Metadata"])
-class LayerMetadataViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+class LayerMetadataViewSet(
+    mixins.ChoicesMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """Layer Metadata View Set."""
     queryset = models.layer_metadata.LayerMetadata.objects.all()
     serializer_class = serializers.layer_metadata.LayerMetadataSerializer
     filterset_class = filters.LayerMetadataFilter
+    permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
 @utils.extend_schema(tags=["Catalogue - Layer Submissions"])
@@ -124,24 +142,53 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSe
 
 
 @utils.extend_schema(tags=["Catalogue - Layer Symbology"])
-class LayerSymbologyViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+class LayerSymbologyViewSet(
+    mixins.ChoicesMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """Layer Symbology View Set."""
     queryset = models.layer_symbology.LayerSymbology.objects.all()
     serializer_class = serializers.layer_symbology.LayerSymbologySerializer
     filterset_class = filters.LayerSymbologyFilter
+    permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
-@utils.extend_schema(tags=["Catalogue - Notifications"])
-class EmailNotificationViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+@utils.extend_schema(tags=["Catalogue - Notifications (Email)"])
+class EmailNotificationViewSet(
+    mixins.ChoicesMixin,
+    mixins.MultipleSerializersMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """Email Notification View Set."""
     queryset = models.notifications.EmailNotification.objects.all()
     serializer_class = serializers.notifications.EmailNotificationSerializer
+    serializer_classes = {"create": serializers.notifications.EmailNotificationCreateSerializer}
     filterset_class = filters.EmailNotificationFilter
+    permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
-@utils.extend_schema(tags=["Catalogue - Notifications"])
-class WebhookNotificationViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+@utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
+class WebhookNotificationViewSet(
+    mixins.ChoicesMixin,
+    mixins.MultipleSerializersMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """Webhook Notification View Set."""
     queryset = models.notifications.WebhookNotification.objects.all()
     serializer_class = serializers.notifications.WebhookNotificationSerializer
+    serializer_classes = {"create": serializers.notifications.WebhookNotificationCreateSerializer}
     filterset_class = filters.WebhookNotificationFilter
+    permission_classes = [permissions.HasCatalogueEntryPermissions]

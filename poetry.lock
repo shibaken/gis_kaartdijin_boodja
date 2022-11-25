@@ -1160,7 +1160,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "webtemplate-dbca"
-version = "2.0.5"
+version = "2.0.6"
 description = "Base HTML templates for DBCA Django projects"
 category = "main"
 optional = false
@@ -1174,7 +1174,7 @@ Django = ">=2.2"
 type = "git"
 url = "https://github.com/dbca-wa/webtemplate2.git"
 reference = "HEAD"
-resolved_reference = "760c638c0d8dd9c8eaec805c9fcc64d03779371d"
+resolved_reference = "c7f46421751e4e1f701270e58d3946ca6671ea11"
 
 [[package]]
 name = "whitenoise"

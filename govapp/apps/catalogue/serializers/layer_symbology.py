@@ -14,3 +14,4 @@ class LayerSymbologySerializer(serializers.ModelSerializer):
         """Layer Symbology Model Serializer Metadata."""
         model = models.layer_symbology.LayerSymbology
         fields = ("id", "name", "sld", "catalogue_entry")
+        read_only_fields = ("id", "name", "catalogue_entry")
