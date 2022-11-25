@@ -47,7 +47,7 @@
     <template #data>
       <CollapsibleRow v-for="(row, index) in catalogueEntries" :id="index" :key="index">
         <template #cells>
-          <td>{{ row.id }}</td>
+          <td>CE{{ row.id }}</td>
           <td>{{ row.name }}</td>
           <td>{{ row.custodian?.username }}</td>
           <td>{{ row.status.label }}</td>

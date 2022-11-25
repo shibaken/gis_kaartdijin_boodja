@@ -3,16 +3,12 @@ import { BackendServiceStub } from "../backend/backend.stub";
 import { LayerSubmissionStatus, PaginatedRecord, RawLayerSubmissionFilter } from "../backend/backend.api";
 import { LayerSubmission, LayerSubmissionFilter } from "./layerSubmissionProvider.api";
 import { StatusProvider } from "./statusProvider";
-import { CatalogueEntryProvider } from "./catalogueEntryProvider";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
-import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.api";
-import { unique } from "../util/filtering";
 
 export class LayerSubmissionProvider {
   // Get the backend stub if the test flag is used.
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
   private statusProvider: StatusProvider = new StatusProvider();
-  private catalogueEntryProvider: CatalogueEntryProvider = new CatalogueEntryProvider();
 
   public async fetchLayerSubmission (id: number): Promise<LayerSubmission> {
     const rawSubmission = await this.backend.getLayerSubmission(id);
@@ -28,7 +24,7 @@ export class LayerSubmissionProvider {
       file: rawSubmission.file,
       status: this.statusProvider.getRecordStatusFromId(rawSubmission.status, submissionStatuses),
       submittedDate: rawSubmission.submitted_at,
-      catalogueEntry: submissionEntry?.name,
+      catalogueEntry: { id: submissionEntry.id, name: submissionEntry?.name },
       attributes: rawSubmission.attributes,
       metadata: rawSubmission.metadata,
       symbology: rawSubmission.symbology
@@ -48,35 +44,30 @@ export class LayerSubmissionProvider {
     const { previous, next, count, results } = await this.backend.getLayerSubmissions(rawFilter);
     const submissionStatuses = await this.statusProvider
       .fetchStatuses<LayerSubmissionStatus>("layers/submissions");
+    const { getOrFetchList } = useCatalogueEntryStore();
+    const linkedEntries = await getOrFetchList(results.map(entry => entry.catalogue_entry));
 
-    // TODO: cache this
-    const fetchedEntries: Array<CatalogueEntry> = useCatalogueEntryStore().catalogueEntries;
-    const entriesToFetch = results
-      .map(rawSubmission => rawSubmission.catalogue_entry)
-      .filter(entryId => fetchedEntries
-        .map(entry => entry.id)
-        .findIndex(fetchedId => fetchedId === entryId) === -1);
-    const tableFilterMap: CatalogueEntryFilter = new Map();
+    const layerSubmissions = results.map(rawSubmission => {
+      const linkedEntry = linkedEntries.find(record => record.id === rawSubmission.catalogue_entry);
 
-    const requestedEntries: Array<CatalogueEntry> = fetchedEntries;
-    if (entriesToFetch.length > 0) {
-      tableFilterMap.set("ids", unique<number>(entriesToFetch));
-      const { results: catalogueEntryResults } = await this.catalogueEntryProvider.fetchCatalogueEntries(tableFilterMap);
-      requestedEntries.push(...catalogueEntryResults);
-    }
+      const layerSubmission = {
+        id: rawSubmission.id,
+        name: rawSubmission.name,
+        description: rawSubmission.description,
+        file: rawSubmission.file,
+        status: this.statusProvider.getRecordStatusFromId(rawSubmission.status, submissionStatuses),
+        submittedDate: rawSubmission.submitted_at,
+        attributes: rawSubmission.attributes,
+        metadata: rawSubmission.metadata,
+        symbology: rawSubmission.symbology
+      } as LayerSubmission;
 
-    const layerSubmissions = results.map(rawSubmission => ({
-      id: rawSubmission.id,
-      name: rawSubmission.name,
-      description: rawSubmission.description,
-      file: rawSubmission.file,
-      status: this.statusProvider.getRecordStatusFromId(rawSubmission.status, submissionStatuses),
-      submittedDate: rawSubmission.submitted_at,
-      catalogueEntry: requestedEntries.find(entry => entry.id === rawSubmission.catalogue_entry)?.name,
-      attributes: rawSubmission.attributes,
-      metadata: rawSubmission.metadata,
-      symbology: rawSubmission.symbology
-    })) as Array<LayerSubmission>;
+      if(linkedEntry) {
+        layerSubmission.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name}
+      }
+
+      return layerSubmission;
+    }) as Array<LayerSubmission>;
 
     return { previous, next, count, results: layerSubmissions } as PaginatedRecord<LayerSubmission>;
   }

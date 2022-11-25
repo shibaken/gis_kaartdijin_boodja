@@ -1,5 +1,6 @@
 import { LayerSubscriptionStatus, RecordStatus } from "../backend/backend.api";
 import { PaginationFilter } from "./providerCommon.api";
+import { CatalogueEntry } from "./catalogueEntryProvider.api";
 
 // Raw records, currently placeholders and subject to change
 export interface LayerSubscription {
@@ -9,7 +10,7 @@ export interface LayerSubscription {
   frequency: string;
   status: RecordStatus<LayerSubscriptionStatus>;
   subscribedDate: string;
-  catalogueEntry: number;
+  catalogueEntry: Pick<CatalogueEntry, "id" | "name">;
 }
 
 export interface LayerSubscriptionFilter extends PaginationFilter {

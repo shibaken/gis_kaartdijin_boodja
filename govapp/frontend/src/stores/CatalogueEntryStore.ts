@@ -40,6 +40,28 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
     return !!storeMatch ? Promise.resolve(storeMatch) : catalogueEntryProvider.fetchCatalogueEntry(id);
   }
 
+  async function getOrFetchList(ids: Array<number>): Promise<CatalogueEntry[]> {
+    const extantRecords: Array<CatalogueEntry> = Array.from(useCatalogueEntryStore().catalogueEntries);
+    const recordsToFetch: Array<number> = [];
+
+    extantRecords.forEach(record => {
+      if (ids.indexOf(record.id) >= 0) {
+        extantRecords.push(record);
+      } else {
+        recordsToFetch.push(record.id);
+      }
+    });
+
+    if (recordsToFetch.length > 0) {
+      const filter: CatalogueEntryFilter = new Map(Object.entries({ ids: recordsToFetch }));
+      const recordsToFetchResponse = await catalogueEntryProvider
+        .fetchCatalogueEntries(filter);
+      extantRecords.push(...recordsToFetchResponse.results);
+    }
+
+    return extantRecords;
+  }
+
   return { catalogueEntries, currentPage, pageSize, numPages, filters, setFilter, clearFilter, entryStatuses,
-    getCatalogueEntries, getOrFetch };
+    getCatalogueEntries, getOrFetch, getOrFetchList };
 });

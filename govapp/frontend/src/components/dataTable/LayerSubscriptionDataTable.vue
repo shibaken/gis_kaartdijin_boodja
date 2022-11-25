@@ -39,7 +39,7 @@
     <template #data>
       <CollapsibleRow v-for="(row, index) in layerSubscriptions" :key="index" :id="index">
         <template #cells>
-          <td>{{ row.id }}</td>
+          <td>LS{{ row.id }}</td>
           <td>{{ row.name }}</td>
           <td>{{ DateTime.fromISO(row.subscribedDate).toFormat('dd/MM/yyyy')}}</td>
           <td>{{ DateTime.fromISO(row.subscribedDate).toFormat('HH:mm') }}</td>
