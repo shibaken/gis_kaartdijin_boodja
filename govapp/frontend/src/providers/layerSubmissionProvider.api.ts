@@ -1,5 +1,6 @@
 import { LayerSubmissionStatus, RecordStatus } from "../backend/backend.api";
 import { PaginationFilter } from "./providerCommon.api";
+import { CatalogueEntry } from "./catalogueEntryProvider.api";
 
 // Raw records, currently placeholders and subject to change
 export interface LayerSubmission {
@@ -9,7 +10,7 @@ export interface LayerSubmission {
   file: string;
   status: RecordStatus<LayerSubmissionStatus>;
   submittedDate: string;
-  catalogueEntry: string;
+  catalogueEntry: Pick<CatalogueEntry, "id" | "name">;
   attributes: Array<number>;
   metadata: number;
   symbology: number;

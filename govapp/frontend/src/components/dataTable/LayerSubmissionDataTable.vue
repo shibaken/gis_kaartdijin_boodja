@@ -7,6 +7,8 @@
   import { useLayerSubmissionStore } from "../../stores/LayerSubmissionStore";
   import { storeToRefs } from "pinia";
   import { DateTime } from "luxon";
+  import { NavigationEmits } from "../viewState.api";
+  import { CatalogueTab, CatalogueView } from "../viewState.api";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubmissionStore = useLayerSubmissionStore();
@@ -16,6 +18,9 @@
   function setPage (pageNumber: number) {
     filters.value.set("pageNumber", pageNumber);
   }
+
+  interface NavEmits extends NavigationEmits {}
+  const emit = defineEmits<NavEmits>();
 
   onMounted(() => {
     getLayerSubmissions();
@@ -30,7 +35,7 @@
         <th>Number</th>
         <th>Name</th>
         <th>Submitted Date</th>
-        <th>Time</th>
+        <th>Filename</th>
         <th>Catalogue</th>
         <th>Status</th>
         <th>Action</th>
@@ -39,11 +44,16 @@
     <template #data>
       <CollapsibleRow v-for="(row, index) in layerSubmissions" :key="index" :id="index">
         <template #cells>
-          <td>{{ row.id }}</td>
+          <td>LM{{ row.id }}</td>
           <td>{{ row.name }}</td>
           <td>{{ DateTime.fromISO(row.submittedDate).toFormat('dd/MM/yyyy')}}</td>
           <td>{{ DateTime.fromISO(row.submittedDate).toFormat('HH:mm') }}</td>
-          <td>{{ row.catalogueEntry }}</td>
+          <td>
+            <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View,
+            { recordId: row.catalogueEntry.id })">
+              {{ row.catalogueEntry.name }}
+            </a>
+          </td>
           <td>{{ row.status.label }}</td>
           <td>
             <a href="#">View</a>
