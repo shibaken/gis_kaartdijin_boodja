@@ -28,7 +28,7 @@
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
 
-  async function navigate(tab: CatalogueTab, view: CatalogueView, options?: NavigateEmitsOptions) {
+  async function navigate (tab: CatalogueTab, view: CatalogueView, options?: NavigateEmitsOptions) {
     selectedView.value = view;
     selectedViewEntry.value = undefined;
     selectedViewSubmission.value = undefined;

@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { BackendService } from "./backend.service";
-import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus,
-  User, StatusType, RawLayerSubmission, NotificationRequestType,
-  RawNotification, NotificationType, RawWebhookNotification,
-  RawEmailNotification } from "./backend.api";
+import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, User, StatusType, RawLayerSubmission,
+  NotificationRequestType, RawNotification, NotificationType, RawWebhookNotification, RawEmailNotification, RawMetadata,
+  RawCustodian, Group, RawSymbology, RawAttribute } from "./backend.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -49,7 +49,7 @@ const DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "status": 3,
     "updated_at": "2022-10-11T12:44:15.562984Z",
     "custodian": 2,
-    "assigned_to": null,
+    "assigned_to": undefined,
     "subscription": 3,
     "active_layer": 3,
     "layers": [3],
@@ -144,9 +144,9 @@ const DUMMY_STATUSES: Array<RecordStatus<unknown>> = [
 ];
 
 const DUMMY_USERS: Array<User> = [
-  { "id": 1, "username": "Raoul Wallenberg", "groups": [] },
-  { "id": 2, "username": "Carl Lutz", "groups": [] },
-  { "id": 3, "username": "Chiune Sugihara", "groups": [] }
+  { "id": 1, "username": "Raoul Wallenberg", "groups": [0] },
+  { "id": 2, "username": "Carl Lutz", "groups": [0] },
+  { "id": 3, "username": "Chiune Sugihara", "groups": [0] }
 ];
 
 const DUMMY_EMAIL_NOTIFICATIONS: Array<RawEmailNotification> = [
@@ -227,6 +227,107 @@ const DUMMY_WEBHOOK_NOTIFICATION_TYPES: Array<NotificationType> = [
   }
 ];
 
+const DUMMY_SYMBOLOGIES: Array<RawSymbology> = [
+  {
+    "id": 0,
+    "name": "string",
+    "sld": "string",
+    "catalogue_entry": 0
+  }
+];
+
+const DUMMY_ATTRIBUTES: Array<RawAttribute> = [
+  {
+    "id": 1,
+    "name": "Layer Attribute 1A",
+    "type": "1",
+    "order": 1,
+    "catalogue_entry": 1
+  },
+  {
+    "id": 2,
+    "name": "Layer Attribute 1B",
+    "type": "2",
+    "order": 2,
+    "catalogue_entry": 1
+  },
+  {
+    "id": 3,
+    "name": "Layer Attribute 1C",
+    "type": "3",
+    "order": 3,
+    "catalogue_entry": 1
+  },
+  {
+    "id": 4,
+    "name": "Layer Attribute 2A",
+    "type": "4",
+    "order": 1,
+    "catalogue_entry": 2
+  },
+  {
+    "id": 5,
+    "name": "Layer Attribute 2B",
+    "type": "5",
+    "order": 2,
+    "catalogue_entry": 2
+  },
+  {
+    "id": 6,
+    "name": "Layer Attribute 2C",
+    "type": "6",
+    "order": 3,
+    "catalogue_entry": 2
+  },
+  {
+    "id": 7,
+    "name": "Layer Attribute 3A",
+    "type": "7",
+    "order": 1,
+    "catalogue_entry": 3
+  },
+  {
+    "id": 8,
+    "name": "Layer Attribute 3B",
+    "type": "8",
+    "order": 2,
+    "catalogue_entry": 3
+  },
+  {
+    "id": 9,
+    "name": "Layer Attribute 3C",
+    "type": "9",
+    "order": 3,
+    "catalogue_entry": 3
+  }
+];
+
+const DUMMY_METADATA_LIST: Array<RawMetadata> = [
+  {
+    "id": 0,
+    "name": "string",
+    "created_at": "2022-11-25T06:57:28.139Z",
+    "catalogue_entry": 0
+  }
+];
+
+const DUMMY_CUSTODIANS: Array<RawCustodian> = [
+  {
+    "id": 0,
+    "name": "string",
+    "contact_name": "string",
+    "contact_email": "user@example.com",
+    "contact_phone": "string"
+  }
+];
+
+const DUMMY_GROUPS: Array<Group> = [
+  {
+    "id": 0,
+    "name": "string"
+  }
+];
+
 export class BackendServiceStub implements BackendService {
   public getLayerSubscription (id: number): Promise<RawLayerSubscription> {
     return Promise.resolve(DUMMY_LAYER_SUBSCRIPTIONS.find(dummy => dummy.id === id)!);
@@ -280,5 +381,49 @@ export class BackendServiceStub implements BackendService {
       DUMMY_EMAIL_NOTIFICATION_TYPES :
       DUMMY_WEBHOOK_NOTIFICATION_TYPES;
     return Promise.resolve(wrapPaginatedRecord(notifications));
+  }
+
+  public async getRawSymbology (id: number): Promise<RawSymbology> {
+    return Promise.resolve(DUMMY_SYMBOLOGIES.find(dummy => dummy.id === id)!);
+  }
+
+  public async getRawSymbologies (): Promise<PaginatedRecord<RawSymbology>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_SYMBOLOGIES));
+  }
+
+  public async getRawAttribute (id: number): Promise<RawAttribute> {
+    return Promise.resolve(DUMMY_ATTRIBUTES.find(dummy => dummy.id === id)!);
+  }
+
+  public async getRawAttributes (): Promise<PaginatedRecord<RawAttribute>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_ATTRIBUTES));
+  }
+
+  public async getRawMetadata (id: number): Promise<RawMetadata> {
+    return Promise.resolve(DUMMY_METADATA_LIST.find(dummy => dummy.id === id)!);
+  }
+
+  public async getRawMetadataList (): Promise<PaginatedRecord<RawMetadata>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_METADATA_LIST));
+  }
+
+  public async getRawCustodian (id: number): Promise<RawCustodian> {
+    return Promise.resolve(DUMMY_CUSTODIANS.find(dummy => dummy.id === id)!);
+  }
+
+  public async getRawCustodians (): Promise<PaginatedRecord<RawCustodian>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_CUSTODIANS));
+  }
+
+  public async getGroup (id: number): Promise<Group> {
+    return Promise.resolve(DUMMY_GROUPS.find(dummy => dummy.id === id)!);
+  }
+
+  public async getGroups (): Promise<PaginatedRecord<Group>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_GROUPS));
+  }
+
+  public async patchCatalogueEntry () {
+    return Promise.resolve();
   }
 }

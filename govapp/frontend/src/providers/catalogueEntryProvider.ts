@@ -53,7 +53,7 @@ export class CatalogueEntryProvider {
     const { previous, next, count, results } = await this.backend.getCatalogueEntries(rawFilter);
     const entryStatuses = await this.statusProvider.fetchStatuses<CatalogueEntryStatus>("entries");
 
-    const userFields: Record<string, number | null>[] = results
+    const userFields: Record<string, number | undefined>[] = results
       .map(({ custodian, assigned_to }) => ({ custodian, assigned_to }));
     const userIds = UserProvider.getUniqueUserIds(userFields);
     const users = await this.userProvider.fetchUsers({ ids: userIds } as UserFilter);

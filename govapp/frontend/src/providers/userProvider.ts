@@ -22,7 +22,7 @@ export class UserProvider {
   }
 
   // We don't need to paginate here so unwrap the results
-  public static getUserFromId (userId: number | null, users: Array<User>): User | undefined {
+  public static getUserFromId (userId: number | undefined, users: Array<User>): User | undefined {
     return userId !== null ? users.find(user => user.id === userId) : undefined;
   }
 
@@ -37,7 +37,7 @@ export class UserProvider {
    * Get list of unique `User` ids across multiple fields
    * @param userObjectList - An array of object containing column values e.g. `[{ custodian: 4, assignedTo: 5 }]`
    */
-  public static getUniqueUserIds (userObjectList: Array<Record<string, number | null>>) {
+  public static getUniqueUserIds (userObjectList: Array<Record<string, number | undefined>>) {
     // Extract all keys and remove dupes
     return userObjectList
       .map(userObject => Array.from(Object.values(userObject)))

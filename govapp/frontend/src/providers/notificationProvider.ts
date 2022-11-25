@@ -1,7 +1,7 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
 import { NotificationRequestType, NotificationType, PaginatedRecord } from "../backend/backend.api";
-import { Notification } from "./NotificationProvider.api";
+import { Notification } from "./notificationProvider.api";
 import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.api";
 import { unique } from "../util/filtering";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
