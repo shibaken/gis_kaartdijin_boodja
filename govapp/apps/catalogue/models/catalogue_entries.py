@@ -72,7 +72,7 @@ class CatalogueEntry(models.Model):
             layer_submissions.LayerSubmission: The currently active layer.
         """
         # Retrieve Active Layer
-        active_layer = self.layers.filter(is_active=True).first()
+        active_layer = self.layers.filter(is_active=True).last()
 
         # Check
         assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101

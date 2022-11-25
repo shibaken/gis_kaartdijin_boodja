@@ -123,6 +123,7 @@ class Absorber:
             # Update
             self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
 
+    @transaction.atomic
     def create_catalogue_entry(
         self,
         metadata: readers.types.metadata.Metadata,
@@ -141,51 +142,50 @@ class Absorber:
         # Log
         log.info("Creating new catalogue entry")
 
-        # Enter Atomic Database Transaction
-        with transaction.atomic():
-            # Create Catalogue Entry
-            catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
-                name=metadata.name,
-                description=metadata.description,
-            )
+        # Create Catalogue Entry
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
+            name=metadata.name,
+            description=metadata.description,
+        )
 
-            # Create Layer Submission
-            models.layer_submissions.LayerSubmission.objects.create(
-                name=metadata.name,
-                description=metadata.description,
-                file=archive,
-                is_active=True,  # Active!
+        # Create Layer Submission
+        models.layer_submissions.LayerSubmission.objects.create(
+            name=metadata.name,
+            description=metadata.description,
+            file=archive,
+            is_active=True,  # Active!
+            catalogue_entry=catalogue_entry,
+        )
+
+        # Create Layer Metadata
+        models.layer_metadata.LayerMetadata.objects.create(
+            name=metadata.name,
+            created_at=metadata.created_at,
+            catalogue_entry=catalogue_entry,
+        )
+
+        # Check symbology
+        if symbology:
+            # Create Layer Symbology
+            models.layer_symbology.LayerSymbology.objects.create(
+                name=symbology.name,
+                sld=symbology.sld,
                 catalogue_entry=catalogue_entry,
             )
 
-            # Create Layer Metadata
-            models.layer_metadata.LayerMetadata.objects.create(
-                name=metadata.name,
-                created_at=metadata.created_at,
-                catalogue_entry=catalogue_entry,
-            )
-
-            # Check symbology
-            if symbology:
-                # Create Layer Symbology
-                models.layer_symbology.LayerSymbology.objects.create(
-                    name=symbology.name,
-                    sld=symbology.sld,
+        # Check attributes
+        if attributes:
+            # Loop through attributes
+            for attribute in attributes:
+                # Create Attribute
+                models.layer_attributes.LayerAttribute.objects.create(
+                    name=attribute.name,
+                    type=attribute.type,
+                    order=attribute.order,
                     catalogue_entry=catalogue_entry,
                 )
 
-            # Check attributes
-            if attributes:
-                # Loop through attributes
-                for attribute in attributes:
-                    # Create Attribute
-                    models.layer_attributes.LayerAttribute.objects.create(
-                        name=attribute.name,
-                        type=attribute.type,
-                        order=attribute.order,
-                        catalogue_entry=catalogue_entry,
-                    )
-
+    @transaction.atomic
     def update_catalogue_entry(
         self,
         catalogue_entry: models.catalogue_entries.CatalogueEntry,
@@ -224,16 +224,18 @@ class Absorber:
             log.info("Attributes match, updating catalogue entry")
 
             # Update!
-            # Create Layer Submission with Status ACCEPTED
-            # Update Catalogue Entry active layer to new Layer Submission
-            catalogue_entry.active_layer.is_active = False
-            catalogue_entry.active_layer.save()
+            # Update Catalogue Entry Current Active Layer to Inactive
+            # Create New Active Layer Submission with Status ACCEPTED
+            current_active_layer = catalogue_entry.active_layer
+            current_active_layer.is_active = False
+            current_active_layer.save()
             models.layer_submissions.LayerSubmission.objects.create(
                 name=metadata.name,
                 description=metadata.description,
                 file=archive,
                 is_active=True,  # Active Layer!
                 status=models.layer_submissions.LayerSubmissionStatus.ACCEPTED,  # Accepted?
+                catalogue_entry=catalogue_entry,
             )
 
         else:
@@ -241,15 +243,15 @@ class Absorber:
             log.info("Attributes do not match, layer submission failed")
 
             # Failure!
-            # Create Layer Submission with Status DECLINED
             # Do not update Catalogue Entry
+            # Create New Inactive Layer Submission with Status DECLINED
             models.layer_submissions.LayerSubmission.objects.create(
                 name=metadata.name,
                 description=metadata.description,
                 file=archive,
-                catalogue_entry=catalogue_entry,
                 is_active=False,
                 status=models.layer_submissions.LayerSubmissionStatus.DECLINED,  # Declined?
+                catalogue_entry=catalogue_entry,
             )
 
     def compare_attributes(
