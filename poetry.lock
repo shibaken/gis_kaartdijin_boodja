@@ -1174,7 +1174,7 @@ Django = ">=2.2"
 type = "git"
 url = "https://github.com/dbca-wa/webtemplate2.git"
 reference = "HEAD"
-resolved_reference = "760c638c0d8dd9c8eaec805c9fcc64d03779371d"
+resolved_reference = "b890c75b7df2885c90bb0552630ca49c70e23110"
 
 [[package]]
 name = "whitenoise"
