@@ -1,7 +1,7 @@
+import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
+  RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
+  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch } from "./backend.api";
 import type { PaginatedRecord, Params, StatusType, User } from "./backend.api";
-import { NotificationRequestType, NotificationType, RawCatalogueEntry, RawCatalogueEntryFilter, RawLayerSubmission,
-  RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter, RawNotification, RawUserFilter,
-  RecordStatus } from "./backend.api";
 
 export function stripNullParams<T extends object> (filter: T): Params {
   return Object.fromEntries(
@@ -77,5 +77,62 @@ export class BackendService {
     const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
     const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/type/`);
     return await response.json() as PaginatedRecord<NotificationType>;
+  }
+
+  public async getRawSymbology (id: number): Promise<RawSymbology> {
+    const response = await fetch(`/api/catalogue/entry/symbologies/${id}`);
+    return await response.json() as RawSymbology;
+  }
+
+  public async getRawSymbologies (): Promise<PaginatedRecord<RawSymbology>> {
+    const response = await fetch("/api/catalogue/entry/symbologies/");
+    return await response.json() as PaginatedRecord<RawSymbology>;
+  }
+
+  public async getRawAttribute (id: number): Promise<RawAttribute> {
+    const response = await fetch(`/api/catalogue/layers/attribute/${id}/`);
+    return await response.json() as RawAttribute;
+  }
+
+  public async getRawAttributes (): Promise<PaginatedRecord<RawAttribute>> {
+    const response = await fetch("/api/catalogue/layers/attribute/");
+    return await response.json() as PaginatedRecord<RawAttribute>;
+  }
+
+  public async getRawMetadata (id: number): Promise<RawMetadata> {
+    const response = await fetch(`/api/catalogue/layers/metadata/${id}/`);
+    return await response.json() as RawMetadata;
+  }
+
+  public async getRawMetadataList (): Promise<PaginatedRecord<RawMetadata>> {
+    const response = await fetch("/api/catalogue/layers/metadata/");
+    return await response.json() as PaginatedRecord<RawMetadata>;
+  }
+
+  public async getRawCustodian (id: number): Promise<RawCustodian> {
+    const response = await fetch(`/api/catalogue/layers/custodians/${id}/`);
+    return await response.json() as RawCustodian;
+  }
+
+  public async getRawCustodians (): Promise<PaginatedRecord<RawCustodian>> {
+    const response = await fetch("/api/catalogue/layers/custodians/");
+    return await response.json() as PaginatedRecord<RawCustodian>;
+  }
+
+  public async getGroup (id: number): Promise<Group> {
+    const response = await fetch(`/api/catalogue/groups/${id}/`);
+    return await response.json() as Group;
+  }
+
+  public async getGroups (): Promise<PaginatedRecord<Group>> {
+    const response = await fetch("/api/catalogue/groups/");
+    return await response.json() as PaginatedRecord<Group>;
+  }
+
+  public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch) {
+    await fetch(`/api/catalogue/entries/${entryId}/`, {
+      method: "patch",
+      body: JSON.stringify(updatedEntry)
+    });
   }
 }

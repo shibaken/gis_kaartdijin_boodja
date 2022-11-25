@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { NotificationRequestType } from "../backend/backend.api";
-import { NotificationProvider } from "../providers/NotificationProvider";
-import type { EmailNotification, Notification, WebhookNotification } from "../providers/NotificationProvider.api";
+import { NotificationProvider } from "../providers/notificationProvider";
+import type { EmailNotification, Notification, WebhookNotification } from "../providers/notificationProvider.api";
 import { computed, ref } from "vue";
 
 // Get the backend stub if the test flag is used.

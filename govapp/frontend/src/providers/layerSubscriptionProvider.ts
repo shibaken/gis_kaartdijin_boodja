@@ -26,7 +26,7 @@ export class LayerSubscriptionProvider {
     } as LayerSubscription;
 
     if (linkedEntry) {
-      layerSubscription.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name }
+      layerSubscription.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name };
     }
 
     return layerSubscription;
@@ -59,7 +59,7 @@ export class LayerSubscriptionProvider {
       } as LayerSubscription;
 
       if(linkedEntry) {
-        layerSubscription.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name}
+        layerSubscription.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name };
       }
 
       return layerSubscription;

@@ -63,7 +63,7 @@ export class LayerSubmissionProvider {
       } as LayerSubmission;
 
       if(linkedEntry) {
-        layerSubmission.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name}
+        layerSubmission.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name };
       }
 
       return layerSubmission;

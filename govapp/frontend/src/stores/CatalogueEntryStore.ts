@@ -35,12 +35,12 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
     return entries;
   }
 
-  async function getOrFetch(id: number): Promise<CatalogueEntry> {
+  async function getOrFetch (id: number): Promise<CatalogueEntry> {
     const storeMatch = catalogueEntries.value.find(entry => entry.id === id);
-    return !!storeMatch ? Promise.resolve(storeMatch) : catalogueEntryProvider.fetchCatalogueEntry(id);
+    return storeMatch ? Promise.resolve(storeMatch) : catalogueEntryProvider.fetchCatalogueEntry(id);
   }
 
-  async function getOrFetchList(ids: Array<number>): Promise<CatalogueEntry[]> {
+  async function getOrFetchList (ids: Array<number>): Promise<CatalogueEntry[]> {
     const extantRecords: Array<CatalogueEntry> = Array.from(useCatalogueEntryStore().catalogueEntries);
     const recordsToFetch: Array<number> = [];
 

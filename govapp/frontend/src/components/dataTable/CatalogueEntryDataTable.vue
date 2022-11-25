@@ -17,6 +17,7 @@
   /**
    * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
    */
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface NavEmits extends NavigationEmits {}
   const emit = defineEmits<NavEmits>();
 

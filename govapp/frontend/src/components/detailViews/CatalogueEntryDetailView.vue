@@ -11,6 +11,7 @@
     catalogueEntry: CatalogueEntry | undefined
   }>();
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface NavEmits extends NavigationEmits {}
   const emit = defineEmits<NavEmits>();
 

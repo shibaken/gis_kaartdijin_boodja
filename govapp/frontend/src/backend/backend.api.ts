@@ -1,3 +1,5 @@
+import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
+
 export interface PaginatedRecord<T> {
   count: number;
   next: string | null;
@@ -24,8 +26,8 @@ export interface RawCatalogueEntry {
   description: string;
   status: number;
   updated_at: string;
-  custodian: number | null;
-  assigned_to: number | null;
+  custodian?: number;
+  assigned_to?: number;
   subscription: number;
   active_layer: number;
   layers: Array<number>;
@@ -121,3 +123,46 @@ export interface NotificationType {
   id: number;
   label: string;
 }
+
+export interface RawSymbology {
+  id: number;
+  name: string;
+  sld: string;
+  catalogue_entry: number;
+}
+
+export interface RawAttribute {
+  id: number;
+  name: string;
+  description?: string;
+  type: string;
+  order: number;
+  catalogue_entry: number;
+}
+
+export interface RawMetadata {
+  id:	number;
+  name:	string;
+  created_at:	string;
+  catalogue_entry: number;
+}
+
+export interface RawCustodian {
+  id:	number;
+  name:	string;
+  description?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+}
+
+export interface Group {
+  id: number;
+  name: string;
+}
+
+/**
+ * Update types
+ */
+export type RawEntryPatch = Pick<RawCatalogueEntry, "description" | "custodian" | "assigned_to">;
+export type EntryPatch = Pick<CatalogueEntry, "description" | "custodian" | "assignedTo">;
