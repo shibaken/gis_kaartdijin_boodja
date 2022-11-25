@@ -5,7 +5,6 @@
         "fields": {
             "name": "Catalogue Entry 1",
             "description": "This is the first example catalogue entry",
-            "active_layer": 1,
             "status": 1,
             "updated_at": "2022-10-13T04:26:24.629841+00:00",
             "custodian": 1,
@@ -18,7 +17,6 @@
         "fields": {
             "name": "Catalogue Entry 2",
             "description": "This is the second example catalogue entry",
-            "active_layer": 2,
             "status": 2,
             "updated_at": "2022-10-12T21:05:32.325153+00:00",
             "custodian": 2,
@@ -31,7 +29,6 @@
         "fields": {
             "name": "Catalogue Entry 3",
             "description": "This is the third example catalogue entry",
-            "active_layer": 3,
             "status": 3,
             "updated_at": "2022-10-11T12:44:15.562984+00:00",
             "custodian": null,

@@ -17,6 +17,7 @@ class LayerSubmissionFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Layer Submission {n + 1}")
     description = factory.Faker("paragraph")
     file = factory.Faker("uri")
+    is_active = False
     status = factory.fuzzy.FuzzyChoice(models.layer_submissions.LayerSubmissionStatus)
     submitted_at = factory.Faker("date_time_this_year", tzinfo=datetime.timezone.utc)
 

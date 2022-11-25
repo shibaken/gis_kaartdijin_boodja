@@ -150,16 +150,13 @@ class Absorber:
             )
 
             # Create Layer Submission
-            layer_submission = models.layer_submissions.LayerSubmission.objects.create(
+            models.layer_submissions.LayerSubmission.objects.create(
                 name=metadata.name,
                 description=metadata.description,
                 file=archive,
+                is_active=True,  # Active!
                 catalogue_entry=catalogue_entry,
             )
-
-            # Update Catalogue Entry Active Layer
-            catalogue_entry.active_layer = layer_submission
-            catalogue_entry.save()
 
             # Create Layer Metadata
             models.layer_metadata.LayerMetadata.objects.create(
@@ -229,15 +226,15 @@ class Absorber:
             # Update!
             # Create Layer Submission with Status ACCEPTED
             # Update Catalogue Entry active layer to new Layer Submission
-            layer_submission = models.layer_submissions.LayerSubmission.objects.create(
+            catalogue_entry.active_layer.is_active = False
+            catalogue_entry.active_layer.save()
+            models.layer_submissions.LayerSubmission.objects.create(
                 name=metadata.name,
                 description=metadata.description,
                 file=archive,
-                catalogue_entry=catalogue_entry,
+                is_active=True,  # Active Layer!
                 status=models.layer_submissions.LayerSubmissionStatus.ACCEPTED,  # Accepted?
             )
-            catalogue_entry.active_layer = layer_submission
-            catalogue_entry.save()
 
         else:
             # Log
@@ -251,6 +248,7 @@ class Absorber:
                 description=metadata.description,
                 file=archive,
                 catalogue_entry=catalogue_entry,
+                is_active=False,
                 status=models.layer_submissions.LayerSubmissionStatus.DECLINED,  # Declined?
             )
 

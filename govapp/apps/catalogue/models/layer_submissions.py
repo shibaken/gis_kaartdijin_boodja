@@ -20,6 +20,7 @@ class LayerSubmission(models.Model):
     name = models.TextField()
     description = models.TextField()
     file = models.URLField()
+    is_active = models.BooleanField()
     status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)
     submitted_at = models.DateTimeField(auto_now_add=True)
     catalogue_entry = models.ForeignKey(

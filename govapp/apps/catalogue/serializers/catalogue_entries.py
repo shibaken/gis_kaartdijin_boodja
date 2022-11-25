@@ -10,6 +10,8 @@ from .. import models
 
 class CatalogueEntrySerializer(serializers.ModelSerializer):
     """Catalogue Entry Model Serializer."""
+    active_layer = serializers.PrimaryKeyRelatedField(read_only=True)  # type: ignore[var-annotated]
+
     class Meta:
         """Catalogue Entry Model Serializer Metadata."""
         model = models.catalogue_entries.CatalogueEntry

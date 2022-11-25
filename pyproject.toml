@@ -99,7 +99,7 @@ plugins = ["django_coverage_plugin"]
 
 [tool.coverage.report]
 show_missing = true
-exclude_lines = ["if __name__ == .__main__.:", "if platform.*:"]
+exclude_lines = ["if __name__ == .__main__.:", "if TYPE_CHECKING:", "if platform.*:"]
 
 [build-system]
 requires = ["poetry-core"]

@@ -20,7 +20,7 @@ from .. import accounts
 from govapp.apps.catalogue import models
 
 # Typing
-from typing import Any, Optional
+from typing import Any
 
 
 # Shortcuts
@@ -69,13 +69,13 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
         model = models.catalogue_entries.CatalogueEntry
 
     @factory.post_generation  # type: ignore
-    def active_layer(
+    def set_active_layer(
         self,
         create: bool,
-        extracted: Optional[models.layer_submissions.LayerSubmission],
+        extracted: Any,
         **kwargs: Any,
     ) -> None:
-        """Adds active layer to the catalogue entry.
+        """Sets active layer for the catalogue entry.
 
         Args:
             create (bool): Whether the object is being created.
@@ -84,9 +84,7 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
         """
         # Check if the object is being created
         if create:
-            # Check if a layer submission has been passed in
-            # If not, use the most recent layer
-            active_layer = extracted or self.layers.order_by("submitted_at").last()
-
-            # Set the active layer
-            self.active_layer = active_layer
+            # Set most recent layer to active
+            last = self.layers.order_by("submitted_at").last()
+            last.is_active = True
+            last.save()

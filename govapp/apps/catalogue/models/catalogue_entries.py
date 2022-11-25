@@ -8,6 +8,13 @@ from django.db import models
 # Local
 from . import custodians
 
+# Typing
+from typing import TYPE_CHECKING
+
+# Type Checking
+if TYPE_CHECKING:
+    from . import layer_submissions
+
 
 # Shortcuts
 UserModel = auth.get_user_model()
@@ -24,14 +31,6 @@ class CatalogueEntry(models.Model):
     """Model for a Catalogue Entry."""
     name = models.TextField()
     description = models.TextField()
-    active_layer = models.OneToOneField(
-        "catalogue.LayerSubmission",
-        default=None,
-        blank=True,
-        null=True,
-        related_name="+",  # No backwards relation
-        on_delete=models.PROTECT,
-    )
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.DRAFT)
     updated_at = models.DateTimeField(auto_now=True)
     custodian = models.ForeignKey(
@@ -64,3 +63,19 @@ class CatalogueEntry(models.Model):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def active_layer(self) -> "layer_submissions.LayerSubmission":
+        """Retrieves the currently active layer.
+
+        Returns:
+            layer_submissions.LayerSubmission: The currently active layer.
+        """
+        # Retrieve Active Layer
+        active_layer = self.layers.filter(is_active=True).first()
+
+        # Check
+        assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101
+
+        # Return
+        return active_layer
