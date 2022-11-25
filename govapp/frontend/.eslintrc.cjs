@@ -36,7 +36,11 @@ module.exports = {
         "space-before-function-paren": ["error", "always"],
         "comma-dangle": ["error", "never"],
         "quotes": ["error", "double"],
-        "semi": ["error", "always"]
+        "semi": ["error", "always"],
+        "vue/multi-word-component-names": [
+          "error",
+          { "ignores": ["Card", "Accordion"] }
+        ]
     },
     // Stop eslint from linting vue files using the indent rules for ts/js files.
     overrides : [

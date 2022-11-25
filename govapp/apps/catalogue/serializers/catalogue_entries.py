@@ -30,3 +30,16 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "metadata",
             "symbology",
         )
+        read_only_fields = (
+            "id",
+            "status",
+            "updated_at",
+            "subscription",
+            "active_layer",
+            "layers",
+            "email_notifications",
+            "webhook_notifications",
+            "attributes",
+            "metadata",
+            "symbology",
+        )

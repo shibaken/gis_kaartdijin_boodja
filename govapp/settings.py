@@ -182,12 +182,19 @@ SHAREPOINT_URL = decouple.config("SHAREPOINT_URL", default="https://dpaw.sharepo
 SHAREPOINT_USERNAME = decouple.config("SHAREPOINT_USERNAME", default=None)  # TODO: Credentials?
 SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD", default=None)  # TODO: Credentials?
 SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST", default="Shared Documents")
-SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA", default="Staging")
+SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA", default="KaartdijinBoodjaLayerSubmissionStagingArea")  # noqa: E501
 SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA", default="KaartdijinBoodjaLayerSubmissionArchive")
 
 # Email
 DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # TODO: Production email settings
+
+# Group Settings
+# This must match what is in the database
+GROUP_ADMINISTRATOR_ID = 1
+GROUP_ADMINISTRATOR_NAME = "Administrators"
+GROUP_CATALOGUE_EDITOR_ID = 2
+GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":

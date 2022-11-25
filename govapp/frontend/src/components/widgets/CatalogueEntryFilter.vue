@@ -6,7 +6,7 @@
   import { storeToRefs } from "pinia";
   import { UserProvider } from "../../providers/userProvider";
   import { DateTime } from "luxon";
-  import { CatalogueEntryStatus, RecordStatus } from "../../backend/backend.api";
+  import { CatalogueEntryStatus, RecordStatus, User } from "../../backend/backend.api";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
@@ -19,7 +19,9 @@
     return UserProvider.getUniqueUsers(allCustodians);
   });
   const assignedTo = computed(() => {
-    const allAssignedTo = catalogueEntries.value.map(({ assignedTo }) => assignedTo);
+    const allAssignedTo = catalogueEntries.value
+      .map(({ assignedTo }) => assignedTo as User)
+      .filter(user => !!user);
     return UserProvider.getUniqueUsers(allAssignedTo);
   });
 

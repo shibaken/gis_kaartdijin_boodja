@@ -22,7 +22,7 @@
             "status": 2,
             "updated_at": "2022-10-12T21:05:32.325153+00:00",
             "custodian": 2,
-            "assigned_to": 3
+            "assigned_to": 2
         }
     },
     {
@@ -35,7 +35,7 @@
             "status": 3,
             "updated_at": "2022-10-11T12:44:15.562984+00:00",
             "custodian": null,
-            "assigned_to": null
+            "assigned_to": 3
         }
     }
 ]

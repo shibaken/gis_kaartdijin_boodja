@@ -3,7 +3,8 @@
     field: string,
     name: string,
     values: Array<[string, string | number]>
-    value?: string
+    value?: string,
+    classes?: string
   }>();
   const { field, name, values } = $(props);
 
@@ -18,8 +19,8 @@
 
 <template>
   <div class="form-floating">
-    <select :id="`${field}Select`" class="form-select form-select-sm w-auto" aria-label="{{ name }} select"
-            @change="valueUpdated">
+    <select :id="`${field}Select`" :class="`form-select form-select-sm ${classes ?? ''}`"
+            :aria-label="`${name} select`" @change="valueUpdated">
       <option :value="null"></option>
       <option v-for="[optionName, optionValue] in values" :key="optionName" :value="optionValue">
         {{ optionName }}

@@ -6,68 +6,111 @@
   import LayerSubscriptionFilter from "./widgets/LayerSubscriptionFilter.vue";
   import LayerSubmissionDataTable from "./dataTable/LayerSubmissionDataTable.vue";
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
-  import type { Ref } from "vue";
+  import CatalogueEntryDetails from "./detailViews/CatalogueEntryDetailView.vue";
+  import { CatalogueTab, CatalogueView, NavigateEmitsOptions } from "./viewState.api";
+  import Card from "./widgets/Card.vue";
+  import Accordion from "./widgets/Accordion.vue";
+  import SideBarLeft from "./SideBarLeft.vue";
+  import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
+  import { LayerSubscription } from "../providers/layerSubscriptionProvider.api";
+  import { LayerSubmission } from "../providers/layerSubmissionProvider.api";
+  import { CatalogueEntryProvider } from "../providers/catalogueEntryProvider";
+  import { LayerSubmissionProvider } from "../providers/layerSubmissionProvider";
+  import { LayerSubscriptionProvider } from "../providers/layerSubscriptionProvider";
 
-  type SelectedTab = "Catalogue Entries" | "Layer Submissions" | "Layer Subscriptions";
+  const catalogueEntryProvider = new CatalogueEntryProvider();
+  const layerSubscriptionProvider = new LayerSubscriptionProvider();
+  const layerSubmissionProvider = new LayerSubmissionProvider();
 
-  const selectedTab: Ref<SelectedTab> = ref("Catalogue Entries");
+  const selectedTab = ref<CatalogueTab>(CatalogueTab.CatalogueEntries);
+  const selectedView = ref<CatalogueView>(CatalogueView.List);
+  const selectedViewEntry = ref<CatalogueEntry | undefined>();
+  const selectedViewSubmission = ref<LayerSubmission | undefined>();
+  const selectedViewSubscription = ref<LayerSubscription | undefined>();
 
-  function setSelectedTab (tab: SelectedTab) {
+  async function navigate(tab: CatalogueTab, view: CatalogueView, options?: NavigateEmitsOptions) {
+    selectedView.value = view;
+    selectedViewEntry.value = undefined;
+    selectedViewSubmission.value = undefined;
+    selectedViewSubscription.value = undefined;
+
     selectedTab.value = tab;
+    selectedView.value = view;
+
+    if (typeof options?.recordId !== "number") {
+      return;
+    } else if (tab === CatalogueTab.CatalogueEntries) {
+      selectedViewEntry.value = await catalogueEntryProvider.fetchCatalogueEntry(options.recordId);
+    } else if (tab === CatalogueTab.LayerSubscriptions) {
+      selectedViewSubscription.value = await layerSubscriptionProvider.fetchLayerSubscription(options.recordId);
+    } else if (tab === CatalogueTab.LayerSubmissions) {
+      selectedViewSubmission.value = await layerSubmissionProvider.fetchLayerSubmission(options.recordId);
+    } else {
+      console.warn("Selected view record was not a recognised type");
+    }
   }
 </script>
 
 <template>
-  <ul class="nav nav-pills mb-4">
+  <ul class="nav nav-pills mb-4" v-if="selectedView === CatalogueView.List">
     <li class="nav-item">
       <button class="nav-link" aria-current="page" href="#" :class='{ active: selectedTab === "Catalogue Entries" }'
-              @click='setSelectedTab("Catalogue Entries")'>Catalogue Entries</button>
+              @click='navigate(CatalogueTab.CatalogueEntries, CatalogueView.List)'>Catalogue Entries</button>
     </li>
     <li class="nav-item">
       <button class="nav-link" href="#" :class='{ active: selectedTab === "Layer Submissions" }'
-              @click='setSelectedTab("Layer Submissions")'>Layer Submissions</button>
+              @click='navigate(CatalogueTab.LayerSubmissions, CatalogueView.List)'>Layer Submissions</button>
     </li>
     <li class="nav-item">
       <button class="nav-link" href="#" :class='{ active: selectedTab === "Layer Subscriptions" }'
-              @click='setSelectedTab("Layer Subscriptions")'>Layer Subscriptions</button>
+              @click='navigate(CatalogueTab.LayerSubscriptions, CatalogueView.List)'>Layer Subscriptions</button>
     </li>
   </ul>
-  <div class="card">
-    <div class="card-header">
-      <h4>{{ selectedTab }}</h4>
+
+  <div class="d-flex flex-row">
+    <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View">
+      <side-bar-left/>
     </div>
-    <div class="card-body">
-      <div id="layerSubscriptionAccordion" class="accordion">
-        <div class="accordion-item">
-          <h2 id="headingFilter" class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters">
-              Filters
-            </button>
-          </h2>
-          <div id="collapseFilters" class="accordion-collapse collapse show" aria-labelledby="headingFilter" data-bs-parent="#layerSubscriptionAccordion">
-            <div class="accordion-body">
+    <div class="w-100">
+      <card v-if="selectedView === CatalogueView.List">
+        <template #header>
+          <h4>{{ selectedTab }}</h4>
+        </template>
+        <template #body>
+          <accordion id-prefix="filter" header-text="Filters">
+            <template #body>
               <form class="form d-flex gap-3">
                 <catalogue-entry-filter v-if="selectedTab === 'Catalogue Entries'"/>
                 <layer-subscription-filter v-if="selectedTab === 'Layer Subscriptions'"/>
                 <layer-submission-filter v-if="selectedTab === 'Layer Submissions'"/>
               </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"'/>
-      <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"'/>
-      <layer-submission-data-table v-if='selectedTab === "Layer Submissions"'/>
+
+              <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"'
+                @navigate="navigate"/>
+              <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"'
+                @navigate="navigate"/>
+              <layer-submission-data-table v-if='selectedTab === "Layer Submissions"'
+                @navigate="navigate"/>
+            </template>
+          </accordion>
+        </template>
+      </card>
+      <catalogue-entry-details v-if="selectedView === CatalogueView.View" :catalogue-entry="selectedViewEntry"
+      @navigate="navigate"/>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped>
-  #collapseFilters {
+<style lang="scss">
+  .accordion-collapse {
     .accordion-body {
       form {
         overflow-x: auto;
       }
     }
+  }
+
+  #side-bar-wrapper {
+    width: 24rem;
   }
 </style>
