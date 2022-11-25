@@ -16,7 +16,7 @@ from . import filters
 
 
 # Shortcuts
-UserModel = auth.get_user_model()  # TODO -> Does this work with SSO?
+UserModel = auth.get_user_model()
 GroupModel = models.Group
 
 

@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 
 # Shortcuts
-UserModel = auth.get_user_model()  # TODO -> Does this work with SSO?
+UserModel = auth.get_user_model()
 GroupModel = auth_models.Group
 
 

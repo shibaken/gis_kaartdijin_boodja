@@ -20,7 +20,7 @@ from typing import Any, Optional, Union
 logger = logging.getLogger(__name__)
 
 # Shortcuts
-UserModel = auth.get_user_model()  # TODO -> Does this work with SSO?
+UserModel = auth.get_user_model()
 
 
 class TemplateEmailBase:

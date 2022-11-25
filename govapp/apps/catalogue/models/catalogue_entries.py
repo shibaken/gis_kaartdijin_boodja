@@ -10,7 +10,7 @@ from . import custodians
 
 
 # Shortcuts
-UserModel = auth.get_user_model()  # TODO -> Does this work with SSO?
+UserModel = auth.get_user_model()
 
 
 class CatalogueEntryStatus(models.IntegerChoices):
