@@ -43,12 +43,12 @@ class CacheControl:
             response["Cache-Control"] = "private, no-store"
 
         elif request.path[:8] == "/static/":
-            # Cache all /static/ calls for 1 day
-            response["Cache-Control"] = "public, max-age=86400"
+            # Cache all /static/ calls for 1 day  <-- lowered to 60 seconds for development purposes
+            response["Cache-Control"] = "public, max-age=60"
 
         elif request.path[:7] == "/media/":
-            # Cache all /media/ calls for 1 day
-            response["Cache-Control"] = "public, max-age=86400"
+            # Cache all /media/ calls for 1 day <-- lowered to 60 seconds for development purposes.
+            response["Cache-Control"] = "public, max-age=60"
 
         else:
             # Ignore other paths
