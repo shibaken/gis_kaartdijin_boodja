@@ -190,8 +190,11 @@ DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # TODO: Production email settings
 
 # Group Settings
-GROUP_ADMINISTRATOR = 1  # Primary Key for the Administrator Group
-GROUP_CATALOGUE_EDITOR = 2  # Primary Key for the Catalogue Editor Group
+# This must match what is in the database
+GROUP_ADMINISTRATOR_ID = 1
+GROUP_ADMINISTRATOR_NAME = "Administrators"
+GROUP_CATALOGUE_EDITOR_ID = 2
+GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":

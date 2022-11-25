@@ -25,7 +25,7 @@ def is_catalogue_editor(user: Union[models.User, models.AnonymousUser]) -> bool:
     # Check and Return
     return (
         not isinstance(user, models.AnonymousUser)  # Must be logged in
-        and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR).exists()  # Must be in group
+        and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
     )
 
 
