@@ -5,6 +5,8 @@ export interface Notification {
   name: string;
   type: NotificationType;
   catalogueEntry?: string;
+  email?: string;
+  url?: string;
 }
 
 export type EmailNotification = Notification;

@@ -13,10 +13,20 @@ export function stripNullParams<T extends object> (filter: T): Params {
 }
 
 export class BackendService {
+  public async getLayerSubscription (id: number): Promise<RawLayerSubscription> {
+    const response = await fetch(`/api/catalogue/layers/subscriptions/${id}/`);
+    return await response.json() as RawLayerSubscription;
+  }
+
   public async getLayerSubscriptions (filter: RawLayerSubscriptionFilter): Promise<PaginatedRecord<RawLayerSubscription>> {
     const params = stripNullParams<RawLayerSubscriptionFilter>(filter);
     const response = await fetch("/api/catalogue/layers/subscriptions/?" + new URLSearchParams(params));
     return await response.json() as PaginatedRecord<RawLayerSubscription>;
+  }
+
+  public async getCatalogueEntry (id: number): Promise<RawCatalogueEntry> {
+    const response = await fetch(`/api/catalogue/entries/${id}/`);
+    return await response.json() as RawCatalogueEntry;
   }
 
   public async getCatalogueEntries (filter: RawCatalogueEntryFilter): Promise<PaginatedRecord<RawCatalogueEntry>> {
@@ -24,6 +34,12 @@ export class BackendService {
     const response = await fetch("/api/catalogue/entries/?" + new URLSearchParams(params) );
     return await response.json() as PaginatedRecord<RawCatalogueEntry>;
   }
+
+  public async getLayerSubmission (id: number): Promise<RawLayerSubmission> {
+    const response = await fetch(`/api/catalogue/entries/layers/submissions/${id}/`);
+    return await response.json() as RawLayerSubmission;
+  }
+
   public async getLayerSubmissions (filter: RawLayerSubmissionFilter): Promise<PaginatedRecord<RawLayerSubmission>> {
     const params = stripNullParams<RawCatalogueEntryFilter>(filter);
     const response = await fetch("/api/catalogue/layers/submissions/?" + new URLSearchParams(params) );

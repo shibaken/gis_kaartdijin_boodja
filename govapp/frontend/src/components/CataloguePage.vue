@@ -7,69 +7,72 @@
   import LayerSubmissionDataTable from "./dataTable/LayerSubmissionDataTable.vue";
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
   import CatalogueEntryDetails from "./detailViews/CatalogueEntryDetailView.vue";
-  import { CatalogueTab, CatalogueView } from "./viewState.api";
+  import { CatalogueTab, CatalogueView, NavigateEmitsOptions } from "./viewState.api";
   import Card from "./widgets/Card.vue";
   import Accordion from "./widgets/Accordion.vue";
   import SideBarLeft from "./SideBarLeft.vue";
   import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
   import { LayerSubscription } from "../providers/layerSubscriptionProvider.api";
   import { LayerSubmission } from "../providers/layerSubmissionProvider.api";
+  import { CatalogueEntryProvider } from "../providers/catalogueEntryProvider";
+  import { LayerSubmissionProvider } from "../providers/layerSubmissionProvider";
+  import { LayerSubscriptionProvider } from "../providers/layerSubscriptionProvider";
 
-  const selectedTab = ref<CatalogueTab>("Catalogue Entries");
-  const selectedView = ref<CatalogueView>("list");
+  const catalogueEntryProvider = new CatalogueEntryProvider();
+  const layerSubscriptionProvider = new LayerSubscriptionProvider();
+  const layerSubmissionProvider = new LayerSubmissionProvider();
+
+  const selectedTab = ref<CatalogueTab>(CatalogueTab.CatalogueEntries);
+  const selectedView = ref<CatalogueView>(CatalogueView.List);
   const selectedViewEntry = ref<CatalogueEntry | undefined>();
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
 
-  function setSelectedTab (tab: CatalogueTab) {
-    selectedTab.value = tab;
-  }
-
-  enum RecordType {
-    CatalogueEntry,
-    LayerSubscription,
-    LayerSubmission
-  }
-  function setSelectedView<T> (view: CatalogueView, record: T, recordType: RecordType) {
+  async function navigate(tab: CatalogueTab, view: CatalogueView, options?: NavigateEmitsOptions) {
     selectedView.value = view;
     selectedViewEntry.value = undefined;
     selectedViewSubmission.value = undefined;
     selectedViewSubscription.value = undefined;
 
-    if (recordType === RecordType.CatalogueEntry) {
-      selectedViewEntry.value = record as CatalogueEntry;
-    } else if (recordType === RecordType.LayerSubscription) {
-      selectedViewSubscription.value = record as LayerSubscription;
-    } else if (recordType === RecordType.LayerSubmission) {
-      selectedViewSubmission.value = record as LayerSubmission;
-    } else if (!!record || !!recordType) {
-      console.error("Selected view record was not a recognised type");
+    selectedTab.value = tab;
+    selectedView.value = view;
+
+    if (typeof options?.recordId !== "number") {
+      return;
+    } else if (tab === CatalogueTab.CatalogueEntries) {
+      selectedViewEntry.value = await catalogueEntryProvider.fetchCatalogueEntry(options.recordId);
+    } else if (tab === CatalogueTab.LayerSubscriptions) {
+      selectedViewSubscription.value = await layerSubscriptionProvider.fetchLayerSubscription(options.recordId);
+    } else if (tab === CatalogueTab.LayerSubmissions) {
+      selectedViewSubmission.value = await layerSubmissionProvider.fetchLayerSubmission(options.recordId);
+    } else {
+      console.warn("Selected view record was not a recognised type");
     }
   }
 </script>
 
 <template>
-  <ul class="nav nav-pills mb-4" v-if="selectedView === 'list'">
+  <ul class="nav nav-pills mb-4" v-if="selectedView === CatalogueView.List">
     <li class="nav-item">
       <button class="nav-link" aria-current="page" href="#" :class='{ active: selectedTab === "Catalogue Entries" }'
-              @click='setSelectedTab("Catalogue Entries")'>Catalogue Entries</button>
+              @click='navigate(CatalogueTab.CatalogueEntries, CatalogueView.List)'>Catalogue Entries</button>
     </li>
     <li class="nav-item">
       <button class="nav-link" href="#" :class='{ active: selectedTab === "Layer Submissions" }'
-              @click='setSelectedTab("Layer Submissions")'>Layer Submissions</button>
+              @click='navigate(CatalogueTab.LayerSubmissions, CatalogueView.List)'>Layer Submissions</button>
     </li>
     <li class="nav-item">
       <button class="nav-link" href="#" :class='{ active: selectedTab === "Layer Subscriptions" }'
-              @click='setSelectedTab("Layer Subscriptions")'>Layer Subscriptions</button>
+              @click='navigate(CatalogueTab.LayerSubscriptions, CatalogueView.List)'>Layer Subscriptions</button>
     </li>
   </ul>
 
   <div class="d-flex flex-row">
-    <div id="side-bar-wrapper" v-if="selectedView === 'view'">
+    <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View">
       <side-bar-left/>
     </div>
     <div class="w-100">
-      <card v-if="selectedView === 'list'">
+      <card v-if="selectedView === CatalogueView.List">
         <template #header>
           <h4>{{ selectedTab }}</h4>
         </template>
@@ -83,17 +86,17 @@
               </form>
 
               <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"'
-                @show-view="(view: CatalogueView, record: CatalogueEntry) => setSelectedView<CatalogueEntry>(view, record, RecordType.CatalogueEntry)"/>
+                @navigate="navigate"/>
               <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"'
-                @show-view="(view: CatalogueView, record: LayerSubmission) => setSelectedView<LayerSubmission>(view, record, RecordType.LayerSubscription)"/>
+                @navigate="navigate"/>
               <layer-submission-data-table v-if='selectedTab === "Layer Submissions"'
-                @show-view="(view: CatalogueView, record: LayerSubscription) => setSelectedView<LayerSubscription>(view, record, selectedViewSubmission, RecordType.LayerSubmission)"/>
+                @navigate="navigate"/>
             </template>
           </accordion>
         </template>
       </card>
-      <catalogue-entry-details v-if="selectedView === 'view'" :catalogue-entry="selectedViewEntry"
-                               @exit-details="setSelectedView('list', undefined, undefined)"/>
+      <catalogue-entry-details v-if="selectedView === CatalogueView.View" :catalogue-entry="selectedViewEntry"
+      @navigate="navigate"/>
     </div>
   </div>
 </template>

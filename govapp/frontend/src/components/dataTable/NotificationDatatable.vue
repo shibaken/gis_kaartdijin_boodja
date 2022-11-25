@@ -26,7 +26,7 @@
       </tr>
     </template>
     <template #data>
-      <tr v-for="(row, index) in allNotifications" :id="index" :key="index">
+      <tr v-for="(row, index) in allNotifications" :key="index">
           <td>{{ row.name }}</td>
           <td>{{ row.email }}</td>
           <td>{{ row.url }}</td>

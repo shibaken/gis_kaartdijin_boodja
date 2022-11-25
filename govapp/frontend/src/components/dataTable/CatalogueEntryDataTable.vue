@@ -7,17 +7,18 @@
   import DataTablePagination from "./DataTablePagination.vue";
   import { onMounted } from "vue";
   import { DateTime } from "luxon";
-  import { CatalogueView } from "../viewState.api";
-  import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
+  import { CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
   const { catalogueEntries, numPages, pageSize, currentPage, filters } = storeToRefs(catalogueEntryStore);
   const { getCatalogueEntries } = catalogueEntryStore;
 
-  const emit = defineEmits<{
-    (e: "show-view", view: CatalogueView, catalogueEntry: CatalogueEntry): void
-  }>();
+  /**
+   * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
+   */
+  interface NavEmits extends NavigationEmits {}
+  const emit = defineEmits<NavEmits>();
 
   function setPage (pageNumber: number) {
     filters.value.set("pageNumber", pageNumber);
@@ -54,7 +55,10 @@
           <td>{{ DateTime.fromISO(row.updatedAt).toFormat('HH:mm') }}</td>
           <td>{{ row.assignedTo?.username }}</td>
           <td>
-            <a href="#" class="me-2" @click="emit('show-view', 'view', row)">View</a>
+            <a href="#" class="me-2"
+              @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
+              View
+            </a>
             <a href="#">History</a>
           </td>
         </template>

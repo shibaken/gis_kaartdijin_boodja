@@ -228,12 +228,24 @@ const DUMMY_WEBHOOK_NOTIFICATION_TYPES: Array<NotificationType> = [
 ];
 
 export class BackendServiceStub implements BackendService {
+  public getLayerSubscription (id: number): Promise<RawLayerSubscription> {
+    return Promise.resolve(DUMMY_LAYER_SUBSCRIPTIONS.find(dummy => dummy.id === id)!);
+  }
+
   public getLayerSubscriptions (): Promise<PaginatedRecord<RawLayerSubscription>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_LAYER_SUBSCRIPTIONS));
   }
 
+  public getCatalogueEntry (id: number): Promise<RawCatalogueEntry> {
+    return Promise.resolve(DUMMY_CATALOGUE_ENTRIES.find(dummy => dummy.id === id)!);
+  }
+
   public getCatalogueEntries (): Promise<PaginatedRecord<RawCatalogueEntry>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_CATALOGUE_ENTRIES));
+  }
+
+  public async getLayerSubmission (id: number): Promise<RawLayerSubmission> {
+    return Promise.resolve(DUMMY_LAYER_SUBMISSIONS.find(dummy => dummy.id === id)!);
   }
 
   public async getLayerSubmissions (): Promise<PaginatedRecord<RawLayerSubmission>> {
