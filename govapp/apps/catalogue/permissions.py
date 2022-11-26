@@ -80,12 +80,12 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # Update and Partial Update
             # Check Catalogue Entry specific permissions
             # 1. Object is a Catalogue Entry
-            # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+            # 2. Catalogue Entry is unlocked
             # 3. Catalogue Entry is `assigned_to` the request user
             # 4. User is in the Catalogue Editor group
             allowed = (
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and obj.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
+                and obj.is_unlocked()
                 and obj.assigned_to == request.user
                 and utils.is_catalogue_editor(request.user)
             )
@@ -133,13 +133,13 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             # Create
             # Check Catalogue Entry specific permissions
             # 1. Request contains a reference to a Catalogue Entry
-            # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+            # 2. Catalogue Entry is unlocked
             # 3. Catalogue Entry is `assigned_to` the request user
             # 4. User is in the Catalogue Editor group
             catalogue_entry = utils.catalogue_entry_from_request(request)
             allowed = (
                 catalogue_entry is not None
-                and catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
+                and catalogue_entry.is_unlocked()
                 and catalogue_entry.assigned_to == request.user
                 and utils.is_catalogue_editor(request.user)
             )
@@ -184,13 +184,13 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             # Destroy, Update and Partial Update
             # Check Catalogue Entry specific permissions
             # 1. Object has a Catalogue Entry attached to it
-            # 2. Catalogue Entry is unlocked (i.e., status is `DRAFT`)
+            # 2. Catalogue Entry is unlocked
             # 3. Catalogue Entry is `assigned_to` the request user
             # 4. User is in the Catalogue Editor group
             allowed = (
                 hasattr(obj, "catalogue_entry")
                 and isinstance(obj.catalogue_entry, models.catalogue_entries.CatalogueEntry)
-                and obj.catalogue_entry.status == models.catalogue_entries.CatalogueEntryStatus.DRAFT
+                and obj.catalogue_entry.is_unlocked()
                 and obj.catalogue_entry.assigned_to == request.user
                 and utils.is_catalogue_editor(request.user)
             )

@@ -22,16 +22,18 @@ UserModel = auth.get_user_model()
 
 class CatalogueEntryStatus(models.IntegerChoices):
     """Enumeration for a Catalogue Entry Status."""
-    DRAFT = 1
+    NEW_DRAFT = 1
     LOCKED = 2
-    CANCELLED = 3
+    DECLINED = 3
+    DRAFT = 4
+    PENDING = 5
 
 
 class CatalogueEntry(models.Model):
     """Model for a Catalogue Entry."""
     name = models.TextField()
     description = models.TextField()
-    status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.DRAFT)
+    status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     updated_at = models.DateTimeField(auto_now=True)
     custodian = models.ForeignKey(
         custodians.Custodian,
@@ -79,3 +81,21 @@ class CatalogueEntry(models.Model):
 
         # Return
         return active_layer
+
+    def is_unlocked(self) -> bool:
+        """Determines whether the Catalogue Entry is unlocked.
+
+        Returns:
+            bool: Whether the Catalogue Entry is unlocked.
+        """
+        # Check and Return
+        return self.status in (CatalogueEntryStatus.DRAFT, CatalogueEntryStatus.NEW_DRAFT)
+
+    def is_new(self) -> bool:
+        """Determines whether the Catalogue Entry is a new draft.
+
+        Returns:
+            bool: Whether the Catalogue Entry is unlocked.
+        """
+        # Check and Return
+        return self.status == CatalogueEntryStatus.NEW_DRAFT

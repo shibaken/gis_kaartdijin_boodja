@@ -279,7 +279,7 @@ def test_flow_catalogue_editor_and_assigned(
     # Authorized user can unlock the catalogue entry
     assert client.post(
         path=f"/api/catalogue/entries/{entry.id}/unlock/"
-    ).status_code == status.HTTP_200_OK
+    ).status_code == status.HTTP_204_NO_CONTENT
 
     # Authorized user can update the unlocked catalogue entry
     assert client.put(
@@ -294,7 +294,7 @@ def test_flow_catalogue_editor_and_assigned(
     # Authorized user can lock the catalogue entry
     assert client.post(
         path=f"/api/catalogue/entries/{entry.id}/lock/"
-    ).status_code == status.HTTP_200_OK
+    ).status_code == status.HTTP_204_NO_CONTENT
 
     # Authorized user cannot update the locked catalogue entry
     assert client.put(
@@ -346,7 +346,7 @@ def test_flow_catalogue_editor_and_assigned(
     # Authorized user can unlock the catalogue entry
     assert client.post(
         path=f"/api/catalogue/entries/{entry.id}/unlock/"
-    ).status_code == status.HTTP_200_OK
+    ).status_code == status.HTTP_204_NO_CONTENT
 
     # Authorized users can update the attributes if the catalogue entry is unlocked
     assert client.put(
@@ -372,4 +372,4 @@ def test_flow_catalogue_editor_and_assigned(
     # Authorized user can lock the catalogue entry
     assert client.post(
         path=f"/api/catalogue/entries/{entry.id}/lock/"
-    ).status_code == status.HTTP_200_OK
+    ).status_code == status.HTTP_204_NO_CONTENT

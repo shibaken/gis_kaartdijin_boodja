@@ -51,12 +51,14 @@ class CatalogueEntryViewSet(
         catalogue_entry = self.get_object()
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
-        # Set Catalogue Entry to Locked
-        catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.LOCKED
-        catalogue_entry.save()
+        # Check Catalogue Entry
+        if catalogue_entry.is_unlocked():
+            # Set Catalogue Entry to Locked
+            catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.LOCKED
+            catalogue_entry.save()
 
         # Return Response
-        return response.Response(status=status.HTTP_200_OK)
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     @utils.extend_schema(request=None, responses={status.HTTP_200_OK: None})
     @decorators.action(detail=True, methods=["POST"])
@@ -75,12 +77,14 @@ class CatalogueEntryViewSet(
         catalogue_entry = self.get_object()
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
-        # Set Catalogue Entry to Locked
-        catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.DRAFT
-        catalogue_entry.save()
+        # Check Catalogue Entry
+        if not catalogue_entry.is_unlocked():
+            # Set Catalogue Entry to Locked
+            catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.DRAFT
+            catalogue_entry.save()
 
         # Return Response
-        return response.Response(status=status.HTTP_200_OK)
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @utils.extend_schema(tags=["Catalogue - Custodians"])

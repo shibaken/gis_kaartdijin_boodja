@@ -223,10 +223,24 @@ class Absorber:
             # Log
             log.info("Attributes match, updating catalogue entry")
 
+            # Retrieve Current Active Layer
+            current_active_layer = catalogue_entry.active_layer
+
+            # Determine behaviour bases on current status
+            if catalogue_entry.is_new():
+                # Catalogue Entry is new
+                # Set the new incoming layer submission to SUBMITTED
+                # Set the old active layer to DECLINED
+                new_status = models.layer_submissions.LayerSubmissionStatus.SUBMITTED
+                current_active_layer.status = models.layer_submissions.LayerSubmissionStatus.DECLINED
+
+            else:
+                # Set the new incoming layer submission to ACCEPTED
+                new_status = models.layer_submissions.LayerSubmissionStatus.ACCEPTED
+
             # Update!
             # Update Catalogue Entry Current Active Layer to Inactive
             # Create New Active Layer Submission with Status ACCEPTED
-            current_active_layer = catalogue_entry.active_layer
             current_active_layer.is_active = False
             current_active_layer.save()
             models.layer_submissions.LayerSubmission.objects.create(
@@ -234,7 +248,7 @@ class Absorber:
                 description=metadata.description,
                 file=archive,
                 is_active=True,  # Active Layer!
-                status=models.layer_submissions.LayerSubmissionStatus.ACCEPTED,  # Accepted?
+                status=new_status,
                 catalogue_entry=catalogue_entry,
             )
 
@@ -250,7 +264,7 @@ class Absorber:
                 description=metadata.description,
                 file=archive,
                 is_active=False,
-                status=models.layer_submissions.LayerSubmissionStatus.DECLINED,  # Declined?
+                status=models.layer_submissions.LayerSubmissionStatus.DECLINED,
                 catalogue_entry=catalogue_entry,
             )
 
