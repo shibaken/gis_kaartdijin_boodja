@@ -17,7 +17,6 @@ from . import models
 from . import permissions
 from . import reversion  # noqa: F401
 from . import serializers
-from . import utils
 
 # Typing
 from typing import cast
@@ -55,22 +54,8 @@ class CatalogueEntryViewSet(
         catalogue_entry = self.get_object()
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
-        # Check Catalogue Entry
-        if catalogue_entry.is_unlocked():
-            # Calculate the attributes hash
-            attributes_hash = utils.attributes_hash(catalogue_entry.attributes.all())
-
-            # Compare attributes hash with current active layer submission
-            if catalogue_entry.active_layer.hash == attributes_hash:
-                # Set Catalogue Entry to Locked
-                catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.LOCKED
-
-            else:
-                # Set Catalogue Entry to Pending
-                catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.PENDING
-
-            # Save the Catalogue Entry
-            catalogue_entry.save()
+        # Lock
+        catalogue_entry.lock()
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -92,11 +77,8 @@ class CatalogueEntryViewSet(
         catalogue_entry = self.get_object()
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
-        # Check Catalogue Entry
-        if not catalogue_entry.is_unlocked():
-            # Set Catalogue Entry to Locked
-            catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.DRAFT
-            catalogue_entry.save()
+        # Unlock
+        catalogue_entry.unlock()
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)

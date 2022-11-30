@@ -7,6 +7,7 @@ from django.db import models
 
 # Local
 from . import custodians
+from .. import utils
 
 # Typing
 from typing import TYPE_CHECKING
@@ -82,6 +83,33 @@ class CatalogueEntry(models.Model):
         # Return
         return active_layer
 
+    def is_locked(self) -> bool:
+        """Determines whether the Catalogue Entry is locked.
+
+        Returns:
+            bool: Whether the Catalogue Entry is locked.
+        """
+        # Check and Return
+        return self.status == CatalogueEntryStatus.LOCKED
+
+    def is_pending(self) -> bool:
+        """Determines whether the Catalogue Entry is locked (pending).
+
+        Returns:
+            bool: Whether the Catalogue Entry is locked (pending).
+        """
+        # Check and Return
+        return self.status == CatalogueEntryStatus.PENDING
+
+    def is_declined(self) -> bool:
+        """Determines whether the Catalogue Entry is declined.
+
+        Returns:
+            bool: Whether the Catalogue Entry is declined.
+        """
+        # Check and Return
+        return self.status == CatalogueEntryStatus.DECLINED
+
     def is_unlocked(self) -> bool:
         """Determines whether the Catalogue Entry is unlocked.
 
@@ -99,3 +127,30 @@ class CatalogueEntry(models.Model):
         """
         # Check and Return
         return self.status == CatalogueEntryStatus.NEW_DRAFT
+
+    def lock(self) -> None:
+        """Locks the Catalogue Entry."""
+        # Check Catalogue Entry
+        if self.is_unlocked():
+            # Calculate the attributes hash
+            attributes_hash = utils.attributes_hash(self.attributes.all())
+
+            # Compare attributes hash with current active layer submission
+            if self.active_layer.hash == attributes_hash:
+                # Set Catalogue Entry to Locked
+                self.status = CatalogueEntryStatus.LOCKED
+
+            else:
+                # Set Catalogue Entry to Pending
+                self.status = CatalogueEntryStatus.PENDING
+
+            # Save the Catalogue Entry
+            self.save()
+
+    def unlock(self) -> None:
+        """Unlocks the Catalogue Entry."""
+        # Check Catalogue Entry
+        if self.is_locked() or self.is_pending():
+            # Set Catalogue Entry to Draft
+            self.status = CatalogueEntryStatus.DRAFT
+            self.save()
