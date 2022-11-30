@@ -76,7 +76,7 @@ class LayerSubmission(models.Model):
             # Update New Active Layer to Active
             current_active_layer.is_active = False
             current_active_layer.save()
-            self.active = True
+            self.is_active = True
             self.save()
 
             # Check if Catalogue Entry is Pending
