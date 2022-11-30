@@ -37,7 +37,7 @@ class CatalogueEntryViewSet(
     filterset_class = filters.CatalogueEntryFilter
     permission_classes = [permissions.IsCatalogueEntryPermissions]
 
-    @utils.extend_schema(request=None, responses={status.HTTP_200_OK: None})
+    @utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def lock(self, request: request.Request, pk: str) -> response.Response:
         """Locks the Catalogue Entry.
@@ -63,7 +63,7 @@ class CatalogueEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-    @utils.extend_schema(request=None, responses={status.HTTP_200_OK: None})
+    @utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def unlock(self, request: request.Request, pk: str) -> response.Response:
         """Unlocks the Catalogue Entry.

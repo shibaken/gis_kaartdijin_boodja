@@ -33,9 +33,11 @@ def test_flow_not_catalogue_editor(
     entry = catalogue_entry_factory.create()
     assert isinstance(entry, models.catalogue_entries.CatalogueEntry)
 
-    # Ensure the Assigned To User is NOT in the Catalogue Editors Group
+    # Ensure the Assigned To User is NOT in the Catalogue Editors or
+    # Administrators Groups
     assert isinstance(entry.assigned_to, auth_models.User)
     entry.assigned_to.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
 
     # Authenticate
     client.force_login(entry.assigned_to)
@@ -137,9 +139,11 @@ def test_flow_not_assigned_to(
     entry = catalogue_entry_factory.create()
     assert isinstance(entry, models.catalogue_entries.CatalogueEntry)
 
-    # Ensure the User is in the Catalogue Editors Group
+    # Ensure the User is in the Catalogue Editors Group but NOT the
+    # Administrators Group
     assert isinstance(entry.assigned_to, auth_models.User)
     entry.assigned_to.groups.add(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
 
     # Authenticate
     client.force_login(entry.assigned_to)
@@ -245,9 +249,11 @@ def test_flow_catalogue_editor_and_assigned(
     entry = catalogue_entry_factory.create()
     assert isinstance(entry, models.catalogue_entries.CatalogueEntry)
 
-    # Ensure the Assigned To User is in the Catalogue Editors Group
+    # Ensure the Assigned To User is in the Catalogue Editors Group but NOT the
+    # Administrators Group
     assert isinstance(entry.assigned_to, auth_models.User)
     entry.assigned_to.groups.add(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
 
     # Authenticate
     client.force_login(entry.assigned_to)

@@ -23,6 +23,7 @@ class LayerSubmission(models.Model):
     is_active = models.BooleanField()
     status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)
     submitted_at = models.DateTimeField(auto_now_add=True)
+    hash = models.TextField()  # noqa: A003
     catalogue_entry = models.ForeignKey(
         catalogue_entries.CatalogueEntry,
         related_name="layers",

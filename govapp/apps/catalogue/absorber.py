@@ -15,9 +15,10 @@ import reversion
 from . import models
 from . import readers
 from . import storage
+from . import utils
 
 # Typing
-from typing import Optional, cast
+from typing import Optional
 
 
 # Logging
@@ -124,8 +125,8 @@ class Absorber:
             # Update
             self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
 
-    @transaction.atomic
-    @reversion.create_revision  # type: ignore[misc]
+    @transaction.atomic()
+    @reversion.create_revision()  # type: ignore[misc]
     def create_catalogue_entry(
         self,
         metadata: readers.types.metadata.Metadata,
@@ -144,6 +145,9 @@ class Absorber:
         # Log
         log.info("Creating new catalogue entry")
 
+        # Calculate attributes hash
+        attributes_hash = utils.attributes_hash(attributes)
+
         # Create Catalogue Entry
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
             name=metadata.name,
@@ -156,6 +160,7 @@ class Absorber:
             description=metadata.description,
             file=archive,
             is_active=True,  # Active!
+            hash=attributes_hash,
             catalogue_entry=catalogue_entry,
         )
 
@@ -187,8 +192,8 @@ class Absorber:
                     catalogue_entry=catalogue_entry,
                 )
 
-    @transaction.atomic
-    @reversion.create_revision  # type: ignore[misc]
+    @transaction.atomic()
+    @reversion.create_revision()  # type: ignore[misc]
     def update_catalogue_entry(
         self,
         catalogue_entry: models.catalogue_entries.CatalogueEntry,
@@ -213,16 +218,12 @@ class Absorber:
         # TODO
         ...
 
-        # Retrieve the Catalogue Entry attributes for comparison
-        # We also cast the type here to help `mypy` with the Django backwards relation
-        current_attributes = list(catalogue_entry.attributes.all())
-        current_attributes = cast(list[models.layer_attributes.LayerAttribute], current_attributes)
-
-        # Compare Attributes
-        attributes_match = self.compare_attributes(current_attributes, attributes)
+        # Calculate Attribute Hashes for Layer Submission and Catalogue Entry
+        ls_hash = utils.attributes_hash(attributes)
+        ce_hash = utils.attributes_hash(catalogue_entry.attributes.all())
 
         # Check if they match!
-        if attributes_match:
+        if ls_hash == ce_hash:
             # Log
             log.info("Attributes match, updating catalogue entry")
 
@@ -251,6 +252,7 @@ class Absorber:
                 description=metadata.description,
                 file=archive,
                 is_active=True,  # Active Layer!
+                hash=ls_hash,
                 status=new_status,
                 catalogue_entry=catalogue_entry,
             )
@@ -267,45 +269,7 @@ class Absorber:
                 description=metadata.description,
                 file=archive,
                 is_active=False,
+                hash=ls_hash,
                 status=models.layer_submissions.LayerSubmissionStatus.DECLINED,
                 catalogue_entry=catalogue_entry,
             )
-
-    def compare_attributes(
-        self,
-        current_attributes: Optional[list[models.layer_attributes.LayerAttribute]],
-        new_attributes: Optional[list[readers.types.attributes.Attribute]],
-    ) -> bool:
-        """Compares existing current attributes with new attributes.
-
-        Args:
-            current_attributes (Optional[list[LayerAttribute]]): Current attributes
-            new_attributes (Optional[list[Attribute]]): New attributes
-
-        Returns:
-            bool: Whether the attributes match
-        """
-        # Check that attributes exist
-        # Replace with an empty list if they are None so the comparison is easier
-        new_attributes = [] if not new_attributes else new_attributes
-        current_attributes = [] if not current_attributes else current_attributes
-
-        # Compare the number of attributes
-        if not len(current_attributes) == len(new_attributes):
-            # They can't match!
-            return False
-
-        # First, sort the attributes by their "order"
-        # This is just in case the order of the lists is not determinstic
-        current_attributes = sorted(current_attributes, key=lambda x: x.order)
-        new_attributes = sorted(new_attributes, key=lambda x: x.order)
-
-        # Compare the attributes
-        for (current, new) in zip(current_attributes, new_attributes):
-            # Compare
-            if (current.name, current.type, current.order) != (new.name, new.type, new.order):
-                # They can't match!
-                return False
-
-        # They match!
-        return True
