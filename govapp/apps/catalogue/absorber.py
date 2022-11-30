@@ -214,71 +214,18 @@ class Absorber:
         # Log
         log.info("Updating existing catalogue entry")
 
-        # Check the created date?
-        # TODO
-        ...
+        # Calculate Layer Submission Attributes Hash
+        attributes_hash = utils.attributes_hash(attributes)
 
-        # Calculate Attribute Hashes for Layer Submission and Catalogue Entry
-        ls_hash = utils.attributes_hash(attributes)
-        ce_hash = utils.attributes_hash(catalogue_entry.attributes.all())
-
-        # Check if they match!
-        if ls_hash == ce_hash:
-            # Log
-            log.info("Attributes match, updating catalogue entry")
-
-            # Retrieve Current Active Layer
-            current_active_layer = catalogue_entry.active_layer
-
-            # Determine behaviour bases on current status
-            if catalogue_entry.is_new():
-                # Catalogue Entry is new
-                # Set the new incoming layer submission to SUBMITTED
-                # Set the old active layer to DECLINED
-                new_status = models.layer_submissions.LayerSubmissionStatus.SUBMITTED
-                current_active_layer.status = models.layer_submissions.LayerSubmissionStatus.DECLINED
-
-            else:
-                # Set the new incoming layer submission to ACCEPTED
-                new_status = models.layer_submissions.LayerSubmissionStatus.ACCEPTED
-
-            # Update!
-            # Update Catalogue Entry Current Active Layer to Inactive
-            # Create New Active Layer Submission with Status ACCEPTED
-            current_active_layer.is_active = False
-            current_active_layer.save()
-            models.layer_submissions.LayerSubmission.objects.create(
+        # Create New Layer Submission
+        layer_submission = models.layer_submissions.LayerSubmission.objects.create(
                 name=metadata.name,
                 description=metadata.description,
                 file=archive,
-                is_active=True,  # Active Layer!
-                hash=ls_hash,
-                status=new_status,
+                is_active=False,  # Starts out Inactive
+                hash=attributes_hash,
                 catalogue_entry=catalogue_entry,
             )
 
-            # Check Catalogue Entry Status
-            if catalogue_entry == models.catalogue_entries.CatalogueEntryStatus.PENDING:
-                # This means the status was PENDING, and the Catalogue Entry
-                # has been updated with a new Layer Submission that matches the
-                # pending attributes.
-                # Update Status to LOCKED
-                catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.LOCKED
-                catalogue_entry.save()
-
-        else:
-            # Log
-            log.info("Attributes do not match, layer submission failed")
-
-            # Failure!
-            # Do not update Catalogue Entry
-            # Create New Inactive Layer Submission with Status DECLINED
-            models.layer_submissions.LayerSubmission.objects.create(
-                name=metadata.name,
-                description=metadata.description,
-                file=archive,
-                is_active=False,
-                hash=ls_hash,
-                status=models.layer_submissions.LayerSubmissionStatus.DECLINED,
-                catalogue_entry=catalogue_entry,
-            )
+        # Update Catalogue Entry with Layer Submission
+        layer_submission.update_catalogue_entry()
