@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "django_filters",
+    "reversion",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -68,6 +69,7 @@ MIDDLEWARE = [
     "dbca_utils.middleware.SSOLoginMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "govapp.middleware.CacheControl",
+    "reversion.middleware.RevisionMiddleware",
 ]
 ROOT_URLCONF = "govapp.urls"
 TEMPLATES = [

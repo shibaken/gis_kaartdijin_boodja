@@ -1,44 +1,54 @@
 """Kaartdijin Boodja Catalogue Django Application Utility Functions."""
 
 
-# Third-Party
-from django import conf
-from django.contrib.auth import models
-from rest_framework import request
-
-# Local
-from .models import catalogue_entries
+# Standard
+import hashlib
+import json
 
 # Typing
-from typing import Optional, Union
+from typing import Any, Iterable, Optional
 
 
-def is_catalogue_editor(user: Union[models.User, models.AnonymousUser]) -> bool:
-    """Checks whether a user is a Catalogue Editor.
+def attributes_hash(attributes: Optional[Iterable[Any]]) -> str:
+    """Calculates the hash of attributes.
 
-    Args:
-        user (Union[models.User, models.AnonymousUser]): User to be checked.
+    This function heavily relies on Python duck-typing - i.e., you can call
+    this function with an iterable of *any* object, and the function will
+    attempt to make it work. This was done so that Django models and
+    dataclasses can both be passed in.
 
-    Returns:
-        bool: Whether the user is in the Catalogue Editor group.
-    """
-    # Check and Return
-    return (
-        not isinstance(user, models.AnonymousUser)  # Must be logged in
-        and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
-    )
-
-
-def catalogue_entry_from_request(request: request.Request) -> Optional[catalogue_entries.CatalogueEntry]:
-    """Retrieves a possible Catalogue Entry from request data.
+    This function is used to determine whether the Catalogue Entry matches its
+    active Layer Submission at runtime.
 
     Args:
-        request (request.Request): Request to retrieve Catalogue Entry from.
+        attributes (Optional[Iterable[Any]]): Possible iterable of attributes.
 
     Returns:
-        Optional[catalogue_entries.CatalogueEntry]: Catalogue Entry.
+        str: The hex SHA256 hash of the attributes.
     """
-    # Retrieve Possible Catalogue Entry and Return
-    return catalogue_entries.CatalogueEntry.objects.filter(
-        id=request.data.get("catalogue_entry", -1),  # -1 Sentinel Value for Non-Existent Catalogue Entry
-    ).first()
+    # Initialise Hash
+    hash = hashlib.sha256()  # noqa: A001
+
+    # Allow the iteration below in the case that there are no attributes
+    attributes = attributes or []
+
+    # Loop through attributes in order
+    # We expect the attributes to have an `order` field
+    # If not, we leave them sorted as is
+    for attribute in sorted(attributes, key=lambda a: getattr(a, "order", 0)):
+        # Construct attribute dictionary
+        attr = {
+            "name": getattr(attribute, "name", None),
+            "type": getattr(attribute, "type", None),
+            "order": getattr(attribute, "order", None),
+        }
+
+        # Serialize attribute dictionary to JSON and encode the JSON
+        json_string = json.dumps(attr, sort_keys=True, default=str)
+        json_bytes = json_string.encode("UTF-8")
+
+        # Update Hash
+        hash.update(json_bytes)
+
+    # Return
+    return hash.hexdigest()
