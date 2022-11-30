@@ -32,9 +32,8 @@ export class LayerSubscriptionProvider {
     return layerSubscription;
   }
 
-  public async fetchLayerSubscriptions (layerSubscriptionFilter: LayerSubscriptionFilter):
+  public async fetchLayerSubscriptions ({ subscribedFrom, subscribedTo, status }: LayerSubscriptionFilter):
       Promise<PaginatedRecord<LayerSubscription>> {
-    const { subscribedFrom, subscribedTo, status } = Object.fromEntries(layerSubscriptionFilter.entries());
     const rawFilter = {
       status,
       subscribed_before: subscribedTo,

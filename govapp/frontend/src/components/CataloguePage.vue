@@ -17,6 +17,9 @@
   import { CatalogueEntryProvider } from "../providers/catalogueEntryProvider";
   import { LayerSubmissionProvider } from "../providers/layerSubmissionProvider";
   import { LayerSubscriptionProvider } from "../providers/layerSubscriptionProvider";
+  import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
+  import { useLayerSubmissionStore } from "../stores/LayerSubmissionStore";
+  import { useLayerSubscriptionStore } from "../stores/LayerSubscriptionStore";
 
   const catalogueEntryProvider = new CatalogueEntryProvider();
   const layerSubscriptionProvider = new LayerSubscriptionProvider();
@@ -49,6 +52,16 @@
       console.warn("Selected view record was not a recognised type");
     }
   }
+
+  const { clearFilters: clearEntryFilters } = useCatalogueEntryStore();
+  const { clearFilters: clearSubmissionFilters } = useLayerSubmissionStore();
+  const { clearFilters: clearSubscriptionFilters } = useLayerSubscriptionStore();
+
+  function onClearClick() {
+    clearEntryFilters();
+    clearSubmissionFilters();
+    clearSubscriptionFilters();
+  }
 </script>
 
 <template>
@@ -77,22 +90,23 @@
           <h4>{{ selectedTab }}</h4>
         </template>
         <template #body>
-          <accordion id-prefix="filter" header-text="Filters">
+          <accordion id-prefix="filter" header-text="Filters" class="mb-2">
             <template #body>
               <form class="form d-flex gap-3">
                 <catalogue-entry-filter v-if="selectedTab === 'Catalogue Entries'"/>
                 <layer-subscription-filter v-if="selectedTab === 'Layer Subscriptions'"/>
                 <layer-submission-filter v-if="selectedTab === 'Layer Submissions'"/>
               </form>
-
-              <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"'
-                @navigate="navigate"/>
-              <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"'
-                @navigate="navigate"/>
-              <layer-submission-data-table v-if='selectedTab === "Layer Submissions"'
-                @navigate="navigate"/>
+              <div class="d-flex">
+                <button class="btn btn-sm btn-link link-info align-self-end ms-auto pt-0 mb-1" @click="onClearClick">
+                  <small>Clear Filters</small>
+                </button>
+              </div>
             </template>
           </accordion>
+          <catalogue-entry-data-table v-if='selectedTab === "Catalogue Entries"' @navigate="navigate"/>
+          <layer-subscription-data-table v-if='selectedTab === "Layer Subscriptions"' @navigate="navigate"/>
+          <layer-submission-data-table v-if='selectedTab === "Layer Submissions"' @navigate="navigate"/>
         </template>
       </card>
       <catalogue-entry-details v-if="selectedView === CatalogueView.View" :catalogue-entry="selectedViewEntry"
@@ -107,6 +121,7 @@
       form {
         overflow-x: auto;
       }
+      padding-bottom: 0;
     }
   }
 

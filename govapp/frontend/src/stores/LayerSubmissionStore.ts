@@ -24,7 +24,7 @@ export const useLayerSubmissionStore = defineStore("layerSubmission", () => {
   // Filters
   const tableFilterComposable = useTableFilterComposable<LayerSubmissionFilter>();
   const { filters } = toRefs(tableFilterComposable);
-  const { setFilter, clearFilter } = tableFilterComposable;
+  const { setFilter, clearFilters } = tableFilterComposable;
 
   watch(filters.value, () => getLayerSubmissions());
 
@@ -37,6 +37,6 @@ export const useLayerSubmissionStore = defineStore("layerSubmission", () => {
     return submissions;
   }
 
-  return { layerSubmissions, currentPage, pageSize, numPages, filters, setFilter, clearFilter, submissionStatuses,
+  return { layerSubmissions, currentPage, pageSize, numPages, filters, setFilter, clearFilters, submissionStatuses,
     getLayerSubmissions };
 });

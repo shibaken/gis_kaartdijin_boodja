@@ -20,7 +20,7 @@
 <template>
   <div class="form-floating">
     <select :id="`${field}Select`" :class="`form-select form-select-sm ${classes ?? ''}`"
-            :aria-label="`${name} select`" @change="valueUpdated">
+            :aria-label="`${name} select`" @change="valueUpdated" :value="value">
       <option :value="null"></option>
       <option v-for="[optionName, optionValue] in values" :key="optionName" :value="optionValue">
         {{ optionName }}
