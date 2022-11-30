@@ -23,7 +23,7 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   // Filters
   const tableFilterComposable = useTableFilterComposable<CatalogueEntryFilter>();
   const { filters } = toRefs(tableFilterComposable);
-  const { setFilter, clearFilter } = tableFilterComposable;
+  const { setFilter, clearFilters } = tableFilterComposable;
 
   watch(filters.value, () => getCatalogueEntries());
 
@@ -53,7 +53,7 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
     });
 
     if (recordsToFetch.length > 0) {
-      const filter: CatalogueEntryFilter = new Map(Object.entries({ ids: recordsToFetch }));
+      const filter: CatalogueEntryFilter = { ids: recordsToFetch };
       const recordsToFetchResponse = await catalogueEntryProvider
         .fetchCatalogueEntries(filter);
       extantRecords.push(...recordsToFetchResponse.results);
@@ -62,6 +62,6 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
     return extantRecords;
   }
 
-  return { catalogueEntries, currentPage, pageSize, numPages, filters, setFilter, clearFilter, entryStatuses,
+  return { catalogueEntries, currentPage, pageSize, numPages, filters, setFilter, clearFilters, entryStatuses,
     getCatalogueEntries, getOrFetch, getOrFetchList };
 });

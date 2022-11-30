@@ -1,4 +1,4 @@
-export interface Filter {
-  field: string
-  value?: unknown
+export interface Filter<T> {
+  field: keyof T
+  value?: T[keyof T]
 }

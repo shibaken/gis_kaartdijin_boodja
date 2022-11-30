@@ -24,7 +24,7 @@ export const useLayerSubscriptionStore = defineStore("layerSubscription", () => 
   // Filters
   const tableFilterComposable = useTableFilterComposable<LayerSubscriptionFilter>();
   const { filters } = toRefs(tableFilterComposable);
-  const { setFilter, clearFilter } = tableFilterComposable;
+  const { setFilter, clearFilters } = tableFilterComposable;
 
   watch(filters.value, () => getLayerSubscriptions());
 
@@ -37,6 +37,6 @@ export const useLayerSubscriptionStore = defineStore("layerSubscription", () => 
     return subscriptions;
   }
 
-  return { layerSubscriptions, currentPage, pageSize, numPages, filters, setFilter, clearFilter, subscriptionStatuses,
+  return { layerSubscriptions, currentPage, pageSize, numPages, filters, setFilter, clearFilters, subscriptionStatuses,
     getLayerSubscriptions };
 });

@@ -37,9 +37,8 @@ export class CatalogueEntryProvider {
     } as CatalogueEntry;
   }
 
-  public async fetchCatalogueEntries (catalogueEntryFilter: CatalogueEntryFilter):
+  public async fetchCatalogueEntries ({ ids, custodian, status, assignedTo, updateFrom, updateTo }: CatalogueEntryFilter):
       Promise<PaginatedRecord<CatalogueEntry>>{
-    const { ids, custodian, status, assignedTo, updateFrom, updateTo } = Object.fromEntries(catalogueEntryFilter.entries());
 
     const rawFilter = {
       id__in: ids,

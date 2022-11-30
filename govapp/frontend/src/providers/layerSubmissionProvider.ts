@@ -31,10 +31,9 @@ export class LayerSubmissionProvider {
     } as LayerSubmission;
   }
 
-  public async fetchLayerSubmissions (layerSubmissionFilter: LayerSubmissionFilter):
+  public async fetchLayerSubmissions ({ submittedFrom, submittedTo, status }: LayerSubmissionFilter):
       Promise<PaginatedRecord<LayerSubmission>> {
 
-    const { submittedFrom, submittedTo, status } = Object.fromEntries(layerSubmissionFilter.entries());
     const rawFilter = {
       status,
       submitted_before: submittedTo,
