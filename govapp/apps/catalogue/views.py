@@ -8,12 +8,14 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
+from reversion_rest_framework import mixins as reversion_mixins
 
 # Local
 from . import filters
 from . import mixins
 from . import models
 from . import permissions
+from . import reversion  # noqa: F401
 from . import serializers
 
 # Typing
@@ -23,6 +25,7 @@ from typing import cast
 @utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
 class CatalogueEntryViewSet(
     mixins.ChoicesMixin,
+    reversion_mixins.HistoryMixin,
     viewsets.mixins.RetrieveModelMixin,
     viewsets.mixins.ListModelMixin,
     viewsets.mixins.UpdateModelMixin,

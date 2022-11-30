@@ -278,14 +278,26 @@ resolved_reference = "5f339414c3032952bd6e43eab04f73105a65f35b"
 
 [[package]]
 name = "django-reversion"
-version = "3.0.0"
+version = "5.0.4"
 description = "An extension to the Django web framework that provides version control for model instances."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 
 [package.dependencies]
-django = ">=1.8"
+django = ">=3.2"
+
+[[package]]
+name = "django-reversion-rest-framework"
+version = "1.1.2"
+description = "A package for adding a django-reversion history endpoint to django-rest-framework ModelViewSet"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+django-reversion = ">=4"
+djangorestframework = ">=3"
 
 [[package]]
 name = "django-stubs"
@@ -1261,7 +1273,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "63e979c4d4c149529526e0924eb1dd03b4c22fd11663d44494e2c3a2e2e8577f"
+content-hash = "0cfd049892369e90b0374da95cb8b2bc56d4fd87e1a2846e06a6976b2e32d73e"
 
 [metadata.files]
 asgiref = [
@@ -1479,8 +1491,12 @@ django-filter = [
 ]
 django-media-serv = []
 django-reversion = [
-    {file = "django-reversion-3.0.0.tar.gz", hash = "sha256:61e07432799a11734c5b9911de7a4c2ba2dd93f3d83861abeef3018ddf08a7b4"},
-    {file = "django_reversion-3.0.0-py2.py3-none-any.whl", hash = "sha256:f2d5a34cc2c1c2f0f0ade0a79b71b1c15c6161053aacfa08f5b8b216982c3ae0"},
+    {file = "django-reversion-5.0.4.tar.gz", hash = "sha256:c12bab452d31dd3c244456cf1df383acf14ba147cf99404c5e44412596de42fc"},
+    {file = "django_reversion-5.0.4-py3-none-any.whl", hash = "sha256:a591cbce8621b5d036a37617554668b5ef2eb9777682e3af20b6401ee87cfbc5"},
+]
+django-reversion-rest-framework = [
+    {file = "django-reversion-rest-framework-1.1.2.tar.gz", hash = "sha256:545cf0d77ffed1a0c78af550eacbd4e1990a125f9a5650be31e5a1f747576ded"},
+    {file = "django_reversion_rest_framework-1.1.2-py3-none-any.whl", hash = "sha256:7fafde4445b6d15a2a250b2a3017cf36761e0251d372014172a5bbec29b75e13"},
 ]
 django-stubs = [
     {file = "django-stubs-1.12.0.tar.gz", hash = "sha256:ea8b35d0da49f7b2ee99a79125f1943e033431dd114726d6643cc35de619230e"},
