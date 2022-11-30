@@ -2,7 +2,7 @@
 
 
 # Third-Party
-from drf_spectacular import utils
+from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
 from rest_framework import response
@@ -17,12 +17,13 @@ from . import models
 from . import permissions
 from . import reversion  # noqa: F401
 from . import serializers
+from . import utils
 
 # Typing
 from typing import cast
 
 
-@utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
+@drf_utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
 class CatalogueEntryViewSet(
     mixins.ChoicesMixin,
     reversion_mixins.HistoryMixin,
@@ -37,7 +38,7 @@ class CatalogueEntryViewSet(
     filterset_class = filters.CatalogueEntryFilter
     permission_classes = [permissions.IsCatalogueEntryPermissions]
 
-    @utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def lock(self, request: request.Request, pk: str) -> response.Response:
         """Locks the Catalogue Entry.
@@ -56,14 +57,25 @@ class CatalogueEntryViewSet(
 
         # Check Catalogue Entry
         if catalogue_entry.is_unlocked():
-            # Set Catalogue Entry to Locked
-            catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.LOCKED
+            # Calculate the attributes hash
+            attributes_hash = utils.attributes_hash(catalogue_entry.attributes.all())
+
+            # Compare attributes hash with current active layer submission
+            if catalogue_entry.active_layer.hash == attributes_hash:
+                # Set Catalogue Entry to Locked
+                catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.LOCKED
+
+            else:
+                # Set Catalogue Entry to Pending
+                catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.PENDING
+
+            # Save the Catalogue Entry
             catalogue_entry.save()
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-    @utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def unlock(self, request: request.Request, pk: str) -> response.Response:
         """Unlocks the Catalogue Entry.
@@ -90,7 +102,7 @@ class CatalogueEntryViewSet(
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@utils.extend_schema(tags=["Catalogue - Custodians"])
+@drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     """Custodian View Set."""
     queryset = models.custodians.Custodian.objects.all()
@@ -98,7 +110,7 @@ class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     filterset_class = filters.CustodianFilter
 
 
-@utils.extend_schema(tags=["Catalogue - Layer Attributes"])
+@drf_utils.extend_schema(tags=["Catalogue - Layer Attributes"])
 class LayerAttributeViewSet(
     mixins.ChoicesMixin,
     mixins.MultipleSerializersMixin,
@@ -117,7 +129,7 @@ class LayerAttributeViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
-@utils.extend_schema(tags=["Catalogue - Layer Metadata"])
+@drf_utils.extend_schema(tags=["Catalogue - Layer Metadata"])
 class LayerMetadataViewSet(
     mixins.ChoicesMixin,
     viewsets.mixins.RetrieveModelMixin,
@@ -132,7 +144,7 @@ class LayerMetadataViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
-@utils.extend_schema(tags=["Catalogue - Layer Submissions"])
+@drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
 class LayerSubmissionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     """Layer Submission View Set."""
     queryset = models.layer_submissions.LayerSubmission.objects.all()
@@ -140,7 +152,7 @@ class LayerSubmissionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet)
     filterset_class = filters.LayerSubmissionFilter
 
 
-@utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
+@drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
 class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     """Layer Subscription View Set."""
     queryset = models.layer_subscriptions.LayerSubscription.objects.all()
@@ -148,7 +160,7 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSe
     filterset_class = filters.LayerSubscriptionFilter
 
 
-@utils.extend_schema(tags=["Catalogue - Layer Symbology"])
+@drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(
     mixins.ChoicesMixin,
     viewsets.mixins.RetrieveModelMixin,
@@ -163,7 +175,7 @@ class LayerSymbologyViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
-@utils.extend_schema(tags=["Catalogue - Notifications (Email)"])
+@drf_utils.extend_schema(tags=["Catalogue - Notifications (Email)"])
 class EmailNotificationViewSet(
     mixins.ChoicesMixin,
     mixins.MultipleSerializersMixin,
@@ -182,7 +194,7 @@ class EmailNotificationViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions]
 
 
-@utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
+@drf_utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
 class WebhookNotificationViewSet(
     mixins.ChoicesMixin,
     mixins.MultipleSerializersMixin,

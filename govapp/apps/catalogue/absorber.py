@@ -257,6 +257,15 @@ class Absorber:
                 catalogue_entry=catalogue_entry,
             )
 
+            # Check Catalogue Entry Status
+            if catalogue_entry == models.catalogue_entries.CatalogueEntryStatus.PENDING:
+                # This means the status was PENDING, and the Catalogue Entry
+                # has been updated with a new Layer Submission that matches the
+                # pending attributes.
+                # Update Status to LOCKED
+                catalogue_entry.status = models.catalogue_entries.CatalogueEntryStatus.LOCKED
+                catalogue_entry.save()
+
         else:
             # Log
             log.info("Attributes do not match, layer submission failed")
