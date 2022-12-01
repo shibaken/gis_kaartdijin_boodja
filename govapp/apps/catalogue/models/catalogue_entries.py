@@ -163,7 +163,7 @@ class CatalogueEntry(models.Model):
     def decline(self) -> None:
         """Declines the Catalogue Entry."""
         # Check Catalogue Entry
-        if not self.is_declined():
+        if self.is_unlocked():
             # Check if Catalogue Entry is new
             if self.is_new():
                 # Decline the currently active layer
