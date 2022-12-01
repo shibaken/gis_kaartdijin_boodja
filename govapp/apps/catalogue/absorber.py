@@ -227,5 +227,5 @@ class Absorber:
                 catalogue_entry=catalogue_entry,
             )
 
-        # Update Catalogue Entry with Layer Submission
-        layer_submission.update_catalogue_entry()
+        # Attempt to "Activate" this Layer Submission
+        layer_submission.activate()
