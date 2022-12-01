@@ -37,10 +37,10 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # Creates and Destroys are not allowed by anyone
             allowed = False
 
-        elif view.action in ("list", "retrieve", "update", "partial_update", "lock", "unlock"):
+        elif view.action in ("list", "retrieve", "update", "partial_update", "lock", "unlock", "decline"):
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
-            # Locking and Unlocking might be allowed, but we delegate it to `has_object_permission`
+            # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
             allowed = True
 
         else:
@@ -91,8 +91,8 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
                 and is_catalogue_editor(request.user)
             ) or is_administrator(request.user)
 
-        elif view.action in ("lock", "unlock"):
-            # Lock and Unlock
+        elif view.action in ("lock", "unlock", "decline"):
+            # Lock, Unlock and Decline
             # 1. Object is a Catalogue Entry
             # 2. Catalogue Entry is `assigned_to` the request user
             # 3. User is in the Catalogue Editor group
