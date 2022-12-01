@@ -123,7 +123,7 @@ class CatalogueEntry(models.Model):
         """Determines whether the Catalogue Entry is a new draft.
 
         Returns:
-            bool: Whether the Catalogue Entry is unlocked.
+            bool: Whether the Catalogue Entry is a new draft.
         """
         # Check and Return
         return self.status == CatalogueEntryStatus.NEW_DRAFT
