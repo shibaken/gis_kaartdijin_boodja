@@ -4,6 +4,8 @@ import { LayerSubmissionStatus, PaginatedRecord, RawLayerSubmissionFilter } from
 import { LayerSubmission, LayerSubmissionFilter } from "./layerSubmissionProvider.api";
 import { StatusProvider } from "./statusProvider";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
+import { SortDirection } from "../components/viewState.api";
+import { toSnakeCase } from "../util/strings";
 
 export class LayerSubmissionProvider {
   // Get the backend stub if the test flag is used.
@@ -31,13 +33,21 @@ export class LayerSubmissionProvider {
     } as LayerSubmission;
   }
 
-  public async fetchLayerSubmissions ({ submittedFrom, submittedTo, status }: LayerSubmissionFilter):
+  public async fetchLayerSubmissions ({ submittedFrom, submittedTo, status, sortBy }: LayerSubmissionFilter):
       Promise<PaginatedRecord<LayerSubmission>> {
+    let sortString = "";
+    if (sortBy && sortBy.column) {
+      if (sortBy.direction === SortDirection.Descending) {
+        sortString = "-";
+      }
+      sortString += toSnakeCase(sortBy.column);
+    }
 
     const rawFilter = {
       status,
       submitted_before: submittedTo,
-      submitted_after: submittedFrom
+      submitted_after: submittedFrom,
+      order_by: sortString
     } as RawLayerSubmissionFilter;
 
     const { previous, next, count, results } = await this.backend.getLayerSubmissions(rawFilter);

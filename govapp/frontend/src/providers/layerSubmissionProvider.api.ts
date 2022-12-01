@@ -1,6 +1,7 @@
 import { LayerSubmissionStatus, RecordStatus } from "../backend/backend.api";
 import { PaginationFilter } from "./providerCommon.api";
 import { CatalogueEntry } from "./catalogueEntryProvider.api";
+import { SortDirection } from "../components/viewState.api";
 
 // Raw records, currently placeholders and subject to change
 export interface LayerSubmission {
@@ -20,4 +21,5 @@ export interface LayerSubmissionFilter extends PaginationFilter {
   status?: number;
   submittedFrom?: string;
   submittedTo?: string;
+  sortBy?: { column: keyof LayerSubmission, direction: SortDirection };
 }

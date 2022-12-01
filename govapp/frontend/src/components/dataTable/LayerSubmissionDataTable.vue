@@ -9,6 +9,9 @@
   import { DateTime } from "luxon";
   import { NavigationEmits } from "../viewState.api";
   import { CatalogueTab, CatalogueView } from "../viewState.api";
+  import SortableHeader from "./SortableHeader.vue";
+  import { useTableSortComposable } from "../../tools/sortComposable";
+  import { RawLayerSubmissionFilter } from "../../backend/backend.api";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubmissionStore = useLayerSubmissionStore();
@@ -16,12 +19,14 @@
   const { getLayerSubmissions } = layerSubmissionStore;
 
   function setPage (pageNumber: number) {
-    filters.value.set("pageNumber", pageNumber);
+    filters.value.pageNumber = pageNumber;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface NavEmits extends NavigationEmits {}
   const emit = defineEmits<NavEmits>();
+
+  const { sortDirection, onSort } = useTableSortComposable<RawLayerSubmissionFilter>(filters);
 
   onMounted(() => {
     getLayerSubmissions();
@@ -33,12 +38,12 @@
     <template #headers>
       <tr>
         <th></th>
-        <th>Number</th>
-        <th>Name</th>
-        <th>Submitted Date</th>
-        <th>Filename</th>
-        <th>Catalogue</th>
-        <th>Status</th>
+        <SortableHeader name="Number" column="number" alt-field="id" :direction="sortDirection('id')" @sort="onSort"/>
+        <SortableHeader name="Name" column="name" :direction="sortDirection('name')" @sort="onSort"/>
+        <SortableHeader name="Submitted Date" column="submittedDate" :direction="sortDirection('submittedDate')" @sort="onSort"/>
+        <SortableHeader name="Filename" column="file" :direction="sortDirection('file')" @sort="onSort"/>
+        <SortableHeader name="Catalogue" column="catalogue" :direction="sortDirection('catalogue')" @sort="onSort"/>
+        <SortableHeader name="Status" column="status" :direction="sortDirection('status')" @sort="onSort"/>
         <th>Action</th>
       </tr>
     </template>

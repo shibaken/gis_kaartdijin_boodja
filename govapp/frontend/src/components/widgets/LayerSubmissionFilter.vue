@@ -28,7 +28,7 @@
 
 <template>
   <form-select field="status" name="Status" :values="statuses.map(status => [status.label, status.id])"
-               :value="filters.status" @value-updated="(field, value) => setFilter({ field, value })"/>
+               :value="filters.status?.toString()" @value-updated="(field, value) => setFilter({ field, value })"/>
   <form-input field="submittedFrom" name="Submitted from" type="date" placeholder="DD/MM/YYYY"
               :value="filters.submittedFrom" @value-updated="(name, value) => setDateFilter(name, value)"/>
   <form-input field="submittedTo" name="Submitted to" type="date" placeholder="DD/MM/YYYY"
