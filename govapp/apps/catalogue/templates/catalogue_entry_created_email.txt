@@ -1,0 +1,5 @@
+{% extends 'base_email.txt' %}
+
+{% block content %}
+A new catalogue entry was created!
+{% endblock %}

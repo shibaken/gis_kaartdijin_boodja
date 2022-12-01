@@ -45,7 +45,22 @@ class LayerSubmission(models.Model):
         # Generate String and Return
         return f"{self.name}"
 
-    def update_catalogue_entry(self) -> None:
+    def is_declined(self) -> bool:
+        """Determines whether the Layer Submission is declined.
+
+        Returns:
+            bool: Whether the Layer Submission is declined.
+        """
+        # Check and Return
+        return self.status == LayerSubmissionStatus.DECLINED
+
+    def accept(self) -> None:
+        """Accepts the Layer Submission for locking of new Catalogue Entry."""
+        # Set Status and Save
+        self.status = LayerSubmissionStatus.ACCEPTED
+        self.save()
+
+    def activate(self) -> None:
         """Updates the Layer Submission's Catalogue Entry with this layer."""
         # Check the created date?
         # TODO

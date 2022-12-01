@@ -12,10 +12,12 @@ from django.db import transaction
 import reversion
 
 # Local
+from . import emails
 from . import models
 from . import readers
 from . import storage
 from . import utils
+from ..accounts import utils as accounts_utils
 
 # Typing
 from typing import Optional
@@ -192,6 +194,11 @@ class Absorber:
                     catalogue_entry=catalogue_entry,
                 )
 
+        # Send Emails!
+        emails.CatalogueEntryCreatedEmail().send_to_users(
+            *accounts_utils.all_administrators(),  # Send to all administrators
+        )
+
     @transaction.atomic()
     @reversion.create_revision()  # type: ignore[misc]
     def update_catalogue_entry(
@@ -227,5 +234,20 @@ class Absorber:
                 catalogue_entry=catalogue_entry,
             )
 
-        # Update Catalogue Entry with Layer Submission
-        layer_submission.update_catalogue_entry()
+        # Attempt to "Activate" this Layer Submission
+        layer_submission.activate()
+
+        # Check Layer Submission
+        if layer_submission.is_declined():
+            # Send Update Failure Email
+            emails.CatalogueEntryUpdateFailEmail().send_to_users(
+                *accounts_utils.all_administrators(),  # Send to all administrators
+                catalogue_entry.assigned_to,  # Send to assigned user if applicable
+            )
+
+        else:
+            # Send Update Success Email
+            emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
+                *accounts_utils.all_administrators(),  # Send to all administrators
+                catalogue_entry.assigned_to,  # Send to assigned user if applicable
+            )
