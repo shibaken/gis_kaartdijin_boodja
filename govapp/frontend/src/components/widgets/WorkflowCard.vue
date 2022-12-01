@@ -1,6 +1,25 @@
 <script lang="ts" setup>
   import FormSelect from "./FormSelect.vue";
   import Card from "./Card.vue";
+  import { User } from "../../backend/backend.api";
+  import { UserProvider } from "../../providers/userProvider";
+  import { onMounted, ref } from "vue";
+
+  withDefaults(defineProps<{
+      assignees: Array<User>
+    }>(),
+    {
+      assignees: () => []
+    });
+
+  const userProvider = new UserProvider();
+  const users = ref<Array<[string, string | number]>>([]);
+  onMounted(async () => {
+    for (const user of await userProvider.fetchUsers()) {
+      users.value.push([user.username, user.id]);
+    }
+  });
+
 </script>
 
 <template>
@@ -16,7 +35,7 @@
         <span class="link">Locked</span>
       </div>
       <div class="d-flex flex-column">
-        <form-select field="assignedTo" name="Currently assigned to" :values="[]"/>
+        <form-select field="assignedTo" name="Currently assigned to" :values="users"/>
         <button class="btn btn-link btn-sm align-self-end">Assign to me</button>
       </div>
       <div class="w-100 my-3 border-top"></div>

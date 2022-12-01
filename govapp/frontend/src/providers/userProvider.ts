@@ -11,7 +11,7 @@ export class UserProvider {
     return await this.backend.getUser(userId);
   }
 
-  public async fetchUsers ({ ids, usernames }: UserFilter): Promise<Array<User>> {
+  public async fetchUsers ({ ids, usernames }: UserFilter = {}): Promise<Array<User>> {
     const filters = {
       id__in: ids,
       username__in: usernames
