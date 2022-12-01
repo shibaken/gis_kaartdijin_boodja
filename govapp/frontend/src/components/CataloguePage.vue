@@ -82,7 +82,7 @@
 
   <div class="d-flex flex-row">
     <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View">
-      <side-bar-left/>
+      <side-bar-left :catalogue-entry="selectedViewEntry"/>
     </div>
     <div class="w-100">
       <card v-if="selectedView === CatalogueView.List">
@@ -90,7 +90,7 @@
           <h4>{{ selectedTab }}</h4>
         </template>
         <template #body>
-          <accordion id-prefix="filter" header-text="Filters" class="mb-2">
+          <accordion id="filter-accordion" id-prefix="filter" header-text="Filters" class="mb-2">
             <template #body>
               <form class="form d-flex gap-3">
                 <catalogue-entry-filter v-if="selectedTab === 'Catalogue Entries'"/>
@@ -116,8 +116,8 @@
 </template>
 
 <style lang="scss">
-  .accordion-collapse {
-    .accordion-body {
+  #filter-accordion {
+    .accordion-collapse .accordion-body {
       form {
         overflow-x: auto;
       }

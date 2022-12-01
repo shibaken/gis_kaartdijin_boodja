@@ -67,6 +67,11 @@ export class BackendService {
     return await response.json() as PaginatedRecord<User>;
   }
 
+  public async getMe (): Promise<User> {
+    const response = await fetch('/api/accounts/users/me/');
+    return await response.json() as User;
+  }
+
   public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {
     const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
     const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/`);
@@ -130,9 +135,10 @@ export class BackendService {
   }
 
   public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch) {
+    const params = stripNullParams(updatedEntry);
     await fetch(`/api/catalogue/entries/${entryId}/`, {
       method: "patch",
-      body: JSON.stringify(updatedEntry)
+      body: JSON.stringify(params)
     });
   }
 }

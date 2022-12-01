@@ -1,10 +1,10 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { CatalogueEntryStatus, PaginatedRecord, RawCatalogueEntryFilter, User } from "../backend/backend.api";
+import { CatalogueEntryStatus, PaginatedRecord, RawCatalogueEntryFilter,
+  RawEntryPatch, User } from "../backend/backend.api";
 import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.api";
 import { StatusProvider } from "./statusProvider";
-import { UserProvider } from "./userProvider";
-import { UserFilter } from "./userProvider.api";
+import { userProvider, UserProvider } from "./userProvider";
 import { SortDirection } from "../components/viewState.api";
 import { toSnakeCase } from "../util/strings";
 
@@ -12,7 +12,6 @@ export class CatalogueEntryProvider {
   // Get the backend stub if the test flag is used.
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
   private statusProvider = new StatusProvider();
-  private userProvider = new UserProvider();
 
   public async fetchCatalogueEntry (id: number): Promise<CatalogueEntry> {
     const entry = await this.backend.getCatalogueEntry(id);
@@ -20,7 +19,7 @@ export class CatalogueEntryProvider {
     let user: User | undefined;
 
     if (typeof entry.assigned_to === "number") {
-      user = await this.userProvider.fetchUser(entry.assigned_to);
+      user = await userProvider.fetchUser(entry.assigned_to);
     }
 
     return {
@@ -40,7 +39,7 @@ export class CatalogueEntryProvider {
   }
 
   public async fetchCatalogueEntries ({ ids, custodian, status, assignedTo, updateFrom, updateTo, sortBy }: CatalogueEntryFilter):
-      Promise<PaginatedRecord<CatalogueEntry>>{
+      Promise<PaginatedRecord<CatalogueEntry>> {
     let sortString = "";
     if (sortBy && sortBy.column) {
       if (sortBy.direction === SortDirection.Descending) {
@@ -65,7 +64,7 @@ export class CatalogueEntryProvider {
     const userFields: Record<string, number | undefined>[] = results
       .map(({ custodian, assigned_to }) => ({ custodian, assigned_to }));
     const userIds = UserProvider.getUniqueUserIds(userFields);
-    const users = await this.userProvider.fetchUsers({ ids: userIds } as UserFilter);
+    const users = (await userProvider.users).filter(user => userIds.indexOf(user.id) >= 0);
 
     const catalogueEntries = results.map(entry => ({
       id: entry.id,
@@ -83,5 +82,18 @@ export class CatalogueEntryProvider {
     })) as Array<CatalogueEntry>;
 
    return { previous, next, count, results: catalogueEntries } as PaginatedRecord<CatalogueEntry>;
+  }
+
+  public async assignUser (entryId: number, userId: number) {
+    await this.backend.patchCatalogueEntry(entryId, {
+      assigned_to: userId
+    } as RawEntryPatch);
+  }
+
+  public async assignMe (entryId: number) {
+    const me = await userProvider.me;
+    await this.backend.patchCatalogueEntry(entryId, {
+      assigned_to: me.id
+    } as RawEntryPatch);
   }
 }
