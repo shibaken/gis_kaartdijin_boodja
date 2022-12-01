@@ -51,7 +51,7 @@ class LayerSubmissionFilter(filters.FilterSet):
     class Meta:
         """Layer Submission Filter Metadata."""
         model = models.layer_submissions.LayerSubmission
-        fields = ("status", "submitted")
+        fields = ("status", "submitted", "is_active")
 
 
 class LayerSubscriptionFilter(filters.FilterSet):

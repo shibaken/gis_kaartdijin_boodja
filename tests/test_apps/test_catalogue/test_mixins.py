@@ -3,6 +3,7 @@
 
 # Third-Party
 from django import http
+from django.contrib import auth
 from django.db import models
 import pytest
 from rest_framework import request
@@ -13,11 +14,48 @@ from rest_framework import viewsets
 from govapp.apps.catalogue import mixins
 
 
+# Shortcuts
+UserModel = auth.get_user_model()
+
+
+def test_multiple_serializers_mixin() -> None:
+    """Tests the functionality of the Multiple Serializers Mixin."""
+    # Create Test Serializers
+    # This Test Model Serializer just serializes the username field
+    class TestModelSerializerA(serializers.ModelSerializer):
+        class Meta:
+            model = UserModel
+            fields = ("username", )
+
+    class TestModelSerializerB(serializers.ModelSerializer):
+        class Meta:
+            model = UserModel
+            fields = ("username", )
+
+    # Create Test ViewSet
+    # This Test Model ViewSet subclasses the Multiple Serializers Mixin for testing
+    class TestModelViewSet(mixins.MultipleSerializersMixin, viewsets.ReadOnlyModelViewSet):
+        queryset = UserModel.objects.all()
+        serializer_class = TestModelSerializerA
+        serializer_classes = {"list": TestModelSerializerB}
+
+    # Instantiate ViewSet
+    # The ViewSet is instantiated with an empty request as it is required
+    # by the constructor method signature
+    viewset = TestModelViewSet(request=request.Request(http.HttpRequest()))
+
+    # Assert which Serializer we get
+    viewset.action = "retrieve"
+    assert viewset.get_serializer_class() == TestModelSerializerA
+    viewset.action = "list"
+    assert viewset.get_serializer_class() == TestModelSerializerB
+
+
 def test_choices_mixin_actions() -> None:
     """Tests the functionality of the Choices Mixin for ViewSets."""
     # Create Test Model
     # This Test Model contains a single choices field for testing the mixin
-    class TestModel(models.Model):  # noqa: DJ08
+    class TestModel2(models.Model):  # noqa: DJ08
         example = models.IntegerField(choices=[(1, "A"), (2, "B"), (3, "C")])
 
         class Meta:
@@ -27,13 +65,13 @@ def test_choices_mixin_actions() -> None:
     # This Test Model Serializer just serializes the example choice field
     class TestModelSerializer(serializers.ModelSerializer):
         class Meta:
-            model = TestModel
+            model = TestModel2
             fields = ("example", )
 
     # Create Test ViewSet
     # This Test Model ViewSet subclasses the Choices Mixin for testing
     class TestModelViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
-        queryset = TestModel.objects.all()
+        queryset = TestModel2.objects.all()
         serializer_class = TestModelSerializer
 
     # Instantiate ViewSet

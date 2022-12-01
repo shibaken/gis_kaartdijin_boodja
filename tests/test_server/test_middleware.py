@@ -19,8 +19,8 @@ from typing import Optional
     ),
     [
         ("/api/something", "private, no-store"),
-        ("/static/something", "public, max-age=86400"),
-        ("/media/something", "public, max-age=86400"),
+        ("/static/something", "public, max-age=60"),  # TODO: 60s for dev
+        ("/media/something", "public, max-age=60"),  # TODO: 60s for dev
         ("/fake/something", None),
         ("", None),
     ]

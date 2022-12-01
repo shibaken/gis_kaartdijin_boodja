@@ -18,6 +18,7 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "file",
+            "is_active",
             "status",
             "submitted_at",
             "catalogue_entry",

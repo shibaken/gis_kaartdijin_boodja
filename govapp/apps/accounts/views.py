@@ -11,12 +11,13 @@ from rest_framework import response
 from rest_framework import viewsets
 
 # Local
+from . import reversion  # noqa: F401
 from . import serializers
 from . import filters
 
 
 # Shortcuts
-UserModel = auth.get_user_model()  # TODO -> Does this work with SSO?
+UserModel = auth.get_user_model()
 GroupModel = models.Group
 
 
