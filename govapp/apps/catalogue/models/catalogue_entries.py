@@ -123,7 +123,7 @@ class CatalogueEntry(models.Model):
         """Determines whether the Catalogue Entry is a new draft.
 
         Returns:
-            bool: Whether the Catalogue Entry is unlocked.
+            bool: Whether the Catalogue Entry is a new draft.
         """
         # Check and Return
         return self.status == CatalogueEntryStatus.NEW_DRAFT
@@ -132,6 +132,11 @@ class CatalogueEntry(models.Model):
         """Locks the Catalogue Entry."""
         # Check Catalogue Entry
         if self.is_unlocked():
+            # Check if Catalogue Entry is new
+            if self.is_new():
+                # Lock the currently active layer
+                self.active_layer.accept()
+
             # Calculate the attributes hash
             attributes_hash = utils.attributes_hash(self.attributes.all())
 

@@ -8,6 +8,7 @@ import logging
 from django import conf
 from django import template
 from django.contrib import auth
+from django.contrib.auth import models
 from django.core import mail
 from django.template import loader
 from django.utils import html
@@ -17,7 +18,7 @@ from typing import Any, Optional, Union
 
 
 # Logging
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 # Shortcuts
 UserModel = auth.get_user_model()
@@ -29,19 +30,37 @@ class TemplateEmailBase:
     html_template = "base_email.html"
     txt_template = "base_email.txt"
 
+    def send_to_users(
+        self,
+        *users: Any,
+        context: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Sends an email individually to many users.
+
+        Args:
+            *users (Any): Possible users to send the email to.
+            context (Optional[dict[str, Any]]): Context for the template.
+        """
+        # Loop through args
+        for possible_user in users:
+            # Check if it is a user
+            if isinstance(possible_user, UserModel):
+                # Send the email!
+                self.send_to_user(possible_user, context)
+
     def send_to_user(
         self,
-        user: UserModel,  # type: ignore
+        user: models.User,
         context: Optional[dict[str, Any]] = None,
     ) -> None:
         """Sends the email to the specified user.
 
         Args:
-            user (UserModel): User to be emailed
+            user (models.User): User to be emailed
             context (Optional[dict[str, Any]]): Context for the template.
         """
         # Send Email
-        self.send(user.email, context=context)  # type: ignore[attr-defined]
+        self.send(user.email, context=context)
 
     def send(
         self,
@@ -69,7 +88,7 @@ class TemplateEmailBase:
         html_template = loader.get_template(self.html_template)
 
         # Render the HTML template
-        html_body = _render(html_template, context)
+        html_body = render(html_template, context)
 
         # Check for an explicit text template
         if self.txt_template is not None:
@@ -78,7 +97,7 @@ class TemplateEmailBase:
             txt_template = loader.get_template(self.txt_template)
 
             # Render the text template
-            txt_body = _render(txt_template, context)
+            txt_body = render(txt_template, context)
         else:
             # If no explicit text template is provided, then strip the HTML
             # tags from the HTML template
@@ -115,10 +134,10 @@ class TemplateEmailBase:
 
         except Exception as exc:
             # Log
-            logger.exception("Error while sending email to {}: {}".format(to_addresses, exc))
+            log.exception(f"Error while sending email to {to_addresses}: {exc}")
 
 
-def _render(
+def render(
     django_template: Union[str, template.Template],
     context: Optional[dict[str, Any]] = None,
 ) -> str:
