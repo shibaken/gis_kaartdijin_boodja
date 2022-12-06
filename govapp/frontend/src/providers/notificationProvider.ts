@@ -26,11 +26,11 @@ export class NotificationProvider {
         .map(entry => entry.id)
         .findIndex(fetchedId => fetchedId === entryId) === -1);
 
-    const tableFilterMap: CatalogueEntryFilter = new Map();
+    const tableFilterMap = {} as CatalogueEntryFilter;
     const requestedEntries: Array<CatalogueEntry> = fetchedEntries;
 
     if (entriesToFetch.length > 0) {
-      tableFilterMap.set("ids", unique<number>(entriesToFetch));
+      tableFilterMap.ids = unique<number>(entriesToFetch);
       const { results: catalogueEntryResults } = await this.catalogueEntryProvider.fetchCatalogueEntries(tableFilterMap);
       requestedEntries.push(...catalogueEntryResults);
     }

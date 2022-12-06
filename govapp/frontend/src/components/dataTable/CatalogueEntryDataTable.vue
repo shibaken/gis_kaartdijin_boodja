@@ -8,6 +8,9 @@
   import { onMounted } from "vue";
   import { DateTime } from "luxon";
   import { CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import SortableHeader from "./SortableHeader.vue";
+  import { useTableSortComposable } from "../../tools/sortComposable";
+  import { RawCatalogueEntryFilter } from "../../backend/backend.api";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
@@ -22,8 +25,10 @@
   const emit = defineEmits<NavEmits>();
 
   function setPage (pageNumber: number) {
-    filters.value.set("pageNumber", pageNumber);
+    filters.value.pageNumber = pageNumber;
   }
+
+  const { sortDirection, onSort } = useTableSortComposable<RawCatalogueEntryFilter>(filters);
 
   onMounted(() => {
     getCatalogueEntries();
@@ -35,13 +40,13 @@
     <template #headers>
       <tr>
         <th></th>
-        <th>Number</th>
-        <th>Name</th>
-        <th>Custodian</th>
-        <th>Status</th>
-        <th>Last Updated</th>
+        <SortableHeader name="Number" column="number" alt-field="id" :direction="sortDirection('id')" @sort="onSort"/>
+        <SortableHeader name="Name" column="name" :direction="sortDirection('name')" @sort="onSort"/>
+        <SortableHeader name="Custodian" column="custodian" :direction="sortDirection('custodian')" @sort="onSort"/>
+        <SortableHeader name="Status" column="status" :direction="sortDirection('status')" @sort="onSort"/>
+        <SortableHeader name="Last Updated" column="updatedAt" :direction="sortDirection('updatedAt')" @sort="onSort"/>
         <th>Time</th>
-        <th>Assigned To</th>
+        <SortableHeader name="Assigned To" column="assignedTo" :direction="sortDirection('assignedTo')" @sort="onSort"/>
         <th>Action</th>
       </tr>
     </template>

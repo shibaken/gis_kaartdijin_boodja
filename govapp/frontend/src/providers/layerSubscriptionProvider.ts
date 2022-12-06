@@ -5,6 +5,8 @@ import { LayerSubscriptionStatus, PaginatedRecord,
 import { LayerSubscription, LayerSubscriptionFilter } from "./layerSubscriptionProvider.api";
 import { StatusProvider } from "./statusProvider";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
+import { SortDirection } from "../components/viewState.api";
+import { toSnakeCase } from "../util/strings";
 
 export class LayerSubscriptionProvider {
   // Get the backend stub if the test flag is used.
@@ -32,12 +34,21 @@ export class LayerSubscriptionProvider {
     return layerSubscription;
   }
 
-  public async fetchLayerSubscriptions ({ subscribedFrom, subscribedTo, status }: LayerSubscriptionFilter):
+  public async fetchLayerSubscriptions ({ subscribedFrom, subscribedTo, status, sortBy }: LayerSubscriptionFilter):
       Promise<PaginatedRecord<LayerSubscription>> {
+    let sortString = "";
+    if (sortBy && sortBy.column) {
+      if (sortBy.direction === SortDirection.Descending) {
+        sortString = "-";
+      }
+      sortString += toSnakeCase(sortBy.column);
+    }
+
     const rawFilter = {
       status,
       subscribed_before: subscribedTo,
-      subscribed_after: subscribedFrom
+      subscribed_after: subscribedFrom,
+      order_by: sortString
     } as RawLayerSubscriptionFilter;
 
     const { previous, next, count, results } = await this.backend.getLayerSubscriptions(rawFilter);

@@ -7,6 +7,9 @@
   import { useLayerSubscriptionStore } from "../../stores/LayerSubscriptionStore";
   import { storeToRefs } from "pinia";
   import { DateTime } from "luxon";
+  import { useTableSortComposable } from "../../tools/sortComposable";
+  import { RawCatalogueEntryFilter } from "../../backend/backend.api";
+  import SortableHeader from "./SortableHeader.vue";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubscriptionStore = useLayerSubscriptionStore();
@@ -14,8 +17,10 @@
   const { getLayerSubscriptions } = layerSubscriptionStore;
 
   function setPage (pageNumber: number) {
-    filters.value.set("pageNumber", pageNumber);
+    filters.value.pageNumber = pageNumber;
   }
+
+  const { sortDirection, onSort } = useTableSortComposable<RawCatalogueEntryFilter>(filters);
 
   onMounted(() => {
     getLayerSubscriptions();
@@ -27,12 +32,12 @@
     <template #headers>
       <tr>
         <th></th>
-        <th>Number</th>
-        <th>Name</th>
-        <th>Subscribed Date</th>
+        <SortableHeader name="Number" column="number" alt-field="id" :direction="sortDirection('id')" @sort="onSort"/>
+        <SortableHeader name="Name" column="name" :direction="sortDirection('name')" @sort="onSort"/>
+        <SortableHeader name="Subscribed Date" column="subscribedDate" :direction="sortDirection('subscribedDate')" @sort="onSort"/>
         <th>Time</th>
-        <th>Webservice Url</th>
-        <th>Status</th>
+        <SortableHeader name="Webservice Url" column="url" :direction="sortDirection('url')" @sort="onSort"/>
+        <SortableHeader name="Status" column="status" :direction="sortDirection('status')" @sort="onSort"/>
         <th>Action</th>
       </tr>
     </template>

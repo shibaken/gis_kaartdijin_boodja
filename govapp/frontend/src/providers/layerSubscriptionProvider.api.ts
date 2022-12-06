@@ -1,6 +1,7 @@
 import { LayerSubscriptionStatus, RecordStatus } from "../backend/backend.api";
 import { PaginationFilter } from "./providerCommon.api";
 import { CatalogueEntry } from "./catalogueEntryProvider.api";
+import { SortDirection } from "../components/viewState.api";
 
 // Raw records, currently placeholders and subject to change
 export interface LayerSubscription {
@@ -17,4 +18,5 @@ export interface LayerSubscriptionFilter extends PaginationFilter {
   status?: number;
   subscribedFrom?: string;
   subscribedTo?: string;
+  sortBy?: { column: keyof CatalogueEntry, direction: SortDirection };
 }

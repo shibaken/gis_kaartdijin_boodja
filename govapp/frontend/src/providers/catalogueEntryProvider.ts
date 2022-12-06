@@ -5,6 +5,8 @@ import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.a
 import { StatusProvider } from "./statusProvider";
 import { UserProvider } from "./userProvider";
 import { UserFilter } from "./userProvider.api";
+import { SortDirection } from "../components/viewState.api";
+import { toSnakeCase } from "../util/strings";
 
 export class CatalogueEntryProvider {
   // Get the backend stub if the test flag is used.
@@ -37,8 +39,15 @@ export class CatalogueEntryProvider {
     } as CatalogueEntry;
   }
 
-  public async fetchCatalogueEntries ({ ids, custodian, status, assignedTo, updateFrom, updateTo }: CatalogueEntryFilter):
+  public async fetchCatalogueEntries ({ ids, custodian, status, assignedTo, updateFrom, updateTo, sortBy }: CatalogueEntryFilter):
       Promise<PaginatedRecord<CatalogueEntry>>{
+    let sortString = "";
+    if (sortBy && sortBy.column) {
+      if (sortBy.direction === SortDirection.Descending) {
+        sortString = "-";
+      }
+      sortString += toSnakeCase(sortBy.column);
+    }
 
     const rawFilter = {
       id__in: ids,
@@ -46,7 +55,8 @@ export class CatalogueEntryProvider {
       status,
       assigned_to: assignedTo,
       updated_before: updateTo,
-      updated_after: updateFrom
+      updated_after: updateFrom,
+      order_by: sortString
     } as RawCatalogueEntryFilter;
 
     const { previous, next, count, results } = await this.backend.getCatalogueEntries(rawFilter);

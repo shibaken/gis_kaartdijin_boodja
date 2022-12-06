@@ -7,3 +7,7 @@ export function toCamelCase (string: string) {
     )
     .join("");
 }
+
+export function toSnakeCase (string: string) {
+  return string.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}

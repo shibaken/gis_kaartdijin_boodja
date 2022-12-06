@@ -61,7 +61,7 @@ export interface RawLayerSubscriptionFilter extends RawPaginationFilter {
 
 export interface RawCatalogueEntryFilter extends RawPaginationFilter {
   id__in?: Array<number>;
-  status?: string;
+  status?: number;
   custodian?: string;
   assigned_to?: string;
   updated_before?: string;
@@ -69,7 +69,7 @@ export interface RawCatalogueEntryFilter extends RawPaginationFilter {
 }
 
 export interface RawLayerSubmissionFilter extends RawPaginationFilter {
-  status?: string;
+  status?: number;
   submitted_before?: string;
   submitted_after?: string;
 }

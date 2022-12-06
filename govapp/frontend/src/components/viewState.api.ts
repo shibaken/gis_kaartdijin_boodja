@@ -25,3 +25,9 @@ export type NavigationEmits = (
   view: CatalogueView,
   options?: NavigateEmitsOptions
 ) => void;
+
+export enum SortDirection {
+  Ascending = "ascending",
+  Descending = "descending",
+  None = "none"
+}
