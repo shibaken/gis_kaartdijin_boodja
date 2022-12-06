@@ -83,6 +83,29 @@ class CatalogueEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def decline(self, request: request.Request, pk: str) -> response.Response:
+        """Declines the Catalogue Entry.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Catalogue Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Catalogue Entry
+        # Help `mypy` by casting the resulting object to a Catalogue Entry
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Decline
+        catalogue_entry.decline()
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
