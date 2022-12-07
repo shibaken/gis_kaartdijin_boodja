@@ -37,10 +37,10 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # Creates and Destroys are not allowed by anyone
             allowed = False
 
-        elif view.action in ("list", "retrieve", "update", "partial_update", "lock", "unlock"):
+        elif view.action in ("list", "retrieve", "update", "partial_update", "lock", "unlock", "decline"):
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
-            # Locking and Unlocking might be allowed, but we delegate it to `has_object_permission`
+            # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
             allowed = True
 
         else:
@@ -50,7 +50,7 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed
+        return allowed or is_administrator(request.user)
 
     def has_object_permission(  # type: ignore
         self,
@@ -89,10 +89,10 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
                 and obj.is_unlocked()
                 and obj.assigned_to == request.user
                 and is_catalogue_editor(request.user)
-            ) or is_administrator(request.user)
+            )
 
-        elif view.action in ("lock", "unlock"):
-            # Lock and Unlock
+        elif view.action in ("lock", "unlock", "decline"):
+            # Lock, Unlock and Decline
             # 1. Object is a Catalogue Entry
             # 2. Catalogue Entry is `assigned_to` the request user
             # 3. User is in the Catalogue Editor group
@@ -100,7 +100,7 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
                 and obj.assigned_to == request.user
                 and is_catalogue_editor(request.user)
-            ) or is_administrator(request.user)
+            )
 
         else:
             # Allow all other actions by default
@@ -109,7 +109,7 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed
+        return allowed or is_administrator(request.user)
 
 
 class HasCatalogueEntryPermissions(permissions.BasePermission):
@@ -143,7 +143,7 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
                 and catalogue_entry.is_unlocked()
                 and catalogue_entry.assigned_to == request.user
                 and is_catalogue_editor(request.user)
-            ) or is_administrator(request.user)
+            )
 
         elif view.action in ("destroy", "list", "retrieve", "update", "partial_update"):
             # Destroys might be allowed, but we delegate it to `has_object_permission`
@@ -158,7 +158,7 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed
+        return allowed or is_administrator(request.user)
 
     def has_object_permission(  # type: ignore
         self,
@@ -194,7 +194,7 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
                 and obj.catalogue_entry.is_unlocked()
                 and obj.catalogue_entry.assigned_to == request.user
                 and is_catalogue_editor(request.user)
-            ) or is_administrator(request.user)
+            )
 
         else:
             # Allow all other actions by default
@@ -203,7 +203,7 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed
+        return allowed or is_administrator(request.user)
 
 
 def is_administrator(user: Union[auth_models.User, auth_models.AnonymousUser]) -> bool:

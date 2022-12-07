@@ -159,3 +159,16 @@ class CatalogueEntry(models.Model):
             # Set Catalogue Entry to Draft
             self.status = CatalogueEntryStatus.DRAFT
             self.save()
+
+    def decline(self) -> None:
+        """Declines the Catalogue Entry."""
+        # Check Catalogue Entry
+        if self.is_unlocked():
+            # Check if Catalogue Entry is new
+            if self.is_new():
+                # Decline the currently active layer
+                self.active_layer.decline()
+
+            # Set Catalogue Entry to Declined
+            self.status = CatalogueEntryStatus.DECLINED
+            self.save()

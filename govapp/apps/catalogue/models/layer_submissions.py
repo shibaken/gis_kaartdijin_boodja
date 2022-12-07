@@ -55,9 +55,15 @@ class LayerSubmission(models.Model):
         return self.status == LayerSubmissionStatus.DECLINED
 
     def accept(self) -> None:
-        """Accepts the Layer Submission for locking of new Catalogue Entry."""
+        """Accepts the Layer Submission."""
         # Set Status and Save
         self.status = LayerSubmissionStatus.ACCEPTED
+        self.save()
+
+    def decline(self) -> None:
+        """Declines the Layer Submission."""
+        # Set Status and Save
+        self.status = LayerSubmissionStatus.DECLINED
         self.save()
 
     def activate(self) -> None:
@@ -70,7 +76,8 @@ class LayerSubmission(models.Model):
         attributes_hash = utils.attributes_hash(self.catalogue_entry.attributes.all())
 
         # Check if they match!
-        if self.hash == attributes_hash:
+        # Also check that Catalogue Entry is not declined
+        if self.hash == attributes_hash and not self.catalogue_entry.is_declined():
             # Retrieve Catalogue Entry's Current Active Layer
             current_active_layer = self.catalogue_entry.active_layer
 
