@@ -6,7 +6,7 @@
   import { User } from "../../backend/backend.api";
 
   const props = defineProps<{
-    assignedTo: number
+    assignedTo: number | undefined
   }>();
 
   const emit = defineEmits<{
@@ -41,7 +41,7 @@
       </div>
       <div class="d-flex flex-column">
         <form-select field="assignedTo" name="Currently assigned to" :values="users" :value="assignedTo?.toString()"
-                     @value-updated="(username, id) => emit('assign-user', id)"/>
+                     @value-updated="(username, id) => emit('assign-user', parseInt(id))"/>
         <button class="btn btn-link btn-sm align-self-end"
                 @click="() => emit('assign-me')">
           Assign to me

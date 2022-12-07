@@ -361,12 +361,16 @@ export class BackendServiceStub implements BackendService {
     return Promise.resolve(DUMMY_STATUSES.find(({ id }) => id === statusId) as RecordStatus<T>);
   }
 
-  async getUser (userId: number): Promise<User> {
+  public async getUser (userId: number): Promise<User> {
     return Promise.resolve(DUMMY_USERS.find(({ id }) => id === userId) as User);
   }
 
-  async getUsers (): Promise<PaginatedRecord<User>> {
+  public async getUsers (): Promise<PaginatedRecord<User>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_USERS));
+  }
+
+  public async getMe (): Promise<User> {
+    return Promise.resolve(DUMMY_USERS[0]);
   }
 
   public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {

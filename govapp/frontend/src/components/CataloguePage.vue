@@ -81,7 +81,7 @@
   </ul>
 
   <div class="d-flex flex-row">
-    <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View">
+    <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View && selectedViewEntry">
       <side-bar-left :catalogue-entry="selectedViewEntry"/>
     </div>
     <div class="w-100">
