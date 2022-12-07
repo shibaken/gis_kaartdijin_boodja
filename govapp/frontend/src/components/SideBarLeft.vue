@@ -10,7 +10,7 @@
   const catalogueEntryProvider = new CatalogueEntryProvider();
 
   function assignUser (userId: number) {
-    catalogueEntryProvider.assignUser(userId, props.catalogueEntry.id);
+    catalogueEntryProvider.assignUser(props.catalogueEntry.id, userId);
   }
 
   function assignMe () {

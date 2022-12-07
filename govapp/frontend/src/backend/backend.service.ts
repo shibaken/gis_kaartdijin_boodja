@@ -3,6 +3,31 @@ import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCata
   RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch } from "./backend.api";
 import type { PaginatedRecord, Params, StatusType, User } from "./backend.api";
 
+function getCookie(name: string) {
+  if (!document.cookie) {
+    return null;
+  }
+
+  const xsrfCookies = document.cookie.split(';')
+    .map(c => c.trim())
+    .filter(c => c.startsWith(name + '='));
+
+  if (xsrfCookies.length === 0) {
+    return null;
+  }
+  return decodeURIComponent(xsrfCookies[0].split('=')[1]);
+}
+
+function fetcher (input: RequestInfo | URL, init: RequestInit = {}) {
+  const csrf: string | null = getCookie("csrftoken");
+  const request = new Request(input, init);
+  if (csrf) {
+    request.headers.append("X-CSRFToken", csrf);
+    request.headers.set('Content-Type', 'application/json; charset=UTF-8');
+  }
+  return fetch(request);
+}
+
 export function stripNullParams<T extends object> (filter: T): Params {
   return Object.fromEntries(
     Object.entries(filter)
@@ -136,7 +161,7 @@ export class BackendService {
 
   public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch) {
     const params = stripNullParams(updatedEntry);
-    await fetch(`/api/catalogue/entries/${entryId}/`, {
+    await fetcher(`/api/catalogue/entries/${entryId}/`, {
       method: "patch",
       body: JSON.stringify(params)
     });
