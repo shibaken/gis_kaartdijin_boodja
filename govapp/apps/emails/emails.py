@@ -41,12 +41,14 @@ class TemplateEmailBase:
             *users (Any): Possible users to send the email to.
             context (Optional[dict[str, Any]]): Context for the template.
         """
-        # Loop through args
-        for possible_user in users:
-            # Check if it is a user
-            if isinstance(possible_user, UserModel):
-                # Send the email!
-                self.send_to_user(possible_user, context)
+        # Filter the supplied users to only UserModel objects, and cast them to
+        # a set to eliminate any duplicates
+        filtered_users = set(u for u in users if isinstance(u, UserModel))
+
+        # Loop through users
+        for user in filtered_users:
+            # Send the email!
+            self.send_to_user(user, context)
 
     def send_to_user(
         self,

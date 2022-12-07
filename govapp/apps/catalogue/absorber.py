@@ -242,12 +242,12 @@ class Absorber:
             # Send Update Failure Email
             emails.CatalogueEntryUpdateFailEmail().send_to_users(
                 *accounts_utils.all_administrators(),  # Send to all administrators
-                catalogue_entry.assigned_to,  # Send to assigned user if applicable
+                *catalogue_entry.editors.all(),  # Send to all editors
             )
 
         else:
             # Send Update Success Email
             emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
                 *accounts_utils.all_administrators(),  # Send to all administrators
-                catalogue_entry.assigned_to,  # Send to assigned user if applicable
+                *catalogue_entry.editors.all(),  # Send to all editors
             )

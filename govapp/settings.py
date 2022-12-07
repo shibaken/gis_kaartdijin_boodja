@@ -189,7 +189,10 @@ SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA", default="Ka
 
 # Email
 DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # TODO: Production email settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = decouple.config("EMAIL_HOST", default="smtp.lan.fyi")
+EMAIL_PORT = decouple.config("EMAIL_PORT", default=25, cast=int)
+DEFAULT_FROM_EMAIL = "no-reply@dbca.wa.gov.au"
 
 # Group Settings
 # This must match what is in the database

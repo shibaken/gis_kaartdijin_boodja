@@ -1,10 +1,13 @@
 """Kaartdijin Boodja Accounts Django Application Filters."""
 
+
 # Third-Party
 from django_filters import rest_framework as filters
 from django.contrib import auth
 
-models = auth.models
+
+# Shortcuts
+UserModel = auth.get_user_model()
 
 
 class UserFilter(filters.FilterSet):
@@ -13,5 +16,5 @@ class UserFilter(filters.FilterSet):
 
     class Meta:
         """User Filter Metadata."""
-        model = models.User
+        model = UserModel
         fields = {"id": ["in"], "username": ["in"]}
