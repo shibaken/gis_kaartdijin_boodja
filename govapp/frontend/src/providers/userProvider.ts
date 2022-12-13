@@ -6,12 +6,15 @@ import { UserFilter } from "./userProvider.api";
 export class UserProvider {
   // Get the backend stub if the test flag is used.
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
+  // Load all users; they're used for the select inputs
+  public users = this.fetchUsers();
+  public me = this.fetchMe();
 
   public async fetchUser (userId: number): Promise<User> {
     return await this.backend.getUser(userId);
   }
 
-  public async fetchUsers ({ ids, usernames }: UserFilter): Promise<Array<User>> {
+  public async fetchUsers ({ ids, usernames }: UserFilter = {}): Promise<Array<User>> {
     const filters = {
       id__in: ids,
       username__in: usernames
@@ -19,6 +22,10 @@ export class UserProvider {
 
     const users = await this.backend.getUsers(filters);
     return users.results;
+  }
+
+  public async fetchMe () {
+    return this.backend.getMe();
   }
 
   // We don't need to paginate here so unwrap the results
@@ -47,3 +54,5 @@ export class UserProvider {
       }) as Array<number>;
   }
 }
+
+export const userProvider = new UserProvider();

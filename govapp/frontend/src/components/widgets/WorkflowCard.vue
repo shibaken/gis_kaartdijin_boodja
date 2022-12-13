@@ -1,6 +1,30 @@
 <script lang="ts" setup>
   import FormSelect from "./FormSelect.vue";
   import Card from "./Card.vue";
+  import { userProvider } from "../../providers/userProvider";
+  import { onMounted, ref } from "vue";
+  import { User } from "../../backend/backend.api";
+
+  const props = defineProps<{
+    assignedTo: number | undefined
+  }>();
+
+  const emit = defineEmits<{
+    (e: "assign-user", userId: number): void,
+    (e: "assign-me"): void
+  }>();
+
+  const users = ref<Array<[string, string | number]>>([]);
+  const me = ref<User>();
+
+  onMounted(async () => {
+    users.value = (await userProvider.users)
+      .map(user => {
+        return [user.username, user.id]
+      });
+
+    me.value = await userProvider.me;
+  });
 </script>
 
 <template>
@@ -16,8 +40,12 @@
         <span class="link">Locked</span>
       </div>
       <div class="d-flex flex-column">
-        <form-select field="assignedTo" name="Currently assigned to" :values="[]"/>
-        <button class="btn btn-link btn-sm align-self-end">Assign to me</button>
+        <form-select field="assignedTo" name="Currently assigned to" :values="users" :value="assignedTo?.toString()"
+                     @value-updated="(username, id) => emit('assign-user', parseInt(id))"/>
+        <button class="btn btn-link btn-sm align-self-end"
+                @click="() => emit('assign-me')">
+          Assign to me
+        </button>
       </div>
       <div class="w-100 my-3 border-top"></div>
       <div class="d-flex flex-column gap-3">
