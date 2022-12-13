@@ -81,25 +81,29 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # Update and Partial Update
             # Check Catalogue Entry specific permissions
             # 1. Object is a Catalogue Entry
-            # 2. Catalogue Entry is unlocked
-            # 3. Catalogue Entry is `assigned_to` the request user
-            # 4. User is in the Catalogue Editor group
+            # 2. User is in the Catalogue Editors group
+            # 3. User is one of this Catalogue Entry's editors
+            # 4. Catalogue Entry is `assigned_to` this user
+            # 5. Catalogue Entry is unlocked
             allowed = (
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and obj.is_unlocked()
-                and obj.assigned_to == request.user
                 and is_catalogue_editor(request.user)
+                and is_entry_editor(obj, request.user)
+                and obj.assigned_to == request.user
+                and obj.is_unlocked()
             )
 
         elif view.action in ("lock", "unlock", "decline"):
             # Lock, Unlock and Decline
             # 1. Object is a Catalogue Entry
-            # 2. Catalogue Entry is `assigned_to` the request user
-            # 3. User is in the Catalogue Editor group
+            # 2. User is in the Catalogue Editors group
+            # 3. User is one of this Catalogue Entry's editors
+            # 4. Catalogue Entry is `assigned_to` this user
             allowed = (
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and obj.assigned_to == request.user
                 and is_catalogue_editor(request.user)
+                and is_entry_editor(obj, request.user)
+                and obj.assigned_to == request.user
             )
 
         else:
@@ -134,15 +138,17 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             # Create
             # Check Catalogue Entry specific permissions
             # 1. Request contains a reference to a Catalogue Entry
-            # 2. Catalogue Entry is unlocked
-            # 3. Catalogue Entry is `assigned_to` the request user
-            # 4. User is in the Catalogue Editor group
+            # 2. User is in the Catalogue Editor group
+            # 3. User is one of this Catalogue Entry's editors
+            # 4. Catalogue Entry is `assigned_to` this user
+            # 5. Catalogue Entry is unlocked
             catalogue_entry = catalogue_entry_from_request(request)
             allowed = (
                 catalogue_entry is not None
-                and catalogue_entry.is_unlocked()
-                and catalogue_entry.assigned_to == request.user
                 and is_catalogue_editor(request.user)
+                and is_entry_editor(catalogue_entry, request.user)
+                and catalogue_entry.assigned_to == request.user
+                and catalogue_entry.is_unlocked()
             )
 
         elif view.action in ("destroy", "list", "retrieve", "update", "partial_update"):
@@ -185,15 +191,17 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             # Destroy, Update and Partial Update
             # Check Catalogue Entry specific permissions
             # 1. Object has a Catalogue Entry attached to it
-            # 2. Catalogue Entry is unlocked
-            # 3. Catalogue Entry is `assigned_to` the request user
-            # 4. User is in the Catalogue Editor group
+            # 2. User is in the Catalogue Editors group
+            # 3. User is one of this Catalogue Entry's editors
+            # 4. Catalogue Entry is `assigned_to` this user
+            # 5. Catalogue Entry is unlocked
             allowed = (
                 hasattr(obj, "catalogue_entry")
                 and isinstance(obj.catalogue_entry, models.catalogue_entries.CatalogueEntry)
-                and obj.catalogue_entry.is_unlocked()
-                and obj.catalogue_entry.assigned_to == request.user
                 and is_catalogue_editor(request.user)
+                and is_entry_editor(obj.catalogue_entry, request.user)
+                and obj.catalogue_entry.assigned_to == request.user
+                and obj.catalogue_entry.is_unlocked()
             )
 
         else:
@@ -236,6 +244,23 @@ def is_catalogue_editor(user: Union[auth_models.User, auth_models.AnonymousUser]
         not isinstance(user, auth_models.AnonymousUser)  # Must be logged in
         and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
     )
+
+
+def is_entry_editor(
+    entry: models.catalogue_entries.CatalogueEntry,
+    user: Union[auth_models.User, auth_models.AnonymousUser],
+) -> bool:
+    """Checks whether a user is one of this Catalogue Entry's editors.
+
+    Args:
+        entry (models.catalogue_entries.CatalogueEntry): Catalogue Entry.
+        user (Union[models.User, models.AnonymousUser]): User to be checked.
+
+    Returns:
+        bool: Whether the user is one of this Catalogue Entry's editors.
+    """
+    # Check and Return
+    return entry.editors.all().filter(id=user.id).exists()
 
 
 def catalogue_entry_from_request(request: request.Request) -> Optional[models.catalogue_entries.CatalogueEntry]:
