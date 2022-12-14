@@ -38,6 +38,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "status",
             "updated_at",
             "editors",
+            "assigned_to",
             "subscription",
             "active_layer",
             "layers",

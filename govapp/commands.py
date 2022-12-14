@@ -8,13 +8,14 @@ import logging
 from django.core import management
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
-from rest_framework import permissions
 from rest_framework import request
 from rest_framework import response
 from rest_framework import routers
 from rest_framework import status
 from rest_framework import viewsets
 
+# Local
+from .apps.accounts import permissions
 
 # Logging
 log = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ log = logging.getLogger(__name__)
 @drf_utils.extend_schema(tags=["Management Commands"])
 class ManagementCommands(viewsets.ViewSet):
     """Management Commands View Set."""
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsInAdministratorsGroup]
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=False, methods=["POST"], url_path=r"absorb/(?P<file>[^/]+)")

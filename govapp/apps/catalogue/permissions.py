@@ -1,18 +1,17 @@
-"""Kaartdijin Boodja Catalogue Django Application Administration."""
+"""Kaartdijin Boodja Catalogue Django Application Permissions."""
 
 
 # Third-Party
-from django import conf
-from django.contrib.auth import models as auth_models
 from rest_framework import permissions
 from rest_framework import request
 from rest_framework import viewsets
 
 # Local
 from . import models
+from ..accounts import utils
 
 # Typing
-from typing import Any, Optional, Union
+from typing import Any
 
 
 class IsCatalogueEntryPermissions(permissions.BasePermission):
@@ -37,10 +36,12 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # Creates and Destroys are not allowed by anyone
             allowed = False
 
-        elif view.action in ("list", "retrieve", "update", "partial_update", "lock", "unlock", "decline"):
+        elif view.action in ("list", "retrieve", "update", "partial_update",
+                             "lock", "unlock", "decline", "assign", "unassign"):
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
             # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
+            # Assigning and Unassigning also might be allowed, again we delegate it to `has_object_permission`
             allowed = True
 
         else:
@@ -50,7 +51,7 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed or is_administrator(request.user)
+        return allowed
 
     def has_object_permission(  # type: ignore
         self,
@@ -87,8 +88,8 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # 5. Catalogue Entry is unlocked
             allowed = (
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and is_catalogue_editor(request.user)
-                and is_entry_editor(obj, request.user)
+                and utils.is_catalogue_editor(request.user)
+                and obj.is_editor(request.user)
                 and obj.assigned_to == request.user
                 and obj.is_unlocked()
             )
@@ -101,9 +102,21 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # 4. Catalogue Entry is `assigned_to` this user
             allowed = (
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and is_catalogue_editor(request.user)
-                and is_entry_editor(obj, request.user)
+                and utils.is_catalogue_editor(request.user)
+                and obj.is_editor(request.user)
                 and obj.assigned_to == request.user
+            )
+
+        elif view.action in ("assign", "unassign"):
+            # Assign and Unassign
+            # Assigning or Unassigning a Catalogue Entry has its own set of rules
+            # 1. Object is a Catalogue Entry
+            # 2. User is in the Catalogue Editors group
+            # 3. User is one of this Catalogue Entry's editors
+            allowed = (
+                isinstance(obj, models.catalogue_entries.CatalogueEntry)
+                and utils.is_catalogue_editor(request.user)
+                and obj.is_editor(request.user)
             )
 
         else:
@@ -113,7 +126,7 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed or is_administrator(request.user)
+        return allowed
 
 
 class HasCatalogueEntryPermissions(permissions.BasePermission):
@@ -142,11 +155,11 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             # 3. User is one of this Catalogue Entry's editors
             # 4. Catalogue Entry is `assigned_to` this user
             # 5. Catalogue Entry is unlocked
-            catalogue_entry = catalogue_entry_from_request(request)
+            catalogue_entry = models.catalogue_entries.CatalogueEntry.from_request(request)
             allowed = (
                 catalogue_entry is not None
-                and is_catalogue_editor(request.user)
-                and is_entry_editor(catalogue_entry, request.user)
+                and utils.is_catalogue_editor(request.user)
+                and catalogue_entry.is_editor(request.user)
                 and catalogue_entry.assigned_to == request.user
                 and catalogue_entry.is_unlocked()
             )
@@ -164,7 +177,7 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed or is_administrator(request.user)
+        return allowed
 
     def has_object_permission(  # type: ignore
         self,
@@ -198,8 +211,8 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             allowed = (
                 hasattr(obj, "catalogue_entry")
                 and isinstance(obj.catalogue_entry, models.catalogue_entries.CatalogueEntry)
-                and is_catalogue_editor(request.user)
-                and is_entry_editor(obj.catalogue_entry, request.user)
+                and utils.is_catalogue_editor(request.user)
+                and obj.catalogue_entry.is_editor(request.user)
                 and obj.catalogue_entry.assigned_to == request.user
                 and obj.catalogue_entry.is_unlocked()
             )
@@ -211,68 +224,4 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
             allowed = True
 
         # Return
-        return allowed or is_administrator(request.user)
-
-
-def is_administrator(user: Union[auth_models.User, auth_models.AnonymousUser]) -> bool:
-    """Checks whether a user is an Administrator.
-
-    Args:
-        user (Union[models.User, models.AnonymousUser]): User to be checked.
-
-    Returns:
-        bool: Whether the user is in the Administrator group.
-    """
-    # Check and Return
-    return (
-        not isinstance(user, auth_models.AnonymousUser)  # Must be logged in
-        and user.groups.filter(id=conf.settings.GROUP_ADMINISTRATOR_ID).exists()  # Must be in group
-    )
-
-
-def is_catalogue_editor(user: Union[auth_models.User, auth_models.AnonymousUser]) -> bool:
-    """Checks whether a user is a Catalogue Editor.
-
-    Args:
-        user (Union[models.User, models.AnonymousUser]): User to be checked.
-
-    Returns:
-        bool: Whether the user is in the Catalogue Editor group.
-    """
-    # Check and Return
-    return (
-        not isinstance(user, auth_models.AnonymousUser)  # Must be logged in
-        and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
-    )
-
-
-def is_entry_editor(
-    entry: models.catalogue_entries.CatalogueEntry,
-    user: Union[auth_models.User, auth_models.AnonymousUser],
-) -> bool:
-    """Checks whether a user is one of this Catalogue Entry's editors.
-
-    Args:
-        entry (models.catalogue_entries.CatalogueEntry): Catalogue Entry.
-        user (Union[models.User, models.AnonymousUser]): User to be checked.
-
-    Returns:
-        bool: Whether the user is one of this Catalogue Entry's editors.
-    """
-    # Check and Return
-    return entry.editors.all().filter(id=user.id).exists()
-
-
-def catalogue_entry_from_request(request: request.Request) -> Optional[models.catalogue_entries.CatalogueEntry]:
-    """Retrieves a possible Catalogue Entry from request data.
-
-    Args:
-        request (request.Request): Request to retrieve Catalogue Entry from.
-
-    Returns:
-        Optional[models.catalogue_entries.CatalogueEntry]: Catalogue Entry.
-    """
-    # Retrieve Possible Catalogue Entry and Return
-    return models.catalogue_entries.CatalogueEntry.objects.filter(
-        id=request.data.get("catalogue_entry", -1),  # -1 Sentinel Value for Non-Existent Catalogue Entry
-    ).first()
+        return allowed
