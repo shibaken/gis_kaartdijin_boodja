@@ -2,6 +2,8 @@
 
 
 # Third-Party
+from django import shortcuts
+from django.contrib import auth
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -17,9 +19,14 @@ from . import models
 from . import permissions
 from . import reversion  # noqa: F401
 from . import serializers
+from ..accounts import permissions as accounts_permissions
 
 # Typing
 from typing import cast
+
+
+# Shortcuts
+UserModel = auth.get_user_model()
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
@@ -35,7 +42,7 @@ class CatalogueEntryViewSet(
     queryset = models.catalogue_entries.CatalogueEntry.objects.all()
     serializer_class = serializers.catalogue_entries.CatalogueEntrySerializer
     filterset_class = filters.CatalogueEntryFilter
-    permission_classes = [permissions.IsCatalogueEntryPermissions]
+    permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
@@ -106,6 +113,56 @@ class CatalogueEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"], url_path=r"assign/(?P<user_pk>\d+)")
+    def assign(self, request: request.Request, pk: str, user_pk: str) -> response.Response:
+        """Assigns the Catalogue Entry.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Catalogue Entry.
+            user_pk (str): Primary key of the User to assign to.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Catalogue Entry
+        # Help `mypy` by casting the resulting object to a Catalogue Entry
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Retrieve User
+        user = shortcuts.get_object_or_404(UserModel, id=user_pk)
+
+        # Assign!
+        catalogue_entry.assign(user)
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def unassign(self, request: request.Request, pk: str) -> response.Response:
+        """Unassigns the Catalogue Entry.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Catalogue Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Catalogue Entry
+        # Help `mypy` by casting the resulting object to a Catalogue Entry
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Unassign!
+        catalogue_entry.unassign()
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
@@ -131,7 +188,7 @@ class LayerAttributeViewSet(
     serializer_class = serializers.layer_attributes.LayerAttributeSerializer
     serializer_classes = {"create": serializers.layer_attributes.LayerAttributeCreateSerializer}
     filterset_class = filters.LayerAttributeFilter
-    permission_classes = [permissions.HasCatalogueEntryPermissions]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Metadata"])
@@ -146,7 +203,7 @@ class LayerMetadataViewSet(
     queryset = models.layer_metadata.LayerMetadata.objects.all()
     serializer_class = serializers.layer_metadata.LayerMetadataSerializer
     filterset_class = filters.LayerMetadataFilter
-    permission_classes = [permissions.HasCatalogueEntryPermissions]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
@@ -177,7 +234,7 @@ class LayerSymbologyViewSet(
     queryset = models.layer_symbology.LayerSymbology.objects.all()
     serializer_class = serializers.layer_symbology.LayerSymbologySerializer
     filterset_class = filters.LayerSymbologyFilter
-    permission_classes = [permissions.HasCatalogueEntryPermissions]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Notifications (Email)"])
@@ -196,7 +253,7 @@ class EmailNotificationViewSet(
     serializer_class = serializers.notifications.EmailNotificationSerializer
     serializer_classes = {"create": serializers.notifications.EmailNotificationCreateSerializer}
     filterset_class = filters.EmailNotificationFilter
-    permission_classes = [permissions.HasCatalogueEntryPermissions]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
@@ -215,4 +272,4 @@ class WebhookNotificationViewSet(
     serializer_class = serializers.notifications.WebhookNotificationSerializer
     serializer_classes = {"create": serializers.notifications.WebhookNotificationCreateSerializer}
     filterset_class = filters.WebhookNotificationFilter
-    permission_classes = [permissions.HasCatalogueEntryPermissions]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]

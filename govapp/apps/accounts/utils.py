@@ -7,7 +7,7 @@ from django.contrib import auth
 from django.contrib.auth import models
 
 # Typing
-from typing import Iterable
+from typing import Iterable, Union
 
 
 # Shortcuts
@@ -35,4 +35,36 @@ def all_catalogue_editors() -> Iterable[models.User]:
     # Retrieve and Yield
     yield from UserModel.objects.filter(
         groups__id=conf.settings.GROUP_CATALOGUE_EDITOR_ID
+    )
+
+
+def is_administrator(user: Union[models.User, models.AnonymousUser]) -> bool:
+    """Checks whether a user is an Administrator.
+
+    Args:
+        user (Union[models.User, models.AnonymousUser]): User to be checked.
+
+    Returns:
+        bool: Whether the user is in the Administrator group.
+    """
+    # Check and Return
+    return (
+        not isinstance(user, models.AnonymousUser)  # Must be logged in
+        and user.groups.filter(id=conf.settings.GROUP_ADMINISTRATOR_ID).exists()  # Must be in group
+    )
+
+
+def is_catalogue_editor(user: Union[models.User, models.AnonymousUser]) -> bool:
+    """Checks whether a user is a Catalogue Editor.
+
+    Args:
+        user (Union[models.User, models.AnonymousUser]): User to be checked.
+
+    Returns:
+        bool: Whether the user is in the Catalogue Editor group.
+    """
+    # Check and Return
+    return (
+        not isinstance(user, models.AnonymousUser)  # Must be logged in
+        and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
     )

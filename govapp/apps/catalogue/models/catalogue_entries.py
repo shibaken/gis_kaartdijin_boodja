@@ -3,14 +3,17 @@
 
 # Third-Party
 from django.contrib import auth
+from django.contrib.auth import models as auth_models
 from django.db import models
+from rest_framework import request
 
 # Local
 from . import custodians
 from .. import utils
+from ...accounts import utils as accounts_utils
 
 # Typing
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 # Type Checking
 if TYPE_CHECKING:
@@ -84,6 +87,21 @@ class CatalogueEntry(models.Model):
         # Return
         return active_layer
 
+    @classmethod
+    def from_request(cls, request: request.Request) -> Optional["CatalogueEntry"]:
+        """Retrieves a possible Catalogue Entry from request data.
+
+        Args:
+            request (request.Request): Request to retrieve Catalogue Entry from.
+
+        Returns:
+            Optional[models.catalogue_entries.CatalogueEntry]: Catalogue Entry.
+        """
+        # Retrieve Possible Catalogue Entry and Return
+        return cls.objects.filter(
+            id=request.data.get("catalogue_entry", -1),  # -1 Sentinel Value for Non-Existent Catalogue Entry
+        ).first()
+
     def is_locked(self) -> bool:
         """Determines whether the Catalogue Entry is locked.
 
@@ -129,6 +147,18 @@ class CatalogueEntry(models.Model):
         # Check and Return
         return self.status == CatalogueEntryStatus.NEW_DRAFT
 
+    def is_editor(self, user: Union[auth_models.User, auth_models.AnonymousUser]) -> bool:
+        """Checks whether the user is one of this Catalogue Entry's editors.
+
+        Args:
+            user (Union[models.User, models.AnonymousUser]): User to be checked
+
+        Returns:
+            bool: Whether the user is one of this CataloguE entry's editors.
+        """
+        # Check and Return
+        return self.editors.all().filter(id=user.id).exists()
+
     def lock(self) -> None:
         """Locks the Catalogue Entry."""
         # Check Catalogue Entry
@@ -172,4 +202,27 @@ class CatalogueEntry(models.Model):
 
             # Set Catalogue Entry to Declined
             self.status = CatalogueEntryStatus.DECLINED
+            self.save()
+
+    def assign(self, user: auth_models.User) -> None:
+        """Assigns a user to the Catalogue Entry if applicable.
+
+        Args:
+            user (auth_models.User): User to be assigned.
+        """
+        # Check if the user can be assigned
+        # To be assigned, a user must be:
+        # 1. In the Catalogue Editors group
+        # 2. One of this Catalogue Entry's editors
+        if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
+            # Assign user
+            self.assigned_to = user
+            self.save()
+
+    def unassign(self) -> None:
+        """Unassigns the Catalogue Entry's user if applicable."""
+        # Check if there is an assigned user
+        if self.assigned_to is not None:
+            # Unassign
+            self.assigned_to = None
             self.save()
