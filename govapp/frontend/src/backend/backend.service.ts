@@ -150,20 +150,37 @@ export class BackendService {
   }
 
   public async getGroup (id: number): Promise<Group> {
-    const response = await fetch(`/api/catalogue/groups/${id}/`);
+    const response = await fetch(`/api/accounts/groups/${id}/`);
     return await response.json() as Group;
   }
 
   public async getGroups (): Promise<PaginatedRecord<Group>> {
-    const response = await fetch("/api/catalogue/groups/");
+    const response = await fetch("/api/accounts/groups/");
     return await response.json() as PaginatedRecord<Group>;
   }
 
-  public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch) {
+  public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch): Promise<RawCatalogueEntry> {
     const params = stripNullParams(updatedEntry);
-    await fetcher(`/api/catalogue/entries/${entryId}/`, {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/`, {
       method: "patch",
       body: JSON.stringify(params)
     });
+    return await response.json() as RawCatalogueEntry;
+  }
+
+  public async lock (entryId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/lock/`, {
+      method: "post",
+      body: JSON.stringify({ id: entryId })
+    });
+    return response.status;
+  }
+
+  public async unlock (entryId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/unlock/`, {
+      method: "post",
+      body: JSON.stringify({ id: entryId })
+    });
+    return response.status;
   }
 }

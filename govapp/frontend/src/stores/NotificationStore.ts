@@ -1,11 +1,8 @@
 import { defineStore } from "pinia";
 import { NotificationRequestType } from "../backend/backend.api";
-import { NotificationProvider } from "../providers/notificationProvider";
+import { notificationProvider } from "../providers/notificationProvider";
 import type { EmailNotification, Notification, WebhookNotification } from "../providers/notificationProvider.api";
 import { computed, ref } from "vue";
-
-// Get the backend stub if the test flag is used.
-const notificationProvider: NotificationProvider = new NotificationProvider();
 
 export const useNotificationStore = defineStore("notification",  () => {
   const emailNotifications = ref<EmailNotification[]>([]);

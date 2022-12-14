@@ -4,9 +4,9 @@ import { LayerSubscriptionStatus, PaginatedRecord,
   RawLayerSubscriptionFilter } from "../backend/backend.api";
 import { LayerSubscription, LayerSubscriptionFilter } from "./layerSubscriptionProvider.api";
 import { StatusProvider } from "./statusProvider";
-import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
 import { SortDirection } from "../components/viewState.api";
 import { toSnakeCase } from "../util/strings";
+import { catalogueEntryProvider } from "./catalogueEntryProvider";
 
 export class LayerSubscriptionProvider {
   // Get the backend stub if the test flag is used.
@@ -16,7 +16,7 @@ export class LayerSubscriptionProvider {
   public async fetchLayerSubscription (id: number): Promise<LayerSubscription> {
     const rawSubscription = await this.backend.getLayerSubscription(id);
     const subscriptionStatuses = await this.statusProvider.fetchStatuses<LayerSubscriptionStatus>("layers/subscriptions");
-    const linkedEntry = await useCatalogueEntryStore().getOrFetch(rawSubscription.catalogue_entry);
+    const linkedEntry = await catalogueEntryProvider.getOrFetch(rawSubscription.catalogue_entry);
 
     const layerSubscription = {
       id: rawSubscription.id,
@@ -53,9 +53,8 @@ export class LayerSubscriptionProvider {
 
     const { previous, next, count, results } = await this.backend.getLayerSubscriptions(rawFilter);
     const subscriptionStatuses = await this.statusProvider.fetchStatuses("layers/subscriptions");
-    const { getOrFetchList } = useCatalogueEntryStore();
-
-    const linkedCatalogueEntries = await getOrFetchList(results.map(entry => entry.catalogue_entry));
+    const linkedCatalogueEntries = await catalogueEntryProvider
+      .getOrFetchList(results.map(entry => entry.catalogue_entry));
     const layerSubscriptions = results.map(rawSubscription => {
       const linkedEntry = linkedCatalogueEntries.find(record => record.id === rawSubscription.catalogue_entry);
 
@@ -78,3 +77,5 @@ export class LayerSubscriptionProvider {
     return { previous, next, count, results: layerSubscriptions } as PaginatedRecord<LayerSubscription>;
   }
 }
+
+export const layerSubscriptionProvider = new LayerSubscriptionProvider();

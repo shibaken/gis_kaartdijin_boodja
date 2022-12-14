@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref } from "vue";
+  import { ref, watch } from "vue";
   import LayerSubscriptionDataTable from "./dataTable/LayerSubscriptionDataTable.vue";
   import CatalogueEntryDataTable from "./dataTable/CatalogueEntryDataTable.vue";
   import CatalogueEntryFilter from "./widgets/CatalogueEntryFilter.vue";
@@ -14,22 +14,25 @@
   import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
   import { LayerSubscription } from "../providers/layerSubscriptionProvider.api";
   import { LayerSubmission } from "../providers/layerSubmissionProvider.api";
-  import { CatalogueEntryProvider } from "../providers/catalogueEntryProvider";
-  import { LayerSubmissionProvider } from "../providers/layerSubmissionProvider";
-  import { LayerSubscriptionProvider } from "../providers/layerSubscriptionProvider";
+  import { catalogueEntryProvider } from "../providers/catalogueEntryProvider";
+  import { layerSubmissionProvider } from "../providers/layerSubmissionProvider";
+  import { layerSubscriptionProvider } from "../providers/layerSubscriptionProvider";
   import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
   import { useLayerSubmissionStore } from "../stores/LayerSubmissionStore";
   import { useLayerSubscriptionStore } from "../stores/LayerSubscriptionStore";
+  import { storeToRefs } from "pinia";
 
-  const catalogueEntryProvider = new CatalogueEntryProvider();
-  const layerSubscriptionProvider = new LayerSubscriptionProvider();
-  const layerSubmissionProvider = new LayerSubmissionProvider();
+  const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
 
   const selectedTab = ref<CatalogueTab>(CatalogueTab.CatalogueEntries);
   const selectedView = ref<CatalogueView>(CatalogueView.List);
   const selectedViewEntry = ref<CatalogueEntry | undefined>();
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
+
+  watch(catalogueEntries, () => {
+    selectedViewEntry.value = catalogueEntries.value?.find((entry: CatalogueEntry) => entry.id === selectedViewEntry.value?.id);
+  }, { deep: true });
 
   async function navigate (tab: CatalogueTab, view: CatalogueView, options?: NavigateEmitsOptions) {
     selectedView.value = view;
@@ -82,7 +85,7 @@
 
   <div class="d-flex flex-row">
     <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View && selectedViewEntry">
-      <side-bar-left :catalogue-entry="selectedViewEntry"/>
+      <side-bar-left v-if="!!selectedViewEntry" :entry="selectedViewEntry"/>
     </div>
     <div class="w-100">
       <card v-if="selectedView === CatalogueView.List">

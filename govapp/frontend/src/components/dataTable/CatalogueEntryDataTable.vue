@@ -11,11 +11,11 @@
   import SortableHeader from "./SortableHeader.vue";
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawCatalogueEntryFilter } from "../../backend/backend.api";
+  import { catalogueEntryProvider } from "../../providers/catalogueEntryProvider";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
   const { catalogueEntries, numPages, pageSize, currentPage, filters } = storeToRefs(catalogueEntryStore);
-  const { getCatalogueEntries } = catalogueEntryStore;
 
   /**
    * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
@@ -31,7 +31,7 @@
   const { sortDirection, onSort } = useTableSortComposable<RawCatalogueEntryFilter>(filters);
 
   onMounted(() => {
-    getCatalogueEntries();
+    catalogueEntryProvider.fetchCatalogueEntries({});
   });
 </script>
 
