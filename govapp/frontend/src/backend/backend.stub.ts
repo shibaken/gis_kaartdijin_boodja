@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { BackendService } from "./backend.service";
-import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, User, StatusType, RawLayerSubmission,
+import {
+  RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, User, StatusType, RawLayerSubmission,
   NotificationRequestType, RawNotification, NotificationType, RawWebhookNotification, RawEmailNotification, RawMetadata,
-  RawCustodian, Group, RawSymbology, RawAttribute } from "./backend.api";
+  RawCustodian, Group, RawSymbology, RawAttribute, RawEntryPatch
+} from "./backend.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -13,7 +15,7 @@ function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   };
 }
 
-const DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
+let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
   {
     "id": 1,
     "name": "Catalogue Entry 1",
@@ -427,7 +429,16 @@ export class BackendServiceStub implements BackendService {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_GROUPS));
   }
 
-  public async patchCatalogueEntry () {
-    return Promise.resolve();
+  public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch): Promise<RawCatalogueEntry> {
+    DUMMY_CATALOGUE_ENTRIES = DUMMY_CATALOGUE_ENTRIES.map(entry => entry.id === entryId ? { ...entry, ...updatedEntry } : entry);
+    return Promise.resolve(DUMMY_CATALOGUE_ENTRIES.find(entry => entry.id === entryId)!);
+  }
+
+  async lock(entryId: number): Promise<number> {
+    return Promise.resolve(204);
+  }
+
+  async unlock(entryId: number): Promise<number> {
+    return Promise.resolve(204);
   }
 }

@@ -5,12 +5,11 @@ import { Notification } from "./notificationProvider.api";
 import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.api";
 import { unique } from "../util/filtering";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
-import { CatalogueEntryProvider } from "./catalogueEntryProvider";
+import { catalogueEntryProvider } from "./catalogueEntryProvider";
 
 export class NotificationProvider {
   // Get the backend stub if the test flag is used.
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
-  private catalogueEntryProvider: CatalogueEntryProvider = new CatalogueEntryProvider();
   private emailNotificationTypes = this.backend.getNotificationTypes(NotificationRequestType.Email);
   private webhookNotificationTypes = this.backend.getNotificationTypes(NotificationRequestType.Webhook);
 
@@ -31,7 +30,7 @@ export class NotificationProvider {
 
     if (entriesToFetch.length > 0) {
       tableFilterMap.ids = unique<number>(entriesToFetch);
-      const { results: catalogueEntryResults } = await this.catalogueEntryProvider.fetchCatalogueEntries(tableFilterMap);
+      const { results: catalogueEntryResults } = await catalogueEntryProvider.fetchCatalogueEntries(tableFilterMap);
       requestedEntries.push(...catalogueEntryResults);
     }
 
@@ -64,3 +63,5 @@ export class NotificationProvider {
     return this.backend.getNotificationTypes(notificationType);
   }
 }
+
+export const notificationProvider = new NotificationProvider();

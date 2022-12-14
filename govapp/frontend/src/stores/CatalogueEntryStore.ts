@@ -1,20 +1,14 @@
 import { defineStore } from "pinia";
-import { Ref, ref, computed, ComputedRef, watch, toRefs } from "vue";
+import { Ref, ref, computed, ComputedRef, toRefs } from "vue";
 import { CatalogueEntry, CatalogueEntryFilter } from "../providers/catalogueEntryProvider.api";
-import { CatalogueEntryProvider } from "../providers/catalogueEntryProvider";
-import { StatusProvider } from "../providers/statusProvider";
-import { CatalogueEntryStatus, PaginatedRecord } from "../backend/backend.api";
+import { CatalogueEntryStatus, RecordStatus } from "../backend/backend.api";
 import { useTableFilterComposable } from "../tools/filterComposable";
 
-// Get the backend stub if the test flag is used.
-const catalogueEntryProvider: CatalogueEntryProvider = new CatalogueEntryProvider();
-const statusProvider = new StatusProvider();
-
-// Status shouldn't need to change so pass it as a static list
-export const entryStatuses = statusProvider.fetchStatuses<CatalogueEntryStatus>("entries");
 
 export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
-  const catalogueEntries: Ref<Array<CatalogueEntry>> = ref([]);
+// Status shouldn't need to change so pass it as a static list
+  const entryStatuses = ref<RecordStatus<CatalogueEntryStatus>[]>([]);
+  const catalogueEntries = ref<CatalogueEntry[]>([]);
   const currentPage: Ref<number> = ref(1);
   const pageSize: Ref<number> = ref(10);
   const numPages: ComputedRef<number> = computed(() => Math.ceil(catalogueEntries.value.length / pageSize.value));
@@ -25,43 +19,11 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   const { filters } = toRefs(tableFilterComposable);
   const { setFilter, clearFilters } = tableFilterComposable;
 
-  watch(filters.value, () => getCatalogueEntries());
-
-  async function getCatalogueEntries (): Promise<PaginatedRecord<CatalogueEntry>> {
-    const entries = await catalogueEntryProvider.fetchCatalogueEntries(filters.value);
-    catalogueEntries.value = entries.results;
-    total.value = entries.count;
-
-    return entries;
+  function updateEntry (patchedEntry: CatalogueEntry) {
+    catalogueEntries.value = catalogueEntries.value
+      .map((entry: CatalogueEntry) => entry.id === patchedEntry.id ? patchedEntry : entry);
   }
 
-  async function getOrFetch (id: number): Promise<CatalogueEntry> {
-    const storeMatch = catalogueEntries.value.find(entry => entry.id === id);
-    return storeMatch ? Promise.resolve(storeMatch) : catalogueEntryProvider.fetchCatalogueEntry(id);
-  }
-
-  async function getOrFetchList (ids: Array<number>): Promise<CatalogueEntry[]> {
-    const extantRecords: Array<CatalogueEntry> = Array.from(useCatalogueEntryStore().catalogueEntries);
-    const recordsToFetch: Array<number> = [];
-
-    extantRecords.forEach(record => {
-      if (ids.indexOf(record.id) >= 0) {
-        extantRecords.push(record);
-      } else {
-        recordsToFetch.push(record.id);
-      }
-    });
-
-    if (recordsToFetch.length > 0) {
-      const filter: CatalogueEntryFilter = { ids: recordsToFetch };
-      const recordsToFetchResponse = await catalogueEntryProvider
-        .fetchCatalogueEntries(filter);
-      extantRecords.push(...recordsToFetchResponse.results);
-    }
-
-    return extantRecords;
-  }
-
-  return { catalogueEntries, currentPage, pageSize, numPages, filters, setFilter, clearFilters, entryStatuses,
-    getCatalogueEntries, getOrFetch, getOrFetchList };
+  return { catalogueEntries, currentPage, pageSize, numPages, total, filters, setFilter, clearFilters, entryStatuses,
+    updateEntry };
 });

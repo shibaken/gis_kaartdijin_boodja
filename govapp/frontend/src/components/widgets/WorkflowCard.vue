@@ -1,30 +1,13 @@
 <script lang="ts" setup>
   import FormSelect from "./FormSelect.vue";
   import Card from "./Card.vue";
-  import { userProvider } from "../../providers/userProvider";
-  import { onMounted, ref } from "vue";
-  import { User } from "../../backend/backend.api";
+  import { WorkFlowComposable } from "../../tools/workflowComposable.api";
 
   const props = defineProps<{
-    assignedTo: number | undefined
+    workflowComposable: WorkFlowComposable,
   }>();
 
-  const emit = defineEmits<{
-    (e: "assign-user", userId: number): void,
-    (e: "assign-me"): void
-  }>();
-
-  const users = ref<Array<[string, string | number]>>([]);
-  const me = ref<User>();
-
-  onMounted(async () => {
-    users.value = (await userProvider.users)
-      .map(user => {
-        return [user.username, user.id]
-      });
-
-    me.value = await userProvider.me;
-  });
+  const workflowComposable = props.workflowComposable;
 </script>
 
 <template>
@@ -37,19 +20,24 @@
         <div class="w-100">
           <small>Status</small>
         </div>
-        <span class="link">Locked</span>
+        <span class="link">{{ workflowComposable.currentEntry.value?.status?.label }}</span>
       </div>
       <div class="d-flex flex-column">
-        <form-select field="assignedTo" name="Currently assigned to" :values="users" :value="assignedTo?.toString()"
-                     @value-updated="(username, id) => emit('assign-user', parseInt(id))"/>
+        <form-select field="assignedTo" name="Currently assigned to"
+                     :values="workflowComposable.assignableUsers.value?.map(value => [value.username, value.id])"
+                     :value="workflowComposable.currentEntry.value?.assignedTo?.id.toString()"
+                     @value-updated="(username, id) => workflowComposable.assignUser(parseInt(id))"/>
         <button class="btn btn-link btn-sm align-self-end"
-                @click="() => emit('assign-me')">
+                @click="() => workflowComposable.assignUser()">
           Assign to me
         </button>
       </div>
       <div class="w-100 my-3 border-top"></div>
       <div class="d-flex flex-column gap-3">
-        <button class="btn btn-info w-100 text-white">Unlock</button>
+        <button class="btn btn-info w-100 text-white" :class="{ disabled: !workflowComposable.hasLockPermissions }"
+                @click="workflowComposable.lockClicked">
+          {{ workflowComposable.canLock.value ? "Lock" : "Unlock" }}
+        </button>
         <button class="btn btn-info w-100 text-white">Cancel</button>
       </div>
     </template>

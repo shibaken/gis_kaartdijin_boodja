@@ -28,3 +28,5 @@ export class StatusProvider {
       }, [] as Array<RecordStatus<T>>);
   }
 }
+
+export const statusProvider = new StatusProvider();

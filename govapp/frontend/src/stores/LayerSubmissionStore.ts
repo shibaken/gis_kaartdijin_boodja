@@ -2,14 +2,9 @@ import { defineStore } from "pinia";
 import { computed, ComputedRef, Ref, ref, toRefs, watch } from "vue";
 import { LayerSubmission, LayerSubmissionFilter } from "../providers/layerSubmissionProvider.api";
 import { LayerSubmissionStatus, PaginatedRecord } from "../backend/backend.api";
-import { LayerSubmissionProvider } from "../providers/layerSubmissionProvider";
+import { layerSubmissionProvider } from "../providers/layerSubmissionProvider";
 import { useTableFilterComposable } from "../tools/filterComposable";
-import { StatusProvider } from "../providers/statusProvider";
-
-
-// Get the backend stub if the test flag is used.
-const layerSubmissionProvider: LayerSubmissionProvider = new LayerSubmissionProvider();
-const statusProvider = new StatusProvider();
+import { statusProvider } from "../providers/statusProvider";
 
 // Status shouldn't need to change so pass it as a static list
 export const submissionStatuses = statusProvider.fetchStatuses<LayerSubmissionStatus>("layers/submissions");
