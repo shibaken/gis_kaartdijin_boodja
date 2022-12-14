@@ -9,7 +9,9 @@ from django import conf
 
 # Local
 from . import absorber
+from . import emails
 from . import storage
+from ..accounts import utils
 
 
 # Logging
@@ -56,6 +58,11 @@ class Scanner:
             except Exception as exc:
                 # Log and continue
                 log.error(f"Error absorbing file '{file}': {exc}")
+
+                # Send Emails!
+                emails.FileAbsorbFailEmail().send_to_users(
+                    *utils.all_administrators(),  # Send to all administrators
+                )
 
         # Log
         log.info("Scanning storage staging area complete!")
