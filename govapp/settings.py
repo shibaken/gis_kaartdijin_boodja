@@ -203,6 +203,8 @@ GROUP_CATALOGUE_EDITOR_ID = 2
 GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
 
 # Cron Jobs
+# https://django-cron.readthedocs.io/en/latest/installation.html
+# https://django-cron.readthedocs.io/en/latest/configuration.html
 CRON_CLASSES = [
     "govapp.apps.catalogue.cron.ScannerCronJob",
 ]
