@@ -26,7 +26,7 @@
         <form-select field="assignedTo" name="Currently assigned to"
                      :values="workflowComposable.assignableUsers.value?.map(value => [value.username, value.id])"
                      :value="workflowComposable.currentEntry.value?.assignedTo?.id.toString()"
-                     @value-updated="(username, id) => workflowComposable.assignUser(id)"/>
+                     @value-updated="(username, id) => workflowComposable.assignUser(parseInt(id))"/>
         <button class="btn btn-link btn-sm align-self-end"
                 @click="() => workflowComposable.assignUser()">
           Assign to me
