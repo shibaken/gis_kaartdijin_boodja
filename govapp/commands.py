@@ -5,6 +5,7 @@
 import logging
 
 # Third-Party
+from django import conf
 from django.core import management
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
@@ -27,29 +28,6 @@ class ManagementCommands(viewsets.ViewSet):
     permission_classes = [permissions.IsInAdministratorsGroup]
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
-    @decorators.action(detail=False, methods=["POST"], url_path=r"absorb/(?P<file>[^/]+)")
-    def absorb(self, request: request.Request, file: str) -> response.Response:
-        """Runs the `absorb` Management Command.
-
-        Args:
-            request (request.Request): API request.
-
-        Returns:
-            response.Response: Empty response confirming success.
-        """
-        # Handle Errors
-        try:
-            # Run Management Command
-            management.call_command("absorb", file)
-
-        except Exception as exc:
-            # Log
-            log.error(f"Unable to perform absorb on '{file}': {exc}")
-
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
-
-    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=False, methods=["POST"])
     def scan(self, request: request.Request) -> response.Response:
         """Runs the `scan` Management Command.
@@ -63,7 +41,13 @@ class ManagementCommands(viewsets.ViewSet):
         # Handle Errors
         try:
             # Run Management Command
-            management.call_command("scan")
+            # Here, instead of directly running the `scan` management command
+            # we run it via the `runcrons` command. This allows us to take
+            # advantage of the builtin locking functionality - i.e., we won't
+            # be able to run the scanner if its already running. The `--force`
+            # option is used to allow us to call the scanner whenever we want,
+            # but it does not bypass the concurrency locking.
+            management.call_command("runcrons", conf.settings.CRON_SCANNER_CLASS, "--force")
 
         except Exception as exc:
             # Log

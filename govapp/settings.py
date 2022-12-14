@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "reversion",
+    "django_cron",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -200,6 +201,15 @@ GROUP_ADMINISTRATOR_ID = 1
 GROUP_ADMINISTRATOR_NAME = "Administrators"
 GROUP_CATALOGUE_EDITOR_ID = 2
 GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
+
+# Cron Jobs
+# https://django-cron.readthedocs.io/en/latest/installation.html
+# https://django-cron.readthedocs.io/en/latest/configuration.html
+CRON_SCANNER_CLASS = "govapp.apps.catalogue.cron.ScannerCronJob"
+CRON_SCANNER_PERIOD_MINS = 5  # Run every 5 minutes
+CRON_CLASSES = [
+    CRON_SCANNER_CLASS,
+]
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":
