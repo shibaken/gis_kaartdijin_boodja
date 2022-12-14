@@ -34,7 +34,8 @@
       </div>
       <div class="w-100 my-3 border-top"></div>
       <div class="d-flex flex-column gap-3">
-        <button class="btn btn-info w-100 text-white" @click="workflowComposable.lockClicked">
+        <button class="btn btn-info w-100 text-white" :class="{ disabled: !workflowComposable.hasLockPermissions }"
+                @click="workflowComposable.lockClicked">
           {{ workflowComposable.canLock.value ? "Lock" : "Unlock" }}
         </button>
         <button class="btn btn-info w-100 text-white">Cancel</button>
