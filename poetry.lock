@@ -186,17 +186,6 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
-name = "django-common-helpers"
-version = "0.9.2"
-description = "Common things every Django app needs!"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-Django = ">=1.8.0"
-
-[[package]]
 name = "django-confy"
 version = "1.0.4"
 description = "Django project configuration helpers"
@@ -240,15 +229,14 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "django-cron"
-version = "0.5.0"
+version = "0.6.0"
 description = "Running python crons in a Django project"
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-Django = ">=1.8.0"
-django-common-helpers = ">=0.6.4"
+Django = ">=3.2"
 
 [[package]]
 name = "django-filter"
@@ -1273,7 +1261,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "0cfd049892369e90b0374da95cb8b2bc56d4fd87e1a2846e06a6976b2e32d73e"
+content-hash = "c6122cdb0dc59f2c92c9171af203c5408aae7c07d4be1ebd06fd98b7972e1824"
 
 [metadata.files]
 asgiref = [
@@ -1463,9 +1451,6 @@ django = [
     {file = "Django-3.2.16-py3-none-any.whl", hash = "sha256:18ba8efa36b69cfcd4b670d0fa187c6fe7506596f0ababe580e16909bcdec121"},
     {file = "Django-3.2.16.tar.gz", hash = "sha256:3adc285124244724a394fa9b9839cc8cd116faf7d159554c43ecdaa8cdf0b94d"},
 ]
-django-common-helpers = [
-    {file = "django-common-helpers-0.9.2.tar.gz", hash = "sha256:2d56be6fa261d829a6a224f189bf276267b9082a17d613fe5f015dd4d65c17b4"},
-]
 django-confy = [
     {file = "django-confy-1.0.4.tar.gz", hash = "sha256:35b0242a54d484dac05c1a59d6d9d0a5bb4241651c365ad23b60e5a46ff7b3b1"},
     {file = "django_confy-1.0.4-py3-none-any.whl", hash = "sha256:cde50fd3d087d850a7aa59e053ba2f0d5b3866c5ec82a96e3035ac4ded4c3b38"},
@@ -1483,7 +1468,8 @@ django-crispy-forms = [
     {file = "django_crispy_forms-1.14.0-py3-none-any.whl", hash = "sha256:bc4d2037f6de602d39c0bc452ac3029d1f5d65e88458872cc4dbc01c3a400604"},
 ]
 django-cron = [
-    {file = "django-cron-0.5.0.tar.gz", hash = "sha256:bc56511e3250e4f47fc37d40beb1680c7ecadb3689e4139eee78677e24a60edf"},
+    {file = "django-cron-0.6.0.tar.gz", hash = "sha256:dc3c0d3433a2e4e7012f77f6d8415ad90367ba068649db2674325bc36f935841"},
+    {file = "django_cron-0.6.0-py3-none-any.whl", hash = "sha256:016203554748512b7f19d7363b4fde8741c6ff63fe8a15051f3031f4a0506a41"},
 ]
 django-filter = [
     {file = "django-filter-22.1.tar.gz", hash = "sha256:ed473b76e84f7e83b2511bb2050c3efb36d135207d0128dfe3ae4b36e3594ba5"},
