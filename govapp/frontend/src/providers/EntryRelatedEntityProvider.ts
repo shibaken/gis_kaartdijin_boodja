@@ -1,9 +1,9 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
 import { Attribute } from "./EntryRelatedEntityProvider.api";
-import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
 import { EntryPatch, Group, PaginatedRecord, RawAttribute, RawCustodian, RawMetadata,
   RawSymbology } from "../backend/backend.api";
+import { catalogueEntryProvider } from "./catalogueEntryProvider";
 
 export class EntryRelatedEntityProvider {
   // Get the backend stub if the test flag is used.
@@ -11,7 +11,7 @@ export class EntryRelatedEntityProvider {
 
   public async fetchAttributes (): Promise<Attribute[]> {
     const { results } = await this.backend.getRawAttributes();
-    const { getOrFetchList } = useCatalogueEntryStore();
+    const { getOrFetchList } = catalogueEntryProvider;
     const linkedEntries = await getOrFetchList(results.map(({ id }) => id));
 
     return results.map((rawAttribute) => {
@@ -54,7 +54,7 @@ export class EntryRelatedEntityProvider {
   }
 
   public async getGroups (): Promise<PaginatedRecord<Group>> {
-    const response = await fetch("/api/catalogue/groups/");
+    const response = await fetch("/api/accounts/groups/");
     return await response.json() as PaginatedRecord<Group>;
   }
 
@@ -66,3 +66,5 @@ export class EntryRelatedEntityProvider {
     });
   }
 }
+
+export const entryRelatedEntityProvider = new EntryRelatedEntityProvider();
