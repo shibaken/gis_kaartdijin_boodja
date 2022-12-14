@@ -1,0 +1,5 @@
+{% extends 'base_email.txt' %}
+
+{% block content %}
+A file failed to absorb!
+{% endblock %}

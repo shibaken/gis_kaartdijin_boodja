@@ -25,3 +25,10 @@ class CatalogueEntryUpdateFailEmail(emails.TemplateEmailBase):
     subject = "A Catalogue Entry update failed"
     html_template = "catalogue_entry_update_fail_email.html"
     txt_template = "catalogue_entry_update_fail_email.txt"
+
+
+class FileAbsorbFailEmail(emails.TemplateEmailBase):
+    """File Absorb Fail Email Abstraction."""
+    subject = "A file absorption failed"
+    html_template = "file_absorb_fail_email.html"
+    txt_template = "file_absorb_fail_email.txt"
