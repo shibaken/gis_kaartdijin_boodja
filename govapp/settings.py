@@ -205,10 +205,11 @@ GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
 # Cron Jobs
 # https://django-cron.readthedocs.io/en/latest/installation.html
 # https://django-cron.readthedocs.io/en/latest/configuration.html
-CRON_CLASSES = [
-    "govapp.apps.catalogue.cron.ScannerCronJob",
-]
+CRON_SCANNER_CLASS = "govapp.apps.catalogue.cron.ScannerCronJob"
 CRON_SCANNER_PERIOD_MINS = 5  # Run every 5 minutes
+CRON_CLASSES = [
+    CRON_SCANNER_CLASS,
+]
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":
