@@ -28,7 +28,7 @@
                        :values="workflowComposable.assignableUsers.value?.map(value => [value.username, value.id])"
                        :value="workflowComposable.currentEntry.value?.assignedTo?.id.toString()"
                        @value-updated="(username, id) => workflowComposable.assignUser(parseInt(id))"/>
-          <button v-if="workflowComposable.canAssign" class="btn btn-link btn-sm align-self-end"
+          <button v-if="workflowComposable.canAssign.value" class="btn btn-link btn-sm align-self-end"
                   @click="() => workflowComposable.assignMe()">
             Assign to me
           </button>
@@ -39,7 +39,6 @@
                 @click="workflowComposable.lockClicked">
           {{ workflowComposable.canLock.value ? "Lock" : "Unlock" }}
         </button>
-        <button class="btn btn-info w-100 text-white">Cancel</button>
       </div>
     </template>
   </card>
