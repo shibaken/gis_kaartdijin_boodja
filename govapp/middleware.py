@@ -49,6 +49,7 @@ class CacheControl:
         elif request.path[:7] == "/media/":
             # Cache all /media/ calls for 1 day  <-- lowered to 60 seconds for development purposes.
             response["Cache-Control"] = "public, max-age=60"
+
         else:
             # Ignore other paths
             pass
