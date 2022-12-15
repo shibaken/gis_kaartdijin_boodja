@@ -9,7 +9,6 @@ import pathlib
 # Third-Party
 from django import conf
 from django.db import transaction
-import reversion
 
 # Local
 from . import emails
@@ -128,7 +127,6 @@ class Absorber:
             self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
 
     @transaction.atomic()
-    @reversion.create_revision()  # type: ignore[misc]
     def create_catalogue_entry(
         self,
         metadata: readers.types.metadata.Metadata,
@@ -201,7 +199,6 @@ class Absorber:
         )
 
     @transaction.atomic()
-    @reversion.create_revision()  # type: ignore[misc]
     def update_catalogue_entry(
         self,
         catalogue_entry: models.catalogue_entries.CatalogueEntry,

@@ -11,6 +11,44 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import serializers
 from rest_framework import viewsets
+import reversion
+
+# Typing
+from typing import Any, Iterable, Optional
+
+
+class RevisionedMixin(models.Model):
+    """Django model tracked by Django Reversion through the save method."""
+
+    class Meta:
+        """Revisioned Mixin Metadata."""
+        abstract = True
+
+    def save(
+        self,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: Optional[str] = None,
+        update_fields: Optional[Iterable[str]] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Saves the Django model in the database.
+
+        Args:
+            force_insert (bool): Whether to force insert.
+            force_update (bool): Whether to force update.
+            using (Optional[str]): Database to use.
+            update_fields (Optional[Iterable[str]]): Fields to update.
+            **kwargs (Any): Extra keyword arguments for Django Reversion.
+        """
+        # Create Revision
+        with reversion.create_revision():
+            # Set Version User and Comment
+            reversion.set_user(kwargs.pop("version_user", None))
+            reversion.set_comment(kwargs.pop("version_comment", ""))
+
+            # Save the Model
+            return super().save(force_insert, force_update, using, update_fields)
 
 
 class MultipleSerializersMixin:

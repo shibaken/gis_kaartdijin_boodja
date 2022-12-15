@@ -3,12 +3,15 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
+from .. import mixins
 
 
-class LayerAttribute(models.Model):
+@reversion.register()
+class LayerAttribute(mixins.RevisionedMixin):
     """Model for a Layer Attribute."""
     name = models.TextField()
     type = models.TextField()  # noqa: A003

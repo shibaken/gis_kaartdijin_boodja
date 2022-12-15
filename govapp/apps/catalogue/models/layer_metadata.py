@@ -3,12 +3,15 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
+from .. import mixins
 
 
-class LayerMetadata(models.Model):
+@reversion.register()
+class LayerMetadata(mixins.RevisionedMixin):
     """Model for a Layer Metadata."""
     name = models.TextField()
     created_at = models.DateTimeField()
