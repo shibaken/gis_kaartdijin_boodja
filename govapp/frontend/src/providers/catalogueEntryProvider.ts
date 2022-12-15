@@ -1,14 +1,13 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { CatalogueEntryStatus, PaginatedRecord, RawCatalogueEntry, RawCatalogueEntryFilter, RawEntryPatch, RecordStatus,
+import { CatalogueEntryStatus, PaginatedRecord, RawCatalogueEntry, RawCatalogueEntryFilter, RecordStatus,
   User } from "../backend/backend.api";
 import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.api";
 import { statusProvider } from "./statusProvider";
-import { userProvider, UserProvider } from "./userProvider";
+import { userProvider } from "./userProvider";
 import { SortDirection } from "../components/viewState.api";
 import { toSnakeCase } from "../util/strings";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
-import { useUserStore } from "../stores/UserStore";
 
 export class CatalogueEntryProvider {
   // Get the backend stub if the test flag is used.
@@ -23,14 +22,29 @@ export class CatalogueEntryProvider {
       .then(statuses => useCatalogueEntryStore().entryStatuses = statuses);
   }
 
-  private async rawToCatalogueEntry(entry: RawCatalogueEntry): Promise<CatalogueEntry> {
+  private async rawToCatalogueEntry (entry: RawCatalogueEntry): Promise<CatalogueEntry> {
     const entryStatuses: RecordStatus<CatalogueEntryStatus>[] = useCatalogueEntryStore().entryStatuses;
-    const users = useUserStore().users;
+    const users = await userProvider.users;
     let user: User | undefined;
 
     if (typeof entry.assigned_to === "number") {
       const matchUser = users.find(match => match.id === entry.assigned_to);
       user = matchUser ?? await userProvider.fetchUser(entry.assigned_to);
+    }
+    const editors: Array<User> = [];
+    const toFetch: Array<number> = [];
+    entry.editors.forEach(editorId => {
+      const match = users.find(user => editorId === user.id);
+
+      if (match) {
+        editors.push(match);
+      } else {
+        toFetch.push(editorId);
+      }
+    });
+    if (toFetch.length > 0) {
+      const fetchedEditors = await userProvider.fetchUsers({ ids: toFetch });
+      editors.concat(fetchedEditors);
     }
 
     return {
@@ -45,7 +59,8 @@ export class CatalogueEntryProvider {
       activeLayer: entry.active_layer,
       layers: entry.layers,
       emailNotifications: entry.email_notifications,
-      webhookNotifications: entry.webhook_notifications
+      webhookNotifications: entry.webhook_notifications,
+      editors
     } as CatalogueEntry;
   }
 
@@ -103,39 +118,47 @@ export class CatalogueEntryProvider {
     } as RawCatalogueEntryFilter;
 
     const { previous, next, count, results } = await this.backend.getCatalogueEntries(rawFilter);
-    const entryStatuses = await statusProvider.fetchStatuses<CatalogueEntryStatus>("entries");
-
-    const userFields: Record<string, number | undefined>[] = results
-      .map(({ custodian, assigned_to }) => ({ custodian, assigned_to }));
-    const userIds = UserProvider.getUniqueUserIds(userFields);
-    const users = (await userProvider.users)
-      .filter(user => userIds.indexOf(user.id) >= 0);
-
-    const catalogueEntries = results.map(entry => ({
-      id: entry.id,
-      name: entry.name,
-      description: entry.description,
-      status: statusProvider.getRecordStatusFromId(entry.status, entryStatuses),
-      updatedAt: entry.updated_at,
-      custodian: UserProvider.getUserFromId(entry.custodian, users),
-      assignedTo: UserProvider.getUserFromId(entry.assigned_to, users),
-      subscription: entry.subscription,
-      activeLayer: entry.active_layer,
-      layers: entry.layers,
-      emailNotifications: entry.email_notifications,
-      webhookNotifications: entry.webhook_notifications
-    })) as Array<CatalogueEntry>;
-
+    const catalogueEntries = await Promise.all(results.map(this.rawToCatalogueEntry));
     useCatalogueEntryStore().$patch({ catalogueEntries: catalogueEntries });
 
-   return { previous, next, count, results: catalogueEntries } as PaginatedRecord<CatalogueEntry>;
+    return { previous, next, count, results: catalogueEntries } as PaginatedRecord<CatalogueEntry>;
   }
 
   public async assignUser (entryId: number, userId: number) {
-    const patchedEntry = await this.rawToCatalogueEntry(await this.backend.patchCatalogueEntry(entryId, {
-      assigned_to: userId
-    } as RawEntryPatch));
-    useCatalogueEntryStore().updateEntry(patchedEntry);
+    const statusCode = await this.backend.entryAssign(entryId, userId);
+    if (statusCode >= 200 && statusCode < 300) {
+      const entryStore = useCatalogueEntryStore();
+      const updatedEntry = entryStore.catalogueEntries.find(entry => entry.id === entryId);
+      const users = await userProvider.users;
+
+      if (updatedEntry) {
+        const updatedUser = users.find(user => user.id === userId);
+        if (updatedUser) {
+          updatedEntry.assignedTo = updatedUser;
+          useCatalogueEntryStore().updateEntry(updatedEntry);
+        } else {
+          console.error(`Entry ${entryId} could not be assigned to user ${userId}. User not found`);
+        }
+      } else {
+        console.error(`Entry ${entryId} was not found. Could not complete action (unassign user)`)
+      }
+    }
+  }
+
+  public async unassignUser (entryId: number) {
+    const statusCode = await this.backend.entryUnassign(entryId);
+    if (statusCode >= 200 && statusCode < 300) {
+      const entryStore = useCatalogueEntryStore();
+      const updatedEntry = entryStore.catalogueEntries.find(entry => entry.id === entryId);
+      if (updatedEntry) {
+        updatedEntry.assignedTo = undefined;
+        entryStore.updateEntry(updatedEntry);
+      } else {
+        console.error(`Entry ${entryId} was not found. Could not complete action (unassign user)`);
+      }
+    } else {
+      console.error(`Error while processing unassignUser request. Error code ${statusCode}`)
+    }
   }
 
   public async lock (entryId: number) {

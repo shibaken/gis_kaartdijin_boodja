@@ -33,6 +33,7 @@ export interface RawCatalogueEntry {
   layers: Array<number>;
   email_notifications: Array<number>;
   webhook_notifications: Array<number>;
+  editors: Array<number>;
 }
 
 export interface RawLayerSubmission {
@@ -46,6 +47,12 @@ export interface RawLayerSubmission {
   attributes: Array<number>;
   metadata: number;
   symbology: number;
+}
+
+export interface RawUser {
+  id: number;
+  username: string;
+  groups: Array<number>;
 }
 
 export interface RawPaginationFilter extends Record<string, unknown> {
@@ -99,7 +106,7 @@ export type LayerSubmissionStatus = "Submitted"|"Accepted"|"Declined";
 export interface User {
   id: number;
   username: string;
-  groups: Array<number>;
+  groups: Array<Group>;
 }
 
 export enum NotificationRequestType {

@@ -1,6 +1,6 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { RawUserFilter, User } from "../backend/backend.api";
+import { RawUser, RawUserFilter, User } from "../backend/backend.api";
 import { UserFilter } from "./userProvider.api";
 
 export class UserProvider {
@@ -11,26 +11,36 @@ export class UserProvider {
   public me = this.fetchMe();
   public groups = this.fetchGroups();
 
-  public async fetchUser (userId: number): Promise<User> {
-    return await this.backend.getUser(userId);
+
+  private async rawToUser ({ id, username, groups }: RawUser): Promise<User> {
+    const providerGroups = await userProvider.groups;
+    return {
+      id,
+      username,
+      groups: groups.map(groupId => providerGroups.find(group => group.id === groupId))
+    } as User;
   }
 
-  public async fetchUsers ({ ids, usernames }: UserFilter = {}): Promise<Array<User>> {
+  public async fetchUser (userId: number): Promise<User> {
+    return this.rawToUser(await this.backend.getUser(userId));
+  }
+
+  public async fetchUsers ({ ids, usernames }: UserFilter = {}): Promise<User[]> {
     const filters = {
       id__in: ids,
       username__in: usernames
     } as RawUserFilter;
 
     const users = await this.backend.getUsers(filters);
-    return users.results;
+    return await Promise.all(users.results.map(user => this.rawToUser(user)));
   }
 
   public async fetchMe () {
-    return this.backend.getMe();
+    return this.rawToUser(await this.backend.getMe());
   }
 
   public async fetchGroups () {
-    return this.backend.getGroups();
+    return (await this.backend.getGroups()).results;
   }
 
   // We don't need to paginate here so unwrap the results

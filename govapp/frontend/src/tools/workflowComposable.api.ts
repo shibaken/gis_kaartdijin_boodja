@@ -10,4 +10,5 @@ export interface WorkFlowComposable {
   assignableUsers: ComputedRef<User[]>;
   currentEntry: Ref<CatalogueEntry>;
   assignUser: (userId?: number) => void;
+  assignMe: () => void;
 }
