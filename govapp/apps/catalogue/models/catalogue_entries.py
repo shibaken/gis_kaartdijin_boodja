@@ -37,7 +37,6 @@ class CatalogueEntryStatus(models.IntegerChoices):
 
 @reversion.register(
     follow=(
-        "active_layer",
         "attributes",
         "metadata",
         "layers",
