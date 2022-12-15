@@ -38,6 +38,8 @@ export function useEntryWorkflowComposable(catalogueEntry: CatalogueEntry) {
 
   const hasLockPermissions = computed(() => userCanLock(me.value));
 
+  const canAssign = computed(() => userCanAssign(me.value));
+
   const canLock = computed(() =>  userCanLock(me.value) &&
     ["Draft", "New Draft"].indexOf(currentEntry.value.status.label) >= 0);
 
@@ -69,5 +71,6 @@ export function useEntryWorkflowComposable(catalogueEntry: CatalogueEntry) {
     }
   }
 
-  return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, assignableUsers, assignUser, assignMe };
+  return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, assignableUsers, assignUser, assignMe,
+  canAssign };
 }

@@ -6,8 +6,9 @@ export interface WorkFlowComposable {
   hasLockPermissions: ComputedRef<boolean>;
   canLock: ComputedRef<boolean>;
   canUnlock: ComputedRef<boolean>;
-  lockClicked: () => void;
+  canAssign: ComputedRef<boolean>;
   assignableUsers: ComputedRef<User[]>;
+  lockClicked: () => void;
   currentEntry: Ref<CatalogueEntry>;
   assignUser: (userId?: number) => void;
   assignMe: () => void;
