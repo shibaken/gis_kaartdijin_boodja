@@ -180,6 +180,16 @@ export class CatalogueEntryProvider {
       return updatedEntry;
     }
   }
+
+  public async decline (entryId: number) {
+    const statusCode = await this.backend.decline(entryId);
+
+    if (statusCode === 204) {
+      const updatedEntry = await this.fetchCatalogueEntry(entryId);
+      useCatalogueEntryStore().updateEntry(updatedEntry);
+      return updatedEntry;
+    }
+  }
 }
 
 export const catalogueEntryProvider = new CatalogueEntryProvider();

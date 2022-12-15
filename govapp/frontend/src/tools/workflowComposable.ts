@@ -48,11 +48,18 @@ export function useEntryWorkflowComposable(catalogueEntry: CatalogueEntry) {
 
   const assignableUsers: ComputedRef<User[]> = computed(() => users.value.filter(user => userCanAssign(user)));
 
-  async function lockClicked() {
+  async function lockClicked () {
     if (canLock.value) {
       await catalogueEntryProvider.lock(currentEntry.value.id);
     } else if (canUnlock) {
       await catalogueEntryProvider.unlock(currentEntry.value.id);
+    }
+  }
+
+  async function declineClicked () {
+    // `canDecline` has the same permission requirements as `canLock`
+    if (canLock) {
+      await catalogueEntryProvider.decline(currentEntry.value.id)
     }
   }
 
@@ -72,5 +79,5 @@ export function useEntryWorkflowComposable(catalogueEntry: CatalogueEntry) {
   }
 
   return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, assignableUsers, assignUser, assignMe,
-  canAssign };
+  canAssign, declineClicked };
 }

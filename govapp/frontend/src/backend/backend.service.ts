@@ -185,6 +185,14 @@ export class BackendService {
     return response.status;
   }
 
+  public async decline (entryId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/decline/`, {
+      method: "post",
+      body: JSON.stringify({ id: entryId })
+    });
+    return response.status;
+  }
+
   public async entryAssign (entryId: number, userId: number) {
     const response = await fetcher(`/api/catalogue/entries/${entryId}/assign/${userId}/`, {
       method: "post"

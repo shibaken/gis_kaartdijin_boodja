@@ -39,6 +39,8 @@
                 @click="workflowComposable.lockClicked">
           {{ workflowComposable.canLock.value ? "Lock" : "Unlock" }}
         </button>
+        <button class="btn btn-info w-100 text-white" :disabled="!workflowComposable.hasLockPermissions.value"
+                @click="workflowComposable.declineClicked">Decline</button>
       </div>
     </template>
   </card>

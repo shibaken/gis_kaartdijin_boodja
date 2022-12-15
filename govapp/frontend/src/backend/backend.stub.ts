@@ -437,19 +437,23 @@ export class BackendServiceStub implements BackendService {
     return Promise.resolve(DUMMY_CATALOGUE_ENTRIES.find(entry => entry.id === entryId)!);
   }
 
-  public async lock(entryId: number): Promise<number> {
+  public async lock (entryId: number): Promise<number> {
     return Promise.resolve(204);
   }
 
-  public async unlock(entryId: number): Promise<number> {
+  public async unlock (entryId: number): Promise<number> {
     return Promise.resolve(204);
   }
 
-  public async entryAssign(entryId: number, userId: number): Promise<number> {
+  public async decline (entryId: number): Promise<number> {
     return Promise.resolve(204);
   }
 
-  public async entryUnassign(entryId: number): Promise<number> {
+  public async entryAssign (entryId: number, userId: number): Promise<number> {
+    return Promise.resolve(204);
+  }
+
+  public async entryUnassign (entryId: number): Promise<number> {
     return Promise.resolve(204);
   }
 }
