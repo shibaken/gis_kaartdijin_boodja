@@ -18,18 +18,16 @@ class CommunicationsLogDocumentSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "uploaded_at",
-            "entry",
             "file",
         )
         read_only_fields = (
             "uploaded_at",
-            "entry",
         )
 
 
 class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
     """Communications Log Entry Model Serializer."""
-    documents = CommunicationsLogDocumentSerializer(many=True)
+    documents = CommunicationsLogDocumentSerializer(many=True, read_only=True)
 
     class Meta:
         """Communications Log Entry Model Serializer Metadata."""
@@ -46,5 +44,6 @@ class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
             "documents",
         )
         read_only_fields = (
+            "created_at",
             "documents",
         )

@@ -50,7 +50,7 @@ class CommunicationsLogEntry(models.Model):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.content_object}"
+        return f"{self.content_type.name} - {self.content_object}"
 
 
 class CommunicationsLogDocument(models.Model):

@@ -10,4 +10,5 @@ from . import models
 
 # Register Models
 admin.site.register(models.ActionsLogEntry)
+admin.site.register(models.CommunicationsLogDocument)
 admin.site.register(models.CommunicationsLogEntry)
