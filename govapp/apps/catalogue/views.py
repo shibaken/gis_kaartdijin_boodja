@@ -20,6 +20,7 @@ from . import permissions
 from . import reversion  # noqa: F401
 from . import serializers
 from ..accounts import permissions as accounts_permissions
+from ..logs import mixins as logs_mixins
 
 # Typing
 from typing import cast
@@ -32,6 +33,8 @@ UserModel = auth.get_user_model()
 @drf_utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
 class CatalogueEntryViewSet(
     mixins.ChoicesMixin,
+    logs_mixins.CommunicationsLogMixin,
+    logs_mixins.ActionsLogMixin,
     reversion_mixins.HistoryMixin,
     viewsets.mixins.RetrieveModelMixin,
     viewsets.mixins.ListModelMixin,
@@ -207,7 +210,12 @@ class LayerMetadataViewSet(
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
-class LayerSubmissionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+class LayerSubmissionViewSet(
+    mixins.ChoicesMixin,
+    logs_mixins.CommunicationsLogMixin,
+    logs_mixins.ActionsLogMixin,
+    viewsets.ReadOnlyModelViewSet,
+):
     """Layer Submission View Set."""
     queryset = models.layer_submissions.LayerSubmission.objects.all()
     serializer_class = serializers.layer_submissions.LayerSubmissionSerializer

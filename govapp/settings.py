@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "govapp.apps.accounts",
     "govapp.apps.catalogue",
     "govapp.apps.emails",
+    "govapp.apps.logs",
     "govapp.apps.publisher",
     "govapp.apps.swagger",
     "rest_framework",
