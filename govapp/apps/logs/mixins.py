@@ -11,7 +11,6 @@ from rest_framework import decorators
 from rest_framework import request
 from rest_framework import response
 from rest_framework import serializers as rf_serializers
-from rest_framework import status
 from rest_framework import viewsets
 
 # Local
