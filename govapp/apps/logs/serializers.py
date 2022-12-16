@@ -21,6 +21,10 @@ class CommunicationsLogDocumentSerializer(serializers.ModelSerializer):
             "entry",
             "file",
         )
+        read_only_fields = (
+            "uploaded_at",
+            "entry",
+        )
 
 
 class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
@@ -39,5 +43,8 @@ class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
             "fromm",
             "subject",
             "text",
+            "documents",
+        )
+        read_only_fields = (
             "documents",
         )
