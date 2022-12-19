@@ -20,7 +20,7 @@ def variables(request: http.HttpRequest) -> dict[str, Any]:
     """
     # Construct and return context
     return {
-        "template_group": "kaartidjinboodja",
+        "template_group": "kaartdijinboodja",
         "template_title": "",
         "app_build_url": conf.settings.DEV_APP_BUILD_URL,
         "GIT_COMMIT_HASH": conf.settings.GIT_COMMIT_HASH
