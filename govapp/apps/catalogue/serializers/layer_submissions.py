@@ -21,5 +21,6 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "is_active",
             "status",
             "submitted_at",
+            "created_at",
             "catalogue_entry",
         )

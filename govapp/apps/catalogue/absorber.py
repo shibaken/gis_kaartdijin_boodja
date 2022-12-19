@@ -162,6 +162,7 @@ class Absorber:
             description=metadata.description,
             file=archive,
             is_active=True,  # Active!
+            created_at=metadata.created_at,
             hash=attributes_hash,
             catalogue_entry=catalogue_entry,
         )
@@ -230,6 +231,7 @@ class Absorber:
                 description=metadata.description,
                 file=archive,
                 is_active=False,  # Starts out Inactive
+                created_at=metadata.created_at,
                 hash=attributes_hash,
                 catalogue_entry=catalogue_entry,
             )

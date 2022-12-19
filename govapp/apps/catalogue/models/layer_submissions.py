@@ -6,7 +6,11 @@ from django.db import models
 
 # Local
 from . import catalogue_entries
+from . import layer_metadata
 from .. import utils
+
+# Typing
+from typing import cast
 
 
 class LayerSubmissionStatus(models.IntegerChoices):
@@ -23,6 +27,7 @@ class LayerSubmission(models.Model):
     file = models.URLField()
     is_active = models.BooleanField()
     status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)
+    created_at = models.DateTimeField()
     submitted_at = models.DateTimeField(auto_now_add=True)
     hash = models.TextField()  # noqa: A003
     catalogue_entry = models.ForeignKey(
@@ -100,6 +105,13 @@ class LayerSubmission(models.Model):
             current_active_layer.save()
             self.is_active = True
             self.save()
+
+            # Update the Catalogue Entry Metadata's Datetime
+            # Help `mypy` by casting the object to a Layer Metadata
+            metadata = self.catalogue_entry.metadata
+            metadata = cast(layer_metadata.LayerMetadata, metadata)
+            metadata.created_at = self.created_at
+            metadata.save()
 
             # Check if Catalogue Entry is Pending
             if self.catalogue_entry.is_pending():
