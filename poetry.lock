@@ -551,6 +551,17 @@ python-versions = ">=3.6.2,<4.0.0"
 flake8-plugin-utils = ">=1.3.2,<2.0.0"
 
 [[package]]
+name = "freezegun"
+version = "1.2.2"
+description = "Let your Python tests travel through time"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+python-dateutil = ">=2.7"
+
+[[package]]
 name = "geojson"
 version = "1.3.3"
 description = "Python bindings and utilities for GeoJSON"
@@ -1201,7 +1212,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [[package]]
 name = "webtemplate-dbca"
 version = "2.0.6"
-description = ""
+description = "Base HTML templates for DBCA Django projects"
 category = "main"
 optional = false
 python-versions = "*"
@@ -1214,7 +1225,7 @@ Django = ">=2.2"
 type = "git"
 url = "https://github.com/dbca-wa/webtemplate2.git"
 reference = "HEAD"
-resolved_reference = "c7f46421751e4e1f701270e58d3946ca6671ea11"
+resolved_reference = "a13b15d719708c831cbdc8876b4c6adc63501ea5"
 
 [[package]]
 name = "whitenoise"
@@ -1261,7 +1272,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "c6122cdb0dc59f2c92c9171af203c5408aae7c07d4be1ebd06fd98b7972e1824"
+content-hash = "2476306adafcd1737a6e304cbcb4fe33a7779658a2d5507ce919657edb2181cd"
 
 [metadata.files]
 asgiref = [
@@ -1557,6 +1568,10 @@ flake8-pyproject = [
 flake8-pytest-style = [
     {file = "flake8-pytest-style-1.6.0.tar.gz", hash = "sha256:c1175713e9e11b78cd1a035ed0bca0d1e41d09c4af329a952750b61d4194ddac"},
     {file = "flake8_pytest_style-1.6.0-py3-none-any.whl", hash = "sha256:5fedb371a950e9fe0e0e6bfc854be7d99151271208f34cd2cc517681ece27780"},
+]
+freezegun = [
+    {file = "freezegun-1.2.2-py3-none-any.whl", hash = "sha256:ea1b963b993cb9ea195adbd893a48d573fda951b0da64f60883d7e988b606c9f"},
+    {file = "freezegun-1.2.2.tar.gz", hash = "sha256:cd22d1ba06941384410cd967d8a99d5ae2442f57dfafeff2fda5de8dc5c05446"},
 ]
 geojson = [
     {file = "geojson-1.3.3-py2.py3-none-any.whl", hash = "sha256:53e61df45b130b94ffa849db4c780b9971e742649def2f28afa2b820b83913cf"},

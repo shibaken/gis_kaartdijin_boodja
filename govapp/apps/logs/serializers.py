@@ -28,6 +28,7 @@ class CommunicationsLogDocumentSerializer(serializers.ModelSerializer):
 class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
     """Communications Log Entry Model Serializer."""
     documents = CommunicationsLogDocumentSerializer(many=True, read_only=True)
+    vars()["from"] = serializers.CharField(source="fromm")  # Work-around to use reserved keywords in serializer
 
     class Meta:
         """Communications Log Entry Model Serializer Metadata."""
@@ -38,7 +39,7 @@ class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
             "type",
             "to",
             "cc",
-            "fromm",
+            "from",
             "subject",
             "text",
             "documents",
