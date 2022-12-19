@@ -1,7 +1,8 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
-  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch } from "./backend.api";
-import type { PaginatedRecord, Params, StatusType, User } from "./backend.api";
+  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser
+} from "./backend.api";
+import type { PaginatedRecord, Params, StatusType } from "./backend.api";
 
 function getCookie(name: string) {
   if (!document.cookie) {
@@ -81,20 +82,20 @@ export class BackendService {
     return await response.json() as PaginatedRecord<RecordStatus<T>>;
   }
 
-  public async getUser (userId: number): Promise<User> {
+  public async getUser (userId: number): Promise<RawUser> {
     const response = await fetch(`/api/accounts/users/${userId}/`);
-    return await response.json() as User;
+    return await response.json() as RawUser;
   }
 
-  public async getUsers (filter: RawUserFilter): Promise<PaginatedRecord<User>> {
+  public async getUsers (filter: RawUserFilter): Promise<PaginatedRecord<RawUser>> {
     const params = stripNullParams<RawUserFilter>(filter);
     const response = await fetch("/api/accounts/users/?" + new URLSearchParams(params));
-    return await response.json() as PaginatedRecord<User>;
+    return await response.json() as PaginatedRecord<RawUser>;
   }
 
-  public async getMe (): Promise<User> {
+  public async getMe (): Promise<RawUser> {
     const response = await fetch('/api/accounts/users/me/');
-    return await response.json() as User;
+    return await response.json() as RawUser;
   }
 
   public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {
@@ -180,6 +181,28 @@ export class BackendService {
     const response = await fetcher(`/api/catalogue/entries/${entryId}/unlock/`, {
       method: "post",
       body: JSON.stringify({ id: entryId })
+    });
+    return response.status;
+  }
+
+  public async decline (entryId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/decline/`, {
+      method: "post",
+      body: JSON.stringify({ id: entryId })
+    });
+    return response.status;
+  }
+
+  public async entryAssign (entryId: number, userId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/assign/${userId}/`, {
+      method: "post"
+    });
+    return response.status;
+  }
+
+  public async entryUnassign (entryId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/unassign/`, {
+      method: "post"
     });
     return response.status;
   }

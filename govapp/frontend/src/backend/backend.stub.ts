@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { BackendService } from "./backend.service";
 import {
-  RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, User, StatusType, RawLayerSubmission,
+  RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, StatusType, RawLayerSubmission,
   NotificationRequestType, RawNotification, NotificationType, RawWebhookNotification, RawEmailNotification, RawMetadata,
-  RawCustodian, Group, RawSymbology, RawAttribute, RawEntryPatch
+  RawCustodian, Group, RawSymbology, RawAttribute, RawEntryPatch, RawUser
 } from "./backend.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
@@ -28,7 +28,8 @@ let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "active_layer": 1,
     "layers": [1],
     "email_notifications": [1],
-    "webhook_notifications": [1]
+    "webhook_notifications": [1],
+    "editors": [1, 2]
   },
   {
     "id": 2,
@@ -42,7 +43,8 @@ let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "active_layer": 2,
     "layers": [2],
     "email_notifications": [2],
-    "webhook_notifications": [2]
+    "webhook_notifications": [2],
+    "editors": [2, 3]
   },
   {
     "id": 3,
@@ -56,7 +58,8 @@ let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "active_layer": 3,
     "layers": [3],
     "email_notifications": [3],
-    "webhook_notifications": [3]
+    "webhook_notifications": [3],
+    "editors": [3]
   }
 ];
 
@@ -145,7 +148,7 @@ const DUMMY_STATUSES: Array<RecordStatus<unknown>> = [
   { "id": 3, "label": "Cancelled" }
 ];
 
-const DUMMY_USERS: Array<User> = [
+const DUMMY_USERS: Array<RawUser> = [
   { "id": 1, "username": "Raoul Wallenberg", "groups": [0] },
   { "id": 2, "username": "Carl Lutz", "groups": [0] },
   { "id": 3, "username": "Chiune Sugihara", "groups": [0] }
@@ -363,15 +366,15 @@ export class BackendServiceStub implements BackendService {
     return Promise.resolve(DUMMY_STATUSES.find(({ id }) => id === statusId) as RecordStatus<T>);
   }
 
-  public async getUser (userId: number): Promise<User> {
-    return Promise.resolve(DUMMY_USERS.find(({ id }) => id === userId) as User);
+  public async getUser (userId: number): Promise<RawUser> {
+    return Promise.resolve(DUMMY_USERS.find(({ id }) => id === userId) as RawUser);
   }
 
-  public async getUsers (): Promise<PaginatedRecord<User>> {
+  public async getUsers (): Promise<PaginatedRecord<RawUser>> {
     return Promise.resolve(wrapPaginatedRecord(DUMMY_USERS));
   }
 
-  public async getMe (): Promise<User> {
+  public async getMe (): Promise<RawUser> {
     return Promise.resolve(DUMMY_USERS[0]);
   }
 
@@ -434,11 +437,23 @@ export class BackendServiceStub implements BackendService {
     return Promise.resolve(DUMMY_CATALOGUE_ENTRIES.find(entry => entry.id === entryId)!);
   }
 
-  async lock(entryId: number): Promise<number> {
+  public async lock (entryId: number): Promise<number> {
     return Promise.resolve(204);
   }
 
-  async unlock(entryId: number): Promise<number> {
+  public async unlock (entryId: number): Promise<number> {
+    return Promise.resolve(204);
+  }
+
+  public async decline (entryId: number): Promise<number> {
+    return Promise.resolve(204);
+  }
+
+  public async entryAssign (entryId: number, userId: number): Promise<number> {
+    return Promise.resolve(204);
+  }
+
+  public async entryUnassign (entryId: number): Promise<number> {
     return Promise.resolve(204);
   }
 }

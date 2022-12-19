@@ -15,6 +15,7 @@ export interface CatalogueEntry {
   layers: Array<number>;
   emailNotifications: Array<number>;
   webhookNotifications: Array<number>;
+  editors: Array<User>
 }
 
 export interface CatalogueEntryFilter extends PaginationFilter {
