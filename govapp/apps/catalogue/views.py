@@ -20,6 +20,8 @@ from . import permissions
 from . import reversion  # noqa: F401
 from . import serializers
 from ..accounts import permissions as accounts_permissions
+from ..logs import mixins as logs_mixins
+from ..logs import utils as logs_utils
 
 # Typing
 from typing import cast
@@ -32,6 +34,8 @@ UserModel = auth.get_user_model()
 @drf_utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
 class CatalogueEntryViewSet(
     mixins.ChoicesMixin,
+    logs_mixins.ActionsLogMixin,
+    logs_mixins.CommunicationsLogMixin,
     reversion_mixins.HistoryMixin,
     viewsets.mixins.RetrieveModelMixin,
     viewsets.mixins.ListModelMixin,
@@ -62,7 +66,16 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Lock
-        catalogue_entry.lock()
+        success = catalogue_entry.lock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was locked"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -85,7 +98,16 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Unlock
-        catalogue_entry.unlock()
+        success = catalogue_entry.unlock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was unlocked"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -108,7 +130,16 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Decline
-        catalogue_entry.decline()
+        success = catalogue_entry.decline()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was declined"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -135,7 +166,16 @@ class CatalogueEntryViewSet(
         user = shortcuts.get_object_or_404(UserModel, id=user_pk)
 
         # Assign!
-        catalogue_entry.assign(user)
+        success = catalogue_entry.assign(user)
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action=f"Catalogue entry was assigned to {user} (id: {user.pk})"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -158,7 +198,16 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Unassign!
-        catalogue_entry.unassign()
+        success = catalogue_entry.unassign()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was unassigned"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -207,7 +256,12 @@ class LayerMetadataViewSet(
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
-class LayerSubmissionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+class LayerSubmissionViewSet(
+    mixins.ChoicesMixin,
+    logs_mixins.ActionsLogMixin,
+    logs_mixins.CommunicationsLogMixin,
+    viewsets.ReadOnlyModelViewSet,
+):
     """Layer Submission View Set."""
     queryset = models.layer_submissions.LayerSubmission.objects.all()
     serializer_class = serializers.layer_submissions.LayerSubmissionSerializer

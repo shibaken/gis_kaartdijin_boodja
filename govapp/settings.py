@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "govapp.apps.accounts",
     "govapp.apps.catalogue",
     "govapp.apps.emails",
+    "govapp.apps.logs",
     "govapp.apps.publisher",
     "govapp.apps.swagger",
     "rest_framework",
@@ -162,6 +163,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": PROJECT_VERSION,
     "SERVE_INCLUDE_SCHEMA": True,
     "POSTPROCESSING_HOOKS": [],
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # Logging
