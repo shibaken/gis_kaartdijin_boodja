@@ -42,8 +42,10 @@ class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
             "subject",
             "text",
             "documents",
+            "user",
         )
         read_only_fields = (
             "created_at",
             "documents",
+            "user",
         )

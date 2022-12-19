@@ -7,6 +7,7 @@ from django.contrib.contenttypes import models as ct_models
 from django.db import models as db_models
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
+from rest_framework import exceptions
 from rest_framework import parsers
 from rest_framework import request
 from rest_framework import response
@@ -94,8 +95,8 @@ class CommunicationsLogMixin:
         serializer.is_valid(raise_exception=True)
 
         # Save!
-        # Update the Instance with the Generic Foreign Key
-        serializer.save(content_object=model)
+        # Update the Instance with the Generic Foreign Key and the User
+        serializer.save(content_object=model, user=request.user)
 
         # Return Response
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -149,7 +150,7 @@ class CommunicationsLogMixin:
         detail=True,
         methods=["POST"],
         url_path=r"logs/communications/(?P<log_pk>\d+)/file",
-        parser_classes=[parsers.MultiPartParser]
+        parser_classes=[parsers.MultiPartParser],
     )
     def communications_logs_add_file(self, request: request.Request, pk: str, log_pk: str) -> response.Response:
         """Adds a File to a Communications Log Entry for this Model.
@@ -181,6 +182,13 @@ class CommunicationsLogMixin:
             id=log_pk,
         )
 
+        # Check Permissions
+        # To attach a file to a Communications Log, the user must have created
+        # the Communications Log in the first place
+        if log.user != request.user:
+            # Raise 403 Forbidden
+            raise exceptions.PermissionDenied
+
         # Create Serializer with Request Data
         serializer = serializers.CommunicationsLogDocumentSerializer(
             data=request.data,
@@ -191,8 +199,8 @@ class CommunicationsLogMixin:
         serializer.is_valid(raise_exception=True)
 
         # Save!
-        # Update the Instance with the Entry
-        serializer.save(entry=log)
+        # Update the Instance with the Entry and the User
+        serializer.save(entry=log, user=request.user)
 
         # Return Response
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)

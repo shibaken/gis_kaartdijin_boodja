@@ -37,6 +37,7 @@ class CommunicationsLogEntry(models.Model):
     fromm = models.TextField(blank=True)
     subject = models.TextField(blank=True)
     text = models.TextField(blank=True)
+    user = models.ForeignKey(UserModel, related_name="communications_log_entries", on_delete=models.CASCADE)
 
     class Meta:
         """Communications Log Entry Model Metadata."""
@@ -60,6 +61,7 @@ class CommunicationsLogDocument(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     entry = models.ForeignKey(CommunicationsLogEntry, related_name="documents", on_delete=models.CASCADE)
     file = models.FileField(upload_to="documents")
+    user = models.ForeignKey(UserModel, related_name="communications_log_documents", on_delete=models.CASCADE)
 
     class Meta:
         """Communications Log Document Model Metadata."""
