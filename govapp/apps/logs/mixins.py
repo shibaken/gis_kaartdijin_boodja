@@ -204,3 +204,90 @@ class CommunicationsLogMixin:
 
         # Return Response
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ActionsLogMixin:
+    """Provides Actions Log API Endpoints for a Model Viewset."""
+
+    @drf_utils.extend_schema(filters=False, responses=serializers.ActionsLogEntrySerializer(many=True))
+    @decorators.action(detail=True, methods=["GET"], url_path=r"logs/actions")
+    def actions_logs_list(self, request: request.Request, pk: str) -> response.Response:
+        """Retrieves the Actions Log Entries List for this Model.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the model the logs are associated with.
+
+        Returns:
+            response.Response: Actions log list response.
+        """
+        # Check Viewset
+        assert isinstance(self, viewsets.GenericViewSet)  # noqa: S101
+
+        # Retrieve Object Model
+        model: db_models.Model = self.get_object()
+
+        # Determine Parent Model Content Type
+        content_type = ct_models.ContentType.objects.get_for_model(
+            model=model,
+        )
+
+        # Retrieve Logs Queryset for Parent Model
+        queryset = models.ActionsLogEntry.objects.filter(
+            content_type=content_type,
+            object_id=model.pk,
+        )
+
+        # Get Page
+        page = self.paginate_queryset(queryset=queryset)
+
+        # Serialize
+        serializer = serializers.ActionsLogEntrySerializer(
+            instance=page,
+            context=self.get_serializer_context(),
+            many=True,
+        )
+
+        # Return Response
+        return self.get_paginated_response(data=serializer.data)
+
+    @drf_utils.extend_schema(filters=False, responses=serializers.ActionsLogEntrySerializer)
+    @decorators.action(detail=True, methods=["GET"], url_path=r"logs/actions/(?P<log_pk>\d+)")
+    def actions_logs_detail(self, request: request.Request, pk: str, log_pk: str) -> response.Response:
+        """Retrieves an Actions Log Entry for this Model.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the model the logs are associated with.
+            log_pk (str): Primary key of the log itself.
+
+        Returns:
+            response.Response: Actions log detail response.
+        """
+        # Check Viewset
+        assert isinstance(self, viewsets.GenericViewSet)  # noqa: S101
+
+        # Retrieve Object Model
+        model: db_models.Model = self.get_object()
+
+        # Determine Parent Model Content Type
+        content_type = ct_models.ContentType.objects.get_for_model(
+            model=model,
+        )
+
+        # Retrieve Actions Log
+        log = shortcuts.get_object_or_404(
+            models.ActionsLogEntry,
+            content_type=content_type,
+            object_id=model.pk,
+            id=log_pk,
+        )
+
+        # Serialize
+        serializer = serializers.ActionsLogEntrySerializer(
+            instance=log,
+            context=self.get_serializer_context(),
+        )
+
+        # Return
+        return response.Response(serializer.data)

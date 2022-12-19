@@ -50,3 +50,16 @@ class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
             "documents",
             "user",
         )
+
+
+class ActionsLogEntrySerializer(serializers.ModelSerializer):
+    """Actions Log Entry Model Serializer."""
+    class Meta:
+        """Actions Log Entry Model Serializer Metadata."""
+        model = models.ActionsLogEntry
+        fields = (
+            "id",
+            "who",
+            "when",
+            "what",
+        )

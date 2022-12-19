@@ -1,4 +1,4 @@
-"""Provides unit tests for the Logs App Workflow."""
+"""Provides unit tests for the Communications Logs Workflow."""
 
 
 # Third-Party
@@ -84,7 +84,7 @@ def test_flow(
                 "id": 1,
                 "name": "example name",
                 "description": "example description",
-                "file": "http://testserver/documents/test_communications_logs_flow.py",
+                "file": "http://testserver/documents/test_communications_logs.py",
                 "uploaded_at": "2022-12-17T00:00:00Z",  # Time is frozen
             }
         ]

@@ -159,8 +159,12 @@ class CatalogueEntry(models.Model):
         # Check and Return
         return self.editors.all().filter(id=user.id).exists()
 
-    def lock(self) -> None:
-        """Locks the Catalogue Entry."""
+    def lock(self) -> bool:
+        """Locks the Catalogue Entry.
+
+        Returns:
+            bool: Whether the locking was successful.
+        """
         # Check Catalogue Entry
         if self.is_unlocked():
             # Check if Catalogue Entry is new
@@ -183,16 +187,36 @@ class CatalogueEntry(models.Model):
             # Save the Catalogue Entry
             self.save()
 
-    def unlock(self) -> None:
-        """Unlocks the Catalogue Entry."""
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def unlock(self) -> bool:
+        """Unlocks the Catalogue Entry.
+
+        Returns:
+            bool: Whether unlocking was successful.
+        """
         # Check Catalogue Entry
         if self.is_locked() or self.is_pending():
             # Set Catalogue Entry to Draft
             self.status = CatalogueEntryStatus.DRAFT
             self.save()
 
-    def decline(self) -> None:
-        """Declines the Catalogue Entry."""
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def decline(self) -> bool:
+        """Declines the Catalogue Entry.
+
+        Returns:
+            bool: Whether the declining was successful.
+        """
         # Check Catalogue Entry
         if self.is_unlocked():
             # Check if Catalogue Entry is new
@@ -204,11 +228,20 @@ class CatalogueEntry(models.Model):
             self.status = CatalogueEntryStatus.DECLINED
             self.save()
 
-    def assign(self, user: auth_models.User) -> None:
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def assign(self, user: auth_models.User) -> bool:
         """Assigns a user to the Catalogue Entry if applicable.
 
         Args:
             user (auth_models.User): User to be assigned.
+
+        Returns:
+            bool: Whether the assigning was successful.
         """
         # Check if the user can be assigned
         # To be assigned, a user must be:
@@ -219,10 +252,26 @@ class CatalogueEntry(models.Model):
             self.assigned_to = user
             self.save()
 
-    def unassign(self) -> None:
-        """Unassigns the Catalogue Entry's user if applicable."""
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def unassign(self) -> bool:
+        """Unassigns the Catalogue Entry's user if applicable.
+
+        Returns:
+            bool: Whether the unassigning was successful.
+        """
         # Check if there is an assigned user
         if self.assigned_to is not None:
             # Unassign
             self.assigned_to = None
             self.save()
+
+            # Success!
+            return True
+
+        # Failed
+        return False
