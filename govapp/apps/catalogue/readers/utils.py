@@ -1,4 +1,4 @@
-"""GIS Modular Readers Utilities."""
+"""GIS Reader Utilities."""
 
 
 # Standard
@@ -6,184 +6,57 @@ import pathlib
 
 # Local
 from . import base
-from . import types
+
+# Typing
+from typing import Optional, TypeVar
 
 
-def layers(file: pathlib.Path) -> list[str]:
-    """Utility for automatically determining the number of layers in a file.
-
-    Args:
-        file (pathlib.Path): File to analyse layers from.
-
-    Returns:
-        list[str]: List of layers in the file.
-    """
-    # Get file suffix
-    suffix = file.suffix.lower()
-
-    # Retrieve layer analysers
-    analysers = base.layers.analysers.get(suffix)
-
-    # Check analysers
-    if not analysers:
-        # Raise Exception
-        raise ValueError(
-            f"Could not find any layer analysers for '{suffix}' files"
-        )
-
-    # List to store exceptions
-    exceptions = []
-
-    # Loop through analysers
-    for analyser in analysers:
-        # Handle errors
-        try:
-            # Analyse layers
-            return analyser(file).layers()
-
-        except Exception as exc:
-            # Store exception for later
-            exceptions.append(exc)
-
-    # Raise Exception
-    raise ValueError(
-        f"Failed to analyse layers: {exceptions}"
-    )
+# Type Variables
+T = TypeVar("T")
 
 
-def attributes(
-    file: pathlib.Path,
-    layer: str,
-) -> list[types.attributes.Attribute]:
-    """Utility for automatically extracting attributes from a file.
+def raise_if_none(value: Optional[T], message: str) -> T:
+    """Checks if a value is None and raises an error if it is.
 
     Args:
-        file (pathlib.Path): File to extract attributes from.
-        layer (str): Layer name to extract attributes from.
+        value (Optional[T]): Value to check.
+        message (str): Error message if the value is None.
+
+    Raises:
+        ValueError: Raised if the value is None.
 
     Returns:
-        list[types.attributes.Attribute]: The extracted attributes.
+        T: The unwrapped value if not None.
     """
-    # Get file suffix
-    suffix = file.suffix.lower()
+    # Check Value
+    if value is None:
+        # Raise
+        raise ValueError(message)
 
-    # Retrieve attribute extractors
-    extractors = base.attributes.extractors.get(suffix)
-
-    # Check extractors
-    if not extractors:
-        # Raise Exception
-        raise ValueError(
-            f"Could not find any attribute extractors for '{suffix}' files"
-        )
-
-    # List to store exceptions
-    exceptions = []
-
-    # Loop through extractors
-    for extractor in extractors:
-        # Handle errors
-        try:
-            # Extract attributes
-            return extractor(file).attributes(layer)
-
-        except Exception as exc:
-            # Store exception for later
-            exceptions.append(exc)
-
-    # Raise Exception
-    raise ValueError(
-        f"Failed to extract attributes: {exceptions}"
-    )
+    # Return
+    return value
 
 
-def metadata(
-    file: pathlib.Path,
-    layer: str,
-) -> types.metadata.Metadata:
-    """Utility for automatically extracting metadata from a file.
+def get_reader(file: pathlib.Path) -> type[base.LayerReader]:
+    """Retrieves a compatible Layer Reader for this file type.
 
     Args:
-        file (pathlib.Path): File to extract metadata from.
-        layer (str): Layer name to extract metadata from.
+        file (pathlib.Path): Path to the file to read.
 
     Returns:
-        types.metadata.Metadata: The extracted metadata.
+        base.LayerReader: The determined compatible Layer Reader.
+
+    Raises:
+        ValueError: Raised if a compatible Layer Reader cannot be found.
     """
-    # Get file suffix
-    suffix = file.suffix.lower()
+    # Loop through Layer Readers
+    for reader in base.readers:
+        # Check if this reader is compatible
+        if reader.is_compatible(file):
+            # Return the reader class
+            return reader
 
-    # Retrieve metadata extractors
-    extractors = base.metadata.extractors.get(suffix)
-
-    # Check extractors
-    if not extractors:
-        # Raise Exception
-        raise ValueError(
-            f"Could not find any metadata extractors for '{suffix}' files"
-        )
-
-    # List to store exceptions
-    exceptions = []
-
-    # Loop through extractors
-    for extractor in extractors:
-        # Handle errors
-        try:
-            # Extract metadata
-            return extractor(file).metadata(layer)
-
-        except Exception as exc:
-            # Store exception for later
-            exceptions.append(exc)
-
-    # Raise Exception
+    # Raise
     raise ValueError(
-        f"Failed to extract metadata: {exceptions}"
-    )
-
-
-def symbology(
-    file: pathlib.Path,
-    layer: str,
-) -> types.symbology.Symbology:
-    """Utility for automatically extracting symbology from a file.
-
-    Args:
-        file (pathlib.Path): File to extract symbology from.
-        layer (str): Layer name to extract symbology from.
-
-    Returns:
-        types.symbology.Symbology: The extracted symbology.
-    """
-    # Get file suffix
-    suffix = file.suffix.lower()
-
-    # Retrieve symbology extractors
-    extractors = base.symbology.extractors.get(suffix)
-
-    # Check extractors
-    if not extractors:
-        # Raise Exception
-        raise ValueError(
-            f"Could not find any symbology extractors for '{suffix}' files"
-        )
-
-    # List to store exceptions
-    exceptions = []
-
-    # Loop through extractors
-    for extractor in extractors:
-        # Handle errors
-        try:
-            # Extract symbology
-            return extractor(file).symbology(layer)
-
-        except Exception as exc:
-            # Store exception for later
-            exceptions.append(exc)
-
-    # Raise Exception
-    raise ValueError(
-        f"Failed to extract symbology: {exceptions}"
+        f"Could not find any compatible readers for '{file.suffix}' files"
     )
