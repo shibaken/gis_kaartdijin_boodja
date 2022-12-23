@@ -2,10 +2,12 @@
 
 
 # Standard
+import datetime
 import yaml
 
 # Local
 from govapp.apps.catalogue import readers
+import freezegun
 from tests import utils
 
 # Third-Party
@@ -18,11 +20,13 @@ import pytest
         "yaml_file",
     ),
     [
+        ("shp/cog_index_w_sld.7z", "shp/cog_index_w_sld.yaml"),
         ("gpkg/WA_coast.gpkg", "gpkg/WA_coast.yaml"),
         ("gpkg/Local_areas_styled.gpkg", "gpkg/Local_areas_styled.yaml"),
         ("gpkg/Admin_boundaries.gpkg", "gpkg/Admin_boundaries.yaml"),
     ],
 )
+@freezegun.freeze_time("2022-12-17")
 def test_formats(data_file: str, yaml_file: str) -> None:
     """Tests the reading of parametrized GIS files."""
     # Filepath
@@ -52,8 +56,8 @@ def test_formats(data_file: str, yaml_file: str) -> None:
 
         # Assert metadata
         assert metadata.name == expected_layer["name"]
-        assert metadata.description == expected_layer["description"]
-        assert metadata.created_at == expected_layer["created_at"]
+        assert metadata.description == (expected_layer["description"] or "")
+        assert metadata.created_at == (expected_layer["created_at"] or datetime.datetime.now(datetime.timezone.utc))
 
         # Extract attributes
         attributes = layer.attributes()
