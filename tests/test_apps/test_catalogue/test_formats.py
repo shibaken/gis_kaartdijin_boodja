@@ -20,10 +20,11 @@ import pytest
         "yaml_file",
     ),
     [
-        ("shp/cog_index_w_sld.7z", "shp/cog_index_w_sld.yaml"),
         ("gpkg/WA_coast.gpkg", "gpkg/WA_coast.yaml"),
         ("gpkg/Local_areas_styled.gpkg", "gpkg/Local_areas_styled.yaml"),
         ("gpkg/Admin_boundaries.gpkg", "gpkg/Admin_boundaries.yaml"),
+        ("shp/cog_index_w_sld.7z", "shp/cog_index_w_sld.yaml"),
+        ("shp/World_Heritage.7z", "shp/World_Heritage.yaml"),
     ],
 )
 @freezegun.freeze_time("2022-12-17")
@@ -75,7 +76,7 @@ def test_formats(data_file: str, yaml_file: str) -> None:
         # Check symbology
         if not expected_layer["symbology"]:
             # No symbology - assert error
-            with pytest.raises(ValueError, match="Could not extract symbology for .*"):
+            with pytest.raises(ValueError, match="Layer '.*' does not contain any symbology"):
                 # Attempt to extract symbology
                 layer.symbology()
 

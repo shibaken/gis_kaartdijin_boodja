@@ -86,7 +86,7 @@ class GeopackageReader(base.LayerReader):
             models.Symbology: Extracted symbology.
         """
         # Precompute error message
-        message = f"Could not extract symbology for layer {self.layer.GetName()}"
+        message = f"Layer '{self.name}' does not contain any symbology"
 
         # Extract Symbology with from Layer Styles Table
         layer: ogr.Layer = utils.raise_if_none(
