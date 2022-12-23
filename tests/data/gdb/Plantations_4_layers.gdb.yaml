@@ -1,0 +1,76 @@
+layers:
+  - name: CPT_PRIVATE_PLANTATIONS
+    description: null
+    created_at: null
+    attributes:
+      - [1, PPL_TYPE, String]
+      - [2, PPL_CLASSIFICATION, String]
+      - [3, SHAPE_Length, Real]
+      - [4, SHAPE_Area, Real]
+    symbology: null
+  - name: CPT_FPC_HARVEST_OPERATIONS_VW
+    description: null
+    created_at: null
+    attributes:
+      - [1, FHO_STAND, String]
+      - [2, FHO_PATCH, Real]
+      - [3, FHO_PATCHCLASS, Integer]
+      - [4, FHO_WORKCENTRE, String]
+      - [5, FHO_PLANTATION_NAME, String]
+      - [6, FHO_PLANTATION_ID, String]
+      - [7, FHO_COMPARTMENT, Integer]
+      - [8, FHO_ESTABLISHMENT_YEAR, Integer]
+      - [9, FHO_SPECIES, String]
+      - [10, FHO_AREA_HA, Real]
+      - [11, FHO_AR_CAT, String]
+      - [12, FHO_OP_TYPE, String]
+      - [13, FHO_OP_FINISH_DATE, DateTime]
+      - [14, SHAPE_Length, Real]
+      - [15, SHAPE_Area, Real]
+    symbology: null
+  - name: CPT_FPC_CLEAR_FELLED_VW
+    description: null
+    created_at: null
+    attributes:
+      - [1, FCF_STAND, String]
+      - [2, FCF_PATCH, Real]
+      - [3, FCF_PATCHCLASS, Integer]
+      - [4, FCF_ROTATION, Real]
+      - [5, FCF_WORKCENTRE, String]
+      - [6, FCF_PLANTATION_NAME, String]
+      - [7, FCF_PLANTATION_ID, String]
+      - [8, FCF_COMPARTMENT, Integer]
+      - [9, FCF_ESTABLISHMENT_YEAR, Integer]
+      - [10, FCF_CROP_SPECIES_CODE, String]
+      - [11, FCF_AREA_HA, Real]
+      - [12, FCF_AR_CAT, String]
+      - [13, FCF_GRANTEE, String]
+      - [14, FCF_OP_TYPE, String]
+      - [15, FCF_OP_FINISH_DATE, DateTime]
+      - [16, SHAPE_Length, Real]
+      - [17, SHAPE_Area, Real]
+    symbology: null
+  - name: CPT_FPC_ANNUAL_REPORT_VW
+    description: null
+    created_at: null
+    attributes:
+      - [1, ART_STAND, String]
+      - [2, ART_PATCH, Real]
+      - [3, ART_PATCHCLASS, Integer]
+      - [4, ART_SPECIES, String]
+      - [5, ART_ROTATION, Real]
+      - [6, ART_WORKCENTRE, String]
+      - [7, ART_PLANTATION_NAME, String]
+      - [8, ART_PLANTATION_ID, String]
+      - [9, ART_COMPARTMENT, Integer]
+      - [10, ART_ESTABLISHMENT_YEAR, Integer]
+      - [11, ART_CROP_SPECIES_CODE, String]
+      - [12, ART_AREA_HA, Real]
+      - [13, ART_AR_CAT, String]
+      - [14, ART_GRANTEE, String]
+      - [15, ART_OP_TYPE, String]
+      - [16, ART_OP_FINISH_DATE, DateTime]
+      - [17, ART_CLASSIFICATION, String]
+      - [18, SHAPE_Length, Real]
+      - [19, SHAPE_Area, Real]
+    symbology: null

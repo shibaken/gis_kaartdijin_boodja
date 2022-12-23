@@ -67,13 +67,13 @@ def flatten(path: pathlib.Path) -> pathlib.Path:
     Returns:
         pathlib.Path: Flattened directory.
     """
-    # Enumerate subpaths
-    subpaths = list(path.glob("*"))
+    # Enumerate subdirectories
+    subdirs = [p for p in path.glob("*") if p.is_dir()]
 
     # Check if there is a single directory inside
-    if len(subpaths) == 1 and subpaths[0].is_dir():
+    if len(subdirs) == 1:
         # Recurse, flatten that directory also if applicable and return
-        return flatten(subpaths[0])
+        return flatten(subdirs[0])
 
     # Return
     return path
