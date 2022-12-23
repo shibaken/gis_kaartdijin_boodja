@@ -34,7 +34,9 @@ class GeoDatabaseReader(base.LayerReader):
             models.Symbology: Extracted symbology.
         """
         # For geodatabases, there is sometimes an `.sld` file included which
-        # has the same filename as the layer. We try and retrieve that here.
+        # has the same filename as the layer. As demonstrated in the test data,
+        # these `.sld` files are at the same level as the `.gdb` folder - which
+        # means we need to look for and retrieve it at the file's parent.
         sld_path = (self.file.parent / self.name).with_suffix(".sld")
 
         # Check if the file exists
