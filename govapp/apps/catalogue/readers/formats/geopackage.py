@@ -100,7 +100,7 @@ class GeopackageReader(base.LayerReader):
         # Get Feature
         feature: ogr.Feature = utils.raise_if_none(
             value=layer.GetNextFeature(),
-            message="A",
+            message=message,
         )
 
         # Get Style Name and SLD Indexes
