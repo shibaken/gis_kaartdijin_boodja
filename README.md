@@ -11,6 +11,7 @@ database. The backend uses Poetry to manage its dependencies.
 * [Python 3.10](https://www.python.org/downloads/release/python-3100/)
 * [Pip](https://pypi.org/project/pip/)
 * [Poetry](https://python-poetry.org/)
+* [GDAL](https://gdal.org/download.html)
 
 ### Development
 #### Installation
@@ -31,6 +32,13 @@ $ poetry install
 
 # Remember to enter the virtual environment shell after installation
 $ poetry shell
+
+# Check GDAL is installed correctly
+$ gdal-config --version
+3.3.2
+
+# Install Python GDAL
+$ pip install gdal==`gdal-config --version`
 ```
 
 #### Running

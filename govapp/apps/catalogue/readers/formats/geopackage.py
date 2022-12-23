@@ -29,7 +29,8 @@ class GeopackageReader(base.LayerReader):
             bool: Whether this file is compatible with this reader.
         """
         # Check and Return
-        return file.suffix.lower() == ".gpkg"
+        # Path must be a file with the suffix `.json`
+        return file.is_file() and file.suffix.lower() == ".gpkg"
 
     def skip(self) -> bool:
         """Determines whether to skip this layer.
@@ -44,39 +45,6 @@ class GeopackageReader(base.LayerReader):
         """
         # Check and Return
         return self.name == "layer_styles"
-
-    def attributes(self) -> list[types.Attribute]:
-        """Extracts attributes.
-
-        Returns:
-            list[models.Attribute]: List of extracted attributes.
-        """
-        # Construct Attributes List
-        attributes: list[types.Attribute] = []
-
-        # Get Layer Definition
-        layer_defn: ogr.FeatureDefn = self.layer.GetLayerDefn()
-
-        # Get Attributes Count
-        attributes_count = layer_defn.GetFieldCount()
-
-        # Loop through Attribute Indexes
-        for attribute_index in range(attributes_count):
-            # Get Attribute Definition
-            attribute_defn: ogr.FieldDefn = layer_defn.GetFieldDefn(attribute_index)
-
-            # Construct Attribute
-            attribute = types.Attribute(
-                name=attribute_defn.GetName(),
-                type=attribute_defn.GetFieldTypeName(attribute_defn.GetType()),
-                order=attribute_index + 1,
-            )
-
-            # Append Attribute
-            attributes.append(attribute)
-
-        # Return
-        return attributes
 
     def metadata(self) -> types.Metadata:
         """Extracts metadata.

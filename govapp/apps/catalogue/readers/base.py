@@ -3,6 +3,7 @@
 
 # Standard
 import abc
+import datetime
 import pathlib
 
 # Local
@@ -33,7 +34,7 @@ class LayerReader(abc.ABC):
             datasource (ogr.DataSource): Interal OGR DataSource to be read.
             layer (ogr.Layer): Interal OGR Layer to be read.
         """
-        # Instance Variables
+        # Store the File, Data Source and Layer Objects
         self.file = file
         self.datasource = datasource
         self.layer = layer
@@ -51,7 +52,7 @@ class LayerReader(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def is_compatible(cls, file: pathlib.Path) -> bool:
-        """Determines whether the file and layer can be read.
+        """Determines whether the file and layer is compatible with the reader.
 
         Args:
             file (pathlib.Path): Filepath to read.
@@ -62,45 +63,92 @@ class LayerReader(abc.ABC):
         # Must be implemented on subclass
         raise NotImplementedError
 
-    @abc.abstractmethod
     def skip(self) -> bool:
         """Determines whether to skip this layer.
+
+        The default behaviour on the base class is to not skip any layers. For
+        some formats (e.g., Geopackage), extra data (e.g., symbology / styling)
+        is stored as an extra layer. In these cases, we need to skip the
+        parsing of these layers manually on the subclass.
 
         Returns:
             bool: Whether to skip this layer.
         """
-        # Must be implemented on subclass
-        raise NotImplementedError
+        # Return
+        return False
 
-    @abc.abstractmethod
     def attributes(self) -> list[types.Attribute]:
         """Extracts attributes.
+
+        The default behaviour on the base class is to use GDAL (ogr) to extract
+        the attributes from the layer. This is standard functionality and
+        should be the same for most GIS formats.
 
         Returns:
             list[models.Attribute]: List of extracted attributes.
         """
-        # Must be implemented on subclass
-        raise NotImplementedError
+        # Construct Attributes List
+        attributes: list[types.Attribute] = []
 
-    @abc.abstractmethod
+        # Get Layer Definition
+        layer_defn: ogr.FeatureDefn = self.layer.GetLayerDefn()
+
+        # Get Attributes Count
+        attributes_count: int = layer_defn.GetFieldCount()
+
+        # Loop through Attribute Indexes
+        for attribute_index in range(attributes_count):
+            # Get Attribute Definition
+            attribute_defn: ogr.FieldDefn = layer_defn.GetFieldDefn(attribute_index)
+
+            # Construct Attribute
+            attribute = types.Attribute(
+                name=attribute_defn.GetName(),
+                type=attribute_defn.GetFieldTypeName(attribute_defn.GetType()),
+                order=attribute_index + 1,
+            )
+
+            # Append Attribute
+            attributes.append(attribute)
+
+        # Return
+        return attributes
+
     def metadata(self) -> types.Metadata:
         """Extracts metadata.
+
+        The default behaviour on the base class is to extract the layer name
+        using GDAL (ogr), leave the description blank and use the current time
+        (UTC) as the creation timestamp. This is because every layer has a
+        name, but there is no standard way to include a description or creation
+        timestamp in every format. If those are included in the GIS file, then
+        they must be extracted manually on the subclass.
 
         Returns:
             models.Metadata: Extracted metadata.
         """
-        # Must be implemented on subclass
-        raise NotImplementedError
+        # Construct and Return Metadata
+        return types.Metadata(
+            name=self.name,  # Layer Name from GDAL
+            description="",  # Blank by Default
+            created_at=datetime.datetime.now(datetime.timezone.utc),  # Current Time by Default
+        )
 
-    @abc.abstractmethod
     def symbology(self) -> types.Symbology:
         """Extracts symbology.
+
+        The default behaviour on the base class is to raise an error, assuming
+        that the file has no symbology. This is because there is no standard
+        way to include symbology (styling) in every format. As such, if it is
+        included it must be extracted manually on the subclass.
 
         Returns:
             models.Symbology: Extracted symbology.
         """
-        # Must be implemented on subclass
-        raise NotImplementedError
+        # Raise
+        raise ValueError(
+            f"Layer '{self.name}' does not contain any symbology"
+        )
 
 
 # Readers Registry

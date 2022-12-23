@@ -9,6 +9,7 @@ from osgeo import ogr
 
 # Local
 from . import base
+from . import compression
 from . import utils
 
 # Typing
@@ -24,8 +25,11 @@ class FileReader:
         Args:
             file (pathlib.Path): Filepath to read.
         """
-        # Instance attributes
+        # Store filepath
+        # Decompress and Flatten if Required
         self.file = file
+        self.file = compression.decompress(self.file)
+        self.file = compression.flatten(self.file)
 
         # Get layer reader class
         self.reader = utils.get_reader(self.file)

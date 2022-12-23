@@ -5,6 +5,7 @@
 import datetime
 import logging
 import pathlib
+import shutil
 
 # Third-Party
 from django import conf
@@ -76,8 +77,8 @@ class Absorber:
             # Absorb layer
             self.absorb_layer(filepath, layer, archive)
 
-        # Delete local temporary copy of file
-        filepath.unlink()
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(filepath.parent, ignore_errors=True)
 
     def absorb_layer(self, filepath: pathlib.Path, layer: readers.base.LayerReader, archive: str) -> None:
         """Absorbs a layer into the system.
