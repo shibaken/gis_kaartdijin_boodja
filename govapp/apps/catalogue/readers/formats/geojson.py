@@ -22,5 +22,5 @@ class GeoJSONReader(base.LayerReader):
             bool: Whether this file is compatible with this reader.
         """
         # Check and Return
-        # Path must be a file with the suffix `.json`
-        return file.is_file() and file.suffix.lower() == ".json"
+        # Path must be a file with the suffix `.json` or `.geojson`
+        return file.is_file() and file.suffix.lower() in (".json", ".geojson")

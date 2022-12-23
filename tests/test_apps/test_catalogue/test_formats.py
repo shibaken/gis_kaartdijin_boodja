@@ -20,6 +20,7 @@ import pytest
         "yaml_file",
     ),
     [
+        ("geojson/regions.geojson", "geojson/regions.yaml"),
         ("gpkg/WA_coast.gpkg", "gpkg/WA_coast.yaml"),
         ("gpkg/Local_areas_styled.gpkg", "gpkg/Local_areas_styled.yaml"),
         ("gpkg/Admin_boundaries.gpkg", "gpkg/Admin_boundaries.yaml"),
