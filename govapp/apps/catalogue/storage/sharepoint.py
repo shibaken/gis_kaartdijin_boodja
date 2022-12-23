@@ -33,7 +33,7 @@ class SharepointStorage(base.StorageService):
             password (str): Password for the Sharepoint storage location.
         """
         # Instance Variables
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.mkdtemp()
         self.url = url
         self.root = root
 
@@ -80,7 +80,7 @@ class SharepointStorage(base.StorageService):
         file: bytes = self.site.Folder(relative_path).get_file(filename)
 
         # Write File
-        temp_file = pathlib.Path(self.temp.name) / pathlib.Path(path).name
+        temp_file = pathlib.Path(self.temp) / pathlib.Path(path).name
         temp_file.write_bytes(file)
 
         # Return
