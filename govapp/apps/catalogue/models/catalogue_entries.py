@@ -6,9 +6,11 @@ from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.db import models
 from rest_framework import request
+import reversion
 
 # Local
 from . import custodians
+from .. import mixins
 from .. import utils
 from ...accounts import utils as accounts_utils
 
@@ -33,7 +35,17 @@ class CatalogueEntryStatus(models.IntegerChoices):
     PENDING = 5
 
 
-class CatalogueEntry(models.Model):
+@reversion.register(
+    follow=(
+        "attributes",
+        "metadata",
+        "layers",
+        "symbology",
+        "email_notifications",
+        "webhook_notifications",
+    )
+)
+class CatalogueEntry(mixins.RevisionedMixin):
     """Model for a Catalogue Entry."""
     name = models.TextField()
     description = models.TextField()

@@ -17,7 +17,6 @@ from . import filters
 from . import mixins
 from . import models
 from . import permissions
-from . import reversion  # noqa: F401
 from . import serializers
 from ..accounts import permissions as accounts_permissions
 from ..logs import mixins as logs_mixins

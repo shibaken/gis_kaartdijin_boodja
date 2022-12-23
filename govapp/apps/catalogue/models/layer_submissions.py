@@ -3,10 +3,12 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
 from . import layer_metadata
+from .. import mixins
 from .. import utils
 
 # Typing
@@ -20,7 +22,8 @@ class LayerSubmissionStatus(models.IntegerChoices):
     DECLINED = 3
 
 
-class LayerSubmission(models.Model):
+@reversion.register()
+class LayerSubmission(mixins.RevisionedMixin):
     """Model for a Layer Submission."""
     name = models.TextField()
     description = models.TextField()
