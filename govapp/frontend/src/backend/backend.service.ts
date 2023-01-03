@@ -1,7 +1,9 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
-  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser
+  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
+  RawCommunicationLog, RawPaginationFilter
 } from "./backend.api";
+import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
 
 function getCookie(name: string) {
@@ -205,5 +207,38 @@ export class BackendService {
       method: "post"
     });
     return response.status;
+  }
+
+  public async getCommunicationLogs (entryId: number, filter: RawPaginationFilter): Promise<PaginatedRecord<RawCommunicationLog>> {
+    const params = stripNullParams(filter);
+    const response = await fetch(`/api/catalogue/entries/${entryId}/logs/communications/?${new URLSearchParams(params)}`);
+    return await response.json();
+  }
+
+  async createCommunicationLog(entryId: number, data: Omit<RawCommunicationLog, "id" | "documents">) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/logs/communications/`, {
+      method: "post",
+      body: JSON.stringify(data)
+    });
+
+    return response.status;
+  }
+
+  public async getActionsLogs (entryId: number) {
+    const response = await fetch(`/api/catalogue/entries/${entryId}/logs/communications/`);
+    return await response.json();
+  }
+
+  public async uploadCommunicationFile (entryId: number, logId: number, file: File) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/logs/communications/${logId}/file/`, {
+      method: "post",
+      body: file
+    });
+    return response.status;
+  }
+
+  public async getCommunicationTypes (): Promise<CommunicationLogType[]> {
+    const response = await fetch("/api/logs/communications/type/");
+    return (await response.json()).results;
   }
 }

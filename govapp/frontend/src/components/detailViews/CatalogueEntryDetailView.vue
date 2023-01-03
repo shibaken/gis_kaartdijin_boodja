@@ -7,15 +7,15 @@
   import NotificationsCard from "../widgets/NotificationsCard.vue";
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
 
-  defineProps<{
-    catalogueEntry: CatalogueEntry | undefined
+  const props = defineProps<{
+    catalogueEntry?: CatalogueEntry
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface NavEmits extends NavigationEmits {}
   const emit = defineEmits<NavEmits>();
-
   const activeTab = ref<CatalogueDetailViewTabs>(CatalogueDetailViewTabs.Details);
+  const catalogueEntry = props.catalogueEntry; // Resolve build error TS2322
 
   function onTabClick (tab: CatalogueDetailViewTabs) {
     activeTab.value = tab;
@@ -48,8 +48,8 @@
   <accordion id-prefix="details" header-text="Details" class="mt-4">
     <template #body>
       <div class="form d-flex gap-3 flex-column">
-        <form-input field="name" name="Name" :value="catalogueEntry?.name" type="text" :readonly="true"/>
-        <form-input field="name" name="Custodian" :value="catalogueEntry?.custodian?.username" type="text"
+        <form-input field="name" name="Name" :value="props.catalogueEntry?.name" type="text" :readonly="true"/>
+        <form-input field="name" name="Custodian" :value="catalogueEntry?.custodian.username" type="text"
                     :readonly="true"/>
       </div>
     </template>

@@ -1,12 +1,17 @@
 <script lang="ts" setup>
-  const props = defineProps<{
+  const props = withDefaults(defineProps<{
     field: string,
     name: string,
     values: Array<[string, string | number]>
     value?: string,
     classes?: string,
-    disabled?: boolean
-  }>();
+    disabled?: boolean,
+    isInvalid?: boolean,
+    showEmpty?: boolean
+  }>(),
+    {
+      classes: ""
+    });
   const { field, name, values } = $(props);
 
   const emit = defineEmits<{
@@ -19,10 +24,11 @@
 </script>
 
 <template>
-  <div class="form-floating">
-    <select :id="`${field}Select`" :class="`form-select form-select-sm ${classes ?? ''}`"
-            :aria-label="`${name} select`" @change="valueUpdated" :value="value" :disabled="disabled">
-      <option :value="null"></option>
+  <div class="form-floating mt-2">
+    <select :id="`${field}Select`" class="form-select"
+            :class="{ [classes]: !!classes, 'is-invalid': !!isInvalid }" :aria-label="`${name} select`"
+            @change="valueUpdated" :value="value" :disabled="disabled">
+      <option v-if="showEmpty" :value="null"></option>
       <option v-for="[optionName, optionValue] in values" :key="optionName" :value="optionValue">
         {{ optionName }}
       </option>
@@ -32,7 +38,12 @@
 </template>
 
 <style lang="scss">
-  select {
-    min-width: 7.5rem;
+  .form-floating {
+    > label {
+      width: max-content;
+    }
+    > select {
+      width: 13rem;
+    }
   }
 </style>

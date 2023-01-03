@@ -97,7 +97,9 @@ export class CatalogueEntryProvider {
     return entry;
   }
 
-  public async fetchCatalogueEntries ({ ids, custodian, status, assignedTo, updateFrom, updateTo, sortBy }: CatalogueEntryFilter):
+  public async fetchCatalogueEntries ({
+    ids, custodian, status, assignedTo, updateFrom, updateTo, sortBy, limit, offset
+  }: CatalogueEntryFilter):
       Promise<PaginatedRecord<CatalogueEntry>> {
     let sortString = "";
     if (sortBy && sortBy.column) {
@@ -114,12 +116,23 @@ export class CatalogueEntryProvider {
       assigned_to: assignedTo,
       updated_before: updateTo,
       updated_after: updateFrom,
-      order_by: sortString
+      order_by: sortString,
+      limit,
+      offset
     } as RawCatalogueEntryFilter;
 
     const { previous, next, count, results } = await this.backend.getCatalogueEntries(rawFilter);
     const catalogueEntries = await Promise.all(results.map(this.rawToCatalogueEntry));
-    useCatalogueEntryStore().$patch({ catalogueEntries: catalogueEntries });
+    const catalogueEntryMeta = {
+      total: count,
+      offset: (rawFilter.offset || 0) + (rawFilter.limit || 0),
+      limit: rawFilter.limit
+    };
+
+    useCatalogueEntryStore().$patch({
+      catalogueEntries: catalogueEntries,
+      catalogueEntryMeta
+    });
 
     return { previous, next, count, results: catalogueEntries } as PaginatedRecord<CatalogueEntry>;
   }

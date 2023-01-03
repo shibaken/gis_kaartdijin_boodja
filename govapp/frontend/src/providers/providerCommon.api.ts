@@ -5,3 +5,7 @@ export interface PaginationFilter extends Record<string, unknown> {
   limit?: number;
   sortBy?: { column: string, direction: SortDirection };
 }
+
+export interface RecordMeta {
+  total: number;
+}
