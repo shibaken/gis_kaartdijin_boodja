@@ -212,6 +212,12 @@ CRON_CLASSES = [
     CRON_SCANNER_CLASS,
 ]
 
+# GeoServer Settings
+GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
+GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
+GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
+GEOSERVER_WORKSPACE = decouple.config("GEOSERVER_WORKSPACE", default="default")
+
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":
     GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"

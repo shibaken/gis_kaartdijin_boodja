@@ -17,6 +17,8 @@ from . import models
 from . import storage
 from . import utils
 from ..accounts import utils as accounts_utils
+from ...gis import conversions
+from ...gis import geoserver
 from ...gis import readers
 
 # Typing
@@ -38,6 +40,14 @@ class Absorber:
             root=conf.settings.SHAREPOINT_LIST,
             username=conf.settings.SHAREPOINT_USERNAME,
             password=conf.settings.SHAREPOINT_PASSWORD,
+        )
+
+        # GeoServer
+        self.geoserver = geoserver.GeoServer(
+            service_url=conf.settings.GEOSERVER_URL,
+            username=conf.settings.GEOSERVER_USERNAME,
+            password=conf.settings.GEOSERVER_PASSWORD,
+            workspace=conf.settings.GEOSERVER_WORKSPACE,
         )
 
     def absorb(self, path: str) -> None:
@@ -110,11 +120,19 @@ class Absorber:
         # Check existing catalogue entry
         if not catalogue_entry:
             # Create
-            self.create_catalogue_entry(metadata, attributes, symbology, archive)
+            success = self.create_catalogue_entry(metadata, attributes, symbology, archive)
 
         else:
             # Update
-            self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
+            success = self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
+
+        # Check success
+        if success:
+            # Convert Layer to GeoPackage
+            geopackage = conversions.to_geopackage(filepath, layer=metadata.name)
+
+            # Push to GeoServer
+            self.geoserver.upload_geopackage(geopackage)
 
     @transaction.atomic()
     def create_catalogue_entry(
@@ -123,7 +141,7 @@ class Absorber:
         attributes: list[readers.types.Attribute],
         symbology: Optional[readers.types.Symbology],
         archive: str,
-    ) -> None:
+    ) -> bool:
         """Creates a new catalogue entry with the supplied values.
 
         Args:
@@ -131,6 +149,9 @@ class Absorber:
             attributes (list[Attribute]): Attributes for the entry.
             symbology (Optional[Symbology]): Symbology for the entry.
             archive (str): Archive URL for the entry
+
+        Returns:
+            bool: Whether the creation was successful.
         """
         # Log
         log.info("Creating new catalogue entry")
@@ -186,6 +207,9 @@ class Absorber:
             *accounts_utils.all_administrators(),  # Send to all administrators
         )
 
+        # Return
+        return True
+
     @transaction.atomic()
     def update_catalogue_entry(
         self,
@@ -194,7 +218,7 @@ class Absorber:
         attributes: list[readers.types.Attribute],
         symbology: Optional[readers.types.Symbology],
         archive: str,
-    ) -> None:
+    ) -> bool:
         """Creates a new catalogue entry with the supplied values.
 
         Args:
@@ -202,7 +226,10 @@ class Absorber:
             metadata (Metadata): Metadata for the entry.
             attributes (list[Attribute]): Attributes for the entry.
             symbology (Optional[Symbology]): Symbology for the entry.
-            archive (str): Archive URL for the entry
+            archive (str): Archive URL for the entry.
+
+        Returns:
+            bool: Whether the update was successful.
         """
         # Log
         log.info("Updating existing catalogue entry")
@@ -224,17 +251,23 @@ class Absorber:
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate()
 
+        # Check Success
+        success = not layer_submission.is_declined()
+
         # Check Layer Submission
-        if layer_submission.is_declined():
+        if success:
+            # Send Update Success Email
+            emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
+                *accounts_utils.all_administrators(),  # Send to all administrators
+                *catalogue_entry.editors.all(),  # Send to all editors
+            )
+
+        else:
             # Send Update Failure Email
             emails.CatalogueEntryUpdateFailEmail().send_to_users(
                 *accounts_utils.all_administrators(),  # Send to all administrators
                 *catalogue_entry.editors.all(),  # Send to all editors
             )
 
-        else:
-            # Send Update Success Email
-            emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
-                *accounts_utils.all_administrators(),  # Send to all administrators
-                *catalogue_entry.editors.all(),  # Send to all editors
-            )
+        # Return
+        return success
