@@ -3,9 +3,11 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
+from .. import mixins
 
 
 class NotificationType(models.IntegerChoices):
@@ -15,7 +17,8 @@ class NotificationType(models.IntegerChoices):
     BOTH = 3
 
 
-class EmailNotification(models.Model):
+@reversion.register()
+class EmailNotification(mixins.RevisionedMixin):
     """Model for an Email Notification."""
     name = models.TextField()
     type = models.IntegerField(choices=NotificationType.choices)  # noqa: A003
@@ -41,7 +44,8 @@ class EmailNotification(models.Model):
         return f"{self.name}"
 
 
-class WebhookNotification(models.Model):
+@reversion.register()
+class WebhookNotification(mixins.RevisionedMixin):
     """Model for a Webhook Notification."""
     name = models.TextField()
     type = models.IntegerField(choices=NotificationType.choices)  # noqa: A003

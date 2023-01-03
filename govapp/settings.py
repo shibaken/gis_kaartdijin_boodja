@@ -71,7 +71,6 @@ MIDDLEWARE = [
     "dbca_utils.middleware.SSOLoginMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "govapp.middleware.CacheControl",
-    "reversion.middleware.RevisionMiddleware",
 ]
 ROOT_URLCONF = "govapp.urls"
 TEMPLATES = [

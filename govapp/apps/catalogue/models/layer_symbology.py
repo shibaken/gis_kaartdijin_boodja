@@ -3,12 +3,15 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
+from .. import mixins
 
 
-class LayerSymbology(models.Model):
+@reversion.register()
+class LayerSymbology(mixins.RevisionedMixin):
     """Model for a Layer Symbology."""
     name = models.TextField()
     sld = models.TextField()
