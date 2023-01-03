@@ -1,4 +1,6 @@
 """GIS Package."""
 
-from . import converter
+from . import compression
+from . import conversions
 from . import readers
+from . import utils

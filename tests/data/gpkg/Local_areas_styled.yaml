@@ -1,5 +1,5 @@
 layers:
-  - name: CPT_LOCAL_GOVT_AREAS
+  - name: Local Govt. Authorities (LGA)
     description: >-
       Local Government Authority for the State of Western Australia. Generally, Derived from the Spatial Cadastral
       Database (SCDB) and based on GDA 94. Updated regularly when amendments/changes are formalised. The data extent
@@ -45,7 +45,7 @@ layers:
         </UserStyle>
        </NamedLayer>
       </StyledLayerDescriptor>
-  - name: CPT_LOCALITIES
+  - name: Locality Areas
     description: >-
       Locality Boundaries for the State of Western Australia. Generally, Post Code boundaries coincide with the Locality
       boundaries. Derived from the Spatial Cadastral Database (SCDB) and based on GDA 94. Updated regularly when

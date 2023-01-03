@@ -5,7 +5,7 @@
 import pathlib
 
 # Local
-from . import base
+from .readers import base
 
 # Typing
 from typing import Any, Generator, Optional, TypeVar
