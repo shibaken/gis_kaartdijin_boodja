@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  geoserver:
+    image: "kartoza/geoserver:latest"
+    ports:
+      - "8600:8080"
+    environment:
+      GEOSERVER_ADMIN_USER: admin
+      GEOSERVER_ADMIN_PASSWORD: geoserver
+      GEOSERVER_DATA_DIR: /data
+      STABLE_EXTENSIONS: authkey-plugin sldservice-plugin wps-plugin querylayer-plugin mbstyle-plugin css-plugin mongodb-plugin
+      COMMUNITY_EXTENSIONS: geopkg-plugin
+    volumes:
+      - ./data:/data
