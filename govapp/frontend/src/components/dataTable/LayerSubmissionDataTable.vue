@@ -55,7 +55,7 @@
           <td>{{ DateTime.fromISO(row.submittedDate).toFormat('dd/MM/yyyy')}}</td>
           <td>{{ DateTime.fromISO(row.submittedDate).toFormat('HH:mm') }}</td>
           <td>
-            <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View,
+            <a href="#" @click="emit('navigate', CatalogueTab.LayerSubmissions, CatalogueView.View,
             { recordId: row.catalogueEntry?.id })">
               {{ row.catalogueEntry.name }}
             </a>

@@ -15,6 +15,11 @@ export enum CatalogueView {
   History
 }
 
+export enum SubscriptionDetailViewTabs {
+  Details,
+  RelatedItems
+}
+
 export type NavigateEmitsOptions = {
     viewTab?: CatalogueDetailViewTabs,
     recordId: number

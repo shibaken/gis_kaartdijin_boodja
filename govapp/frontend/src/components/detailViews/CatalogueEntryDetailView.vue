@@ -49,7 +49,7 @@
     <template #body>
       <div class="form d-flex gap-3 flex-column">
         <form-input field="name" name="Name" :value="props.catalogueEntry?.name" type="text" :readonly="true"/>
-        <form-input field="name" name="Custodian" :value="catalogueEntry?.custodian.username" type="text"
+        <form-input field="custodian" name="Custodian" :value="catalogueEntry?.custodian.username" type="text"
                     :readonly="true"/>
       </div>
     </template>
