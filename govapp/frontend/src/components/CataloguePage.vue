@@ -6,7 +6,7 @@
   import LayerSubscriptionFilter from "./widgets/LayerSubscriptionFilter.vue";
   import LayerSubmissionDataTable from "./dataTable/LayerSubmissionDataTable.vue";
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
-  import CatalogueEntryDetailView from "./detailViews/CatalogueEntryDetailView.vue";
+  import CatalogueEntryDetailView from "./detailViews/EntryDetailView.vue";
   import CommunicationsLogModal from "../components/modals/CommunicationsLogModal.vue";
   import { CatalogueTab, CatalogueView, NavigateEmitsOptions } from "./viewState.api";
   import Card from "./widgets/Card.vue";
@@ -24,7 +24,7 @@
   import { storeToRefs } from "pinia";
   import { ModalTypes } from "../stores/ModalStore.api.js";
   import { useModalStore } from "../stores/ModalStore";
-  import LayerSubscriptionDetailView from "./detailViews/LayerSubscriptionDetailView.vue";
+  import LayerSubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
   const modalStore = useModalStore();
@@ -91,8 +91,8 @@
   </ul>
 
   <div class="d-flex flex-row">
-    <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View && selectedViewEntry">
-      <side-bar-left v-if="!!selectedViewEntry" :entry="selectedViewEntry"/>
+    <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View">
+      <side-bar-left :entry="selectedViewEntry"/>
     </div>
     <div class="w-100">
       <card v-if="selectedView === CatalogueView.List">

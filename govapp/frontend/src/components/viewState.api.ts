@@ -9,6 +9,7 @@ export enum CatalogueDetailViewTabs {
   Symbology,
   Metadata
 }
+
 export enum CatalogueView {
   List,
   View,

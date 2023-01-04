@@ -86,6 +86,10 @@ export interface RawUserFilter extends RawPaginationFilter {
   id__in?: Array<number>;
 }
 
+export interface RawAttributeFilter extends RawPaginationFilter {
+  catalogue_entry__in: Array<number>
+}
+
 export interface PaginationState {
   currentPage: number;
   numPages: number;
