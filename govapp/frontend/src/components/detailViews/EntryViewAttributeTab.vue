@@ -29,5 +29,4 @@
       </div>
     </template>
   </accordion>
-  <notifications-card/>
 </template>
