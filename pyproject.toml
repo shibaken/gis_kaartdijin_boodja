@@ -24,6 +24,7 @@ django-reversion-rest-framework = "^1.1.2"
 django-cron = "^0.6.0"
 py7zr = "^0.20.2"
 rarfile = "^4.0"
+httpx = "^0.23.2"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.16.2"
