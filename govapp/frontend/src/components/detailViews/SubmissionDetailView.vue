@@ -14,7 +14,6 @@
   const activeTab = ref<SubmissionDetailViewTabs>(SubmissionDetailViewTabs.Details);
 
   function onTabClick (tab: SubmissionDetailViewTabs) {
-    console.debug("onTabClick in sub", tab)
     activeTab.value = tab;
   }
 </script>
