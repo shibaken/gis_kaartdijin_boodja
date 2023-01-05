@@ -3,8 +3,9 @@ import { BackendService } from "./backend.service";
 import {
   RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, StatusType, RawLayerSubmission,
   NotificationRequestType, RawNotification, NotificationType, RawWebhookNotification, RawEmailNotification, RawMetadata,
-  RawCustodian, Group, RawSymbology, RawAttribute, RawEntryPatch, RawUser
+  RawCustodian, Group, RawSymbology, RawAttribute, RawEntryPatch, RawUser, RawPaginationFilter, RawCommunicationLog
 } from "./backend.api";
+import { CommunicationLogType, LogEnum } from "../providers/logsProvider.api";
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -333,6 +334,68 @@ const DUMMY_GROUPS: Array<Group> = [
   }
 ];
 
+const DUMMY_COMM_LOGS: Array<RawCommunicationLog> = [
+  {
+    "id": 1,
+    "created_at": "2022-12-21T14:50:30.884033Z",
+    "type": 3,
+    "to": "Punny Hot",
+    "cc": "Belly Jeans",
+    "from": "Bunny Phone",
+    "subject": "The thing about the stuff",
+    "text": "Y'know... the thing? With the stuff?",
+    "documents": [],
+    "user": 1
+  },
+  {
+    "id": 2,
+    "created_at": "2022-12-21T14:50:31.693187Z",
+    "type": 3,
+    "to": "Bunny Phone",
+    "cc": "Punny Hot",
+    "from": "Belly Jeans",
+    "subject": "The other thing I mentioned",
+    "text": "He just trailed off after that",
+    "documents": [],
+    "user": 1
+  },
+  {
+    "id": 3,
+    "created_at": "2022-12-21T14:50:32.064073Z",
+    "type": 3,
+    "to": "Belly Jeans",
+    "cc": "Bunny Phone",
+    "from": "Punny Hot",
+    "subject": "Wisdom of the ages",
+    "text": "You can lead an early bird to water, but you can't make it do the worm.",
+    "documents": [],
+    "user": 1
+  }
+];
+
+const DUMMY_COMM_LOG_TYPES: Array<CommunicationLogType> = [
+  {
+    "id": 1,
+    "label": LogEnum.Email
+  },
+  {
+    "id": 2,
+    "label": LogEnum.Phone
+  },
+  {
+    "id": 3,
+    "label": LogEnum.Mail
+  },
+  {
+    "id": 4,
+    "label": LogEnum.Person
+  },
+  {
+    "id": 5,
+    "label": LogEnum.Other
+  }
+];
+
 export class BackendServiceStub implements BackendService {
   public getLayerSubscription (id: number): Promise<RawLayerSubscription> {
     return Promise.resolve(DUMMY_LAYER_SUBSCRIPTIONS.find(dummy => dummy.id === id)!);
@@ -455,5 +518,25 @@ export class BackendServiceStub implements BackendService {
 
   public async entryUnassign (entryId: number): Promise<number> {
     return Promise.resolve(204);
+  }
+
+  async createCommunicationLog(entryId: number, data: Omit<RawCommunicationLog, "id" | "documents">): Promise<number> {
+    return Promise.resolve(1);
+  }
+
+  async getActionsLogs(entryId: number): Promise<any> {
+    return Promise.resolve(undefined);
+  }
+
+  async getCommunicationLogs(entryId: number, filter: RawPaginationFilter): Promise<PaginatedRecord<RawCommunicationLog>> {
+    return Promise.resolve(wrapPaginatedRecord(DUMMY_COMM_LOGS));
+  }
+
+  async getCommunicationTypes(): Promise<CommunicationLogType[]> {
+    return Promise.resolve(DUMMY_COMM_LOG_TYPES);
+  }
+
+  async uploadCommunicationFile(entryId: number, logId: number, file: File): Promise<number> {
+    return Promise.resolve(1);
   }
 }

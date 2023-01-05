@@ -2,8 +2,8 @@ import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
 
 export interface PaginatedRecord<T> {
   count: number;
-  next: string | null;
-  previous: string | null;
+  next?: string | null;
+  previous?: string | null;
   results: Array<T>;
 }
 
@@ -166,6 +166,27 @@ export interface RawCustodian {
 export interface Group {
   id: number;
   name: string;
+}
+
+export interface RawCommunicationLogDocument {
+  id: number;
+  name?: string;
+  description?: string;
+  uploaded_at: string
+  file: string;
+}
+
+export interface RawCommunicationLog {
+  id: number;
+  created_at: string;
+  type: number;
+  to?: string;
+  cc?: string;
+  from: string;
+  subject?: string;
+  text?: string;
+  documents: Array<RawCommunicationLogDocument>;
+  user?: number;
 }
 
 /**

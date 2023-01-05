@@ -7,6 +7,7 @@
   import LayerSubmissionDataTable from "./dataTable/LayerSubmissionDataTable.vue";
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
   import CatalogueEntryDetails from "./detailViews/CatalogueEntryDetailView.vue";
+  import CommunicationsLogModal from "../components/modals/CommunicationsLogModal.vue";
   import { CatalogueTab, CatalogueView, NavigateEmitsOptions } from "./viewState.api";
   import Card from "./widgets/Card.vue";
   import Accordion from "./widgets/Accordion.vue";
@@ -21,8 +22,11 @@
   import { useLayerSubmissionStore } from "../stores/LayerSubmissionStore";
   import { useLayerSubscriptionStore } from "../stores/LayerSubscriptionStore";
   import { storeToRefs } from "pinia";
+  import { ModalTypes } from "../stores/ModalStore.api.js";
+  import { useModalStore } from "../stores/ModalStore";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
+  const modalStore = useModalStore();
 
   const selectedTab = ref<CatalogueTab>(CatalogueTab.CatalogueEntries);
   const selectedView = ref<CatalogueView>(CatalogueView.List);
@@ -116,6 +120,9 @@
       @navigate="navigate"/>
     </div>
   </div>
+  <CommunicationsLogModal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
+    :show="modalStore.activeModal === ModalTypes.COMMS_LOG || modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"
+    :add-log="modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"/>
 </template>
 
 <style lang="scss">

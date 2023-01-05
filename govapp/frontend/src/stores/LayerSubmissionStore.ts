@@ -1,10 +1,23 @@
 import { defineStore } from "pinia";
 import { computed, ComputedRef, Ref, ref, toRefs, watch } from "vue";
 import { LayerSubmission, LayerSubmissionFilter } from "../providers/layerSubmissionProvider.api";
-import { LayerSubmissionStatus, PaginatedRecord } from "../backend/backend.api";
+import { LayerSubmissionStatus, PaginatedRecord, RecordStatus } from "../backend/backend.api";
 import { layerSubmissionProvider } from "../providers/layerSubmissionProvider";
 import { useTableFilterComposable } from "../tools/filterComposable";
 import { statusProvider } from "../providers/statusProvider";
+import { Filter } from "../tools/filterComposable.api";
+
+export type LayerSubmissionStore = {
+  numPages: ComputedRef<number>,
+  pageSize: Ref<number>,
+  filters: Ref<LayerSubmissionFilter>,
+  clearFilters: () => void,
+  currentPage: Ref<number>,
+  submissionStatuses: Promise<Array<RecordStatus<LayerSubmissionStatus>>>,
+  getLayerSubmissions: () => Promise<PaginatedRecord<LayerSubmission>>,
+  layerSubmissions: Ref<Array<LayerSubmission>>,
+  setFilter: ({field, value}: Filter<LayerSubmissionFilter>) => void
+}
 
 // Status shouldn't need to change so pass it as a static list
 export const submissionStatuses = statusProvider.fetchStatuses<LayerSubmissionStatus>("layers/submissions");

@@ -24,7 +24,7 @@
       </div>
       <div class="d-flex flex-column">
           <form-select field="assignedTo" name="Currently assigned to"
-                       :disabled="!workflowComposable.canAssign.value"
+                       :disabled="!workflowComposable.canAssign.value" :show-empty="true"
                        :values="workflowComposable.assignableUsers.value?.map(value => [value.username, value.id])"
                        :value="workflowComposable.currentEntry.value?.assignedTo?.id.toString()"
                        @value-updated="(username, id) => workflowComposable.assignUser(parseInt(id))"/>
