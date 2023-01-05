@@ -1,0 +1,19 @@
+layers:
+  - name: world_heritage_boundaries
+    description: null
+    created_at: null
+    attributes:
+      - [1, PLACE_ID, Integer]
+      - [2, FILE_, String]
+      - [3, NAME, String]
+      - [4, STATUS, String]
+      - [5, IUCN_MGT, String]
+      - [6, BIOGEOPROV, String]
+      - [7, NATURAL, String]
+      - [8, CULTURAL, String]
+      - [9, STATE, String]
+      - [10, Hectares, Real]
+      - [11, ADDRESS, String]
+      - [12, INSCRIBED, String]
+      - [13, ID, Integer]
+    symbology: null
