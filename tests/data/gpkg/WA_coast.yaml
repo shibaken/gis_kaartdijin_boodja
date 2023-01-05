@@ -1,5 +1,5 @@
 layers:
-  - name: WA_coast_smoothed
+  - name: WA Coast
     description: >-
       West Australian coastline as shown in Landgate TGDB - hydrology theme (Oct 2012). This data set is a generalized
       data set of the more detailed WA Coast line data. It was produced for small scale cartographic map production and

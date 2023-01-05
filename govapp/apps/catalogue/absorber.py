@@ -14,10 +14,10 @@ from django.db import transaction
 # Local
 from . import emails
 from . import models
-from . import readers
 from . import storage
 from . import utils
 from ..accounts import utils as accounts_utils
+from ...gis import readers
 
 # Typing
 from typing import Optional

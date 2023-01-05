@@ -8,7 +8,7 @@ import pathlib
 # Local
 from .. import base
 from .. import types
-from .. import utils
+from ... import utils
 
 # Third-Party
 from dateutil import parser
@@ -53,7 +53,7 @@ class GeopackageReader(base.LayerReader):
             models.Metadata: Extracted metadata.
         """
         # Extract Name and Description from Metadata
-        name = self.layer.GetMetadataItem("IDENTIFIER") or self.layer.GetName()
+        name = self.layer.GetName()
         description = self.layer.GetMetadataItem("DESCRIPTION") or ""  # Blank
 
         # Handle Errors

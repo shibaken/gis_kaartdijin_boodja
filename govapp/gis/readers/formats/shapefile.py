@@ -7,7 +7,7 @@ import pathlib
 # Local
 from .. import base
 from .. import types
-from .. import utils
+from ... import utils
 
 
 class ShapeFileReader(base.LayerReader):

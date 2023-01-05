@@ -1,5 +1,5 @@
 layers:
-  - name: EBASE.CPT_DBCA_OFFICES
+  - name: DBCA Offices
     description: >-
       Location and contact information for DBCA offices and workcentres around the state.
 
@@ -32,7 +32,7 @@ layers:
       - [13, DOF_LOCALITY, String]
       - [14, DOF_POST_CODE, String]
     symbology: null
-  - name: CPT_DBCA_DISTRICTS
+  - name: DBCA Districts
     description: >-
       DBCA's administrative district boundaries.
 
@@ -52,7 +52,7 @@ layers:
       - [6, SHAPE_Length, Real]
       - [7, SHAPE_Area, Real]
     symbology: null
-  - name: CPT_DBCA_REGIONS
+  - name: DBCA Regions
     description: >-
       CALM's administrative region boundaries renamed to DEC, DPaW and subsequently DBCA Region Boundaries. The
       Department of Biodiversity, Conservation and Attractions administers a variety of environmental services to the

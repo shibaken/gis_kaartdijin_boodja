@@ -6,11 +6,11 @@ import datetime
 import yaml
 
 # Local
-from govapp.apps.catalogue import readers
-import freezegun
+from govapp.gis import readers
 from tests import utils
 
 # Third-Party
+import freezegun
 import pytest
 
 

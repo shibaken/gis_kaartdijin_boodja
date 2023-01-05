@@ -9,8 +9,8 @@ from osgeo import ogr
 
 # Local
 from . import base
-from . import compression
-from . import utils
+from .. import compression
+from .. import utils
 
 # Typing
 from typing import Iterable
