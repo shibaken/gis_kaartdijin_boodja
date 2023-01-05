@@ -30,5 +30,5 @@ stages:
               latest
               $(tagDate)
         containerRegistry: DockerHub
-        repository: dbcawa/pgis_kaartdijin_boodja
+        repository: dbcawa/gis_kaartdijin_boodja
  
