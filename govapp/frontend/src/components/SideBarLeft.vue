@@ -11,6 +11,7 @@
   }>();
 
   let workflowComposable: WorkFlowComposable;
+  // TODO: workflow composable refactor for subscriptions
   if (props.entry) {
     workflowComposable = useEntryWorkflowComposable(props.entry);
     watch(props, () => workflowComposable.currentEntry.value = props.entry!);
@@ -20,6 +21,6 @@
 <template>
   <div class="me-4">
     <logs-card class="mb-4"/>
-    <workflow-card class="mb-4" :workflow-composable="workflowComposable"/>
+    <workflow-card v-if="workflowComposable" class="mb-4" :workflow-composable="workflowComposable"/>
   </div>
 </template>

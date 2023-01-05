@@ -1,35 +1,36 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { Attribute } from "./EntryRelatedEntityProvider.api";
-import { EntryPatch, Group, PaginatedRecord, RawAttribute, RawCustodian, RawMetadata,
-  RawSymbology } from "../backend/backend.api";
+import { Attribute } from "./relatedEntityProvider.api";
+import {
+  EntryPatch,
+  Group,
+  PaginatedRecord,
+  RawAttribute,
+  RawCustodian,
+  RawMetadata,
+  RawSymbology
+} from "../backend/backend.api";
 import { catalogueEntryProvider } from "./catalogueEntryProvider";
 
-export class EntryRelatedEntityProvider {
+export class RelatedEntityProvider {
   // Get the backend stub if the test flag is used.
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
 
-  public async fetchAttributes (): Promise<Attribute[]> {
-    const { results } = await this.backend.getRawAttributes();
+  public async fetchAttributes (entryIds: Array<number>): Promise<Attribute[]> {
+    const { results } = await this.backend.getRawAttributes({ catalogue_entry__in: entryIds });
     const { getOrFetchList } = catalogueEntryProvider;
     const linkedEntries = await getOrFetchList(results.map(({ id }) => id));
 
     return results.map((rawAttribute) => {
       const linkedEntry = linkedEntries.find(record => record.id === rawAttribute.catalogue_entry);
-
-      const attribute = {
+      return {
         id: rawAttribute.id,
         name: rawAttribute.name,
         description: rawAttribute.description,
         type: rawAttribute.type,
-        order: rawAttribute.order
+        order: rawAttribute.order,
+        catalogueEntry: linkedEntry
       } as Attribute;
-
-      if (linkedEntry) {
-        attribute.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name };
-      }
-
-      return attribute;
     }) as Array<Attribute>;
   }
 
@@ -67,4 +68,4 @@ export class EntryRelatedEntityProvider {
   }
 }
 
-export const entryRelatedEntityProvider = new EntryRelatedEntityProvider();
+export const relatedEntityProvider = new RelatedEntityProvider();

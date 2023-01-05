@@ -1,7 +1,7 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
   RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
-  RawCommunicationLog, RawPaginationFilter
+  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter
 } from "./backend.api";
 import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
@@ -127,8 +127,9 @@ export class BackendService {
     return await response.json() as RawAttribute;
   }
 
-  public async getRawAttributes (): Promise<PaginatedRecord<RawAttribute>> {
-    const response = await fetch("/api/catalogue/layers/attribute/");
+  public async getRawAttributes (filter: RawAttributeFilter): Promise<PaginatedRecord<RawAttribute>> {
+    const params = stripNullParams<RawCatalogueEntryFilter>(filter);
+    const response = await fetch("/api/catalogue/layers/attributes/?" + new URLSearchParams(params));
     return await response.json() as PaginatedRecord<RawAttribute>;
   }
 

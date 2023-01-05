@@ -9,10 +9,16 @@ export enum CatalogueDetailViewTabs {
   Symbology,
   Metadata
 }
+
 export enum CatalogueView {
   List,
   View,
   History
+}
+
+export enum SubscriptionDetailViewTabs {
+  Details,
+  RelatedItems
 }
 
 export type NavigateEmitsOptions = {

@@ -32,7 +32,7 @@ class LayerAttributeFilter(filters.FilterSet):
     class Meta:
         """Layer Attribute Filter Metadata."""
         model = models.layer_attributes.LayerAttribute
-        fields = ()
+        fields = {"catalogue_entry": ["in"]}
 
 
 class LayerMetadataFilter(filters.FilterSet):
