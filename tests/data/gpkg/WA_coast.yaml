@@ -1,0 +1,15 @@
+layers:
+  - name: WA Coast
+    description: >-
+      West Australian coastline as shown in Landgate TGDB - hydrology theme (Oct 2012). This data set is a generalized
+      data set of the more detailed WA Coast line data. It was produced for small scale cartographic map production and
+      for speed of loading. If large scale maps that show coastal detail are being produced, it is recommnded that the
+      WA Coast - Detailed data set be used.
+
+
+      REQUIRED: A summary of the intentions with which the data set was developed.
+    created_at: 2022-10-27T02:33:28.651000+00:00
+    attributes:
+      - [1, TYPE, String]
+      - [2, SOURCE, String]
+    symbology: null

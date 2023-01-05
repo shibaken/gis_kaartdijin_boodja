@@ -1,0 +1,12 @@
+layers:
+  - name: regions
+    description: null
+    created_at: null
+    attributes:
+    - [1, OBJECTID, Integer]
+    - [2, DRG_REGION_NAME, String]
+    - [3, DRG_AREA_HA, Real]
+    - [4, DRG_OFFICE, String]
+    - [5, SHAPE_Length, Real]
+    - [6, SHAPE_Area, Real]
+    symbology: null

@@ -1,0 +1,72 @@
+layers:
+  - name: DBCA Offices
+    description: >-
+      Location and contact information for DBCA offices and workcentres around the state.
+
+
+      Locates the DBCA offices and workcentres around the state. Also used by Fire Management Services to identify
+      rostered duty officers for each region.
+
+
+      REQUIRED: A brief narrative summary of the data set.
+
+
+      REQUIRED: A summary of the intentions with which the data set was developed.
+
+
+      Mainatined by RFMS branch to support fire suppression activities.
+    created_at: 2022-10-27T02:50:58.963000+00:00
+    attributes:
+      - [1, OBJECTID, Integer64]
+      - [2, DOF_NAME, String]
+      - [3, DOF_REGION, String]
+      - [4, DOF_DISTRICT, String]
+      - [5, DOF_WK_CENTRE, String]
+      - [6, DOF_OTHER_SITE, String]
+      - [7, DOF_PHONE, String]
+      - [8, DOF_FAX, String]
+      - [9, DOF_DDO_EMAIL, String]
+      - [10, DOF_RDO_EMAIL, String]
+      - [11, DOF_STREET_NUMBER, String]
+      - [12, DOF_STREET_NAME, String]
+      - [13, DOF_LOCALITY, String]
+      - [14, DOF_POST_CODE, String]
+    symbology: null
+  - name: DBCA Districts
+    description: >-
+      DBCA's administrative district boundaries.
+
+
+
+      DBCA's administrative district boundaries. 
+
+
+      Updated as required. Official notification of authorised changes to be signed off by manager for Regional Services.
+    created_at: 2022-10-27T02:53:28.190000+00:00
+    attributes:
+      - [1, OBJECTID, Integer64]
+      - [2, DDT_DISTRICT_NAME, String]
+      - [3, DDT_OFFICE, String]
+      - [4, ADMIN_ZONE, String]
+      - [5, TYPE, String]
+      - [6, SHAPE_Length, Real]
+      - [7, SHAPE_Area, Real]
+    symbology: null
+  - name: DBCA Regions
+    description: >-
+      CALM's administrative region boundaries renamed to DEC, DPaW and subsequently DBCA Region Boundaries. The
+      Department of Biodiversity, Conservation and Attractions administers a variety of environmental services to the
+      public through 9 regional offices throughout Western Australia. The boundaries define the jurisdictional
+      boundaries for regional offices to deploy DBCA services.
+
+
+      Describes the 9 administrative regions of the Department of Biodiversity, Conservation and Attractions.
+    created_at: 2022-10-27T02:54:13.647000+00:00
+    attributes:
+      - [1, OBJECTID, Integer64]
+      - [2, DRG_REGION_NAME, String]
+      - [3, DRG_AREA_HA, Real]
+      - [4, DRG_OFFICE, String]
+      - [5, SHAPE_Length, Real]
+      - [6, SHAPE_Area, Real]
+    symbology: null

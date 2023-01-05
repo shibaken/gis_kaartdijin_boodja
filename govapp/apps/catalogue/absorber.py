@@ -5,6 +5,7 @@
 import datetime
 import logging
 import pathlib
+import shutil
 
 # Third-Party
 from django import conf
@@ -13,10 +14,12 @@ from django.db import transaction
 # Local
 from . import emails
 from . import models
-from . import readers
 from . import storage
 from . import utils
 from ..accounts import utils as accounts_utils
+from ...gis import conversions
+from ...gis import geoserver
+from ...gis import readers
 
 # Typing
 from typing import Optional
@@ -37,6 +40,14 @@ class Absorber:
             root=conf.settings.SHAREPOINT_LIST,
             username=conf.settings.SHAREPOINT_USERNAME,
             password=conf.settings.SHAREPOINT_PASSWORD,
+        )
+
+        # GeoServer
+        self.geoserver = geoserver.GeoServer(
+            service_url=conf.settings.GEOSERVER_URL,
+            username=conf.settings.GEOSERVER_USERNAME,
+            password=conf.settings.GEOSERVER_PASSWORD,
+            workspace=conf.settings.GEOSERVER_WORKSPACE,
         )
 
     def absorb(self, path: str) -> None:
@@ -65,50 +76,39 @@ class Absorber:
         log.info(f"Retrieved '{path}' -> '{filepath}'")
         log.info(f"Archived '{path}' -> {archive_path} ({archive})")
 
-        # Determine the layers in the file
-        layers = readers.utils.layers(filepath)
-
-        # Log
-        log.info(f"Detected layers: {layers}")
+        # Construct Reader
+        reader = readers.reader.FileReader(filepath)
 
         # Loop through layers
-        for layer in layers:
+        for layer in reader.layers():
             # Log
-            log.info(f"Absorbing layer '{layer}' from '{filepath}'")
+            log.info(f"Absorbing layer '{layer.name}' from '{filepath}'")
 
             # Absorb layer
             self.absorb_layer(filepath, layer, archive)
 
-        # Delete local temporary copy of file
-        filepath.unlink()
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(filepath.parent, ignore_errors=True)
 
-    def absorb_layer(self, filepath: pathlib.Path, layer: str, archive: str) -> None:
+    def absorb_layer(self, filepath: pathlib.Path, layer: readers.base.LayerReader, archive: str) -> None:
         """Absorbs a layer into the system.
 
         Args:
             filepath (pathlib.Path): File to absorb layer from.
-            layer (str): Layer to absorb.
+            layer (readers.base.LayerReader): Layer to absorb.
             archive (str): URL to the archived file for this layer.
         """
         # Log
-        log.info(f"Extracting data from layer: '{layer}'")
+        log.info(f"Extracting data from layer: '{layer.name}'")
 
-        # Extract metadata
-        metadata = readers.utils.metadata(filepath, layer)
+        # Extract metadata and attributes (required)
+        metadata = layer.metadata()
+        attributes = layer.attributes()
 
-        # Attempt to extract attributes
-        try:
-            # Extract attributes
-            attributes = readers.utils.attributes(filepath, layer)
-
-        except ValueError:
-            # Could not extract attributes
-            attributes = None
-
-        # Attempt to extract symbology
+        # Attempt to extract symbology (optional)
         try:
             # Extract symbology
-            symbology = readers.utils.symbology(filepath, layer)
+            symbology = layer.symbology()
 
         except ValueError:
             # Could not extract symbology
@@ -120,27 +120,38 @@ class Absorber:
         # Check existing catalogue entry
         if not catalogue_entry:
             # Create
-            self.create_catalogue_entry(metadata, attributes, symbology, archive)
+            success = self.create_catalogue_entry(metadata, attributes, symbology, archive)
 
         else:
             # Update
-            self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
+            success = self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
+
+        # Check success
+        if success:
+            # Convert Layer to GeoPackage
+            geopackage = conversions.to_geopackage(filepath, layer=metadata.name)
+
+            # Push to GeoServer
+            self.geoserver.upload_geopackage(geopackage)
 
     @transaction.atomic()
     def create_catalogue_entry(
         self,
-        metadata: readers.types.metadata.Metadata,
-        attributes: Optional[list[readers.types.attributes.Attribute]],
-        symbology: Optional[readers.types.symbology.Symbology],
+        metadata: readers.types.Metadata,
+        attributes: list[readers.types.Attribute],
+        symbology: Optional[readers.types.Symbology],
         archive: str,
-    ) -> None:
+    ) -> bool:
         """Creates a new catalogue entry with the supplied values.
 
         Args:
             metadata (Metadata): Metadata for the entry.
-            attributes (Optional[list[Attribute]]): Attributes for the entry.
+            attributes (list[Attribute]): Attributes for the entry.
             symbology (Optional[Symbology]): Symbology for the entry.
             archive (str): Archive URL for the entry
+
+        Returns:
+            bool: Whether the creation was successful.
         """
         # Log
         log.info("Creating new catalogue entry")
@@ -172,6 +183,16 @@ class Absorber:
             catalogue_entry=catalogue_entry,
         )
 
+        # Loop through attributes
+        for attribute in attributes:
+            # Create Attribute
+            models.layer_attributes.LayerAttribute.objects.create(
+                name=attribute.name,
+                type=attribute.type,
+                order=attribute.order,
+                catalogue_entry=catalogue_entry,
+            )
+
         # Check symbology
         if symbology:
             # Create Layer Symbology
@@ -181,40 +202,34 @@ class Absorber:
                 catalogue_entry=catalogue_entry,
             )
 
-        # Check attributes
-        if attributes:
-            # Loop through attributes
-            for attribute in attributes:
-                # Create Attribute
-                models.layer_attributes.LayerAttribute.objects.create(
-                    name=attribute.name,
-                    type=attribute.type,
-                    order=attribute.order,
-                    catalogue_entry=catalogue_entry,
-                )
-
         # Send Emails!
         emails.CatalogueEntryCreatedEmail().send_to_users(
             *accounts_utils.all_administrators(),  # Send to all administrators
         )
 
+        # Return
+        return True
+
     @transaction.atomic()
     def update_catalogue_entry(
         self,
         catalogue_entry: models.catalogue_entries.CatalogueEntry,
-        metadata: readers.types.metadata.Metadata,
-        attributes: Optional[list[readers.types.attributes.Attribute]],
-        symbology: Optional[readers.types.symbology.Symbology],
+        metadata: readers.types.Metadata,
+        attributes: list[readers.types.Attribute],
+        symbology: Optional[readers.types.Symbology],
         archive: str,
-    ) -> None:
+    ) -> bool:
         """Creates a new catalogue entry with the supplied values.
 
         Args:
             catalogue_entry (CatalogueEntry): Catalogue entry to update.
             metadata (Metadata): Metadata for the entry.
-            attributes (Optional[list[Attribute]]): Attributes for the entry.
+            attributes (list[Attribute]): Attributes for the entry.
             symbology (Optional[Symbology]): Symbology for the entry.
-            archive (str): Archive URL for the entry
+            archive (str): Archive URL for the entry.
+
+        Returns:
+            bool: Whether the update was successful.
         """
         # Log
         log.info("Updating existing catalogue entry")
@@ -224,29 +239,35 @@ class Absorber:
 
         # Create New Layer Submission
         layer_submission = models.layer_submissions.LayerSubmission.objects.create(
-                name=metadata.name,
-                description=metadata.description,
-                file=archive,
-                is_active=False,  # Starts out Inactive
-                created_at=metadata.created_at,
-                hash=attributes_hash,
-                catalogue_entry=catalogue_entry,
-            )
+            name=metadata.name,
+            description=metadata.description,
+            file=archive,
+            is_active=False,  # Starts out Inactive
+            created_at=metadata.created_at,
+            hash=attributes_hash,
+            catalogue_entry=catalogue_entry,
+        )
 
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate()
 
+        # Check Success
+        success = not layer_submission.is_declined()
+
         # Check Layer Submission
-        if layer_submission.is_declined():
+        if success:
+            # Send Update Success Email
+            emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
+                *accounts_utils.all_administrators(),  # Send to all administrators
+                *catalogue_entry.editors.all(),  # Send to all editors
+            )
+
+        else:
             # Send Update Failure Email
             emails.CatalogueEntryUpdateFailEmail().send_to_users(
                 *accounts_utils.all_administrators(),  # Send to all administrators
                 *catalogue_entry.editors.all(),  # Send to all editors
             )
 
-        else:
-            # Send Update Success Email
-            emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
-                *accounts_utils.all_administrators(),  # Send to all administrators
-                *catalogue_entry.editors.all(),  # Send to all editors
-            )
+        # Return
+        return success
