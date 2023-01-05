@@ -6,7 +6,6 @@
   import { onMounted } from "vue";
   import { useAttributeStore } from "../../stores/AttributeStore";
   import { storeToRefs } from "pinia";
-  import NotificationsCard from "../widgets/NotificationsCard.vue";
 
   const props = defineProps<{
     entry: CatalogueEntry

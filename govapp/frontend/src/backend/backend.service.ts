@@ -64,7 +64,7 @@ export class BackendService {
   }
 
   public async getLayerSubmission (id: number): Promise<RawLayerSubmission> {
-    const response = await fetch(`/api/catalogue/entries/layers/submissions/${id}/`);
+    const response = await fetch(`/api/catalogue/layers/submissions/${id}/`);
     return await response.json() as RawLayerSubmission;
   }
 
