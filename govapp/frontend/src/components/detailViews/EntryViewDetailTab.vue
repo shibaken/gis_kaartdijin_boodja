@@ -15,7 +15,7 @@
     <template #body>
       <div class="form d-flex gap-3 flex-column">
         <form-input field="name" name="Name" :value="entry?.name" type="text" :readonly="true"/>
-        <form-input field="custodian" name="Custodian" :value="entry?.custodian.username" type="text"
+        <form-input field="custodian" name="Custodian" :value="entry?.custodian?.username" type="text"
                     :readonly="true"/>
       </div>
     </template>

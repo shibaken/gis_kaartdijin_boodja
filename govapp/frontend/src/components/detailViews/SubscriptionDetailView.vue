@@ -33,5 +33,5 @@
       Back
     </button>
   </nav>
-  <subscription-view-detail-tab :subscription="layerSubscription"/>
+  <subscription-view-detail-tab v-if="layerSubscription" :subscription="layerSubscription"/>
 </template>

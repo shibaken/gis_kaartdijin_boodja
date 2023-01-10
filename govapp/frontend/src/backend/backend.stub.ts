@@ -539,4 +539,8 @@ export class BackendServiceStub implements BackendService {
   async uploadCommunicationFile(entryId: number, logId: number, file: File): Promise<number> {
     return Promise.resolve(1);
   }
+
+  async getWmtsCapabilities(): Promise<string> {
+    return Promise.resolve("");
+  }
 }

@@ -3,6 +3,7 @@
   import { CatalogueTab, CatalogueView, NavigationEmits, SubmissionDetailViewTabs } from "../viewState.api";
   import { LayerSubmission } from "../../providers/layerSubmissionProvider.api";
   import SubmissionViewDetailTab from "./SubmissionViewDetailTab.vue";
+  import SubmissionViewMapTab from "./SubmissionViewMapTab.vue";
 
   const props = defineProps<{
     layerSubmission?: LayerSubmission
@@ -33,6 +34,9 @@
       Back
     </button>
   </nav>
-  <submission-view-detail-tab v-if="activeTab === SubmissionDetailViewTabs.Details" :submission="layerSubmission"
-                              @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
+  <submission-view-detail-tab
+    v-if="activeTab === SubmissionDetailViewTabs.Details && layerSubmission" :submission="layerSubmission"
+    @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
+  <submission-view-map-tab v-if="activeTab === SubmissionDetailViewTabs.Map && layerSubmission"
+                           :submission="layerSubmission"/>
 </template>
