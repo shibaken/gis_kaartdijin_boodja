@@ -4,7 +4,7 @@ export interface Symbology {
   id: number;
   name: string;
   sld: string;
-  catalogueEntry: CatalogueEntry;
+  catalogueEntryId: number;
 }
 
 export interface Attribute {

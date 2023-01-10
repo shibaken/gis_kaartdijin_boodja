@@ -87,7 +87,11 @@ export interface RawUserFilter extends RawPaginationFilter {
 }
 
 export interface RawAttributeFilter extends RawPaginationFilter {
-  catalogue_entry__in: Array<number>
+  catalogue_entry__in?: Array<number>
+}
+
+export interface RawSymbologyFilter extends RawPaginationFilter {
+  catalogue_entry?: number
 }
 
 export interface PaginationState {

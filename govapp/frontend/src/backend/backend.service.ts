@@ -1,10 +1,12 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
   RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
-  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter
+  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter, RawSymbologyFilter
 } from "./backend.api";
 import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
+
+const GEOSERVER_URL = import.meta.env.VITE_GEOSERVER_URL;
 
 function getCookie(name: string) {
   if (!document.cookie) {
@@ -113,12 +115,13 @@ export class BackendService {
   }
 
   public async getRawSymbology (id: number): Promise<RawSymbology> {
-    const response = await fetch(`/api/catalogue/entry/symbologies/${id}`);
+    const response = await fetch(`/api/catalogue/layers/symbologies/${id}`);
     return await response.json() as RawSymbology;
   }
 
-  public async getRawSymbologies (): Promise<PaginatedRecord<RawSymbology>> {
-    const response = await fetch("/api/catalogue/entry/symbologies/");
+  public async getRawSymbologies (filter: RawSymbologyFilter): Promise<PaginatedRecord<RawSymbology>> {
+    const params = stripNullParams<RawSymbologyFilter>(filter);
+    const response = await fetch("/api/catalogue/layers/symbologies/?" + new URLSearchParams(params));
     return await response.json() as PaginatedRecord<RawSymbology>;
   }
 
@@ -241,5 +244,10 @@ export class BackendService {
   public async getCommunicationTypes (): Promise<CommunicationLogType[]> {
     const response = await fetch("/api/logs/communications/type/");
     return (await response.json()).results;
+  }
+
+  public async getWmtsCapabilities (): Promise<string> {
+    const response = await fetch(`${GEOSERVER_URL}/geoserver/gwc/service/wmts?request=GetCapabilities`);
+    return (await response.text());
   }
 }
