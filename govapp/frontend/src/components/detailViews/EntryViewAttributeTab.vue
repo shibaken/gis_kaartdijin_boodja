@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
-  import { relatedEntityProvider } from "../../providers/RelatedEntityProvider";
+  import { relatedEntityProvider } from "../../providers/relatedEntityProvider";
   import Accordion from "../widgets/Accordion.vue";
   import AttributeDatatable from "../dataTable/AttributeDatatable.vue";
   import { onMounted } from "vue";

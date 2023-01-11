@@ -14,8 +14,7 @@ export class RelatedEntityProvider {
 
   public async fetchAttributes (entryIds: Array<number>): Promise<Attribute[]> {
     const { results } = await this.backend.getRawAttributes({ catalogue_entry__in: entryIds });
-    const { getOrFetchList } = catalogueEntryProvider;
-    const linkedEntries = await getOrFetchList(results.map(({ id }) => id));
+    const linkedEntries = await catalogueEntryProvider.getOrFetchList(results.map(({ id }) => id));
 
     return results.map((rawAttribute) => {
       const linkedEntry = linkedEntries.find(record => record.id === rawAttribute.catalogue_entry);

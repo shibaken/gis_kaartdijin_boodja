@@ -58,7 +58,7 @@
 <template>
   <div class="d-flex flex-row">
     <div class="d-flex flex-column w-50">
-      <form-select field="type" name="Type" :values="typeOptions" :value="formData.type?.id.toString()" :is-invalid="invalidFields.type"
+      <form-select field="type" name="Type" :values="typeOptions" :value="formData.type?.id?.toString()" :is-invalid="invalidFields.type"
                    :show-empty="true" @value-updated="(_, value) => updateType(parseInt(value))"/>
       <form-input field="from" name="From" type="text" :value="formData.from" :is-invalid="invalidFields.from" @value-updated="updateValue"/>
       <form-input field="to" name="To" type="text" :value="formData.to" :is-invalid="invalidFields.to" @value-updated="updateValue"/>
