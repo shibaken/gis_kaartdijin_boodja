@@ -4,7 +4,7 @@
   import { useLogsStore } from "../../stores/LogsStore";
   import { storeToRefs } from "pinia";
   import { computed, ComputedRef, Ref, ref, toRefs, watch } from "vue";
-  import { CommunicationLog } from "../../providers/logsProvider.api";
+  import { CommunicationLog, CommunicationLogType } from "../../providers/logsProvider.api";
   import { DateTime } from "luxon";
   import { useComputedValidation, ValidationConfig } from "../../tools/formValidationComposable";
 
@@ -32,11 +32,11 @@
   function updateType (typeId: number) {
     const logType = communicationLogTypes.value.find(type => type.id === typeId);
     if (logType) {
-      updateValue("type", logType.id.toString());
+      updateValue("type", logType);
     }
   }
 
-  function updateValue (fieldName: string, value: string | number) {
+  function updateValue (fieldName: string, value: string | number | CommunicationLogType) {
     formData.value = { ...formData.value, [fieldName]: value };
     enfilthenField(fieldName as keyof CommunicationLog);
   }
