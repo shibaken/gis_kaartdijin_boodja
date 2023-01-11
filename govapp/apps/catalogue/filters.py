@@ -70,7 +70,7 @@ class LayerSymbologyFilter(filters.FilterSet):
     class Meta:
         """Layer Symbology Filter Metadata."""
         model = models.layer_symbology.LayerSymbology
-        fields = ()
+        fields = {"catalogue_entry"}
 
 
 class EmailNotificationFilter(filters.FilterSet):

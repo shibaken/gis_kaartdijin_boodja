@@ -24,7 +24,8 @@
   import { storeToRefs } from "pinia";
   import { ModalTypes } from "../stores/ModalStore.api.js";
   import { useModalStore } from "../stores/ModalStore";
-  import LayerSubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
+  import SubmissionDetailView from "./detailViews/SubmissionDetailView.vue";
+  import SubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
   const modalStore = useModalStore();
@@ -104,8 +105,8 @@
             <template #body>
               <form class="form d-flex gap-3">
                 <catalogue-entry-filter v-if="selectedTab === CatalogueTab.CatalogueEntries"/>
-                <layer-subscription-filter v-if="selectedTab === CatalogueTab.LayerSubmissions"/>
-                <layer-submission-filter v-if="selectedTab === CatalogueTab.LayerSubscriptions"/>
+                <layer-submission-filter  v-if="selectedTab === CatalogueTab.LayerSubmissions"/>
+                <layer-subscription-filter v-if="selectedTab === CatalogueTab.LayerSubscriptions"/>
               </form>
               <div class="d-flex">
                 <button class="btn btn-sm btn-link link-info align-self-end ms-auto pt-0 mb-1" @click="onClearClick">
@@ -120,10 +121,16 @@
         </template>
       </card>
       <catalogue-entry-detail-view
-        v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === CatalogueView.View"
+        v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === CatalogueView.View &&
+        !!selectedViewEntry"
         :catalogue-entry="selectedViewEntry" @navigate="navigate"/>
-      <layer-subscription-detail-view
-        v-if="selectedTab === CatalogueTab.LayerSubscriptions && selectedView === CatalogueView.View"
+      <submission-detail-view
+        v-if="selectedTab === CatalogueTab.LayerSubmissions && selectedView === CatalogueView.View &&
+         !!selectedViewSubmission"
+        :layer-submission="selectedViewSubmission" @navigate="navigate"/>
+      <subscription-detail-view
+        v-if="selectedTab === CatalogueTab.LayerSubscriptions && selectedView === CatalogueView.View &&
+         !!selectedViewSubscription"
         :layer-subscription="selectedViewSubscription" @navigate="navigate"/>
     </div>
   </div>

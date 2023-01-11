@@ -1,16 +1,12 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { Attribute } from "./relatedEntityProvider.api";
-import {
-  EntryPatch,
-  Group,
-  PaginatedRecord,
-  RawAttribute,
-  RawCustodian,
-  RawMetadata,
-  RawSymbology
-} from "../backend/backend.api";
+import { Attribute, Symbology } from "./relatedEntityProvider.api";
+import { EntryPatch, Group, PaginatedRecord, RawAttribute, RawCustodian, RawMetadata,
+  RawSymbology } from "../backend/backend.api";
 import { catalogueEntryProvider } from "./catalogueEntryProvider";
+import { WMTSCapabilities } from "ol/format";
+import { optionsFromCapabilities } from "ol/source/WMTS";
+import type { Options } from "ol/source/WMTS";
 
 export class RelatedEntityProvider {
   // Get the backend stub if the test flag is used.
@@ -34,9 +30,27 @@ export class RelatedEntityProvider {
     }) as Array<Attribute>;
   }
 
-  public async getRawSymbologies (): Promise<PaginatedRecord<RawSymbology>> {
-    const response = await fetch("/api/catalogue/entry/symbologies/");
-    return await response.json() as PaginatedRecord<RawSymbology>;
+  public async fetchSymbologies (entryId?: number): Promise<Symbology[]> {
+    return Promise.all(
+      (await this.backend.getRawSymbologies({ catalogue_entry: entryId }))
+        .results
+        .map(({ id, name, sld, catalogue_entry }: RawSymbology) => ({
+          id,
+          name,
+          sld,
+          catalogueEntryId: catalogue_entry
+        }))
+    );
+  }
+
+  public async fetchWmtsCapabilities (layerName: string, styleName = "default"): Promise<Options | null> {
+    const parser = new WMTSCapabilities();
+    const text = await this.backend.getWmtsCapabilities();
+    const result = parser.read(text);
+    return optionsFromCapabilities(result, {
+      layer: "Catalogue:" + layerName, //TODO: hardcoded. Needs to be linked up
+      style: "Catalogue:" + styleName
+    });
   }
 
   public async getRawAttributes (): Promise<PaginatedRecord<RawAttribute>> {

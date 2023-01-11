@@ -16,6 +16,11 @@ export enum CatalogueView {
   History
 }
 
+export enum SubmissionDetailViewTabs {
+  Details,
+  Map
+}
+
 export enum SubscriptionDetailViewTabs {
   Details,
   RelatedItems

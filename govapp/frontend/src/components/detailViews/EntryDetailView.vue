@@ -21,19 +21,19 @@
 
 <template>
   <nav class="nav nav-tabs">
-    <a class="nav-link" :class="{ active: activeTab.value === CatalogueDetailViewTabs.Details }" aria-current="page" href="#"
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.Details }" aria-current="page" href="#"
        @click="onTabClick(CatalogueDetailViewTabs.Details)">
       Details
     </a>
-    <a class="nav-link" :class="{ active: activeTab.value === CatalogueDetailViewTabs.AttributeTable}" aria-current="page"
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.AttributeTable}" aria-current="page"
        href="#" @click="onTabClick(CatalogueDetailViewTabs.AttributeTable)">
       Attribute Table
     </a>
-    <a class="nav-link" :class="{ active: activeTab.value === CatalogueDetailViewTabs.Symbology}" aria-current="page" href="#"
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.Symbology}" aria-current="page" href="#"
        @click="onTabClick(CatalogueDetailViewTabs.Symbology)">
       Symbology
     </a>
-    <a class="nav-link" :class="{ active: activeTab.value === CatalogueDetailViewTabs.Metadata}" aria-current="page" href="#"
+    <a class="nav-link" :class="{ active: activeTab === CatalogueDetailViewTabs.Metadata}" aria-current="page" href="#"
        @click="onTabClick(CatalogueDetailViewTabs.Metadata)">
       Metadata
     </a>
@@ -42,6 +42,8 @@
       Back
     </button>
   </nav>
-  <entry-view-detail-tab v-if="activeTab === CatalogueDetailViewTabs.Details" :entry="catalogueEntry"/>
-  <entry-view-attribute-tab v-if="activeTab === CatalogueDetailViewTabs.AttributeTable" :entry="catalogueEntry"/>
+  <entry-view-detail-tab v-if="activeTab === CatalogueDetailViewTabs.Details && catalogueEntry"
+                         :entry="catalogueEntry"/>
+  <entry-view-attribute-tab v-if="activeTab === CatalogueDetailViewTabs.AttributeTable && catalogueEntry"
+                            :entry="catalogueEntry"/>
 </template>
