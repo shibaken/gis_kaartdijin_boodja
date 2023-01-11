@@ -34,7 +34,6 @@ export function useComputedValidation<T> (config: ValidationConfig<T>, target: R
 
   const validationErrors = computed(() => validators.flatMap(validator => validator(target.value)));
 
-
   const filthMap: FieldFilth<T> = Object.fromEntries(config.fields
     .map(field => [field, false])) as FieldFilth<T>;
   const dirtyFields = ref(filthMap);
