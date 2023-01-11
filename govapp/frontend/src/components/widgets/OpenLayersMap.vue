@@ -16,9 +16,12 @@
   }>();
 
   onMounted(async () => {
-    const symbology = await relatedEntityProvider.fetchSymbologies(props.submission.symbology)
+    const symbology = await relatedEntityProvider.fetchSymbologies(props.submission.catalogueEntry.id)
     const options = await relatedEntityProvider.fetchWmtsCapabilities(props.submission.name, symbology[0]?.name);
 
+    if (options) {
+      options.style = "Catalogue:" + symbology[0]?.name
+    }
     if (options) {
       const wmts = new WMTS(options),
         extent = wmts.getTileGrid()?.getExtent(),

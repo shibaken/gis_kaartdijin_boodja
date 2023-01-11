@@ -49,7 +49,7 @@ export class RelatedEntityProvider {
     const result = parser.read(text);
     return optionsFromCapabilities(result, {
       layer: "Catalogue:" + layerName, //TODO: hardcoded. Needs to be linked up
-      style: styleName
+      style: "Catalogue:" + styleName
     });
   }
 
