@@ -111,6 +111,32 @@ class GeoServer:
             # Check Response
             response.raise_for_status()
 
+            # Log
+            log.info(f"Setting Style '{name}' as Default in GeoServer")
+
+            # Set Default Layer Style
+            # Note: Assumes that style name and layer name are the same
+            url = "{0}/rest/workspaces/{1}/layers/{2}.xml".format(
+                self.service_url,
+                self.workspace,
+                name,
+            )
+
+            # Perform Request
+            # This only works with XML (GeoServer is broken)
+            response = httpx.put(
+                url=url,
+                content=f"<layer><defaultStyle><name>{name}</name></defaultStyle></layer>",
+                headers={"Content-Type": "application/xml"},
+                auth=(self.username, self.password),
+            )
+
+            # Log
+            log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+            # Check Response
+            response.raise_for_status()
+
         # Log
         log.info(f"Uploading Style '{name}' to GeoServer")
 
