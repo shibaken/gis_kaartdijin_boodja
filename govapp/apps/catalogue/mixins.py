@@ -11,10 +11,68 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import serializers
 from rest_framework import viewsets
+from reversion import models as reversion_models
+from reversion_rest_framework import mixins as reversion_mixins
 import reversion
 
 # Typing
 from typing import Any, Iterable, Optional
+
+
+class HistoryMixin(reversion_mixins.HistoryMixin):
+    """Retrieve and list the Django Reversion versions for this model."""
+
+    def _build_serializer(
+        self,
+        instance_class: type,
+        queryset: models.QuerySet,
+        many: bool = False,
+    ) -> serializers.Serializer:
+        """Builds a serializer for the Django Reversion versions.
+
+        Args:
+            instance_class (type): Instance class to build serializer for.
+            queryset (models.QuerySet): Queryset to build serializer for.
+            many (bool): Whether this is a `many` serializer.
+
+        Returns:
+            serializers.Serializer: The built serializer.
+        """
+        # Get Serializer
+        class RevisionSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = reversion_models.Revision
+                fields = ("date_created", "user", "comment")
+
+        class VersionSerializer(serializers.ModelSerializer):
+            revision = RevisionSerializer(read_only=True)
+            field_dict = serializers.SerializerMethodField()
+
+            class Meta:
+                model = reversion_models.Version
+                fields = (
+                    "id",
+                    "revision",
+                    "field_dict",
+                )
+
+            @staticmethod
+            def get_field_dict(obj: reversion_models.Version) -> dict[str, Any]:
+                """Retrieves and serializes the `field_dict` field.
+
+                This also removes the suffix of "_id" from all field names.
+
+                Args:
+                    obj (reversion_models.Version): Object to retrieve field.
+
+                Returns:
+                    dict[str, Any]: Serialized field.
+                """
+                # Modify field dictionary by removing suffix of "_id"
+                return {k.rsplit("_id")[0]: v for (k, v) in obj.field_dict.items()}
+
+        # Return Serializer
+        return VersionSerializer(queryset, many=many)
 
 
 class RevisionedMixin(models.Model):
