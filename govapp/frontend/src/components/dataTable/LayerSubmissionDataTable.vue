@@ -57,7 +57,7 @@
           <td>
             <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View,
             { recordId: row.catalogueEntry?.id })">
-              {{ row.catalogueEntry.name }}
+              {{ row.catalogueEntry?.name }}
             </a>
           </td>
           <td>{{ row.status.label }}</td>

@@ -18,7 +18,7 @@
     <template #body>
       <div class="form d-flex gap-3 flex-column">
         <form-input field="name" name="Name" :value="submission.name" type="text" :readonly="true"/>
-        <form-input field="url" name="Webservice URL" :value="submission.submittedDate" type="text"
+        <form-input field="submittedDate" name="Submitted Date" :value="submission.submittedDate" type="text"
                     :readonly="true"/>
         <label>
           <small>Catalogue Entry</small><br/>

@@ -2,7 +2,7 @@ import { ComputedRef, Ref } from "vue";
 import { User } from "../backend/backend.api";
 import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
 
-export interface WorkFlowComposable {
+export interface PermissionsComposable {
   hasLockPermissions: ComputedRef<boolean>;
   canLock: ComputedRef<boolean>;
   canUnlock: ComputedRef<boolean>;
@@ -10,7 +10,8 @@ export interface WorkFlowComposable {
   assignableUsers: ComputedRef<User[]>;
   lockClicked: () => void;
   declineClicked: () => void;
-  currentEntry: Ref<CatalogueEntry>;
+  currentEntry: Ref<CatalogueEntry | undefined>;
   assignUser: (userId?: number) => void;
   assignMe: () => void;
+  updateCurrentEntry: (newEntry: CatalogueEntry | undefined) => void;
 }

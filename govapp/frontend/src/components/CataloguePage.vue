@@ -26,6 +26,7 @@
   import { useModalStore } from "../stores/ModalStore";
   import SubmissionDetailView from "./detailViews/SubmissionDetailView.vue";
   import SubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
+  import { usePermissionsComposable } from "../tools/permissionsComposable";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
   const modalStore = useModalStore();

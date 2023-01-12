@@ -52,8 +52,8 @@ export class LayerSubmissionProvider {
     const { previous, next, count, results } = await this.backend.getLayerSubmissions(rawFilter);
     const submissionStatuses = await statusProvider
       .fetchStatuses<LayerSubmissionStatus>("layers/submissions");
-    const { getOrFetchList } = catalogueEntryProvider;
-    const linkedEntries = await getOrFetchList(results.map(entry => entry.catalogue_entry));
+    const linkedEntries = await catalogueEntryProvider
+      .getOrFetchList(results.map(entry => entry.catalogue_entry));
 
     const layerSubmissions = results.map(rawSubmission => {
       const linkedEntry = linkedEntries.find(record => record.id === rawSubmission.catalogue_entry);
