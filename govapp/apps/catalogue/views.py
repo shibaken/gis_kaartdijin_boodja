@@ -10,7 +10,6 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
-from reversion_rest_framework import mixins as reversion_mixins
 
 # Local
 from . import filters
@@ -33,9 +32,9 @@ UserModel = auth.get_user_model()
 @drf_utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
 class CatalogueEntryViewSet(
     mixins.ChoicesMixin,
+    mixins.HistoryMixin,
     logs_mixins.ActionsLogMixin,
     logs_mixins.CommunicationsLogMixin,
-    reversion_mixins.HistoryMixin,
     viewsets.mixins.RetrieveModelMixin,
     viewsets.mixins.ListModelMixin,
     viewsets.mixins.UpdateModelMixin,

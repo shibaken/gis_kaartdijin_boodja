@@ -11,10 +11,51 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import serializers
 from rest_framework import viewsets
+from reversion import models as reversion_models
+from reversion_rest_framework import mixins as reversion_mixins
 import reversion
 
 # Typing
 from typing import Any, Iterable, Optional
+
+
+class HistoryMixin(reversion_mixins.HistoryMixin):
+    """Retrieve and list the Django Reversion versions for this model."""
+
+    def _build_serializer(
+        self,
+        instance_class: type,
+        queryset: models.QuerySet,
+        many: bool = False,
+    ) -> serializers.Serializer:
+        """Builds a serializer for the Django Reversion versions.
+
+        Args:
+            instance_class (type): Instance class to build serializer for.
+            queryset (models.QuerySet): Queryset to build serializer for.
+            many (bool): Whether this is a `many` serializer.
+
+        Returns:
+            serializers.Serializer: The built serializer.
+        """
+        # Build Serializer
+        serializer = super()._build_serializer(instance_class, queryset, many)
+
+        # Construct Patch Function
+        def get_field_dict(obj: reversion_models.Version) -> dict[str, Any]:
+            # Remove "_id" suffix from field names and return
+            return {k.rsplit("_id")[0]: v for (k, v) in obj.field_dict.items()}
+
+        # Retrieve Child Serializer if Applicable
+        # This is required because if `many == True` then the serializer is
+        # actually a `ListSerializer`, and we want to patch the child.
+        s = serializer if not many else serializer.child
+
+        # Patch Serializer
+        s.get_field_dict = get_field_dict
+
+        # Return Serializer
+        return serializer  # type: ignore[no-any-return]
 
 
 class RevisionedMixin(models.Model):

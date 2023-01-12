@@ -136,7 +136,13 @@ class LayerSubmission(mixins.RevisionedMixin):
         filepath = sharepoint.SharepointStorage().get_from_url(url=self.file)
 
         # Convert Layer to GeoPackage
-        geopackage = gis.conversions.to_geopackage(filepath, layer=self.name)
+        geopackage = gis.conversions.to_geopackage(
+            filepath=filepath,
+            layer=self.catalogue_entry.metadata.name,
+        )
 
         # Push Layer to GeoServer
-        gis.geoserver.GeoServer().upload_geopackage(geopackage)
+        gis.geoserver.GeoServer().upload_geopackage(
+            layer=self.catalogue_entry.metadata.name,
+            filepath=geopackage,
+        )
