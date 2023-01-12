@@ -13,12 +13,30 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
   userProvider.me.then(result => me.value = result);
 
   const currentEntry = ref<CatalogueEntry | undefined>(catalogueEntry);
-  const isAdmin = (user: User) => !!user.groups.find(group => group.name === "Administrator");
-  const isEntryEditor = (user: User) => {
+  const isLoggedInUserAdmin: ComputedRef<boolean> = computed(() => {
+    return !!me.value?.groups.find(group => group.name === "Administrators");
+  });
+  const isLoggedInUserEditor: ComputedRef<boolean> = computed(() => {
+    return !!me.value && !!currentEntry.value?.editors.find(editor => editor.id === me.value!.id);
+  });
+
+  function isAdmin (_user?: User, _me?: boolean) {
+    const user = _me ? me.value : _user;
+    if (!user && !_me) {
+      console.warn("`isEntryEditor`: User parameter must be set if `me` parameter is not `true`");
+    }
+    return !!user &&!!user.groups.find(group => group.name === "Administrators");
+  }
+
+  function isEntryEditor (_user?: User, _me: boolean = false) {
+    const user = _me ? me.value : _user;
     if (!currentEntry.value) {
       calledWithoutEntry("isEntryEditor");
     }
-    return !!currentEntry.value?.editors.find(editor => editor.id === user.id);
+    if (!user && !_me) {
+      console.warn("`isEntryEditor`: User parameter must be set if `me` parameter is not `true`");
+    }
+    return !!user && !!currentEntry.value?.editors.find(editor => editor.id === user.id);
   }
 
   const inEditorGroup = (user: User) => !!user.groups.find(group => group.name === "Catalogue Editor");
@@ -112,6 +130,6 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
     console.warn(`\`${method}\`: CatalogueEntry was not set in the permissions composable.`);
   }
   
-  return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, assignableUsers, assignUser, assignMe,
-  canAssign, declineClicked, updateCurrentEntry };
+  return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, isEntryEditor, isAdmin, assignableUsers, assignUser, assignMe,
+  canAssign, declineClicked, updateCurrentEntry, isLoggedInUserAdmin, isLoggedInUserEditor };
 }

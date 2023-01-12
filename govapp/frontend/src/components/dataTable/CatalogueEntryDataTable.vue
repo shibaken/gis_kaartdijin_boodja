@@ -10,6 +10,15 @@
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawCatalogueEntryFilter } from "../../backend/backend.api";
   import { catalogueEntryProvider } from "../../providers/catalogueEntryProvider";
+  import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
+
+  const props = withDefaults(defineProps<{
+      catalogueEntry?: CatalogueEntry,
+      view: CatalogueView
+    }>(),
+    {
+      view: CatalogueView.View
+    });
 
   // get Stores and fetch with `storeToRef`
   const catalogueEntryStore = useCatalogueEntryStore();
@@ -66,7 +75,7 @@
           <td>
             <a href="#" class="me-2"
                @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
-              View
+              {{ view === CatalogueView.Edit ? "Edit" : "View" }}
             </a>
             <a href="#">History</a>
           </td>

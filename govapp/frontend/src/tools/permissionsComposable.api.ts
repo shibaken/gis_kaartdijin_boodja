@@ -4,6 +4,8 @@ import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
 
 export interface PermissionsComposable {
   hasLockPermissions: ComputedRef<boolean>;
+  isAdmin: (_user?: User, _me?: boolean) => boolean;
+  isEntryEditor: (_user?: User, _me?: boolean) => boolean;
   canLock: ComputedRef<boolean>;
   canUnlock: ComputedRef<boolean>;
   canAssign: ComputedRef<boolean>;
@@ -14,4 +16,5 @@ export interface PermissionsComposable {
   assignUser: (userId?: number) => void;
   assignMe: () => void;
   updateCurrentEntry: (newEntry: CatalogueEntry | undefined) => void;
+  isLoggedInUserAdmin: ComputedRef<boolean>
 }

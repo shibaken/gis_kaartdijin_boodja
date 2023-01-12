@@ -13,6 +13,7 @@ export enum CatalogueDetailViewTabs {
 export enum CatalogueView {
   List,
   View,
+  Edit,
   History
 }
 
