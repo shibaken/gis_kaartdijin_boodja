@@ -38,41 +38,24 @@ class HistoryMixin(reversion_mixins.HistoryMixin):
         Returns:
             serializers.Serializer: The built serializer.
         """
-        # Get Serializer
-        class RevisionSerializer(serializers.ModelSerializer):
-            class Meta:
-                model = reversion_models.Revision
-                fields = ("date_created", "user", "comment")
+        # Build Serializer
+        serializer = super()._build_serializer(instance_class, queryset, many)
 
-        class VersionSerializer(serializers.ModelSerializer):
-            revision = RevisionSerializer(read_only=True)
-            field_dict = serializers.SerializerMethodField()
+        # Construct Patch Function
+        def get_field_dict(obj: reversion_models.Version) -> dict[str, Any]:
+            # Remove "_id" suffix from field names and return
+            return {k.rsplit("_id")[0]: v for (k, v) in obj.field_dict.items()}
 
-            class Meta:
-                model = reversion_models.Version
-                fields = (
-                    "id",
-                    "revision",
-                    "field_dict",
-                )
+        # Retrieve Child Serializer if Applicable
+        # This is required because if `many == True` then the serializer is
+        # actually a `ListSerializer`, and we want to patch the child.
+        s = serializer if not many else serializer.child
 
-            @staticmethod
-            def get_field_dict(obj: reversion_models.Version) -> dict[str, Any]:
-                """Retrieves and serializes the `field_dict` field.
-
-                This also removes the suffix of "_id" from all field names.
-
-                Args:
-                    obj (reversion_models.Version): Object to retrieve field.
-
-                Returns:
-                    dict[str, Any]: Serialized field.
-                """
-                # Modify field dictionary by removing suffix of "_id"
-                return {k.rsplit("_id")[0]: v for (k, v) in obj.field_dict.items()}
+        # Patch Serializer
+        s.get_field_dict = get_field_dict
 
         # Return Serializer
-        return VersionSerializer(queryset, many=many)
+        return serializer  # type: ignore
 
 
 class RevisionedMixin(models.Model):
