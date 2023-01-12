@@ -41,10 +41,11 @@ class GeoServer:
         self.password = password
         self.workspace = workspace
 
-    def upload_geopackage(self, filepath: pathlib.Path) -> None:
+    def upload_geopackage(self, layer: str, filepath: pathlib.Path) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
+            layer (str): Name of the layer to upload GeoPackage for.
             filepath (pathlib.Path): Path to the Geopackage file to upload.
         """
         # Log
@@ -54,7 +55,7 @@ class GeoServer:
         url = "{0}/rest/workspaces/{1}/datastores/{2}/file.gpkg?filename={3}".format(
             self.service_url,
             self.workspace,
-            filepath.stem,
+            layer,
             filepath.name,
         )
 
@@ -72,10 +73,11 @@ class GeoServer:
         # Check Response
         response.raise_for_status()
 
-    def upload_style(self, name: str, sld: str) -> None:
+    def upload_style(self, layer: str, name: str, sld: str) -> None:
         """Uploads an SLD Style to the GeoServer.
 
         Args:
+            layer (str): Name of the layer to upload style for.
             name (str): Name of the style.
             sld (str): Style to upload.
         """
@@ -115,11 +117,10 @@ class GeoServer:
             log.info(f"Setting Style '{name}' as Default in GeoServer")
 
             # Set Default Layer Style
-            # Note: Assumes that style name and layer name are the same
             url = "{0}/rest/workspaces/{1}/layers/{2}.xml".format(
                 self.service_url,
                 self.workspace,
-                name,
+                layer,
             )
 
             # Perform Request

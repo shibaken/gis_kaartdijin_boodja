@@ -89,7 +89,8 @@ class Absorber:
         symbology = layer.symbology()
 
         # Retrieve existing catalogue entry from the database
-        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()
+        # Here we specifically check the Layer Metadata name
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(metadata__name=metadata.name).first()
 
         # Check existing catalogue entry
         if not catalogue_entry:
