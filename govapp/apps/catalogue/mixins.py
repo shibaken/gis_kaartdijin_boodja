@@ -55,7 +55,7 @@ class HistoryMixin(reversion_mixins.HistoryMixin):
         s.get_field_dict = get_field_dict
 
         # Return Serializer
-        return serializer  # type: ignore
+        return serializer  # type: ignore[no-any-return]
 
 
 class RevisionedMixin(models.Model):
