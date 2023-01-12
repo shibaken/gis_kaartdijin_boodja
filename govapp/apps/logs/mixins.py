@@ -22,8 +22,14 @@ from . import serializers
 class CommunicationsLogMixin:
     """Provides Communications Log API Endpoints for a Model Viewset."""
 
-    @drf_utils.extend_schema(filters=False, responses=serializers.CommunicationsLogEntrySerializer(many=True))
-    @decorators.action(detail=True, methods=["GET"], url_path=r"logs/communications")
+    @drf_utils.extend_schema(filters=True, responses=serializers.CommunicationsLogEntrySerializer(many=True))
+    @decorators.action(
+        detail=True,
+        methods=["GET"],
+        url_path=r"logs/communications",
+        filterset_class=None,
+        search_fields=["to", "cc", "fromm", "subject", "text", "user__username", "user__email"],
+    )
     def communications_logs_list(self, request: request.Request, pk: str) -> response.Response:
         """Retrieves the Communications Log Entries List for this Model.
 
@@ -37,25 +43,44 @@ class CommunicationsLogMixin:
         # Check Viewset
         assert isinstance(self, viewsets.GenericViewSet)  # noqa: S101
 
+        # Remove Search Fields
+        # This allows the model to be retrieved below without being filtered
+        # out accidentally by the CommunicationsLogEntry search parameter
+        comms_log_search_fields = self.search_fields
+        self.search_fields = None
+
         # Retrieve Object Model
         model: db_models.Model = self.get_object()
+
+        # Restore Search Fields
+        self.search_fields = comms_log_search_fields
 
         # Determine Parent Model Content Type
         content_type = ct_models.ContentType.objects.get_for_model(
             model=model,
         )
 
+        # Set the Viewset Queryset and Serializer Class
+        # This allows us to now pretend this viewset if for the Communications
+        # Log Entries, rather than the parent class - meaning we can perform
+        # filtering, pagination and serialization for free.
+        self.queryset = models.CommunicationsLogEntry.objects.all()
+        self.serializer_class = serializers.CommunicationsLogEntrySerializer
+
         # Retrieve Logs Queryset for Parent Model
-        queryset = models.CommunicationsLogEntry.objects.filter(
+        queryset = self.queryset.filter(
             content_type=content_type,
             object_id=model.pk,
         )
+
+        # Filter
+        queryset = self.filter_queryset(queryset)
 
         # Get Page
         page = self.paginate_queryset(queryset=queryset)
 
         # Serialize
-        serializer = serializers.CommunicationsLogEntrySerializer(
+        serializer = self.serializer_class(
             instance=page,
             context=self.get_serializer_context(),
             many=True,
@@ -209,8 +234,14 @@ class CommunicationsLogMixin:
 class ActionsLogMixin:
     """Provides Actions Log API Endpoints for a Model Viewset."""
 
-    @drf_utils.extend_schema(filters=False, responses=serializers.ActionsLogEntrySerializer(many=True))
-    @decorators.action(detail=True, methods=["GET"], url_path=r"logs/actions")
+    @drf_utils.extend_schema(filters=True, responses=serializers.ActionsLogEntrySerializer(many=True))
+    @decorators.action(
+        detail=True,
+        methods=["GET"],
+        url_path=r"logs/actions",
+        filterset_class=None,
+        search_fields=["what", "who__username", "who__email"],
+    )
     def actions_logs_list(self, request: request.Request, pk: str) -> response.Response:
         """Retrieves the Actions Log Entries List for this Model.
 
@@ -224,25 +255,44 @@ class ActionsLogMixin:
         # Check Viewset
         assert isinstance(self, viewsets.GenericViewSet)  # noqa: S101
 
+        # Remove Search Fields
+        # This allows the model to be retrieved below without being filtered
+        # out accidentally by the ActionsLogEntry search parameter
+        actions_log_search_fields = self.search_fields
+        self.search_fields = None
+
         # Retrieve Object Model
         model: db_models.Model = self.get_object()
+
+        # Restore Search Fields
+        self.search_fields = actions_log_search_fields
 
         # Determine Parent Model Content Type
         content_type = ct_models.ContentType.objects.get_for_model(
             model=model,
         )
 
+        # Set the Viewset Queryset and Serializer Class
+        # This allows us to now pretend this viewset if for the Communications
+        # Log Entries, rather than the parent class - meaning we can perform
+        # filtering, pagination and serialization for free.
+        self.queryset = models.ActionsLogEntry.objects.all()
+        self.serializer_class = serializers.ActionsLogEntrySerializer
+
         # Retrieve Logs Queryset for Parent Model
-        queryset = models.ActionsLogEntry.objects.filter(
+        queryset = self.queryset.filter(
             content_type=content_type,
             object_id=model.pk,
         )
+
+        # Filter
+        queryset = self.filter_queryset(queryset)
 
         # Get Page
         page = self.paginate_queryset(queryset=queryset)
 
         # Serialize
-        serializer = serializers.ActionsLogEntrySerializer(
+        serializer = self.serializer_class(
             instance=page,
             context=self.get_serializer_context(),
             many=True,

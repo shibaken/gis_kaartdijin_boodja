@@ -45,6 +45,7 @@ class CatalogueEntryViewSet(
     queryset = models.catalogue_entries.CatalogueEntry.objects.all()
     serializer_class = serializers.catalogue_entries.CatalogueEntrySerializer
     filterset_class = filters.CatalogueEntryFilter
+    search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
@@ -218,6 +219,7 @@ class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.custodians.Custodian.objects.all()
     serializer_class = serializers.custodians.CustodianSerializer
     filterset_class = filters.CustodianFilter
+    search_fields = ["name", "contact_name", "contact_email", "contact_phone"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Attributes"])
@@ -236,6 +238,7 @@ class LayerAttributeViewSet(
     serializer_class = serializers.layer_attributes.LayerAttributeSerializer
     serializer_classes = {"create": serializers.layer_attributes.LayerAttributeCreateSerializer}
     filterset_class = filters.LayerAttributeFilter
+    search_fields = ["name", "type"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -251,6 +254,7 @@ class LayerMetadataViewSet(
     queryset = models.layer_metadata.LayerMetadata.objects.all()
     serializer_class = serializers.layer_metadata.LayerMetadataSerializer
     filterset_class = filters.LayerMetadataFilter
+    search_fields = ["name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -265,6 +269,7 @@ class LayerSubmissionViewSet(
     queryset = models.layer_submissions.LayerSubmission.objects.all()
     serializer_class = serializers.layer_submissions.LayerSubmissionSerializer
     filterset_class = filters.LayerSubmissionFilter
+    search_fields = ["name", "description", "catalogue_entry__name"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
@@ -273,6 +278,7 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSe
     queryset = models.layer_subscriptions.LayerSubscription.objects.all()
     serializer_class = serializers.layer_subscriptions.LayerSubscriptionSerializer
     filterset_class = filters.LayerSubscriptionFilter
+    search_fields = ["name"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
@@ -287,6 +293,7 @@ class LayerSymbologyViewSet(
     queryset = models.layer_symbology.LayerSymbology.objects.all()
     serializer_class = serializers.layer_symbology.LayerSymbologySerializer
     filterset_class = filters.LayerSymbologyFilter
+    search_fields = ["name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -306,6 +313,7 @@ class EmailNotificationViewSet(
     serializer_class = serializers.notifications.EmailNotificationSerializer
     serializer_classes = {"create": serializers.notifications.EmailNotificationCreateSerializer}
     filterset_class = filters.EmailNotificationFilter
+    search_fields = ["name", "email"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -325,4 +333,5 @@ class WebhookNotificationViewSet(
     serializer_class = serializers.notifications.WebhookNotificationSerializer
     serializer_classes = {"create": serializers.notifications.WebhookNotificationCreateSerializer}
     filterset_class = filters.WebhookNotificationFilter
+    search_fields = ["name", "url"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
