@@ -136,7 +136,7 @@ export class BackendService {
     return await response.json() as PaginatedRecord<RawAttribute>;
   }
 
-  private async modifyAttribute (attribute: Partial<Omit<RawAttribute, "id">>, method: "patch" | "post", id?: number): Promise<RawAttribute> {
+  protected async modifyAttribute(attribute: Partial<Omit<RawAttribute, "id">>, method: "patch" | "post", id?: number): Promise<RawAttribute> {
     if (!id && method === "patch") {
       throw new Error("`patchRawAttrute`: Tried to patch an attribute without providing an ID");
     }

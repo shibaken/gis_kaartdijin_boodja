@@ -21,7 +21,6 @@ export class RelatedEntityProvider {
       return {
         id: rawAttribute.id,
         name: rawAttribute.name,
-        description: rawAttribute.description,
         type: rawAttribute.type,
         order: rawAttribute.order,
         catalogueEntry: linkedEntry
@@ -47,12 +46,12 @@ export class RelatedEntityProvider {
     return this.toRawAttribute(attribute) as Omit<RawAttribute, "id">;
   }
 
-  public async createAttribute (attribute: Partial<Attribute>): Attribute {
+  public async createAttribute (attribute: Partial<Attribute>): Promise<Attribute> {
     let preparedAttribute: Omit<Attribute, "id">;
 
     if (attribute.id) {
       preparedAttribute = Object.fromEntries(Object.entries(attribute)
-        .filter(([key, value]) => value !== "id")) as Omit<Attribute, "id">;
+        .filter(([, value]) => value !== "id")) as Omit<Attribute, "id">;
     } else {
       preparedAttribute = attribute as Omit<Attribute, "id">;
     }
@@ -73,7 +72,7 @@ export class RelatedEntityProvider {
 
     if (id) {
       preparedAttribute = Object.fromEntries(Object.entries(attribute)
-        .filter(([_, value]) => value !== "id")) as Omit<Attribute, "id">;
+        .filter(([, value]) => value !== "id")) as Omit<Attribute, "id">;
     } else {
       throw new Error("`updateAttribute`: Tried to update attribute without providing an ID");
     }
