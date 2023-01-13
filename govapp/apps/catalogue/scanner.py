@@ -9,9 +9,8 @@ from django import conf
 
 # Local
 from . import absorber
-from . import emails
+from . import notifications
 from . import sharepoint
-from ..accounts import utils
 
 
 # Logging
@@ -54,10 +53,8 @@ class Scanner:
                 # Log and continue
                 log.error(f"Error absorbing file '{file}': {exc}")
 
-                # Send Emails!
-                emails.FileAbsorbFailEmail().send_to(
-                    *utils.all_administrators(),  # Send to all administrators
-                )
+                # Notify!
+                notifications.file_absorb_failure()
 
         # Log
         log.info("Scanning storage staging area complete!")

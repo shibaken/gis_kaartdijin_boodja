@@ -13,6 +13,7 @@ from django.db import transaction
 
 # Local
 from . import models
+from . import notifications
 from . import sharepoint
 from . import utils
 from ...gis import readers
@@ -169,8 +170,8 @@ class Absorber:
         catalogue_entry.active_layer.publish()
         catalogue_entry.symbology.publish()
 
-        # Send Emails!
-        catalogue_entry.notify_on_creation()
+        # Notify!
+        notifications.catalogue_entry_creation()
 
         # Return
         return True
@@ -224,12 +225,12 @@ class Absorber:
             # Publish Layer
             catalogue_entry.active_layer.publish()
 
-            # Send Update Success Email
-            catalogue_entry.notify_on_update_success()
+            # Notify!
+            notifications.catalogue_entry_update_success(catalogue_entry)
 
         else:
             # Send Update Failure Email
-            catalogue_entry.notify_on_update_failure()
+            notifications.catalogue_entry_update_failure(catalogue_entry)
 
         # Return
         return success

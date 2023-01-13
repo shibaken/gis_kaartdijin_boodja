@@ -66,6 +66,9 @@ class TemplateEmailBase:
             cc (Optional[Union[str, list[str]]]): Optional cc addresses.
             bcc (Optional[Union[str, list[str]]]): Optional bcc addresses.
         """
+        # Log
+        log.info(f"Sending email '{self.subject}' to '{to_addresses}'")
+
         # Retrieve the HTML template
         # This will raise a TemplateDoesNotExist error if it cannot be found
         html_template = loader.get_template(self.html_template)
