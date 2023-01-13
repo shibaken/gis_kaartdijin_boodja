@@ -4,6 +4,7 @@
   import type { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
   import EntryViewDetailTab from "./EntryViewDetailTab.vue";
   import EntryViewAttributeTab from "./EntryViewAttributeTab.vue";
+  import EntryViewSymbologyTab from "./EntryViewSymbologyTab.vue";
 
   const props = defineProps<{
     catalogueEntry?: CatalogueEntry
@@ -46,4 +47,6 @@
                          :entry="catalogueEntry"/>
   <entry-view-attribute-tab v-if="activeTab === CatalogueDetailViewTabs.AttributeTable && catalogueEntry"
                             :entry="catalogueEntry"/>
+  <entry-view-symbology-tab v-if="activeTab === CatalogueDetailViewTabs.Symbology && catalogueEntry"
+                            :entry="catalogueEntry" @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
 </template>

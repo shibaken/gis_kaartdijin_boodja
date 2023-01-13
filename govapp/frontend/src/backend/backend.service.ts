@@ -1,8 +1,7 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
   RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
-  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter, RawSymbologyFilter
-} from "./backend.api";
+  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter } from "./backend.api";
 import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
 
@@ -114,15 +113,25 @@ export class BackendService {
     return await response.json() as PaginatedRecord<NotificationType>;
   }
 
-  public async getRawSymbology (id: number): Promise<RawSymbology> {
-    const response = await fetch(`/api/catalogue/layers/symbologies/${id}`);
-    return await response.json() as RawSymbology;
+  public async getRawSymbology (entryId: number): Promise<RawSymbology> {
+    const params: Params = { catalogue_entry: entryId.toString() };
+    const response = await fetch("/api/catalogue/layers/symbologies/?" + new URLSearchParams(params));
+    return (await response.json()).results[0] as RawSymbology;
   }
 
-  public async getRawSymbologies (filter: RawSymbologyFilter): Promise<PaginatedRecord<RawSymbology>> {
-    const params = stripNullParams<RawSymbologyFilter>(filter);
-    const response = await fetch("/api/catalogue/layers/symbologies/?" + new URLSearchParams(params));
-    return await response.json() as PaginatedRecord<RawSymbology>;
+  protected async modifyRawSymbology (body: string | Omit<RawSymbology, "id">, method: "patch" | "post", id?: number): Promise<RawSymbology> {
+    if (!id && method === "patch") {
+      throw new Error("`patchRawSymbology`: Tried to patch a symbology without providing an ID");
+    }
+    const response = await fetcher(`/api/catalogue/layers/symbologies/${id ? `${id}/` : ""}`, {
+      method,
+      body: JSON.stringify(typeof body === "string" ? { sld: body } : body)
+    });
+    return await response.json();
+  }
+
+  public async patchRawSymbology (id: number, sld: string): Promise<RawSymbology> {
+    return this.modifyRawSymbology(sld, "patch", id);
   }
 
   public async getRawAttribute (id: number): Promise<RawAttribute> {

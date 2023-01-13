@@ -20,7 +20,7 @@
 <template>
     <div class="form-floating">
       <textarea :id="`${field}Textarea`" class="form-control" :class="`h-auto ${classes}`" :placeholder="placeholder" rows="8"
-                :readonly="readonly" :value="value" @change="valueUpdated"/>
+                :readonly="readonly" :value="value" @input="valueUpdated"/>
       <label :for="`${field}Textarea`" class="w-max-content">{{ name }}</label>
     </div>
 </template>
