@@ -136,6 +136,33 @@ export class BackendService {
     return await response.json() as PaginatedRecord<RawAttribute>;
   }
 
+  private async modifyAttribute (attribute: Partial<Omit<RawAttribute, "id">>, method: "patch" | "post", id?: number): Promise<RawAttribute> {
+    if (!id && method === "patch") {
+      throw new Error("`patchRawAttrute`: Tried to patch an attribute without providing an ID");
+    }
+
+    const response = await fetcher(`/api/catalogue/layers/attributes/${id ? `${id}/` : ""}`, {
+      method,
+      body: JSON.stringify(attribute)
+    });
+    return await response.json() as RawAttribute;
+  }
+
+  public async patchRawAttribute (attribute: Partial<Omit<RawAttribute, "id">>, id?: number): Promise<RawAttribute> {
+    return this.modifyAttribute(attribute, "patch", id);
+  }
+
+  public async postRawAttribute (attribute: Omit<RawAttribute, "id">): Promise<RawAttribute> {
+    return this.modifyAttribute(attribute, "post");
+  }
+
+  public async deleteAttribute (id: number): Promise<number> {
+    const response = await fetcher(`/api/catalogue/layers/attributes/${id}`, {
+      method: 'delete'
+    });
+
+    return response.status;
+  }
   public async getRawMetadata (id: number): Promise<RawMetadata> {
     const response = await fetch(`/api/catalogue/layers/metadata/${id}/`);
     return await response.json() as RawMetadata;

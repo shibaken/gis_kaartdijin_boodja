@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref, watch } from "vue";
+  import { computed, ComputedRef, ref, watch } from "vue";
   import LayerSubscriptionDataTable from "./dataTable/LayerSubscriptionDataTable.vue";
   import CatalogueEntryDataTable from "./dataTable/CatalogueEntryDataTable.vue";
   import CatalogueEntryFilter from "./widgets/CatalogueEntryFilter.vue";
@@ -27,6 +27,7 @@
   import SubmissionDetailView from "./detailViews/SubmissionDetailView.vue";
   import SubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
   import { usePermissionsComposable } from "../tools/permissionsComposable";
+  import AttributesModal from "./modals/AttributesModal.vue";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
   const modalStore = useModalStore();
@@ -36,6 +37,9 @@
   const selectedViewEntry = ref<CatalogueEntry | undefined>();
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
+  const showAttributeModal: ComputedRef<boolean> = computed(
+    () => [ModalTypes.ATTRIBUTE_EDIT, ModalTypes.ATTRIBUTE_ADD, ModalTypes.ATTRIBUTE_DELETE]
+      .includes(modalStore.activeModal));
 
   const permissionsComposable = usePermissionsComposable(selectedViewEntry.value);
   const currentEntryView = computed(() => {
@@ -141,9 +145,11 @@
          !!selectedViewSubscription" :layer-subscription="selectedViewSubscription" @navigate="navigate"/>
     </div>
   </div>
-  <CommunicationsLogModal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
+  <communications-log-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
     :show="modalStore.activeModal === ModalTypes.COMMS_LOG || modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"
     :add-log="modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"/>
+  <attributes-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
+    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.NONE"/>
 </template>
 
 <style lang="scss">

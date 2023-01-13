@@ -149,7 +149,6 @@ export interface RawSymbology {
 export interface RawAttribute {
   id: number;
   name: string;
-  description?: string;
   type: string;
   order: number;
   catalogue_entry: number;
