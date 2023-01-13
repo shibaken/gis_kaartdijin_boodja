@@ -55,7 +55,7 @@ class Scanner:
                 log.error(f"Error absorbing file '{file}': {exc}")
 
                 # Send Emails!
-                emails.FileAbsorbFailEmail().send_to_users(
+                emails.FileAbsorbFailEmail().send_to(
                     *utils.all_administrators(),  # Send to all administrators
                 )
 

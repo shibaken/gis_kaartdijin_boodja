@@ -10,6 +10,7 @@ import reversion
 
 # Local
 from . import custodians
+from .. import emails
 from .. import mixins
 from .. import utils
 from ...accounts import utils as accounts_utils
@@ -217,6 +218,9 @@ class CatalogueEntry(mixins.RevisionedMixin):
             # Save the Catalogue Entry
             self.save()
 
+            # Send Emails
+            self.notify_on_lock()
+
             # Success!
             return True
 
@@ -305,3 +309,40 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
         # Failed
         return False
+
+    def notify_on_creation(self) -> None:
+        """Notifies the required parties on Catalogue Entry creation."""
+        # Send Emails
+        emails.CatalogueEntryCreatedEmail().send_to(
+            *accounts_utils.all_administrators(),  # All administrators
+        )
+
+    def notify_on_update_success(self) -> None:
+        """Notifies the required parties on Catalogue Entry update success."""
+        # Send Emails
+        emails.CatalogueEntryUpdateSuccessEmail().send_to(
+            *accounts_utils.all_administrators(),  # All administrators
+            *self.editors.all(),  # All editors
+            *self.email_notifications(manager="on_approve").all(),  # type: ignore[operator]
+            *self.email_notifications(manager="both").all(),  # type: ignore[operator]
+        )
+
+    def notify_on_update_failure(self) -> None:
+        """Notifies the required parties on Catalogue Entry update failure."""
+        # Send Emails
+        emails.CatalogueEntryUpdateFailEmail().send_to(
+            *accounts_utils.all_administrators(),  # All administrators
+            *self.editors.all(),  # All editors
+            *self.email_notifications(manager="on_approve").all(),  # type: ignore[operator]
+            *self.email_notifications(manager="both").all(),  # type: ignore[operator]
+        )
+
+    def notify_on_lock(self) -> None:
+        """Notifies the required parties on Catalogue Entry lock."""
+        # Send Emails
+        emails.CatalogueEntryLockedEmail().send_to(
+            *accounts_utils.all_administrators(),  # All administrators
+            *self.editors.all(),  # All editors
+            *self.email_notifications(manager="on_lock").all(),  # type: ignore[operator]
+            *self.email_notifications(manager="both").all(),  # type: ignore[operator]
+        )

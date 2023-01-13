@@ -8,6 +8,7 @@ import reversion
 # Local
 from . import catalogue_entries
 from .. import mixins
+from .. import utils
 
 
 class NotificationType(models.IntegerChoices):
@@ -28,6 +29,12 @@ class EmailNotification(mixins.RevisionedMixin):
         related_name="email_notifications",
         on_delete=models.CASCADE,
     )
+
+    # Custom Managers
+    objects = models.Manager()
+    on_approve = utils.filtered_manager(type=NotificationType.ON_APPROVE)  # type: ignore[django-manager-missing]
+    on_lock = utils.filtered_manager(type=NotificationType.ON_LOCK)  # type: ignore[django-manager-missing]
+    both = utils.filtered_manager(type=NotificationType.BOTH)  # type: ignore[django-manager-missing]
 
     class Meta:
         """Email Notification Model Metadata."""

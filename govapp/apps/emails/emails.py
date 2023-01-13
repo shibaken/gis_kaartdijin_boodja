@@ -7,8 +7,6 @@ import logging
 # Third-Party
 from django import conf
 from django import template
-from django.contrib import auth
-from django.contrib.auth import models
 from django.core import mail
 from django.template import loader
 from django.utils import html
@@ -20,9 +18,6 @@ from typing import Any, Optional, Union
 # Logging
 log = logging.getLogger(__name__)
 
-# Shortcuts
-UserModel = auth.get_user_model()
-
 
 class TemplateEmailBase:
     """Base Class for a Template Email."""
@@ -30,7 +25,7 @@ class TemplateEmailBase:
     html_template = "base_email.html"
     txt_template = "base_email.txt"
 
-    def send_to_users(
+    def send_to(
         self,
         *users: Any,
         context: Optional[dict[str, Any]] = None,
@@ -41,28 +36,14 @@ class TemplateEmailBase:
             *users (Any): Possible users to send the email to.
             context (Optional[dict[str, Any]]): Context for the template.
         """
-        # Filter the supplied users to only UserModel objects, and cast them to
-        # a set to eliminate any duplicates
-        filtered_users = set(u for u in users if isinstance(u, UserModel))
+        # Filter the supplied users to only objects that have an `email`
+        # attribute, and cast them to a set to eliminate any duplicated
+        filtered_emails = set(u.email for u in users if hasattr(u, "email"))
 
         # Loop through users
-        for user in filtered_users:
+        for email in filtered_emails:
             # Send the email!
-            self.send_to_user(user, context)
-
-    def send_to_user(
-        self,
-        user: models.User,
-        context: Optional[dict[str, Any]] = None,
-    ) -> None:
-        """Sends the email to the specified user.
-
-        Args:
-            user (models.User): User to be emailed
-            context (Optional[dict[str, Any]]): Context for the template.
-        """
-        # Send Email
-        self.send(user.email, context=context)
+            self.send(email, context=context)
 
     def send(
         self,
