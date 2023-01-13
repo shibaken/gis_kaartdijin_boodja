@@ -1,11 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { BackendService } from "./backend.service";
-import {
-  RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, StatusType, RawLayerSubmission,
-  NotificationRequestType, RawNotification, NotificationType, RawWebhookNotification, RawEmailNotification, RawMetadata,
+import { RawCatalogueEntry, RawLayerSubscription, PaginatedRecord, RecordStatus, StatusType, RawLayerSubmission,
+  NotificationRequestType, RawNotification, NotificationType, RawMetadata,
   RawCustodian, Group, RawSymbology, RawAttribute, RawEntryPatch, RawUser, RawPaginationFilter, RawCommunicationLog
 } from "./backend.api";
-import { CommunicationLogType, LogEnum } from "../providers/logsProvider.api";
+import { CommunicationLogType } from "../providers/logsProvider.api";
+import { DUMMY_CATALOGUE_ENTRIES, DUMMY_LAYER_SUBSCRIPTIONS, DUMMY_LAYER_SUBMISSIONS, DUMMY_STATUSES, DUMMY_USERS,
+  DUMMY_EMAIL_NOTIFICATIONS, DUMMY_WEBHOOK_NOTIFICATIONS, DUMMY_EMAIL_NOTIFICATION_TYPES,
+  DUMMY_WEBHOOK_NOTIFICATION_TYPES, DUMMY_SYMBOLOGIES, DUMMY_ATTRIBUTES, DUMMY_METADATA_LIST, DUMMY_CUSTODIANS,
+  DUMMY_GROUPS, DUMMY_COMM_LOGS, DUMMY_COMM_LOG_TYPES } from "./backend.data";
+
+let EDITABLE_CATALOGUE_ENTRIES = DUMMY_CATALOGUE_ENTRIES;
 
 function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   return {
@@ -16,387 +21,7 @@ function wrapPaginatedRecord<T> (results: Array<T>): PaginatedRecord<T> {
   };
 }
 
-let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
-  {
-    "id": 1,
-    "name": "Catalogue Entry 1",
-    "description": "This is the first example catalogue entry",
-    "status": 1,
-    "updated_at": "2022-10-13T04:26:24.629841Z",
-    "custodian": 1,
-    "assigned_to": 1,
-    "subscription": 1,
-    "active_layer": 1,
-    "layers": [1],
-    "email_notifications": [1],
-    "webhook_notifications": [1],
-    "editors": [1, 2]
-  },
-  {
-    "id": 2,
-    "name": "Catalogue Entry 2",
-    "description": "This is the second example catalogue entry",
-    "status": 2,
-    "updated_at": "2022-10-12T21:05:32.325153Z",
-    "custodian": 2,
-    "assigned_to": 3,
-    "subscription": 2,
-    "active_layer": 2,
-    "layers": [2],
-    "email_notifications": [2],
-    "webhook_notifications": [2],
-    "editors": [2, 3]
-  },
-  {
-    "id": 3,
-    "name": "Catalogue Entry 3",
-    "description": "This is the third example catalogue entry",
-    "status": 3,
-    "updated_at": "2022-10-11T12:44:15.562984Z",
-    "custodian": 2,
-    "assigned_to": undefined,
-    "subscription": 3,
-    "active_layer": 3,
-    "layers": [3],
-    "email_notifications": [3],
-    "webhook_notifications": [3],
-    "editors": [3]
-  }
-];
-
-const DUMMY_LAYER_SUBSCRIPTIONS: Array<RawLayerSubscription> = [
-  {
-    "id": 1,
-    "name": "Layer Subscription 1",
-    "url": "https://www.abc.net.au/",
-    "frequency": "1 11:11:11",
-    "status": 1,
-    "subscribed_at": "2022-10-13T02:11:02.818232Z",
-    "catalogue_entry": 1
-  }, {
-    "id": 2,
-    "name": "Layer Subscription 2",
-    "url": "https://www.sbs.com.au/",
-    "frequency": "2 22:22:22",
-    "status": 2,
-    "subscribed_at": "2022-10-12T23:53:32.756754Z",
-    "catalogue_entry": 2
-  }, {
-    "id": 3,
-    "name": "Layer Subscription 3",
-    "url": "https://www.nit.com.au/",
-    "frequency": "4 09:33:33",
-    "status": 3,
-    "subscribed_at": "2022-10-11T13:27:12.345346Z",
-    "catalogue_entry": 3
-  }
-];
-
-const DUMMY_LAYER_SUBMISSIONS: Array<RawLayerSubmission> = [
-  {
-    "id": 1,
-    "name": "Layer Submission 1",
-    "description": "This is the first example layer submission",
-    "file": "https://www.google.com/",
-    "status": 1,
-    "submitted_at": "2022-10-13T04:11:05.195734Z",
-    "catalogue_entry": 1,
-    "attributes": [
-      1,
-      2,
-      3
-    ],
-    "metadata": 1,
-    "symbology": 1
-  },
-  {
-    "id": 2,
-    "name": "Layer Submission 2",
-    "description": "This is the second example layer submission",
-    "file": "https://www.yahoo.com/",
-    "status": 2,
-    "submitted_at": "2022-10-12T07:56:15.665294Z",
-    "catalogue_entry": 2,
-    "attributes": [
-      4,
-      5,
-      6
-    ],
-    "metadata": 2,
-    "symbology": 2
-  },
-  {
-    "id": 3,
-    "name": "Layer Submission 3",
-    "description": "This is the third example layer submission",
-    "file": "https://www.bing.com/",
-    "status": 3,
-    "submitted_at": "2022-10-11T11:24:42.816585Z",
-    "catalogue_entry": 3,
-    "attributes": [
-      7,
-      8,
-      9
-    ],
-    "metadata": 3,
-    "symbology": 3
-  }
-];
-
-const DUMMY_STATUSES: Array<RecordStatus<unknown>> = [
-  { "id": 1, "label": "Draft" },
-  { "id": 2, "label": "Locked" },
-  { "id": 3, "label": "Cancelled" }
-];
-
-const DUMMY_USERS: Array<RawUser> = [
-  { "id": 1, "username": "Raoul Wallenberg", "groups": [0] },
-  { "id": 2, "username": "Carl Lutz", "groups": [0] },
-  { "id": 3, "username": "Chiune Sugihara", "groups": [0] }
-];
-
-const DUMMY_EMAIL_NOTIFICATIONS: Array<RawEmailNotification> = [
-  {
-    "id": 1,
-    "name": "Email Notification 1",
-    "type": 1,
-    "email": "cat@example.com",
-    "catalogue_entry": 1
-  },
-  {
-    "id": 2,
-    "name": "Email Notification 2",
-    "type": 2,
-    "email": "dog@example.com",
-    "catalogue_entry": 2
-  },
-  {
-    "id": 3,
-    "name": "Email Notification 3",
-    "type": 3,
-    "email": "bird@example.com",
-    "catalogue_entry": 3
-  }
-];
-
-const DUMMY_WEBHOOK_NOTIFICATIONS: Array<RawWebhookNotification> = [
-  {
-    "id": 1,
-    "name": "Webhook Notification 1",
-    "type": 1,
-    "url": "https://www.dbca.wa.gov.au/",
-    "catalogue_entry": 1
-  },
-  {
-    "id": 2,
-    "name": "Webhook Notification 2",
-    "type": 2,
-    "url": "https://www.dpaw.wa.gov.au/",
-    "catalogue_entry": 2
-  },
-  {
-    "id": 3,
-    "name": "Webhook Notification 3",
-    "type": 3,
-    "url": "https://www.dcceew.gov.au/",
-    "catalogue_entry": 3
-  }
-];
-
-const DUMMY_EMAIL_NOTIFICATION_TYPES: Array<NotificationType> = [
-  {
-    "id": 1,
-    "label": "On Approve"
-  },
-  {
-    "id": 2,
-    "label": "On Lock"
-  },
-  {
-    "id": 3,
-    "label": "Both"
-  }
-];
-
-const DUMMY_WEBHOOK_NOTIFICATION_TYPES: Array<NotificationType> = [
-  {
-    "id": 1,
-    "label": "On Approve"
-  },
-  {
-    "id": 2,
-    "label": "On Lock"
-  },
-  {
-    "id": 3,
-    "label": "Both"
-  }
-];
-
-const DUMMY_SYMBOLOGIES: Array<RawSymbology> = [
-  {
-    "id": 0,
-    "name": "string",
-    "sld": "string",
-    "catalogue_entry": 0
-  }
-];
-
-const DUMMY_ATTRIBUTES: Array<RawAttribute> = [
-  {
-    "id": 1,
-    "name": "Layer Attribute 1A",
-    "type": "1",
-    "order": 1,
-    "catalogue_entry": 1
-  },
-  {
-    "id": 2,
-    "name": "Layer Attribute 1B",
-    "type": "2",
-    "order": 2,
-    "catalogue_entry": 1
-  },
-  {
-    "id": 3,
-    "name": "Layer Attribute 1C",
-    "type": "3",
-    "order": 3,
-    "catalogue_entry": 1
-  },
-  {
-    "id": 4,
-    "name": "Layer Attribute 2A",
-    "type": "4",
-    "order": 1,
-    "catalogue_entry": 2
-  },
-  {
-    "id": 5,
-    "name": "Layer Attribute 2B",
-    "type": "5",
-    "order": 2,
-    "catalogue_entry": 2
-  },
-  {
-    "id": 6,
-    "name": "Layer Attribute 2C",
-    "type": "6",
-    "order": 3,
-    "catalogue_entry": 2
-  },
-  {
-    "id": 7,
-    "name": "Layer Attribute 3A",
-    "type": "7",
-    "order": 1,
-    "catalogue_entry": 3
-  },
-  {
-    "id": 8,
-    "name": "Layer Attribute 3B",
-    "type": "8",
-    "order": 2,
-    "catalogue_entry": 3
-  },
-  {
-    "id": 9,
-    "name": "Layer Attribute 3C",
-    "type": "9",
-    "order": 3,
-    "catalogue_entry": 3
-  }
-];
-
-const DUMMY_METADATA_LIST: Array<RawMetadata> = [
-  {
-    "id": 0,
-    "name": "string",
-    "created_at": "2022-11-25T06:57:28.139Z",
-    "catalogue_entry": 0
-  }
-];
-
-const DUMMY_CUSTODIANS: Array<RawCustodian> = [
-  {
-    "id": 0,
-    "name": "string",
-    "contact_name": "string",
-    "contact_email": "user@example.com",
-    "contact_phone": "string"
-  }
-];
-
-const DUMMY_GROUPS: Array<Group> = [
-  {
-    "id": 0,
-    "name": "string"
-  }
-];
-
-const DUMMY_COMM_LOGS: Array<RawCommunicationLog> = [
-  {
-    "id": 1,
-    "created_at": "2022-12-21T14:50:30.884033Z",
-    "type": 3,
-    "to": "Punny Hot",
-    "cc": "Belly Jeans",
-    "from": "Bunny Phone",
-    "subject": "The thing about the stuff",
-    "text": "Y'know... the thing? With the stuff?",
-    "documents": [],
-    "user": 1
-  },
-  {
-    "id": 2,
-    "created_at": "2022-12-21T14:50:31.693187Z",
-    "type": 3,
-    "to": "Bunny Phone",
-    "cc": "Punny Hot",
-    "from": "Belly Jeans",
-    "subject": "The other thing I mentioned",
-    "text": "He just trailed off after that",
-    "documents": [],
-    "user": 1
-  },
-  {
-    "id": 3,
-    "created_at": "2022-12-21T14:50:32.064073Z",
-    "type": 3,
-    "to": "Belly Jeans",
-    "cc": "Bunny Phone",
-    "from": "Punny Hot",
-    "subject": "Wisdom of the ages",
-    "text": "You can lead an early bird to water, but you can't make it do the worm.",
-    "documents": [],
-    "user": 1
-  }
-];
-
-const DUMMY_COMM_LOG_TYPES: Array<CommunicationLogType> = [
-  {
-    "id": 1,
-    "label": LogEnum.Email
-  },
-  {
-    "id": 2,
-    "label": LogEnum.Phone
-  },
-  {
-    "id": 3,
-    "label": LogEnum.Mail
-  },
-  {
-    "id": 4,
-    "label": LogEnum.Person
-  },
-  {
-    "id": 5,
-    "label": LogEnum.Other
-  }
-];
-
-export class BackendServiceStub implements BackendService {
+export class BackendServiceStub extends BackendService {
   public getLayerSubscription (id: number): Promise<RawLayerSubscription> {
     return Promise.resolve(DUMMY_LAYER_SUBSCRIPTIONS.find(dummy => dummy.id === id)!);
   }
@@ -406,11 +31,11 @@ export class BackendServiceStub implements BackendService {
   }
 
   public getCatalogueEntry (id: number): Promise<RawCatalogueEntry> {
-    return Promise.resolve(DUMMY_CATALOGUE_ENTRIES.find(dummy => dummy.id === id)!);
+    return Promise.resolve(EDITABLE_CATALOGUE_ENTRIES.find(dummy => dummy.id === id)!);
   }
 
   public getCatalogueEntries (): Promise<PaginatedRecord<RawCatalogueEntry>> {
-    return Promise.resolve(wrapPaginatedRecord(DUMMY_CATALOGUE_ENTRIES));
+    return Promise.resolve(wrapPaginatedRecord(EDITABLE_CATALOGUE_ENTRIES));
   }
 
   public async getLayerSubmission (id: number): Promise<RawLayerSubmission> {
@@ -496,8 +121,8 @@ export class BackendServiceStub implements BackendService {
   }
 
   public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch): Promise<RawCatalogueEntry> {
-    DUMMY_CATALOGUE_ENTRIES = DUMMY_CATALOGUE_ENTRIES.map(entry => entry.id === entryId ? { ...entry, ...updatedEntry } : entry);
-    return Promise.resolve(DUMMY_CATALOGUE_ENTRIES.find(entry => entry.id === entryId)!);
+    EDITABLE_CATALOGUE_ENTRIES = EDITABLE_CATALOGUE_ENTRIES.map(entry => entry.id === entryId ? { ...entry, ...updatedEntry } : entry);
+    return Promise.resolve(EDITABLE_CATALOGUE_ENTRIES.find(entry => entry.id === entryId)!);
   }
 
   public async lock (entryId: number): Promise<number> {
@@ -542,5 +167,22 @@ export class BackendServiceStub implements BackendService {
 
   async getWmtsCapabilities(): Promise<string> {
     return Promise.resolve("");
+  }
+
+  // Unused method
+  protected async modifyAttribute(attribute: Partial<Omit<RawAttribute, "id">>, method: "patch" | "post", id?: number): Promise<RawAttribute> {
+    return Promise.resolve({} as RawAttribute);
+  }
+
+  async deleteAttribute(id: number): Promise<number> {
+    return Promise.resolve(0);
+  }
+
+  async patchRawAttribute(attribute: Partial<Omit<RawAttribute, "id">>, id?: number): Promise<RawAttribute> {
+    return Promise.resolve(DUMMY_ATTRIBUTES.find(value => value.id === id)!);
+  }
+
+  async postRawAttribute(attribute: Omit<RawAttribute, "id">): Promise<RawAttribute> {
+    return Promise.resolve({ ...attribute, id: Math.random() });
   }
 }

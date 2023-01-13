@@ -2,25 +2,21 @@
   import LogsCard from "./widgets/LogsCard.vue";
   import WorkflowCard from "./widgets/WorkflowCard.vue";
   import type { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
-  import { useEntryWorkflowComposable } from "../tools/workflowComposable";
+  import { usePermissionsComposable } from "../tools/permissionsComposable";
   import { watch } from "vue";
-  import { WorkFlowComposable } from "../tools/workflowComposable.api";
+  import { PermissionsComposable } from "../tools/permissionsComposable.api";
 
   const props = defineProps<{
     entry: CatalogueEntry | undefined
   }>();
 
-  let workflowComposable: WorkFlowComposable;
-  // TODO: workflow composable refactor for subscriptions
-  if (props.entry) {
-    workflowComposable = useEntryWorkflowComposable(props.entry);
-    watch(props, () => workflowComposable.currentEntry.value = props.entry!);
-  }
+  let permissionsComposable: PermissionsComposable = usePermissionsComposable(props.entry);
+  watch(props, () => permissionsComposable.updateCurrentEntry(props.entry));
 </script>
 
 <template>
   <div class="me-4">
     <logs-card class="mb-4"/>
-    <workflow-card v-if="workflowComposable" class="mb-4" :workflow-composable="workflowComposable"/>
+    <workflow-card class="mb-4" :permissions-composable="permissionsComposable"/>
   </div>
 </template>

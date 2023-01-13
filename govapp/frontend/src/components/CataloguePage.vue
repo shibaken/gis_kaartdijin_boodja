@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, watch } from "vue";
+  import { computed, ComputedRef, ref, watch } from "vue";
   import LayerSubscriptionDataTable from "./dataTable/LayerSubscriptionDataTable.vue";
   import CatalogueEntryDataTable from "./dataTable/CatalogueEntryDataTable.vue";
   import CatalogueEntryFilter from "./widgets/CatalogueEntryFilter.vue";
@@ -26,6 +26,8 @@
   import { useModalStore } from "../stores/ModalStore";
   import SubmissionDetailView from "./detailViews/SubmissionDetailView.vue";
   import SubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
+  import { usePermissionsComposable } from "../tools/permissionsComposable";
+  import AttributesModal from "./modals/AttributesModal.vue";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
   const modalStore = useModalStore();
@@ -35,9 +37,20 @@
   const selectedViewEntry = ref<CatalogueEntry | undefined>();
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
+  const showAttributeModal: ComputedRef<boolean> = computed(
+    () => [ModalTypes.ATTRIBUTE_EDIT, ModalTypes.ATTRIBUTE_ADD, ModalTypes.ATTRIBUTE_DELETE]
+      .includes(modalStore.activeModal));
+
+  const permissionsComposable = usePermissionsComposable(selectedViewEntry.value);
+  const currentEntryView = computed(() => {
+    return permissionsComposable.isLoggedInUserAdmin.value || permissionsComposable.isLoggedInUserEditor.value ?
+      CatalogueView.Edit :
+      CatalogueView.View;
+  })
 
   watch(catalogueEntries, () => {
     selectedViewEntry.value = catalogueEntries.value?.find((entry: CatalogueEntry) => entry.id === selectedViewEntry.value?.id);
+    permissionsComposable.updateCurrentEntry(selectedViewEntry.value);
   }, { deep: true });
 
   async function navigate (tab: CatalogueTab, view: CatalogueView, options?: NavigateEmitsOptions) {
@@ -115,28 +128,28 @@
               </div>
             </template>
           </accordion>
-          <catalogue-entry-data-table v-if='selectedTab === CatalogueTab.CatalogueEntries' @navigate="navigate"/>
+          <catalogue-entry-data-table v-if='selectedTab === CatalogueTab.CatalogueEntries' :view="currentEntryView"
+            @navigate="navigate"/>
           <layer-submission-data-table v-if='selectedTab === CatalogueTab.LayerSubmissions' @navigate="navigate"/>
           <layer-subscription-data-table v-if='selectedTab === CatalogueTab.LayerSubscriptions' @navigate="navigate"/>
         </template>
       </card>
       <catalogue-entry-detail-view
-        v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === CatalogueView.View &&
-        !!selectedViewEntry"
-        :catalogue-entry="selectedViewEntry" @navigate="navigate"/>
+        v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === CatalogueView.View || CatalogueView.Edit &&
+        !!selectedViewEntry" :catalogue-entry="selectedViewEntry" @navigate="navigate"/>
       <submission-detail-view
         v-if="selectedTab === CatalogueTab.LayerSubmissions && selectedView === CatalogueView.View &&
-         !!selectedViewSubmission"
-        :layer-submission="selectedViewSubmission" @navigate="navigate"/>
+         !!selectedViewSubmission" :layer-submission="selectedViewSubmission" @navigate="navigate"/>
       <subscription-detail-view
         v-if="selectedTab === CatalogueTab.LayerSubscriptions && selectedView === CatalogueView.View &&
-         !!selectedViewSubscription"
-        :layer-subscription="selectedViewSubscription" @navigate="navigate"/>
+         !!selectedViewSubscription" :layer-subscription="selectedViewSubscription" @navigate="navigate"/>
     </div>
   </div>
-  <CommunicationsLogModal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
+  <communications-log-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
     :show="modalStore.activeModal === ModalTypes.COMMS_LOG || modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"
     :add-log="modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"/>
+  <attributes-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
+    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.NONE"/>
 </template>
 
 <style lang="scss">

@@ -47,8 +47,8 @@
       <h1>Communications Log</h1>
     </template>
     <template #body v-if="catalogueEntry">
-      <CommunicationsLogDatatable v-if="!addLog" :catalogue-entry="catalogueEntry"/>
-      <CommunicationsLogAddForm v-if="addLog" @valid-value-updated="valuesUpdated" :form-dirty="formDirty"/>
+      <communications-log-datatable v-if="!addLog" :catalogue-entry="catalogueEntry"/>
+      <communications-log-add-form v-if="addLog" @valid-value-updated="valuesUpdated" :form-dirty="formDirty"/>
     </template>
   </Modal>
 </template>

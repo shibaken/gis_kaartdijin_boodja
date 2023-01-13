@@ -21,12 +21,78 @@ export class RelatedEntityProvider {
       return {
         id: rawAttribute.id,
         name: rawAttribute.name,
-        description: rawAttribute.description,
         type: rawAttribute.type,
         order: rawAttribute.order,
         catalogueEntry: linkedEntry
       } as Attribute;
     }) as Array<Attribute>;
+  }
+
+  private toRawAttribute (attribute: Partial<Attribute>): Partial<RawAttribute> {
+    const rawAttribute = {
+      name: attribute.name,
+      type: attribute.type,
+      order: attribute.order,
+      catalogue_entry: attribute.id
+    } as Partial<RawAttribute>;
+    if (attribute.id) {
+      rawAttribute.id = attribute.id;
+    }
+
+    return rawAttribute;
+  };
+
+  private toNewRawAttribute (attribute: Omit<Attribute, "id">): Omit<RawAttribute, "id"> {
+    return this.toRawAttribute(attribute) as Omit<RawAttribute, "id">;
+  }
+
+  public async createAttribute (attribute: Partial<Attribute>): Promise<Attribute> {
+    let preparedAttribute: Omit<Attribute, "id">;
+
+    if (attribute.id) {
+      preparedAttribute = Object.fromEntries(Object.entries(attribute)
+        .filter(([_, value]) => value !== "id")) as Omit<Attribute, "id">;
+    } else {
+      preparedAttribute = attribute as Omit<Attribute, "id">;
+    }
+
+    const rawAttribute = await this.backend.postRawAttribute(this.toNewRawAttribute(preparedAttribute));
+    return {
+      id: rawAttribute.id,
+      name: rawAttribute.name,
+      type: rawAttribute.type,
+      order: rawAttribute.order,
+      catalogueEntry: preparedAttribute.catalogueEntry
+    } as Attribute;
+  }
+
+  public async updateAttribute (attribute: Partial<Attribute>) {
+    let preparedAttribute: Omit<Attribute, "id">;
+    const id = attribute.id;
+
+    if (id) {
+      preparedAttribute = Object.fromEntries(Object.entries(attribute)
+        .filter(([_, value]) => value !== "id")) as Omit<Attribute, "id">;
+    } else {
+      throw new Error("`updateAttribute`: Tried to update attribute without providing an ID");
+    }
+
+    const rawAttribute = await this.backend.patchRawAttribute(this.toNewRawAttribute(preparedAttribute), id);
+    /* This should be the same as `preparedAttribute`, but for consistency and capturing possible errors, convert and
+     * return what the API hands back.
+     */
+    return {
+      id: rawAttribute.id,
+      name: rawAttribute.name,
+      type: rawAttribute.type,
+      order: rawAttribute.order,
+      catalogueEntry: preparedAttribute.catalogueEntry
+    } as Attribute;
+  }
+
+  public async removeAttribute (id: number) {
+    const responseCode = await this.backend.deleteAttribute(id);
+    return responseCode >= 200 && responseCode < 300;
   }
 
   public async fetchSymbologies (entryId?: number): Promise<Symbology[]> {

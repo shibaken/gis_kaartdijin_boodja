@@ -10,7 +10,6 @@ export interface Symbology {
 export interface Attribute {
   id: number;
   name: string;
-  description?: string;
   type: string;
   order: number;
   catalogueEntry: Pick<CatalogueEntry, "id" | "name">;
