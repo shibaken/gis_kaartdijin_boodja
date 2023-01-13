@@ -34,6 +34,7 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
     status = factory.fuzzy.FuzzyChoice(models.catalogue_entries.CatalogueEntryStatus)
     custodian = factory.SubFactory(custodians.CustodianFactory)
     assigned_to = factory.SubFactory(accounts.users.UserFactory)
+    workspace = factory.LazyFunction(lambda: models.workspaces.Workspace.objects.first())
 
     attributes = factory.RelatedFactoryList(
         layer_attributes.LayerAttributeFactory,

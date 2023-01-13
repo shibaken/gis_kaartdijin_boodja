@@ -11,34 +11,39 @@ import urllib.parse
 from django import conf
 import shareplum
 
+# Typing
+from typing import Optional
+
 
 class SharepointStorage:
     """Sharepoint Storage Service."""
 
     def __init__(
         self,
-        url: str = conf.settings.SHAREPOINT_URL,
-        root: str = conf.settings.SHAREPOINT_LIST,
-        username: str = conf.settings.SHAREPOINT_USERNAME,
-        password: str = conf.settings.SHAREPOINT_PASSWORD,
+        url: Optional[str] = None,
+        root: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
     ) -> None:
         """Instantiates the Sharepoint Storage.
 
         Args:
-            url (str): URL for the Sharepoint storage location.
-            root (str): Root list for the Sharepoint storage location.
-            username (str): Username for the Sharepoint storage location.
-            password (str): Password for the Sharepoint storage location.
+            url (Optional[str]): URL for the Sharepoint storage.
+            root (Optional[str]): Root list for the Sharepoint storage.
+            username (Optional[str]): Username for the Sharepoint storage.
+            password (Optional[str]): Password for the Sharepoint storage.
         """
         # Instance Variables
         self.temp = tempfile.mkdtemp()
-        self.url = url
-        self.root = root
+        self.url = url or conf.settings.SHAREPOINT_URL
+        self.root = root or conf.settings.SHAREPOINT_LIST
+        self.username = username or conf.settings.SHAREPOINT_USERNAME
+        self.password = password or conf.settings.SHAREPOINT_PASSWORD
 
         # Sharepoint Connection
-        auth_url = urllib.parse.urljoin(url, "/")  # Retrieves root URL of Sharepoint site
-        auth = shareplum.Office365(auth_url, username, password)
-        self.site = shareplum.Site(url, authcookie=auth.get_cookies(), version=shareplum.site.Version.v365)
+        auth_url = urllib.parse.urljoin(self.url, "/")  # Retrieves root URL of Sharepoint site
+        auth = shareplum.Office365(auth_url, self.username, self.password)
+        self.site = shareplum.Site(self.url, authcookie=auth.get_cookies(), version=shareplum.site.Version.v365)
 
     def list(self, path: str) -> list[str]:  # noqa: A003
         """Lists all files at the given path.
