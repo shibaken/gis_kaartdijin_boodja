@@ -36,7 +36,7 @@ function fetcher (input: RequestInfo | URL, init: RequestInit = {}) {
 export function stripNullParams<T extends object> (filter: T): Params {
   return Object.fromEntries(
     Object.entries(filter)
-      .filter(([, value]) => {
+      .filter(([_, value]) => {
         return value != null;
       })
   );

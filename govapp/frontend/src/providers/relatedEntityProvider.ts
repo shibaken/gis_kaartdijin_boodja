@@ -51,7 +51,7 @@ export class RelatedEntityProvider {
 
     if (attribute.id) {
       preparedAttribute = Object.fromEntries(Object.entries(attribute)
-        .filter(([, value]) => value !== "id")) as Omit<Attribute, "id">;
+        .filter(([_, value]) => value !== "id")) as Omit<Attribute, "id">;
     } else {
       preparedAttribute = attribute as Omit<Attribute, "id">;
     }
@@ -72,7 +72,7 @@ export class RelatedEntityProvider {
 
     if (id) {
       preparedAttribute = Object.fromEntries(Object.entries(attribute)
-        .filter(([, value]) => value !== "id")) as Omit<Attribute, "id">;
+        .filter(([_, value]) => value !== "id")) as Omit<Attribute, "id">;
     } else {
       throw new Error("`updateAttribute`: Tried to update attribute without providing an ID");
     }
