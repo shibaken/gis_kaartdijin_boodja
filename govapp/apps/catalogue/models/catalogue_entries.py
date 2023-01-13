@@ -10,6 +10,7 @@ import reversion
 
 # Local
 from . import custodians
+from .. import notifications as notifications_utils
 from .. import mixins
 from .. import utils
 from ...accounts import utils as accounts_utils
@@ -216,6 +217,9 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
             # Save the Catalogue Entry
             self.save()
+
+            # Send Emails
+            notifications_utils.catalogue_entry_lock(self)
 
             # Success!
             return True
