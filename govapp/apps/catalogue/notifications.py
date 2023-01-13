@@ -1,4 +1,4 @@
-"""Notification Utilities."""
+"""Kaartdijin Boodja Catalogue Django Application Notification Utilities."""
 
 
 # Local
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def file_absorb_failure() -> None:
-    """Notifies for..."""
+    """Sends notifications for a file absorption failure."""
     # Send Emails!
     emails.FileAbsorbFailEmail().send_to(
         *utils.all_administrators(),  # Send to all administrators
@@ -22,7 +22,7 @@ def file_absorb_failure() -> None:
 
 
 def catalogue_entry_creation() -> None:
-    """Notifies for..."""
+    """Sends notifications for a Catalogue Entry creation."""
     # Send Emails
     emails.CatalogueEntryCreatedEmail().send_to(
         *utils.all_administrators(),  # All administrators
@@ -30,7 +30,11 @@ def catalogue_entry_creation() -> None:
 
 
 def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") -> None:
-    """Notifies for..."""
+    """Sends notifications for a Catalogue Entry update success.
+
+    Args:
+        entry (catalogue_entries.CatalogueEntry): Catalogue Entry to notify for
+    """
     # Send Emails
     emails.CatalogueEntryUpdateSuccessEmail().send_to(
         *utils.all_administrators(),  # All administrators
@@ -41,7 +45,11 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
 
 
 def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") -> None:
-    """Notifies for..."""
+    """Sends notifications for a Catalogue Entry update failure.
+
+    Args:
+        entry (catalogue_entries.CatalogueEntry): Catalogue Entry to notify for
+    """
     # Send Emails
     emails.CatalogueEntryUpdateFailEmail().send_to(
         *utils.all_administrators(),  # All administrators
@@ -52,7 +60,11 @@ def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") ->
 
 
 def catalogue_entry_lock(entry: "catalogue_entries.CatalogueEntry") -> None:
-    """Notifies for..."""
+    """Sends notifications for a Catalogue Entry lock.
+
+    Args:
+        entry (catalogue_entries.CatalogueEntry): Catalogue Entry to notify for
+    """
     # Send Emails
     emails.CatalogueEntryLockedEmail().send_to(
         *utils.all_administrators(),  # All administrators
