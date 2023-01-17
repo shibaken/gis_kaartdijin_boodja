@@ -16,11 +16,11 @@
   }>();
 
   onMounted(async () => {
-    const symbology = await relatedEntityProvider.fetchSymbologies(props.submission.catalogueEntry.id)
-    const options = await relatedEntityProvider.fetchWmtsCapabilities(props.submission.name, symbology[0]?.name);
+    const symbology = await relatedEntityProvider.fetchSymbology(props.submission.catalogueEntry.id)
+    const options = await relatedEntityProvider.fetchWmtsCapabilities(props.submission.name, symbology?.name);
 
     if (options) {
-      options.style = "Catalogue:" + symbology[0]?.name
+      options.style = "Catalogue:" + symbology?.name
     }
     if (options) {
       const wmts = new WMTS(options),

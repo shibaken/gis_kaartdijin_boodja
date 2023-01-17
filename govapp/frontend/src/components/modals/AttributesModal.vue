@@ -44,7 +44,6 @@
   });
   const showForm = computed(() => [ModalTypes.ATTRIBUTE_ADD, ModalTypes.ATTRIBUTE_EDIT].includes(props.mode));
   async function onAcceptClick () {
-    console.debug(editingAttribute.value, modalStore.activeModal)
     if (!editingAttribute.value) { return; }
 
     if (modalStore.activeModal === ModalTypes.ATTRIBUTE_DELETE && Number.isInteger(editingAttribute.value.id)) {

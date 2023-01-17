@@ -33,7 +33,7 @@ export class RelatedEntityProvider {
       name: attribute.name,
       type: attribute.type,
       order: attribute.order,
-      catalogue_entry: attribute.id
+      catalogue_entry: attribute.catalogueEntry?.id
     } as Partial<RawAttribute>;
     if (attribute.id) {
       rawAttribute.id = attribute.id;
@@ -95,17 +95,29 @@ export class RelatedEntityProvider {
     return responseCode >= 200 && responseCode < 300;
   }
 
-  public async fetchSymbologies (entryId?: number): Promise<Symbology[]> {
-    return Promise.all(
-      (await this.backend.getRawSymbologies({ catalogue_entry: entryId }))
-        .results
-        .map(({ id, name, sld, catalogue_entry }: RawSymbology) => ({
-          id,
-          name,
-          sld,
-          catalogueEntryId: catalogue_entry
-        }))
-    );
+  public async fetchSymbology (entryId: number): Promise<Symbology | undefined> {
+    const rawSymbology: RawSymbology | undefined = await this.backend.getRawSymbology(entryId);
+    return !rawSymbology ?
+      undefined :
+      {
+        id: rawSymbology.id,
+        name: rawSymbology.name,
+        sld: rawSymbology.sld,
+        catalogueEntry: await catalogueEntryProvider.getOrFetch(entryId)
+      } as Symbology;
+  }
+
+  private async toSymbology(rawSymbology: RawSymbology): Promise<Symbology> {
+    return {
+      id: rawSymbology.id,
+      name: rawSymbology.name,
+      sld: rawSymbology.sld,
+      catalogueEntry: await catalogueEntryProvider.getOrFetch(rawSymbology.catalogue_entry)
+    } as Symbology;
+  }
+
+  public async updateSymbology (id: number, sld: string): Promise<Symbology> {
+    return this.toSymbology(await this.backend.patchRawSymbology(id, sld));
   }
 
   public async fetchWmtsCapabilities (layerName: string, styleName = "default"): Promise<Options | null> {
