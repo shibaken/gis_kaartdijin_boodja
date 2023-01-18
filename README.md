@@ -41,6 +41,12 @@ $ gdal-config --version
 $ pip install gdal==`gdal-config --version`
 ```
 
+#### Setup
+In order for the application to run correctly, at least **1** workspace must
+be created in the Django app which matches with an existing workspace in the
+specified GeoServer instance.
+
+
 #### Running
 To run a development server, use the `Django` `manage.py` script:
 ```shell
