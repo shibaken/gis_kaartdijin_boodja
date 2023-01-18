@@ -16,6 +16,7 @@ from . import layer_metadata
 from . import layer_submissions
 from . import layer_symbology
 from . import notifications
+from . import workspaces
 from .. import accounts
 from govapp.apps.catalogue import models
 
@@ -34,7 +35,7 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
     status = factory.fuzzy.FuzzyChoice(models.catalogue_entries.CatalogueEntryStatus)
     custodian = factory.SubFactory(custodians.CustodianFactory)
     assigned_to = factory.SubFactory(accounts.users.UserFactory)
-    workspace = factory.LazyFunction(lambda: models.workspaces.Workspace.objects.first())
+    workspace = factory.SubFactory(workspaces.WorkspaceFactory)
 
     attributes = factory.RelatedFactoryList(
         layer_attributes.LayerAttributeFactory,

@@ -10,7 +10,7 @@ from govapp.apps.catalogue import models
 
 class WorkspaceFactory(factory.django.DjangoModelFactory):
     """Factory for a Workspace."""
-    name = factory.Sequence(lambda n: f"Workspace {n + 1}")
+    name = "default"  # Hardcode to default for unit tests
 
     class Meta:
         """Workspace Factory Metadata."""

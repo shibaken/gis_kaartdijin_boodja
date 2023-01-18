@@ -22,24 +22,24 @@ class GeoServer:
 
     def __init__(
         self,
+        workspace: str,
         service_url: Optional[str] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
-        workspace: Optional[str] = None,
     ) -> None:
         """Instantiates the GeoServer Abstraction.
 
         Args:
+            workspace (str): Workspace to upload files to (required).
             service_url (Optional[str]): URL to the GeoServer service.
             username (Optional[str]): Username for the GeoServer service.
             password (Optional[str]): Password for the GeoServer service.
-            workspace (Optional[str]): Workspace to upload files to.
         """
         # Instance Attributes
+        self.workspace = workspace
         self.service_url = service_url or conf.settings.GEOSERVER_URL
         self.username = username or conf.settings.GEOSERVER_USERNAME
         self.password = password or conf.settings.GEOSERVER_PASSWORD
-        self.workspace = workspace or conf.settings.GEOSERVER_DEFAULT_WORKSPACE_NAME
 
         # Strip Trailing Slash from Service URL
         self.service_url = self.service_url.rstrip("/")
