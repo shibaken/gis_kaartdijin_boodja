@@ -22,24 +22,27 @@ class GeoServer:
 
     def __init__(
         self,
-        service_url: str = conf.settings.GEOSERVER_URL,
-        username: str = conf.settings.GEOSERVER_USERNAME,
-        password: str = conf.settings.GEOSERVER_PASSWORD,
-        workspace: str = conf.settings.GEOSERVER_WORKSPACE,
+        workspace: str,
+        service_url: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
     ) -> None:
         """Instantiates the GeoServer Abstraction.
 
         Args:
-            service_url (str): URL to the GeoServer service.
-            username (str): Username for the GeoServer service.
-            password (str): Password for the GeoServer service.
-            workspace (str): Workspace to upload files to.
+            workspace (str): Workspace to upload files to (required).
+            service_url (Optional[str]): URL to the GeoServer service.
+            username (Optional[str]): Username for the GeoServer service.
+            password (Optional[str]): Password for the GeoServer service.
         """
         # Instance Attributes
-        self.service_url = service_url.rstrip("/")  # Strip trailing slash
-        self.username = username
-        self.password = password
         self.workspace = workspace
+        self.service_url = service_url or conf.settings.GEOSERVER_URL
+        self.username = username or conf.settings.GEOSERVER_USERNAME
+        self.password = password or conf.settings.GEOSERVER_PASSWORD
+
+        # Strip Trailing Slash from Service URL
+        self.service_url = self.service_url.rstrip("/")
 
     def upload_geopackage(self, layer: str, filepath: pathlib.Path) -> None:
         """Uploads a Geopackage file to the GeoServer.

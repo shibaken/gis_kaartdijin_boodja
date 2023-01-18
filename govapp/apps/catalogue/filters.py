@@ -87,3 +87,11 @@ class WebhookNotificationFilter(filters.FilterSet):
         """Webhook Notification Filter Metadata."""
         model = models.notifications.WebhookNotification
         fields = ()
+
+
+class WorkspaceFilter(filters.FilterSet):
+    """Workspace Filter."""
+    class Meta:
+        """Workspace Filter Metadata."""
+        model = models.workspaces.Workspace
+        fields = ()
