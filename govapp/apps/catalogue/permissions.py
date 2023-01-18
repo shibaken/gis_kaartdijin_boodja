@@ -37,11 +37,13 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             allowed = False
 
         elif view.action in ("list", "retrieve", "update", "partial_update",
-                             "lock", "unlock", "decline", "assign", "unassign"):
+                             "lock", "unlock", "decline", "assign", "unassign",
+                             "geoserver"):
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
             # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
             # Assigning and Unassigning also might be allowed, again we delegate it to `has_object_permission`
+            # Re-publishing to GeoServer might be allowed, again we delegate it to `has_object_permission`
             allowed = True
 
         else:
@@ -117,6 +119,20 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
                 and utils.is_catalogue_editor(request.user)
                 and obj.is_editor(request.user)
+            )
+
+        elif view.action == "geoserver":
+            # Re-Publish to GeoServer
+            # Re-Publishing a Catalogue Entry to GeoServer has its own set of rules
+            # 1. Object is a Catalogue Entry
+            # 2. User is in the Catalogue Editors group
+            # 3. User is one of this Catalogue Entry's editors
+            # 4. Catalogue Entry is Locked
+            allowed = (
+                isinstance(obj, models.catalogue_entries.CatalogueEntry)
+                and utils.is_catalogue_editor(request.user)
+                and obj.is_editor(request.user)
+                and obj.is_locked()
             )
 
         else:
