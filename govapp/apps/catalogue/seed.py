@@ -35,27 +35,3 @@ def add_groups(
         id=conf.settings.GROUP_CATALOGUE_EDITOR_ID,
         name=conf.settings.GROUP_CATALOGUE_EDITOR_NAME,
     )
-
-
-def add_default_workspace(
-    apps: registry.Apps,
-    schema_editor: schema.BaseDatabaseSchemaEditor,
-) -> None:
-    """Adds the required default workspace to the database.
-
-    For more information on Data Migrations see:
-    https://docs.djangoproject.com/en/3.2/topics/migrations/#data-migrations
-
-    Args:
-        apps (registry.Apps): Registry of Django apps
-        schema_editor (schema.BaseDatabaseSchemaEditor): Database schema editor
-    """
-    # We have to retrieve the *current* model with the `apps` registry, in
-    # case the Django Group model changes.
-    Workspace = apps.get_model("catalogue", "Workspace")
-
-    # Create Default Workspace
-    Workspace.objects.create(
-        id=conf.settings.GEOSERVER_DEFAULT_WORKSPACE_ID,
-        name=conf.settings.GEOSERVER_DEFAULT_WORKSPACE_NAME,
-    )
