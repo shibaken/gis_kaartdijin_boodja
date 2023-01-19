@@ -53,7 +53,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     filepath = sharepoint.SharepointStorage().get_from_url(url=entry.active_layer.file)
 
     # Convert Layer to GeoJSON
-    geojson = gis.conversions.to_geopackage(
+    geojson = gis.conversions.to_geojson(
         filepath=filepath,
         layer=entry.metadata.name,
     )
