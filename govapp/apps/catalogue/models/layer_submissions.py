@@ -1,6 +1,9 @@
 """Kaartdijin Boodja Catalogue Django Application Layer Submission Models."""
 
 
+# Standard
+import shutil
+
 # Third-Party
 from django.db import models
 import reversion
@@ -149,3 +152,6 @@ class LayerSubmission(mixins.RevisionedMixin):
             layer=self.catalogue_entry.metadata.name,
             filepath=geopackage,
         )
+
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(filepath.parent, ignore_errors=True)

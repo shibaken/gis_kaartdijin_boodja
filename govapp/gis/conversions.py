@@ -49,3 +49,39 @@ def to_geopackage(filepath: pathlib.Path, layer: str) -> pathlib.Path:
 
     # Return
     return output_filepath
+
+
+def to_geojson(filepath: pathlib.Path, layer: str) -> pathlib.Path:
+    """Converts a GIS file to the GeoJSON format.
+
+    Args:
+        filepath (pathlib.Path): Path to the file to be converted.
+        layer (str): Layer to be converted.
+
+    Returns:
+        pathlib.Path: Path to the converted GeoJSON file.
+    """
+    # Log
+    log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoJSON")
+
+    # Decompress and Flatten if Required
+    filepath = compression.decompress(filepath)
+    filepath = compression.flatten(filepath)
+
+    # Construct Output Filepath
+    output_dir = tempfile.mkdtemp()
+    output_filepath = pathlib.Path(output_dir) / f"{layer}.geojson"
+
+    # Run Command
+    subprocess.check_call(  # noqa: S603,S607
+        [
+            "ogr2ogr",
+            "-overwrite",
+            str(output_filepath),
+            str(filepath),
+            str(layer),
+        ]
+    )
+
+    # Return
+    return output_filepath
