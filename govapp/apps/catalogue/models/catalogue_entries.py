@@ -2,6 +2,7 @@
 
 
 # Third-Party
+from django import conf
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.db import models
@@ -10,6 +11,8 @@ import reversion
 
 # Local
 from . import custodians
+from . import workspaces
+from .. import notifications as notifications_utils
 from .. import mixins
 from .. import utils
 from ...accounts import utils as accounts_utils
@@ -72,6 +75,12 @@ class CatalogueEntry(mixins.RevisionedMixin):
         null=True,
         related_name="assigned",
         on_delete=models.SET_NULL,
+    )
+    workspace = models.ForeignKey(
+        workspaces.Workspace,
+        default=conf.settings.GEOSERVER_DEFAULT_WORKSPACE_ID,
+        related_name="catalogue_entries",
+        on_delete=models.PROTECT,
     )
 
     # Type Hints for Reverse Relations
@@ -216,6 +225,9 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
             # Save the Catalogue Entry
             self.save()
+
+            # Send Emails
+            notifications_utils.catalogue_entry_lock(self)
 
             # Success!
             return True

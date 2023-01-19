@@ -141,8 +141,11 @@ class LayerSubmission(mixins.RevisionedMixin):
             layer=self.catalogue_entry.metadata.name,
         )
 
+        # Retrieve Workspace Name
+        workspace = self.catalogue_entry.workspace.name
+
         # Push Layer to GeoServer
-        gis.geoserver.GeoServer().upload_geopackage(
+        gis.geoserver.GeoServer(workspace=workspace).upload_geopackage(
             layer=self.catalogue_entry.metadata.name,
             filepath=geopackage,
         )

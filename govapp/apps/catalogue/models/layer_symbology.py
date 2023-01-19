@@ -38,8 +38,11 @@ class LayerSymbology(mixins.RevisionedMixin):
 
     def publish(self) -> None:
         """Publishes the style to GeoServer."""
+        # Retrieve Workspace Name
+        workspace = self.catalogue_entry.workspace.name
+
         # Push Style to GeoServer
-        gis.geoserver.GeoServer().upload_style(
+        gis.geoserver.GeoServer(workspace=workspace).upload_style(
             layer=self.catalogue_entry.metadata.name,
             name=self.name,
             sld=self.sld,

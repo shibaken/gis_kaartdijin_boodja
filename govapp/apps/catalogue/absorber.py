@@ -12,11 +12,10 @@ from django import conf
 from django.db import transaction
 
 # Local
-from . import emails
 from . import models
+from . import notifications
 from . import sharepoint
 from . import utils
-from ..accounts import utils as accounts_utils
 from ...gis import readers
 
 
@@ -171,10 +170,8 @@ class Absorber:
         catalogue_entry.active_layer.publish()
         catalogue_entry.symbology.publish()
 
-        # Send Emails!
-        emails.CatalogueEntryCreatedEmail().send_to_users(
-            *accounts_utils.all_administrators(),  # Send to all administrators
-        )
+        # Notify!
+        notifications.catalogue_entry_creation()
 
         # Return
         return True
@@ -228,18 +225,12 @@ class Absorber:
             # Publish Layer
             catalogue_entry.active_layer.publish()
 
-            # Send Update Success Email
-            emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
-                *accounts_utils.all_administrators(),  # Send to all administrators
-                *catalogue_entry.editors.all(),  # Send to all editors
-            )
+            # Notify!
+            notifications.catalogue_entry_update_success(catalogue_entry)
 
         else:
             # Send Update Failure Email
-            emails.CatalogueEntryUpdateFailEmail().send_to_users(
-                *accounts_utils.all_administrators(),  # Send to all administrators
-                *catalogue_entry.editors.all(),  # Send to all editors
-            )
+            notifications.catalogue_entry_update_failure(catalogue_entry)
 
         # Return
         return success
