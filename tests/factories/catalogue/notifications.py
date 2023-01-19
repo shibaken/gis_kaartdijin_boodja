@@ -12,7 +12,7 @@ from govapp.apps.catalogue import models
 class EmailNotificationFactory(factory.django.DjangoModelFactory):
     """Factory for an Email Notification."""
     name = factory.Sequence(lambda n: f"Email Notification {n + 1}")
-    type = factory.fuzzy.FuzzyChoice(models.notifications.NotificationType)  # noqa: A003
+    type = factory.fuzzy.FuzzyChoice(models.notifications.EmailNotificationType)  # noqa: A003
     email = factory.Faker("safe_email")
 
     class Meta:
@@ -23,7 +23,7 @@ class EmailNotificationFactory(factory.django.DjangoModelFactory):
 class WebhookNotificationFactory(factory.django.DjangoModelFactory):
     """Factory for an Webhook Notification."""
     name = factory.Sequence(lambda n: f"Webhook Notification {n + 1}")
-    type = factory.fuzzy.FuzzyChoice(models.notifications.NotificationType)  # noqa: A003
+    type = factory.fuzzy.FuzzyChoice(models.notifications.WebhookNotificationType)  # noqa: A003
     url = factory.Faker("uri")
 
     class Meta:

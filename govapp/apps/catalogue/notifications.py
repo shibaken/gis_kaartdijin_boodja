@@ -45,7 +45,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     emails.CatalogueEntryUpdateSuccessEmail().send_to(
         *utils.all_administrators(),  # All administrators
         *entry.editors.all(),  # All editors
-        *entry.email_notifications(manager="on_approve").all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="on_new_data").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
     )
 
@@ -60,9 +60,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
 
     # Send Webhook Posts
     webhooks.post_geojson(
-        *entry.webhook_notifications(manager="on_approve").all(),  # type: ignore[operator]
-        *entry.webhook_notifications(manager="on_lock").all(),  # type: ignore[operator]
-        *entry.webhook_notifications(manager="both").all(),  # type: ignore[operator]
+        *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
         geojson=geojson,
     )
 
@@ -80,7 +78,7 @@ def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") ->
     emails.CatalogueEntryUpdateFailEmail().send_to(
         *utils.all_administrators(),  # All administrators
         *entry.editors.all(),  # All editors
-        *entry.email_notifications(manager="on_approve").all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="on_new_data").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
     )
 
