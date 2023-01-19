@@ -4,7 +4,7 @@
   import FormInput from "../widgets/FormInput.vue";
   import { CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
 
-  defineProps<{
+  const props = defineProps<{
     submission: LayerSubmission
   }>();
 

@@ -58,6 +58,7 @@ export interface RawUser {
 export interface RawPaginationFilter extends Record<string, unknown> {
   offset?: number;
   limit?: number;
+  search?: string;
 }
 
 export interface RawLayerSubscriptionFilter extends RawPaginationFilter {

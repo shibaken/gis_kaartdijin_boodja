@@ -2,6 +2,7 @@
   import DataTablePagination from "./DataTablePagination.vue";
   import FormSelect from "../widgets/FormSelect.vue";
   import { ref, Ref } from "vue";
+  import FormInput from "../widgets/FormInput.vue";
 
   const props = withDefaults(defineProps<{
     total: number,
@@ -30,10 +31,11 @@
 
 <template>
   <slot v-if="paginate" name="settings">
-    <div class="mb-2">
-      <form-select classes="w-min-content" name="Page Size" field="pageSize" :value="pageSize.toString()"
-                   :values="[['10', 10], ['50', 50], ['100', 100]]" :show-empty="false"
-                   @value-updated="setPageSize"/>
+    <div class="pre-table-row mb-2">
+      <form-select name="Page Size" field="pageSize" :value="pageSize.toString()"
+                 :values="[['10', 10], ['50', 50], ['100', 100]]" :show-empty="false"
+                 @value-updated="setPageSize"/>
+      <form-input class="d-flex align-content-end" field="search" name="Search" type="string"/>
     </div>
   </slot>
   <div class="table-responsive">
@@ -50,3 +52,14 @@
     <DataTablePagination :total="total" :page-size="pageSize" @set-page="setPage"/>
   </slot>
 </template>
+
+<style lang="scss">
+  .pre-table-row {
+    display: grid;
+    grid-auto-flow: column;
+
+    div.form-floating:last-child {
+      justify-self: flex-end;
+    }
+  }
+</style>

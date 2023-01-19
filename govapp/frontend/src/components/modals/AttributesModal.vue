@@ -4,7 +4,6 @@
   import { useModalStore } from "../../stores/ModalStore";
   import { computed, ref } from "vue";
   import { ModalTypes } from "../../stores/ModalStore.api";
-  import { relatedEntityProvider } from "../../providers/relatedEntityProvider";
   import { Attribute } from "../../providers/relatedEntityProvider.api";
   import AttributesAddForm from "../detailViews/AttributesAddForm.vue";
   import { useAttributeStore } from "../../stores/AttributeStore";
@@ -19,7 +18,7 @@
   const modalStore = useModalStore();
   const attributeStore = useAttributeStore();
   const { editingAttribute } = storeToRefs(attributeStore);
-  const { addAttribute, removeAttribute } = attributeStore;
+  const { removeAttribute } = attributeStore;
 
   const formDirty = ref(false);
   const attributeModeText = computed(() => {
@@ -43,50 +42,28 @@
     }
   });
   const showForm = computed(() => [ModalTypes.ATTRIBUTE_ADD, ModalTypes.ATTRIBUTE_EDIT].includes(props.mode));
-  async function onAcceptClick () {
-    if (!editingAttribute.value) { return; }
 
-    if (modalStore.activeModal === ModalTypes.ATTRIBUTE_DELETE && Number.isInteger(editingAttribute.value.id)) {
-      const deleteSuccess = await relatedEntityProvider.removeAttribute(editingAttribute.value.id as number);
-      if (deleteSuccess) {
-        removeAttribute(editingAttribute.value.id as number);
-      }
-    } else {
-      formDirty.value = true;
-      if (modalStore.activeModal === ModalTypes.ATTRIBUTE_ADD) {
-        const createdAttribute = await relatedEntityProvider.createAttribute(editingAttribute.value as Attribute);
-        if (createdAttribute) {
-          addAttribute(createdAttribute);
-        }
-      } else if (modalStore.activeModal === ModalTypes.ATTRIBUTE_EDIT) {
-        const updatedAttribute = await relatedEntityProvider.updateAttribute(editingAttribute.value as Attribute);
-        if (updatedAttribute) {
-          attributeStore.updateAttribute(updatedAttribute);
-        }
-      } else {
-        throw new Error(`\`saveAttribute\`: Tried to save an attribute with incorrect (${modalStore.activeModal}) modal type.`);
-      }
-    }
+  async function onAcceptClick () {
     modalStore.hideModal();
   }
 
   function valuesUpdated (values: Partial<Attribute>) {
-    if (!editingAttribute.value) {
-      editingAttribute.value = {};
+    if (editingAttribute.value) {
+      editingAttribute.value = values;
     }
-    editingAttribute.value = values;
   }
 
   function onClose () {
     modalStore.hideModal();
-    editingAttribute.value = { catalogueEntry: props.catalogueEntry };
+    editingAttribute.value = undefined;
     formDirty.value = false;
   }
 </script>
 
 <template>
   <modal :show="show" modal-id="attribute-log" :modal-size="modalSize"
-         :show-save-button="true" :enable-save-button="true" @close="onClose" @save="onAcceptClick">
+         :show-save-button="true" :enable-save-button="true" save-button-text="OK"
+         @close="onClose" @save="onAcceptClick">
     <template #header>
       <h1>{{ attributeModeText }} Attribute</h1>
     </template>

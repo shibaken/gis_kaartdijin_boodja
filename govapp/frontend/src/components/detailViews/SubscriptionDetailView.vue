@@ -1,17 +1,19 @@
 <script lang="ts" setup>
-  import { ref } from "vue";
+  import { ref, watch } from "vue";
   import { CatalogueTab, CatalogueView, NavigationEmits, SubscriptionDetailViewTabs } from "../viewState.api";
   import { LayerSubscription } from "../../providers/layerSubscriptionProvider.api";
   import SubscriptionViewDetailTab from "./SubscriptionViewDetailTab.vue";
 
   const props = defineProps<{
-    layerSubscription?: LayerSubscription
+    layerSubscription?: LayerSubscription,
+    activeTab: SubscriptionDetailViewTabs
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface NavEmits extends NavigationEmits {}
   const emit = defineEmits<NavEmits>();
   const activeTab = ref<SubscriptionDetailViewTabs>(SubscriptionDetailViewTabs.Details);
+  watch(props, () => activeTab.value = props.activeTab);
 
   function onTabClick (tab: SubscriptionDetailViewTabs) {
     activeTab.value = tab;
