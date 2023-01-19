@@ -9,6 +9,6 @@ services:
       GEOSERVER_ADMIN_PASSWORD: geoserver
       GEOSERVER_DATA_DIR: /data
       STABLE_EXTENSIONS: authkey-plugin sldservice-plugin wps-plugin querylayer-plugin mbstyle-plugin css-plugin mongodb-plugin
-      COMMUNITY_EXTENSIONS: geopkg-plugin
+      COMMUNITY_EXTENSIONS: geopkg-plugin ogcapi-plugin
     volumes:
       - ./data:/data
