@@ -10,11 +10,19 @@
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawCatalogueEntryFilter } from "../../backend/backend.api";
   import SortableHeader from "./SortableHeader.vue";
+  import { CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
 
   // get Stores and fetch with `storeToRef` to
   const layerSubscriptionStore = useLayerSubscriptionStore();
   const { layerSubscriptions, numPages, currentPage, filters, pageSize } = storeToRefs(layerSubscriptionStore);
   const { getLayerSubscriptions } = layerSubscriptionStore;
+
+  /**
+   * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
+   */
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface NavEmits extends NavigationEmits {}
+  const emit = defineEmits<NavEmits>();
 
   function setPage (pageNumber: number) {
     filters.value.pageNumber = pageNumber;
@@ -51,7 +59,8 @@
           <td><a :href="row.url">{{ row.url }}</a></td>
           <td>{{ row.status.label }}</td>
           <td>
-            <a href="#" class="me-2">View</a>
+            <a href="#" class="me-2"
+               @click="emit('navigate', CatalogueTab.LayerSubscriptions, CatalogueView.View, { recordId: row.id })">View</a>
             <a href="#">History</a>
           </td>
         </template>

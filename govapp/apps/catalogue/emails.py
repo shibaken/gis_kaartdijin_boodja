@@ -6,6 +6,13 @@
 from ..emails import emails
 
 
+class CatalogueEntryLockedEmail(emails.TemplateEmailBase):
+    """Catalogue Entry Locked Email Abstraction."""
+    subject = "A Catalogue Entry was locked"
+    html_template = "catalogue_entry_locked_email.html"
+    txt_template = "catalogue_entry_locked_email.txt"
+
+
 class CatalogueEntryCreatedEmail(emails.TemplateEmailBase):
     """Catalogue Entry Created Email Abstraction."""
     subject = "A new Catalogue Entry was created"

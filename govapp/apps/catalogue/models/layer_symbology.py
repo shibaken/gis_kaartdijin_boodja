@@ -3,12 +3,16 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
+from .. import mixins
+from .... import gis
 
 
-class LayerSymbology(models.Model):
+@reversion.register()
+class LayerSymbology(mixins.RevisionedMixin):
     """Model for a Layer Symbology."""
     name = models.TextField()
     sld = models.TextField()
@@ -31,3 +35,15 @@ class LayerSymbology(models.Model):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    def publish(self) -> None:
+        """Publishes the style to GeoServer."""
+        # Retrieve Workspace Name
+        workspace = self.catalogue_entry.workspace.name
+
+        # Push Style to GeoServer
+        gis.geoserver.GeoServer(workspace=workspace).upload_style(
+            layer=self.catalogue_entry.metadata.name,
+            name=self.name,
+            sld=self.sld,
+        )

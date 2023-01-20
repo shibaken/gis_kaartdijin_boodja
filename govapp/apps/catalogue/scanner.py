@@ -9,9 +9,8 @@ from django import conf
 
 # Local
 from . import absorber
-from . import emails
-from . import storage
-from ..accounts import utils
+from . import notifications
+from . import sharepoint
 
 
 # Logging
@@ -24,12 +23,7 @@ class Scanner:
     def __init__(self) -> None:
         """Instantiates the Scanner."""
         # Storage
-        self.storage = storage.sharepoint.SharepointStorage(
-            url=conf.settings.SHAREPOINT_URL,
-            root=conf.settings.SHAREPOINT_LIST,
-            username=conf.settings.SHAREPOINT_USERNAME,
-            password=conf.settings.SHAREPOINT_PASSWORD,
-        )
+        self.storage = sharepoint.SharepointStorage()
 
     def scan(self) -> None:
         """Scans for new files in the staging area to be absorbed."""
@@ -59,10 +53,8 @@ class Scanner:
                 # Log and continue
                 log.error(f"Error absorbing file '{file}': {exc}")
 
-                # Send Emails!
-                emails.FileAbsorbFailEmail().send_to_users(
-                    *utils.all_administrators(),  # Send to all administrators
-                )
+                # Notify!
+                notifications.file_absorb_failure()
 
         # Log
         log.info("Scanning storage staging area complete!")

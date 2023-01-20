@@ -19,7 +19,8 @@
     "bootstrap": "^5.2.2",
     "luxon": "^3.0.4",
     "pinia": "^2.0.22",
-    "vue": "^3.2.37"
+    "vue": "^3.2.37",
+    "ol": "^7.2.2"
   },
   "devDependencies": {
     "@types/luxon": "^3.0.1",

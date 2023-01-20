@@ -57,12 +57,15 @@
           <td>
             <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View,
             { recordId: row.catalogueEntry?.id })">
-              {{ row.catalogueEntry.name }}
+              {{ row.catalogueEntry?.name }}
             </a>
           </td>
           <td>{{ row.status.label }}</td>
           <td>
-            <a href="#">View</a>
+            <a href="#" @click="emit('navigate', CatalogueTab.LayerSubmissions, CatalogueView.View,
+            { recordId: row.id })">
+              View
+            </a>
           </td>
         </template>
         <template #content>

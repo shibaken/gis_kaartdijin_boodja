@@ -1,10 +1,8 @@
 <script lang="ts" setup async>
   import DataTable from "./DataTable.vue";
-  import PlusCircleFill from "../icons/plusCircleFill.vue";
   import CollapsibleRow from "./CollapsibleRow.vue";
   import { useCatalogueEntryStore } from "../../stores/CatalogueEntryStore";
   import { storeToRefs } from "pinia";
-  import DataTablePagination from "./DataTablePagination.vue";
   import { onMounted } from "vue";
   import { DateTime } from "luxon";
   import { CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
@@ -12,10 +10,19 @@
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawCatalogueEntryFilter } from "../../backend/backend.api";
   import { catalogueEntryProvider } from "../../providers/catalogueEntryProvider";
+  import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
 
-  // get Stores and fetch with `storeToRef` to
+  const props = withDefaults(defineProps<{
+      catalogueEntry?: CatalogueEntry,
+      view: CatalogueView
+    }>(),
+    {
+      view: CatalogueView.View
+    });
+
+  // get Stores and fetch with `storeToRef`
   const catalogueEntryStore = useCatalogueEntryStore();
-  const { catalogueEntries, numPages, pageSize, currentPage, filters } = storeToRefs(catalogueEntryStore);
+  const { catalogueEntries, filters, catalogueEntryMeta } = storeToRefs(catalogueEntryStore);
 
   /**
    * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
@@ -28,15 +35,20 @@
     filters.value.pageNumber = pageNumber;
   }
 
+  function setPageSize (size: number) {
+    filters.value.limit = size;
+  }
+
   const { sortDirection, onSort } = useTableSortComposable<RawCatalogueEntryFilter>(filters);
 
   onMounted(() => {
-    catalogueEntryProvider.fetchCatalogueEntries({});
+    filters.value.limit = 10;
+    catalogueEntryProvider.fetchCatalogueEntries(filters.value);
   });
 </script>
 
 <template>
-  <data-table>
+  <data-table :total="catalogueEntryMeta.total" @set-page="setPage" @set-page-size="setPageSize">
     <template #headers>
       <tr>
         <th></th>
@@ -62,8 +74,8 @@
           <td>{{ row.assignedTo?.username }}</td>
           <td>
             <a href="#" class="me-2"
-              @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
-              View
+               @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
+              {{ view === CatalogueView.Edit ? "Edit" : "View" }}
             </a>
             <a href="#">History</a>
           </td>
@@ -74,13 +86,6 @@
           </td>
         </template>
       </CollapsibleRow>
-      <tr>
-        <td colspan="9"><PlusCircleFill colour="#4284BC"></PlusCircleFill></td>
-      </tr>
-    </template>
-    <template #pagination>
-      <DataTablePagination :current-page="currentPage" :num-pages="numPages" :page-size="pageSize"
-                           :total="catalogueEntries.length" @set-page="setPage"/>
     </template>
   </data-table>
 </template>

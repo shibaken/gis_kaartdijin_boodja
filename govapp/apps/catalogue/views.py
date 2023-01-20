@@ -10,16 +10,16 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
-from reversion_rest_framework import mixins as reversion_mixins
 
 # Local
 from . import filters
 from . import mixins
 from . import models
 from . import permissions
-from . import reversion  # noqa: F401
 from . import serializers
 from ..accounts import permissions as accounts_permissions
+from ..logs import mixins as logs_mixins
+from ..logs import utils as logs_utils
 
 # Typing
 from typing import cast
@@ -32,7 +32,9 @@ UserModel = auth.get_user_model()
 @drf_utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
 class CatalogueEntryViewSet(
     mixins.ChoicesMixin,
-    reversion_mixins.HistoryMixin,
+    mixins.HistoryMixin,
+    logs_mixins.ActionsLogMixin,
+    logs_mixins.CommunicationsLogMixin,
     viewsets.mixins.RetrieveModelMixin,
     viewsets.mixins.ListModelMixin,
     viewsets.mixins.UpdateModelMixin,
@@ -42,6 +44,7 @@ class CatalogueEntryViewSet(
     queryset = models.catalogue_entries.CatalogueEntry.objects.all()
     serializer_class = serializers.catalogue_entries.CatalogueEntrySerializer
     filterset_class = filters.CatalogueEntryFilter
+    search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
@@ -62,7 +65,16 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Lock
-        catalogue_entry.lock()
+        success = catalogue_entry.lock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was locked"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -85,7 +97,16 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Unlock
-        catalogue_entry.unlock()
+        success = catalogue_entry.unlock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was unlocked"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -108,7 +129,16 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Decline
-        catalogue_entry.decline()
+        success = catalogue_entry.decline()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was declined"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -135,7 +165,16 @@ class CatalogueEntryViewSet(
         user = shortcuts.get_object_or_404(UserModel, id=user_pk)
 
         # Assign!
-        catalogue_entry.assign(user)
+        success = catalogue_entry.assign(user)
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action=f"Catalogue entry was assigned to {user} (id: {user.pk})"
+            )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -158,7 +197,47 @@ class CatalogueEntryViewSet(
         catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Unassign!
-        catalogue_entry.unassign()
+        success = catalogue_entry.unassign()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was unassigned"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def geoserver(self, request: request.Request, pk: str) -> response.Response:
+        """Re-pushes the Catalogue Entry to GeoServer.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Catalogue Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Catalogue Entry
+        # Help `mypy` by casting the resulting object to a Catalogue Entry
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Publish to GeoServer!
+        catalogue_entry.symbology.publish()
+        catalogue_entry.active_layer.publish()
+
+        # Add Action Log Entry
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=catalogue_entry,
+            action="Catalogue entry was re-published to GeoServer"
+        )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -170,6 +249,7 @@ class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.custodians.Custodian.objects.all()
     serializer_class = serializers.custodians.CustodianSerializer
     filterset_class = filters.CustodianFilter
+    search_fields = ["name", "contact_name", "contact_email", "contact_phone"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Attributes"])
@@ -188,6 +268,7 @@ class LayerAttributeViewSet(
     serializer_class = serializers.layer_attributes.LayerAttributeSerializer
     serializer_classes = {"create": serializers.layer_attributes.LayerAttributeCreateSerializer}
     filterset_class = filters.LayerAttributeFilter
+    search_fields = ["name", "type"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -203,15 +284,22 @@ class LayerMetadataViewSet(
     queryset = models.layer_metadata.LayerMetadata.objects.all()
     serializer_class = serializers.layer_metadata.LayerMetadataSerializer
     filterset_class = filters.LayerMetadataFilter
+    search_fields = ["name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
-class LayerSubmissionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+class LayerSubmissionViewSet(
+    mixins.ChoicesMixin,
+    logs_mixins.ActionsLogMixin,
+    logs_mixins.CommunicationsLogMixin,
+    viewsets.ReadOnlyModelViewSet,
+):
     """Layer Submission View Set."""
     queryset = models.layer_submissions.LayerSubmission.objects.all()
     serializer_class = serializers.layer_submissions.LayerSubmissionSerializer
     filterset_class = filters.LayerSubmissionFilter
+    search_fields = ["name", "description", "catalogue_entry__name"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
@@ -220,6 +308,7 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSe
     queryset = models.layer_subscriptions.LayerSubscription.objects.all()
     serializer_class = serializers.layer_subscriptions.LayerSubscriptionSerializer
     filterset_class = filters.LayerSubscriptionFilter
+    search_fields = ["name"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
@@ -234,6 +323,7 @@ class LayerSymbologyViewSet(
     queryset = models.layer_symbology.LayerSymbology.objects.all()
     serializer_class = serializers.layer_symbology.LayerSymbologySerializer
     filterset_class = filters.LayerSymbologyFilter
+    search_fields = ["name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -253,6 +343,7 @@ class EmailNotificationViewSet(
     serializer_class = serializers.notifications.EmailNotificationSerializer
     serializer_classes = {"create": serializers.notifications.EmailNotificationCreateSerializer}
     filterset_class = filters.EmailNotificationFilter
+    search_fields = ["name", "email"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -272,4 +363,14 @@ class WebhookNotificationViewSet(
     serializer_class = serializers.notifications.WebhookNotificationSerializer
     serializer_classes = {"create": serializers.notifications.WebhookNotificationCreateSerializer}
     filterset_class = filters.WebhookNotificationFilter
+    search_fields = ["name", "url"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+
+
+@drf_utils.extend_schema(tags=["Catalogue - Workspaces"])
+class WorkspaceViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+    """Workspace View Set."""
+    queryset = models.workspaces.Workspace.objects.all()
+    serializer_class = serializers.workspaces.WorkspaceSerializer
+    filterset_class = filters.WorkspaceFilter
+    search_fields = ["name"]

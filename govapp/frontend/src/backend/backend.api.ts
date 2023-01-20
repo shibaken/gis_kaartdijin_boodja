@@ -2,8 +2,8 @@ import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
 
 export interface PaginatedRecord<T> {
   count: number;
-  next: string | null;
-  previous: string | null;
+  next?: string | null;
+  previous?: string | null;
   results: Array<T>;
 }
 
@@ -33,6 +33,7 @@ export interface RawCatalogueEntry {
   layers: Array<number>;
   email_notifications: Array<number>;
   webhook_notifications: Array<number>;
+  editors: Array<number>;
 }
 
 export interface RawLayerSubmission {
@@ -46,6 +47,12 @@ export interface RawLayerSubmission {
   attributes: Array<number>;
   metadata: number;
   symbology: number;
+}
+
+export interface RawUser {
+  id: number;
+  username: string;
+  groups: Array<number>;
 }
 
 export interface RawPaginationFilter extends Record<string, unknown> {
@@ -79,6 +86,14 @@ export interface RawUserFilter extends RawPaginationFilter {
   id__in?: Array<number>;
 }
 
+export interface RawAttributeFilter extends RawPaginationFilter {
+  catalogue_entry__in?: Array<number>
+}
+
+export interface RawSymbologyFilter extends RawPaginationFilter {
+  catalogue_entry?: number
+}
+
 export interface PaginationState {
   currentPage: number;
   numPages: number;
@@ -99,7 +114,7 @@ export type LayerSubmissionStatus = "Submitted"|"Accepted"|"Declined";
 export interface User {
   id: number;
   username: string;
-  groups: Array<number>;
+  groups: Array<Group>;
 }
 
 export enum NotificationRequestType {
@@ -134,7 +149,6 @@ export interface RawSymbology {
 export interface RawAttribute {
   id: number;
   name: string;
-  description?: string;
   type: string;
   order: number;
   catalogue_entry: number;
@@ -159,6 +173,27 @@ export interface RawCustodian {
 export interface Group {
   id: number;
   name: string;
+}
+
+export interface RawCommunicationLogDocument {
+  id: number;
+  name?: string;
+  description?: string;
+  uploaded_at: string
+  file: string;
+}
+
+export interface RawCommunicationLog {
+  id: number;
+  created_at: string;
+  type: number;
+  to?: string;
+  cc?: string;
+  from: string;
+  subject?: string;
+  text?: string;
+  documents: Array<RawCommunicationLogDocument>;
+  user?: number;
 }
 
 /**

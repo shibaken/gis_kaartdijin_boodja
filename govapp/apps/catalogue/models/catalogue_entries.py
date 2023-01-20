@@ -2,13 +2,18 @@
 
 
 # Third-Party
+from django import conf
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.db import models
 from rest_framework import request
+import reversion
 
 # Local
 from . import custodians
+from . import workspaces
+from .. import notifications as notifications_utils
+from .. import mixins
 from .. import utils
 from ...accounts import utils as accounts_utils
 
@@ -17,7 +22,12 @@ from typing import TYPE_CHECKING, Optional, Union
 
 # Type Checking
 if TYPE_CHECKING:
+    from . import layer_attributes
+    from . import layer_metadata
     from . import layer_submissions
+    from . import layer_subscriptions
+    from . import layer_symbology
+    from . import notifications
 
 
 # Shortcuts
@@ -33,13 +43,23 @@ class CatalogueEntryStatus(models.IntegerChoices):
     PENDING = 5
 
 
-class CatalogueEntry(models.Model):
+@reversion.register(
+    follow=(
+        "attributes",
+        "metadata",
+        "layers",
+        "symbology",
+        "email_notifications",
+        "webhook_notifications",
+    )
+)
+class CatalogueEntry(mixins.RevisionedMixin):
     """Model for a Catalogue Entry."""
     name = models.TextField()
     description = models.TextField()
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     updated_at = models.DateTimeField(auto_now=True)
-    editors = models.ManyToManyField(UserModel)
+    editors = models.ManyToManyField(UserModel, blank=True)
     custodian = models.ForeignKey(
         custodians.Custodian,
         default=None,
@@ -56,6 +76,22 @@ class CatalogueEntry(models.Model):
         related_name="assigned",
         on_delete=models.SET_NULL,
     )
+    workspace = models.ForeignKey(
+        workspaces.Workspace,
+        default=conf.settings.GEOSERVER_DEFAULT_WORKSPACE_ID,
+        related_name="catalogue_entries",
+        on_delete=models.PROTECT,
+    )
+
+    # Type Hints for Reverse Relations
+    # These aren't exactly right, but are useful for catching simple mistakes.
+    attributes: "models.Manager[layer_attributes.LayerAttribute]"
+    layers: "models.Manager[layer_submissions.LayerSubmission]"
+    metadata: "layer_metadata.LayerMetadata"
+    subscription: "layer_subscriptions.LayerSubscription"
+    symbology: "layer_symbology.LayerSymbology"
+    email_notifications: "models.Manager[notifications.EmailNotification]"
+    webhook_notifications: "models.Manager[notifications.WebhookNotification]"
 
     class Meta:
         """Catalogue Entry Model Metadata."""
@@ -159,8 +195,12 @@ class CatalogueEntry(models.Model):
         # Check and Return
         return self.editors.all().filter(id=user.id).exists()
 
-    def lock(self) -> None:
-        """Locks the Catalogue Entry."""
+    def lock(self) -> bool:
+        """Locks the Catalogue Entry.
+
+        Returns:
+            bool: Whether the locking was successful.
+        """
         # Check Catalogue Entry
         if self.is_unlocked():
             # Check if Catalogue Entry is new
@@ -180,19 +220,45 @@ class CatalogueEntry(models.Model):
                 # Set Catalogue Entry to Pending
                 self.status = CatalogueEntryStatus.PENDING
 
+            # Publish the Symbology
+            self.symbology.publish()
+
             # Save the Catalogue Entry
             self.save()
 
-    def unlock(self) -> None:
-        """Unlocks the Catalogue Entry."""
+            # Send Emails
+            notifications_utils.catalogue_entry_lock(self)
+
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def unlock(self) -> bool:
+        """Unlocks the Catalogue Entry.
+
+        Returns:
+            bool: Whether unlocking was successful.
+        """
         # Check Catalogue Entry
         if self.is_locked() or self.is_pending():
             # Set Catalogue Entry to Draft
             self.status = CatalogueEntryStatus.DRAFT
             self.save()
 
-    def decline(self) -> None:
-        """Declines the Catalogue Entry."""
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def decline(self) -> bool:
+        """Declines the Catalogue Entry.
+
+        Returns:
+            bool: Whether the declining was successful.
+        """
         # Check Catalogue Entry
         if self.is_unlocked():
             # Check if Catalogue Entry is new
@@ -204,11 +270,20 @@ class CatalogueEntry(models.Model):
             self.status = CatalogueEntryStatus.DECLINED
             self.save()
 
-    def assign(self, user: auth_models.User) -> None:
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def assign(self, user: auth_models.User) -> bool:
         """Assigns a user to the Catalogue Entry if applicable.
 
         Args:
             user (auth_models.User): User to be assigned.
+
+        Returns:
+            bool: Whether the assigning was successful.
         """
         # Check if the user can be assigned
         # To be assigned, a user must be:
@@ -219,10 +294,26 @@ class CatalogueEntry(models.Model):
             self.assigned_to = user
             self.save()
 
-    def unassign(self) -> None:
-        """Unassigns the Catalogue Entry's user if applicable."""
+            # Success!
+            return True
+
+        # Failed
+        return False
+
+    def unassign(self) -> bool:
+        """Unassigns the Catalogue Entry's user if applicable.
+
+        Returns:
+            bool: Whether the unassigning was successful.
+        """
         # Check if there is an assigned user
         if self.assigned_to is not None:
             # Unassign
             self.assigned_to = None
             self.save()
+
+            # Success!
+            return True
+
+        # Failed
+        return False

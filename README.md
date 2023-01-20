@@ -11,6 +11,7 @@ database. The backend uses Poetry to manage its dependencies.
 * [Python 3.10](https://www.python.org/downloads/release/python-3100/)
 * [Pip](https://pypi.org/project/pip/)
 * [Poetry](https://python-poetry.org/)
+* [GDAL](https://gdal.org/download.html)
 
 ### Development
 #### Installation
@@ -31,7 +32,20 @@ $ poetry install
 
 # Remember to enter the virtual environment shell after installation
 $ poetry shell
+
+# Check GDAL is installed correctly
+$ gdal-config --version
+3.3.2
+
+# Install Python GDAL
+$ pip install gdal==`gdal-config --version`
 ```
+
+#### Setup
+In order for the application to run correctly, at least **1** workspace must
+be created in the Django app which corresponds to the environment variable /
+setting `GEOSERVER_DEFAULT_WORKSPACE_ID`. This must correspond to an existing
+workspace in the application's GeoServer instance.
 
 #### Running
 To run a development server, use the `Django` `manage.py` script:

@@ -5,22 +5,18 @@
 import datetime
 import logging
 import pathlib
+import shutil
 
 # Third-Party
 from django import conf
 from django.db import transaction
-import reversion
 
 # Local
-from . import emails
 from . import models
-from . import readers
-from . import storage
+from . import notifications
+from . import sharepoint
 from . import utils
-from ..accounts import utils as accounts_utils
-
-# Typing
-from typing import Optional
+from ...gis import readers
 
 
 # Logging
@@ -33,12 +29,7 @@ class Absorber:
     def __init__(self) -> None:
         """Instantiates the Absorber."""
         # Storage
-        self.storage = storage.sharepoint.SharepointStorage(
-            url=conf.settings.SHAREPOINT_URL,
-            root=conf.settings.SHAREPOINT_LIST,
-            username=conf.settings.SHAREPOINT_USERNAME,
-            password=conf.settings.SHAREPOINT_PASSWORD,
-        )
+        self.storage = sharepoint.SharepointStorage()
 
     def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
@@ -66,57 +57,39 @@ class Absorber:
         log.info(f"Retrieved '{path}' -> '{filepath}'")
         log.info(f"Archived '{path}' -> {archive_path} ({archive})")
 
-        # Determine the layers in the file
-        layers = readers.utils.layers(filepath)
-
-        # Log
-        log.info(f"Detected layers: {layers}")
+        # Construct Reader
+        reader = readers.reader.FileReader(filepath)
 
         # Loop through layers
-        for layer in layers:
+        for layer in reader.layers():
             # Log
-            log.info(f"Absorbing layer '{layer}' from '{filepath}'")
+            log.info(f"Absorbing layer '{layer.name}' from '{filepath}'")
 
             # Absorb layer
             self.absorb_layer(filepath, layer, archive)
 
-        # Delete local temporary copy of file
-        filepath.unlink()
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(filepath.parent, ignore_errors=True)
 
-    def absorb_layer(self, filepath: pathlib.Path, layer: str, archive: str) -> None:
+    def absorb_layer(self, filepath: pathlib.Path, layer: readers.base.LayerReader, archive: str) -> None:
         """Absorbs a layer into the system.
 
         Args:
             filepath (pathlib.Path): File to absorb layer from.
-            layer (str): Layer to absorb.
+            layer (readers.base.LayerReader): Layer to absorb.
             archive (str): URL to the archived file for this layer.
         """
         # Log
-        log.info(f"Extracting data from layer: '{layer}'")
+        log.info(f"Extracting data from layer: '{layer.name}'")
 
-        # Extract metadata
-        metadata = readers.utils.metadata(filepath, layer)
-
-        # Attempt to extract attributes
-        try:
-            # Extract attributes
-            attributes = readers.utils.attributes(filepath, layer)
-
-        except ValueError:
-            # Could not extract attributes
-            attributes = None
-
-        # Attempt to extract symbology
-        try:
-            # Extract symbology
-            symbology = readers.utils.symbology(filepath, layer)
-
-        except ValueError:
-            # Could not extract symbology
-            symbology = None
+        # Extract metadata, attributes and symbology
+        metadata = layer.metadata()
+        attributes = layer.attributes()
+        symbology = layer.symbology()
 
         # Retrieve existing catalogue entry from the database
-        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()
+        # Here we specifically check the Layer Metadata name
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(metadata__name=metadata.name).first()
 
         # Check existing catalogue entry
         if not catalogue_entry:
@@ -128,21 +101,23 @@ class Absorber:
             self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
 
     @transaction.atomic()
-    @reversion.create_revision()  # type: ignore[misc]
     def create_catalogue_entry(
         self,
-        metadata: readers.types.metadata.Metadata,
-        attributes: Optional[list[readers.types.attributes.Attribute]],
-        symbology: Optional[readers.types.symbology.Symbology],
+        metadata: readers.types.Metadata,
+        attributes: list[readers.types.Attribute],
+        symbology: readers.types.Symbology,
         archive: str,
-    ) -> None:
+    ) -> bool:
         """Creates a new catalogue entry with the supplied values.
 
         Args:
             metadata (Metadata): Metadata for the entry.
-            attributes (Optional[list[Attribute]]): Attributes for the entry.
-            symbology (Optional[Symbology]): Symbology for the entry.
+            attributes (list[Attribute]): Attributes for the entry.
+            symbology (Symbology): Symbology for the entry.
             archive (str): Archive URL for the entry
+
+        Returns:
+            bool: Whether the creation was successful.
         """
         # Log
         log.info("Creating new catalogue entry")
@@ -162,6 +137,7 @@ class Absorber:
             description=metadata.description,
             file=archive,
             is_active=True,  # Active!
+            created_at=metadata.created_at,
             hash=attributes_hash,
             catalogue_entry=catalogue_entry,
         )
@@ -173,50 +149,53 @@ class Absorber:
             catalogue_entry=catalogue_entry,
         )
 
-        # Check symbology
-        if symbology:
-            # Create Layer Symbology
-            models.layer_symbology.LayerSymbology.objects.create(
-                name=symbology.name,
-                sld=symbology.sld,
+        # Loop through attributes
+        for attribute in attributes:
+            # Create Attribute
+            models.layer_attributes.LayerAttribute.objects.create(
+                name=attribute.name,
+                type=attribute.type,
+                order=attribute.order,
                 catalogue_entry=catalogue_entry,
             )
 
-        # Check attributes
-        if attributes:
-            # Loop through attributes
-            for attribute in attributes:
-                # Create Attribute
-                models.layer_attributes.LayerAttribute.objects.create(
-                    name=attribute.name,
-                    type=attribute.type,
-                    order=attribute.order,
-                    catalogue_entry=catalogue_entry,
-                )
-
-        # Send Emails!
-        emails.CatalogueEntryCreatedEmail().send_to_users(
-            *accounts_utils.all_administrators(),  # Send to all administrators
+        # Create Layer Symbology
+        models.layer_symbology.LayerSymbology.objects.create(
+            name=symbology.name,
+            sld=symbology.sld,
+            catalogue_entry=catalogue_entry,
         )
 
+        # Publish Layer and Symbology
+        catalogue_entry.active_layer.publish()
+        catalogue_entry.symbology.publish()
+
+        # Notify!
+        notifications.catalogue_entry_creation()
+
+        # Return
+        return True
+
     @transaction.atomic()
-    @reversion.create_revision()  # type: ignore[misc]
     def update_catalogue_entry(
         self,
         catalogue_entry: models.catalogue_entries.CatalogueEntry,
-        metadata: readers.types.metadata.Metadata,
-        attributes: Optional[list[readers.types.attributes.Attribute]],
-        symbology: Optional[readers.types.symbology.Symbology],
+        metadata: readers.types.Metadata,
+        attributes: list[readers.types.Attribute],
+        symbology: readers.types.Symbology,
         archive: str,
-    ) -> None:
+    ) -> bool:
         """Creates a new catalogue entry with the supplied values.
 
         Args:
             catalogue_entry (CatalogueEntry): Catalogue entry to update.
             metadata (Metadata): Metadata for the entry.
-            attributes (Optional[list[Attribute]]): Attributes for the entry.
-            symbology (Optional[Symbology]): Symbology for the entry.
-            archive (str): Archive URL for the entry
+            attributes (list[Attribute]): Attributes for the entry.
+            symbology (Symbology): Symbology for the entry.
+            archive (str): Archive URL for the entry.
+
+        Returns:
+            bool: Whether the update was successful.
         """
         # Log
         log.info("Updating existing catalogue entry")
@@ -226,28 +205,32 @@ class Absorber:
 
         # Create New Layer Submission
         layer_submission = models.layer_submissions.LayerSubmission.objects.create(
-                name=metadata.name,
-                description=metadata.description,
-                file=archive,
-                is_active=False,  # Starts out Inactive
-                hash=attributes_hash,
-                catalogue_entry=catalogue_entry,
-            )
+            name=metadata.name,
+            description=metadata.description,
+            file=archive,
+            is_active=False,  # Starts out Inactive
+            created_at=metadata.created_at,
+            hash=attributes_hash,
+            catalogue_entry=catalogue_entry,
+        )
 
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate()
 
+        # Check Success
+        success = not layer_submission.is_declined()
+
         # Check Layer Submission
-        if layer_submission.is_declined():
-            # Send Update Failure Email
-            emails.CatalogueEntryUpdateFailEmail().send_to_users(
-                *accounts_utils.all_administrators(),  # Send to all administrators
-                *catalogue_entry.editors.all(),  # Send to all editors
-            )
+        if success:
+            # Publish Layer
+            catalogue_entry.active_layer.publish()
+
+            # Notify!
+            notifications.catalogue_entry_update_success(catalogue_entry)
 
         else:
-            # Send Update Success Email
-            emails.CatalogueEntryUpdateSuccessEmail().send_to_users(
-                *accounts_utils.all_administrators(),  # Send to all administrators
-                *catalogue_entry.editors.all(),  # Send to all editors
-            )
+            # Send Update Failure Email
+            notifications.catalogue_entry_update_failure(catalogue_entry)
+
+        # Return
+        return success

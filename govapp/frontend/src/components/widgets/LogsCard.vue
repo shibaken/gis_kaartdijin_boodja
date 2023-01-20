@@ -1,6 +1,17 @@
 <script lang="ts" setup>
   import Card from "./Card.vue";
+  import { useModalStore } from "../../stores/ModalStore";
+  import { ModalTypes } from "../../stores/ModalStore.api";
 
+  const modalStore = useModalStore();
+
+  function onLogShowClick () {
+    modalStore.showModal(ModalTypes.COMMS_LOG);
+  }
+
+  function onLogAddClick () {
+    modalStore.showModal(ModalTypes.COMMS_LOG_ADD);
+  }
 </script>
 
 <template>
@@ -12,9 +23,9 @@
       <div class="w-100">
         <small>Communications</small>
       </div>
-      <a class="link">Show</a>
+      <a class="link" @click="onLogShowClick">Show</a>
       <span class="link"> | </span>
-      <a class="link">Add Entry</a>
+      <a class="link" @click="onLogAddClick">Add Entry</a>
       <div class="w-100 my-3 border-top"></div>
       <div class="w-100">
         <small>Actions</small>

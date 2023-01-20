@@ -1,0 +1,95 @@
+layers:
+  - name: Local Govt. Authorities (LGA)
+    description: >-
+      Local Government Authority for the State of Western Australia. Generally, Derived from the Spatial Cadastral
+      Database (SCDB) and based on GDA 94. Updated regularly when amendments/changes are formalised. The data extent
+      includes Cocos and Christmas Islands.
+
+
+      Supports CDDP and inclusion of Landgate Administration Boundaries in corporate applications
+
+
+      This data was processed from an ESRI geodatabase in the new format.
+    created_at: 2022-10-27T04:33:04.360000+00:00
+    attributes:
+      - [1, OBJECTID, Integer64]
+      - [2, LGA_ABS_NUMBER, Integer]
+      - [3, LGA_DATE_TIME, DateTime]
+      - [4, LGA_NAME1, String]
+      - [5, LGA_LGA_NAME, String]
+      - [6, LGA_TYPE, String]
+      - [7, LGA_LABEL, String]
+      - [8, LGA_LEGAL_AREA, Real]
+      - [9, SHAPE_Length, Real]
+      - [10, SHAPE_Area, Real]
+    symbology: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:ogc="http://www.opengis.net/ogc" version="1.1.0" xmlns:se="http://www.opengis.net/se">
+       <NamedLayer>
+        <se:Name></se:Name>
+        <UserStyle>
+         <se:Name></se:Name>
+         <se:FeatureTypeStyle>
+          <se:Rule>
+           <se:Name>Single symbol</se:Name>
+           <se:LineSymbolizer>
+            <se:Stroke>
+             <se:SvgParameter name="stroke">#cccccc</se:SvgParameter>
+             <se:SvgParameter name="stroke-width">6</se:SvgParameter>
+             <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+             <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+            </se:Stroke>
+           </se:LineSymbolizer>
+          </se:Rule>
+         </se:FeatureTypeStyle>
+        </UserStyle>
+       </NamedLayer>
+      </StyledLayerDescriptor>
+  - name: Locality Areas
+    description: >-
+      Locality Boundaries for the State of Western Australia. Generally, Post Code boundaries coincide with the Locality
+      boundaries. Derived from the Spatial Cadastral Database (SCDB) and based on GDA 94. Updated regularly when
+      amendments/changes are formalised. The data extent includes Cocos and Christmas Islands.
+
+
+      Loaded to support CDDP data distribution and internal mapping requirements.
+
+
+      Local Government Authority and Locality Boundaries for the State of Western Australia. Generally, Post Code
+      boundaries coincide with the Locality boundaries. Derived from the Spatial Cadastral Database (SCDB) and based on
+      GDA 94. Updated regularly when amendments/changes are formalised. 
+
+
+      REQUIRED: A summary of the intentions with which the data set was developed.
+    created_at: 2022-10-27T04:33:04.877000+00:00
+    attributes:
+      - [1, OBJECTID, Integer64]
+      - [2, LOC_LOCALITY_NAME, String]
+      - [3, LOC_POSTCODE, String]
+      - [4, LOC_CREATE_DATE, DateTime]
+      - [5, LOC_LEGAL_AREA, Real]
+      - [6, SHAPE_Length, Real]
+      - [7, SHAPE_Area, Real]
+    symbology: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/StyledLayerDescriptor.xsd" xmlns:ogc="http://www.opengis.net/ogc" version="1.1.0" xmlns:se="http://www.opengis.net/se">
+       <NamedLayer>
+        <se:Name></se:Name>
+        <UserStyle>
+         <se:Name></se:Name>
+         <se:FeatureTypeStyle>
+          <se:Rule>
+           <se:Name>Single symbol</se:Name>
+           <se:LineSymbolizer>
+            <se:Stroke>
+             <se:SvgParameter name="stroke">#00ff00</se:SvgParameter>
+             <se:SvgParameter name="stroke-width">1</se:SvgParameter>
+             <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
+             <se:SvgParameter name="stroke-linecap">square</se:SvgParameter>
+            </se:Stroke>
+           </se:LineSymbolizer>
+          </se:Rule>
+         </se:FeatureTypeStyle>
+        </UserStyle>
+       </NamedLayer>
+      </StyledLayerDescriptor>

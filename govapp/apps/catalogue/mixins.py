@@ -11,6 +11,85 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import serializers
 from rest_framework import viewsets
+from reversion import models as reversion_models
+from reversion_rest_framework import mixins as reversion_mixins
+import reversion
+
+# Typing
+from typing import Any, Iterable, Optional
+
+
+class HistoryMixin(reversion_mixins.HistoryMixin):
+    """Retrieve and list the Django Reversion versions for this model."""
+
+    def _build_serializer(
+        self,
+        instance_class: type,
+        queryset: models.QuerySet,
+        many: bool = False,
+    ) -> serializers.Serializer:
+        """Builds a serializer for the Django Reversion versions.
+
+        Args:
+            instance_class (type): Instance class to build serializer for.
+            queryset (models.QuerySet): Queryset to build serializer for.
+            many (bool): Whether this is a `many` serializer.
+
+        Returns:
+            serializers.Serializer: The built serializer.
+        """
+        # Build Serializer
+        serializer = super()._build_serializer(instance_class, queryset, many)
+
+        # Construct Patch Function
+        def get_field_dict(obj: reversion_models.Version) -> dict[str, Any]:
+            # Remove "_id" suffix from field names and return
+            return {k.rsplit("_id")[0]: v for (k, v) in obj.field_dict.items()}
+
+        # Retrieve Child Serializer if Applicable
+        # This is required because if `many == True` then the serializer is
+        # actually a `ListSerializer`, and we want to patch the child.
+        s = serializer if not many else serializer.child
+
+        # Patch Serializer
+        s.get_field_dict = get_field_dict
+
+        # Return Serializer
+        return serializer  # type: ignore[no-any-return]
+
+
+class RevisionedMixin(models.Model):
+    """Django model tracked by Django Reversion through the save method."""
+
+    class Meta:
+        """Revisioned Mixin Metadata."""
+        abstract = True
+
+    def save(
+        self,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: Optional[str] = None,
+        update_fields: Optional[Iterable[str]] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Saves the Django model in the database.
+
+        Args:
+            force_insert (bool): Whether to force insert.
+            force_update (bool): Whether to force update.
+            using (Optional[str]): Database to use.
+            update_fields (Optional[Iterable[str]]): Fields to update.
+            **kwargs (Any): Extra keyword arguments for Django Reversion.
+        """
+        # Create Revision
+        with reversion.create_revision():
+            # Set Version User and Comment
+            reversion.set_user(kwargs.pop("version_user", None))
+            reversion.set_comment(kwargs.pop("version_comment", ""))
+
+            # Save the Model
+            return super().save(force_insert, force_update, using, update_fields)
 
 
 class MultipleSerializersMixin:

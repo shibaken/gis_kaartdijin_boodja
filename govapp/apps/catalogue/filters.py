@@ -32,7 +32,7 @@ class LayerAttributeFilter(filters.FilterSet):
     class Meta:
         """Layer Attribute Filter Metadata."""
         model = models.layer_attributes.LayerAttribute
-        fields = ()
+        fields = {"catalogue_entry": ["in"]}
 
 
 class LayerMetadataFilter(filters.FilterSet):
@@ -70,7 +70,7 @@ class LayerSymbologyFilter(filters.FilterSet):
     class Meta:
         """Layer Symbology Filter Metadata."""
         model = models.layer_symbology.LayerSymbology
-        fields = ()
+        fields = {"catalogue_entry"}
 
 
 class EmailNotificationFilter(filters.FilterSet):
@@ -86,4 +86,12 @@ class WebhookNotificationFilter(filters.FilterSet):
     class Meta:
         """Webhook Notification Filter Metadata."""
         model = models.notifications.WebhookNotification
+        fields = ()
+
+
+class WorkspaceFilter(filters.FilterSet):
+    """Workspace Filter."""
+    class Meta:
+        """Workspace Filter Metadata."""
+        model = models.workspaces.Workspace
         fields = ()

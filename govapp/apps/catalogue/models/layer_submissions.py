@@ -3,10 +3,18 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
+from . import layer_metadata
+from .. import mixins
+from .. import sharepoint
 from .. import utils
+from .... import gis
+
+# Typing
+from typing import cast
 
 
 class LayerSubmissionStatus(models.IntegerChoices):
@@ -16,13 +24,15 @@ class LayerSubmissionStatus(models.IntegerChoices):
     DECLINED = 3
 
 
-class LayerSubmission(models.Model):
+@reversion.register()
+class LayerSubmission(mixins.RevisionedMixin):
     """Model for a Layer Submission."""
     name = models.TextField()
     description = models.TextField()
     file = models.URLField()
     is_active = models.BooleanField()
     status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)
+    created_at = models.DateTimeField()
     submitted_at = models.DateTimeField(auto_now_add=True)
     hash = models.TextField()  # noqa: A003
     catalogue_entry = models.ForeignKey(
@@ -101,6 +111,13 @@ class LayerSubmission(models.Model):
             self.is_active = True
             self.save()
 
+            # Update the Catalogue Entry Metadata's Datetime
+            # Help `mypy` by casting the object to a Layer Metadata
+            metadata = self.catalogue_entry.metadata
+            metadata = cast(layer_metadata.LayerMetadata, metadata)
+            metadata.created_at = self.created_at
+            metadata.save()
+
             # Check if Catalogue Entry is Pending
             if self.catalogue_entry.is_pending():
                 # Lock it again
@@ -112,3 +129,23 @@ class LayerSubmission(models.Model):
             # Create New Inactive Layer Submission with Status DECLINED
             self.status = LayerSubmissionStatus.DECLINED
             self.save()
+
+    def publish(self) -> None:
+        """Publishes the layer to GeoServer."""
+        # Retrieve the File from Storage
+        filepath = sharepoint.SharepointStorage().get_from_url(url=self.file)
+
+        # Convert Layer to GeoPackage
+        geopackage = gis.conversions.to_geopackage(
+            filepath=filepath,
+            layer=self.catalogue_entry.metadata.name,
+        )
+
+        # Retrieve Workspace Name
+        workspace = self.catalogue_entry.workspace.name
+
+        # Push Layer to GeoServer
+        gis.geoserver.GeoServer(workspace=workspace).upload_geopackage(
+            layer=self.catalogue_entry.metadata.name,
+            filepath=geopackage,
+        )

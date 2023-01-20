@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "govapp.apps.accounts",
     "govapp.apps.catalogue",
     "govapp.apps.emails",
+    "govapp.apps.logs",
     "govapp.apps.publisher",
     "govapp.apps.swagger",
     "rest_framework",
@@ -70,7 +71,6 @@ MIDDLEWARE = [
     "dbca_utils.middleware.SSOLoginMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "govapp.middleware.CacheControl",
-    "reversion.middleware.RevisionMiddleware",
 ]
 ROOT_URLCONF = "govapp.urls"
 TEMPLATES = [
@@ -149,7 +149,10 @@ VERSION_NO = "2.00"
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+    ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 100,
 }
@@ -162,6 +165,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": PROJECT_VERSION,
     "SERVE_INCLUDE_SCHEMA": True,
     "POSTPROCESSING_HOOKS": [],
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # Logging
@@ -210,6 +214,12 @@ CRON_SCANNER_PERIOD_MINS = 5  # Run every 5 minutes
 CRON_CLASSES = [
     CRON_SCANNER_CLASS,
 ]
+
+# GeoServer Settings
+GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
+GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
+GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
+GEOSERVER_DEFAULT_WORKSPACE_ID = decouple.config("GEOSERVER_DEFAULT_WORKSPACE_ID", default=1, cast=int)  # Must match db
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":

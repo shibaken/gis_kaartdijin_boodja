@@ -11,6 +11,8 @@ djangorestframework = "^3.14.0"
 python-decouple = "^3.6"
 dj-database-url = "^1.0.0"
 psycopg2 = "^2.9.4"
+gunicorn = "19.9.0"
+whitenoise = "5.3.0"
 dbca-utils = {git = "https://github.com/dbca-wa/dbca-utils.git"}
 webtemplate_dbca = {git = "https://github.com/dbca-wa/webtemplate2.git"}
 drf-spectacular = "^0.24.2"
@@ -20,17 +22,9 @@ shareplum = "^0.5.1"
 django-reversion = "^5.0.4"
 django-reversion-rest-framework = "^1.1.2"
 django-cron = "^0.6.0"
-# DBCA Template Dependencies
-django-confy = "1.0.4"
-whitenoise = "5.3.0"
-django_media_serv = {git = "https://github.com/dbca-wa/django-media-serv.git" }
-gunicorn = "19.9.0"
-gevent = "21.12.0"
-django-crispy-forms = "1.14.0"
-django-countries = "7.2.1"
-djangorestframework-gis = "0.16"
-djangorestframework-csv = "2.0.0"
-geojson = "1.3.3"
+py7zr = "^0.20.2"
+rarfile = "^4.0"
+httpx = "^0.23.2"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.16.2"
@@ -53,6 +47,7 @@ django-coverage-plugin = "^2.0.3"
 types-python-dateutil = "^2.8.19.2"
 factory-boy = "^3.2.1"
 pytest-factoryboy = "^2.5.0"
+freezegun = "^1.2.2"
 
 [tool.poe.tasks]
 manage = "python3 manage.py"

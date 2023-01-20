@@ -8,3 +8,4 @@ from . import layer_submissions
 from . import layer_subscriptions
 from . import layer_symbology
 from . import notifications
+from . import workspaces

@@ -3,9 +3,11 @@
 
 # Third-Party
 from django.db import models
+import reversion
 
 # Local
 from . import catalogue_entries
+from .. import mixins
 
 
 class LayerSubscriptionStatus(models.IntegerChoices):
@@ -14,7 +16,8 @@ class LayerSubscriptionStatus(models.IntegerChoices):
     DISABLED = 2
 
 
-class LayerSubscription(models.Model):
+@reversion.register()
+class LayerSubscription(mixins.RevisionedMixin):
     """Model for a Layer Subscription."""
     name = models.TextField()
     url = models.URLField()

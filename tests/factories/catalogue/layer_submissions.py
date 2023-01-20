@@ -20,6 +20,7 @@ class LayerSubmissionFactory(factory.django.DjangoModelFactory):
     is_active = False
     status = factory.fuzzy.FuzzyChoice(models.layer_submissions.LayerSubmissionStatus)
     submitted_at = factory.Faker("date_time_this_year", tzinfo=datetime.timezone.utc)
+    created_at = factory.Faker("date_time_this_year", tzinfo=datetime.timezone.utc)
 
     class Meta:
         """Layer Submission Factory Metadata."""

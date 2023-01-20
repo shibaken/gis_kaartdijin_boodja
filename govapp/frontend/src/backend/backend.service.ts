@@ -1,7 +1,11 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
-  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch } from "./backend.api";
-import type { PaginatedRecord, Params, StatusType, User } from "./backend.api";
+  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
+  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter } from "./backend.api";
+import { CommunicationLogType } from "../providers/logsProvider.api";
+import type { PaginatedRecord, Params, StatusType } from "./backend.api";
+
+const GEOSERVER_URL = import.meta.env.VITE_GEOSERVER_URL;
 
 function getCookie(name: string) {
   if (!document.cookie) {
@@ -31,7 +35,7 @@ function fetcher (input: RequestInfo | URL, init: RequestInit = {}) {
 export function stripNullParams<T extends object> (filter: T): Params {
   return Object.fromEntries(
     Object.entries(filter)
-      .filter(([, value]) => {
+      .filter(([_, value]) => {
         return value != null;
       })
   );
@@ -61,7 +65,7 @@ export class BackendService {
   }
 
   public async getLayerSubmission (id: number): Promise<RawLayerSubmission> {
-    const response = await fetch(`/api/catalogue/entries/layers/submissions/${id}/`);
+    const response = await fetch(`/api/catalogue/layers/submissions/${id}/`);
     return await response.json() as RawLayerSubmission;
   }
 
@@ -81,20 +85,20 @@ export class BackendService {
     return await response.json() as PaginatedRecord<RecordStatus<T>>;
   }
 
-  public async getUser (userId: number): Promise<User> {
+  public async getUser (userId: number): Promise<RawUser> {
     const response = await fetch(`/api/accounts/users/${userId}/`);
-    return await response.json() as User;
+    return await response.json() as RawUser;
   }
 
-  public async getUsers (filter: RawUserFilter): Promise<PaginatedRecord<User>> {
+  public async getUsers (filter: RawUserFilter): Promise<PaginatedRecord<RawUser>> {
     const params = stripNullParams<RawUserFilter>(filter);
     const response = await fetch("/api/accounts/users/?" + new URLSearchParams(params));
-    return await response.json() as PaginatedRecord<User>;
+    return await response.json() as PaginatedRecord<RawUser>;
   }
 
-  public async getMe (): Promise<User> {
+  public async getMe (): Promise<RawUser> {
     const response = await fetch('/api/accounts/users/me/');
-    return await response.json() as User;
+    return await response.json() as RawUser;
   }
 
   public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {
@@ -109,14 +113,25 @@ export class BackendService {
     return await response.json() as PaginatedRecord<NotificationType>;
   }
 
-  public async getRawSymbology (id: number): Promise<RawSymbology> {
-    const response = await fetch(`/api/catalogue/entry/symbologies/${id}`);
-    return await response.json() as RawSymbology;
+  public async getRawSymbology (entryId: number): Promise<RawSymbology> {
+    const params: Params = { catalogue_entry: entryId.toString() };
+    const response = await fetch("/api/catalogue/layers/symbologies/?" + new URLSearchParams(params));
+    return (await response.json()).results[0] as RawSymbology;
   }
 
-  public async getRawSymbologies (): Promise<PaginatedRecord<RawSymbology>> {
-    const response = await fetch("/api/catalogue/entry/symbologies/");
-    return await response.json() as PaginatedRecord<RawSymbology>;
+  protected async modifyRawSymbology (body: string | Omit<RawSymbology, "id">, method: "patch" | "post", id?: number): Promise<RawSymbology> {
+    if (!id && method === "patch") {
+      throw new Error("`patchRawSymbology`: Tried to patch a symbology without providing an ID");
+    }
+    const response = await fetcher(`/api/catalogue/layers/symbologies/${id ? `${id}/` : ""}`, {
+      method,
+      body: JSON.stringify(typeof body === "string" ? { sld: body } : body)
+    });
+    return await response.json();
+  }
+
+  public async patchRawSymbology (id: number, sld: string): Promise<RawSymbology> {
+    return this.modifyRawSymbology(sld, "patch", id);
   }
 
   public async getRawAttribute (id: number): Promise<RawAttribute> {
@@ -124,11 +139,39 @@ export class BackendService {
     return await response.json() as RawAttribute;
   }
 
-  public async getRawAttributes (): Promise<PaginatedRecord<RawAttribute>> {
-    const response = await fetch("/api/catalogue/layers/attribute/");
+  public async getRawAttributes (filter: RawAttributeFilter): Promise<PaginatedRecord<RawAttribute>> {
+    const params = stripNullParams<RawCatalogueEntryFilter>(filter);
+    const response = await fetch("/api/catalogue/layers/attributes/?" + new URLSearchParams(params));
     return await response.json() as PaginatedRecord<RawAttribute>;
   }
 
+  protected async modifyAttribute(attribute: Partial<Omit<RawAttribute, "id">>, method: "patch" | "post", id?: number): Promise<RawAttribute> {
+    if (!id && method === "patch") {
+      throw new Error("`patchRawAttrute`: Tried to patch an attribute without providing an ID");
+    }
+
+    const response = await fetcher(`/api/catalogue/layers/attributes/${id ? `${id}/` : ""}`, {
+      method,
+      body: JSON.stringify(attribute)
+    });
+    return await response.json() as RawAttribute;
+  }
+
+  public async patchRawAttribute (attribute: Partial<Omit<RawAttribute, "id">>, id?: number): Promise<RawAttribute> {
+    return this.modifyAttribute(attribute, "patch", id);
+  }
+
+  public async postRawAttribute (attribute: Omit<RawAttribute, "id">): Promise<RawAttribute> {
+    return this.modifyAttribute(attribute, "post");
+  }
+
+  public async deleteAttribute (id: number): Promise<number> {
+    const response = await fetcher(`/api/catalogue/layers/attributes/${id}`, {
+      method: 'delete'
+    });
+
+    return response.status;
+  }
   public async getRawMetadata (id: number): Promise<RawMetadata> {
     const response = await fetch(`/api/catalogue/layers/metadata/${id}/`);
     return await response.json() as RawMetadata;
@@ -182,5 +225,65 @@ export class BackendService {
       body: JSON.stringify({ id: entryId })
     });
     return response.status;
+  }
+
+  public async decline (entryId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/decline/`, {
+      method: "post",
+      body: JSON.stringify({ id: entryId })
+    });
+    return response.status;
+  }
+
+  public async entryAssign (entryId: number, userId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/assign/${userId}/`, {
+      method: "post"
+    });
+    return response.status;
+  }
+
+  public async entryUnassign (entryId: number) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/unassign/`, {
+      method: "post"
+    });
+    return response.status;
+  }
+
+  public async getCommunicationLogs (entryId: number, filter: RawPaginationFilter): Promise<PaginatedRecord<RawCommunicationLog>> {
+    const params = stripNullParams(filter);
+    const response = await fetch(`/api/catalogue/entries/${entryId}/logs/communications/?${new URLSearchParams(params)}`);
+    return await response.json();
+  }
+
+  async createCommunicationLog(entryId: number, data: Omit<RawCommunicationLog, "id" | "documents">) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/logs/communications/`, {
+      method: "post",
+      body: JSON.stringify(data)
+    });
+
+    return response.status;
+  }
+
+  public async getActionsLogs (entryId: number) {
+    const response = await fetch(`/api/catalogue/entries/${entryId}/logs/communications/`);
+    return await response.json();
+  }
+
+  public async uploadCommunicationFile (entryId: number, logId: number, file: File) {
+    const response = await fetcher(`/api/catalogue/entries/${entryId}/logs/communications/${logId}/file/`, {
+      method: "post",
+      body: file
+    });
+    return response.status;
+  }
+
+  public async getCommunicationTypes (): Promise<CommunicationLogType[]> {
+    const response = await fetch("/api/logs/communications/type/");
+    return (await response.json()).results;
+  }
+
+  public async getWmtsCapabilities (): Promise<string> {
+    const response = await fetch(`${GEOSERVER_URL}/geoserver/gwc/service/wmts?request=GetCapabilities`);
+    return (await response.text());
   }
 }

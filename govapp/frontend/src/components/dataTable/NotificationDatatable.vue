@@ -15,7 +15,7 @@
 </script>
 
 <template>
-  <data-table>
+  <data-table :paginate="false">
     <template #headers>
       <tr>
         <th>Name</th>

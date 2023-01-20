@@ -1,0 +1,9 @@
+layers:
+  - name: one_hundred_k_mapsheet_index
+    description: null
+    created_at: null
+    attributes:
+      - [1, TILE_100K, String]
+      - [2, Shape_Length, Real]
+      - [3, Shape_Area, Real]
+    symbology: null

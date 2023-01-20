@@ -35,13 +35,17 @@
 
 <template>
   <form-select field="custodian" name="Custodian" :values="custodians.map(custodian => [custodian.username, custodian.id])"
-          :value="filters.custodian" @value-updated="(field, value) => setFilter({ field, value })"/>
+               :value="filters.custodian" @value-updated="(field, value) => setFilter({ field, value })"
+               :show-empty="true"/>
   <form-select field="status" name="Status" :values="entryStatuses.map(status => [status.label, status.id])"
-               :value="filters.status?.toString()" @value-updated="(field, value) => setFilter({ field, value })"/>
+               :value="filters.status?.toString()" @value-updated="(field, value) => setFilter({ field, value })"
+               :show-empty="true"/>
   <form-input field="updateFrom" name="Last Updated From" type="date" placeholder="DD/MM/YYYY" :value="filters.updateFrom"
-         @value-updated="(field, value) => setDateFilter(field, value)"/>
-  <form-input field="updateTo" name="Last Updated To" type="date" placeholder="DD/MM/YYYY" :value="filters.updateTo"
-         @value-updated="(field, value) => setDateFilter(field, value)"/>
+              @value-updated="(field, value) => setDateFilter(field, value.toString())"/>
+  <form-input field="updateTo" name="Last Updated To" type="date" placeholder="DD/MM/YYYY"
+              :value="filters.updateTo"
+              @value-updated="(field, value) => setDateFilter(field, value.toString())"/>
   <form-select field="assignedTo" name="Assigned to" :values="assignedTo.map(assigned => [assigned.username, assigned.id])"
-          :value="filters.assignedTo" @value-updated="(field, value) => setFilter({ field, value })"/>
+               :value="filters.assignedTo" @value-updated="(field, value) => setFilter({ field, value })"
+               :show-empty="true"/>
 </template>

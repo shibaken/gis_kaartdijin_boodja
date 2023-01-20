@@ -18,7 +18,7 @@ export class NotificationProvider {
     const webhookNotificationTypes = (await this.webhookNotificationTypes).results;
 
     const { results } = await this.backend.getNotifications(notificationType);
-    const fetchedEntries: Array<CatalogueEntry> = await useCatalogueEntryStore().catalogueEntries;
+    const fetchedEntries: Array<CatalogueEntry> = useCatalogueEntryStore().catalogueEntries;
     const entriesToFetch = results
       .map(notification => notification.catalogue_entry)
       .filter((entryId) => fetchedEntries

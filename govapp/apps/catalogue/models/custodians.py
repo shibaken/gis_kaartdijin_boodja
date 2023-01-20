@@ -3,9 +3,14 @@
 
 # Third-Party
 from django.db import models
+import reversion
+
+# Local
+from .. import mixins
 
 
-class Custodian(models.Model):
+@reversion.register()
+class Custodian(mixins.RevisionedMixin):
     """Model for a Custodian."""
     name = models.TextField()
     contact_name = models.TextField(blank=True)

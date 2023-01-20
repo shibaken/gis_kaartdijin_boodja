@@ -1,6 +1,9 @@
 """Django unit test settings for the Kaartdijin Boodja project."""
 
 
+# Standard
+import tempfile
+
 # Third-Party
 import dj_database_url
 
@@ -15,3 +18,5 @@ DATABASES = {
 }
 # When performing unit tests, just output emails to the console
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# When performing unit tests, set media root to a random temporary directory
+MEDIA_ROOT = tempfile.mkdtemp()
