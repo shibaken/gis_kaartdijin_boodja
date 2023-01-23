@@ -12,14 +12,14 @@ from rest_framework import status
 from rest_framework import viewsets
 
 # Local
-from . import filters
-from . import mixins
-from . import models
-from . import permissions
-from . import serializers
-from ..accounts import permissions as accounts_permissions
-from ..logs import mixins as logs_mixins
-from ..logs import utils as logs_utils
+from govapp.common import mixins
+from govapp.apps.accounts import permissions as accounts_permissions
+from govapp.apps.catalogue import filters
+from govapp.apps.catalogue import models
+from govapp.apps.catalogue import permissions
+from govapp.apps.catalogue import serializers
+from govapp.apps.logs import mixins as logs_mixins
+from govapp.apps.logs import utils as logs_utils
 
 # Typing
 from typing import cast

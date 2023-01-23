@@ -8,9 +8,9 @@ import logging
 from django import conf
 
 # Local
-from . import absorber
-from . import notifications
-from . import sharepoint
+from govapp.common import sharepoint
+from govapp.apps.catalogue import absorber
+from govapp.apps.catalogue import notifications
 
 
 # Logging

@@ -7,7 +7,7 @@ from rest_framework import request
 from rest_framework import viewsets
 
 # Local
-from . import utils
+from govapp.apps.accounts import utils
 
 # Typing
 from typing import Any

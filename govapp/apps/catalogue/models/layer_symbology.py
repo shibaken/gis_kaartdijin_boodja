@@ -6,10 +6,10 @@ from django.db import models
 import reversion
 
 # Local
-from . import catalogue_entries
-from .. import mixins
-from .. import validators
-from .... import gis
+from govapp import gis
+from govapp.common import mixins
+from govapp.apps.catalogue import validators
+from govapp.apps.catalogue.models import catalogue_entries
 
 
 @reversion.register()

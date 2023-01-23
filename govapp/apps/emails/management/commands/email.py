@@ -8,7 +8,7 @@ import argparse
 from django.core.management import base
 
 # Local
-from ... import emails
+from govapp.apps.emails import emails
 
 # Typing
 from typing import Any

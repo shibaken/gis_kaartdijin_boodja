@@ -5,7 +5,7 @@
 from django_filters import rest_framework as filters
 
 # Local
-from . import models
+from govapp.apps.catalogue import models
 
 
 class CatalogueEntryFilter(filters.FilterSet):

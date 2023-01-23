@@ -5,7 +5,7 @@
 from django.core.management import base
 
 # Local
-from ... import scanner
+from govapp.apps.catalogue import scanner
 
 # Typing
 from typing import Any

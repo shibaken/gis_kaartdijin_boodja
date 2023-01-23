@@ -5,7 +5,7 @@
 from django.contrib import admin
 
 # Local
-from . import models
+from govapp.apps.logs import models
 
 
 # Register Models

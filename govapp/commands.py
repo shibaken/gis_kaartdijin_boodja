@@ -16,7 +16,7 @@ from rest_framework import status
 from rest_framework import viewsets
 
 # Local
-from .apps.accounts import permissions
+from govapp.apps.accounts import permissions
 
 # Logging
 log = logging.getLogger(__name__)

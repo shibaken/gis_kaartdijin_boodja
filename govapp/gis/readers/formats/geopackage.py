@@ -6,8 +6,8 @@ import datetime
 import pathlib
 
 # Local
-from .. import base
-from .. import types
+from govapp.gis.readers import base
+from govapp.gis.readers import types
 
 # Third-Party
 from dateutil import parser

@@ -5,7 +5,7 @@
 from rest_framework import serializers
 
 # Local
-from . import models
+from govapp.apps.logs import models
 
 
 class CommunicationsLogDocumentSerializer(serializers.ModelSerializer):

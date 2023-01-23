@@ -15,8 +15,8 @@ from rest_framework import status
 from rest_framework import viewsets
 
 # Local
-from . import models
-from . import serializers
+from govapp.apps.logs import models
+from govapp.apps.logs import serializers
 
 
 class CommunicationsLogMixin:

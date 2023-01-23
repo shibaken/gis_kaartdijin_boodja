@@ -6,7 +6,7 @@ from django.contrib import admin
 import reversion.admin
 
 # Local
-from . import models
+from govapp.apps.catalogue import models
 
 
 class CatalogueEntryAdmin(reversion.admin.VersionAdmin):

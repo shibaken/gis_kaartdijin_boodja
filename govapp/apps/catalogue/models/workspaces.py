@@ -6,7 +6,7 @@ from django.db import models
 import reversion
 
 # Local
-from .. import mixins
+from govapp.common import mixins
 
 
 @reversion.register()

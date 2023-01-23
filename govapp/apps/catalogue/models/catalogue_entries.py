@@ -10,24 +10,24 @@ from rest_framework import request
 import reversion
 
 # Local
-from . import custodians
-from . import workspaces
-from .. import notifications as notifications_utils
-from .. import mixins
-from .. import utils
-from ...accounts import utils as accounts_utils
+from govapp.common import mixins
+from govapp.apps.accounts import utils as accounts_utils
+from govapp.apps.catalogue import notifications as notifications_utils
+from govapp.apps.catalogue import utils
+from govapp.apps.catalogue.models import custodians
+from govapp.apps.catalogue.models import workspaces
 
 # Typing
 from typing import TYPE_CHECKING, Optional, Union
 
 # Type Checking
 if TYPE_CHECKING:
-    from . import layer_attributes
-    from . import layer_metadata
-    from . import layer_submissions
-    from . import layer_subscriptions
-    from . import layer_symbology
-    from . import notifications
+    from govapp.apps.catalogue.models import layer_attributes
+    from govapp.apps.catalogue.models import layer_metadata
+    from govapp.apps.catalogue.models import layer_submissions
+    from govapp.apps.catalogue.models import layer_subscriptions
+    from govapp.apps.catalogue.models import layer_symbology
+    from govapp.apps.catalogue.models import notifications
 
 
 # Shortcuts

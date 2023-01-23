@@ -6,8 +6,8 @@ from django.db import models
 import reversion
 
 # Local
-from . import catalogue_entries
-from .. import mixins
+from govapp.common import mixins
+from govapp.apps.catalogue.models import catalogue_entries
 
 
 @reversion.register()

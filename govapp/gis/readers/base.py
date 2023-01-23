@@ -7,7 +7,7 @@ import datetime
 import pathlib
 
 # Local
-from . import types
+from govapp.gis.readers import types
 
 # Third-Party
 from osgeo import ogr

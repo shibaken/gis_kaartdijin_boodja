@@ -8,7 +8,7 @@ import subprocess  # noqa: S404
 import tempfile
 
 # Local
-from . import compression
+from govapp.gis import compression
 
 
 # Logging

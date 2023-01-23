@@ -24,7 +24,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
 # Local
-from . import views
+from govapp import views
 
 
 # Admin Site Settings

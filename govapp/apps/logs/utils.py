@@ -6,7 +6,7 @@ from django.db import models
 from django.contrib.auth import models as auth_models
 
 # Local
-from . import models as logs_models
+from govapp.apps.logs import models as logs_models
 
 # Typing
 from typing import Union

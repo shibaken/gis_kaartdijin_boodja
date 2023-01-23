@@ -10,15 +10,15 @@ import factory
 import factory.fuzzy
 
 # Local
-from . import custodians
-from . import layer_attributes
-from . import layer_metadata
-from . import layer_submissions
-from . import layer_symbology
-from . import notifications
-from . import workspaces
-from .. import accounts
 from govapp.apps.catalogue import models
+from tests.factories import accounts
+from tests.factories.catalogue import custodians
+from tests.factories.catalogue import layer_attributes
+from tests.factories.catalogue import layer_metadata
+from tests.factories.catalogue import layer_submissions
+from tests.factories.catalogue import layer_symbology
+from tests.factories.catalogue import notifications
+from tests.factories.catalogue import workspaces
 
 # Typing
 from typing import Any

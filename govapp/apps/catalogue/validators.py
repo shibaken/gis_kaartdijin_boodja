@@ -6,7 +6,7 @@ from django.core import exceptions
 from lxml import etree  # noqa: S410
 
 # Local
-from ... import gis
+from govapp import gis
 
 
 def validate_xml(value: str) -> None:

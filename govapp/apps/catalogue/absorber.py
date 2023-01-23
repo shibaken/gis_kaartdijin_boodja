@@ -12,11 +12,11 @@ from django import conf
 from django.db import transaction
 
 # Local
-from . import models
-from . import notifications
-from . import sharepoint
-from . import utils
-from ...gis import readers
+from govapp.common import sharepoint
+from govapp.gis import readers
+from govapp.apps.catalogue import models
+from govapp.apps.catalogue import notifications
+from govapp.apps.catalogue import utils
 
 
 # Logging

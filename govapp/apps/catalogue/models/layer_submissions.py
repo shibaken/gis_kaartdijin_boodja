@@ -9,12 +9,12 @@ from django.db import models
 import reversion
 
 # Local
-from . import catalogue_entries
-from . import layer_metadata
-from .. import mixins
-from .. import sharepoint
-from .. import utils
-from .... import gis
+from govapp import gis
+from govapp.common import mixins
+from govapp.common import sharepoint
+from govapp.apps.catalogue import utils
+from govapp.apps.catalogue.models import catalogue_entries
+from govapp.apps.catalogue.models import layer_metadata
 
 # Typing
 from typing import cast
