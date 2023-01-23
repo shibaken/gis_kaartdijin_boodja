@@ -30,7 +30,7 @@ def test_flow_not_catalogue_editor(
             Catalogue Entry factory.
     """
     # Create Catalogue Entry
-    entry = catalogue_entry_factory.create()
+    entry = catalogue_entry_factory.create(status=models.catalogue_entries.CatalogueEntryStatus.DRAFT)
     assert isinstance(entry, models.catalogue_entries.CatalogueEntry)
 
     # Ensure the Assigned To User is NOT in the Catalogue Editors or
@@ -137,7 +137,7 @@ def test_flow_not_assigned_to(
             Catalogue Entry factory.
     """
     # Create Catalogue Entry
-    entry = catalogue_entry_factory.create()
+    entry = catalogue_entry_factory.create(status=models.catalogue_entries.CatalogueEntryStatus.DRAFT)
     assert isinstance(entry, models.catalogue_entries.CatalogueEntry)
 
     # Ensure the User is in the Catalogue Editors Group but NOT the
@@ -247,7 +247,7 @@ def test_flow_catalogue_editor_and_assigned(
             Catalogue Entry factory.
     """
     # Create Catalogue Entry
-    entry = catalogue_entry_factory.create()
+    entry = catalogue_entry_factory.create(status=models.catalogue_entries.CatalogueEntryStatus.DRAFT)
     assert isinstance(entry, models.catalogue_entries.CatalogueEntry)
 
     # Ensure the Assigned To User is in the Catalogue Editors Group but NOT the
@@ -398,7 +398,7 @@ def test_flow_administrator(
             Catalogue Entry factory.
     """
     # Create Catalogue Entry
-    entry = catalogue_entry_factory.create()
+    entry = catalogue_entry_factory.create(status=models.catalogue_entries.CatalogueEntryStatus.DRAFT)
     assert isinstance(entry, models.catalogue_entries.CatalogueEntry)
 
     # Create an Administrator User
