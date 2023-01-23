@@ -6,6 +6,7 @@
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
   import FormTextarea from "../widgets/FormTextarea.vue";
   import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import WorkflowFooter from "../widgets/WorkflowFooter.vue";
 
   const props = defineProps<{
     entry: CatalogueEntry
@@ -34,7 +35,7 @@
       } else {
         emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, {
           viewTab: CatalogueDetailViewTabs.Metadata,
-          recordId: editingSymbology.value.id
+          recordId: props.entry.id
         });
       }
     }
@@ -55,26 +56,7 @@
                        @value-updated="updateValue"/>
     </template>
     <template #footer>
-        <div class="footer-buttons">
-          <button type="button" class="reset-button btn btn-outline-danger mx-1" @click="onReset">Reset</button>
-          <button type="button" class="save-button btn btn-primary mx-1" @click="() => onSave(false)">Save and Continue</button>
-          <button type="button" class="save-button btn btn-primary mx-1" @click="() => onSave(true)">Save and Exit</button>
-        </div>
+      <WorkflowFooter @reset="onReset" @save-continue="onSave(false)" @save-exit="onSave(true)"/>
     </template>
   </card>
 </template>
-
-<style lang="scss">
-  div.footer-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-  }
-
-  .delete-button,
-  .reset-button {
-    justify-self: flex-start;
-  }
-  .save-button {
-    justify-self: flex-end;
-  }
-</style>

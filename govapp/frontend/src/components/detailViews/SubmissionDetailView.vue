@@ -1,19 +1,20 @@
 <script lang="ts" setup>
-  import { ref } from "vue";
+  import { ref, watch } from "vue";
   import { CatalogueTab, CatalogueView, NavigationEmits, SubmissionDetailViewTabs } from "../viewState.api";
   import { LayerSubmission } from "../../providers/layerSubmissionProvider.api";
   import SubmissionViewDetailTab from "./SubmissionViewDetailTab.vue";
   import SubmissionViewMapTab from "./SubmissionViewMapTab.vue";
 
   const props = defineProps<{
-    layerSubmission?: LayerSubmission
+    layerSubmission?: LayerSubmission,
+    activeTab: SubmissionDetailViewTabs
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface NavEmits extends NavigationEmits {}
   const emit = defineEmits<NavEmits>();
-  const activeTab = ref<SubmissionDetailViewTabs>(SubmissionDetailViewTabs.Details);
-
+  const activeTab = ref<SubmissionDetailViewTabs>(props.activeTab);
+  watch(props, () => activeTab.value = props.activeTab);
   function onTabClick (tab: SubmissionDetailViewTabs) {
     activeTab.value = tab;
   }

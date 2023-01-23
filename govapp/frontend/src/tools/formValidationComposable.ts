@@ -29,10 +29,10 @@ export function getValidationRules<T>(config: ValidationConfig<T>) {
   ]
 }
 
-export function useComputedValidation<T> (config: ValidationConfig<T>, target: Ref<Partial<T>>) {
+export function useComputedValidation<T> (config: ValidationConfig<T>, target: Ref<Partial<T> | undefined>) {
   const validators = getValidationRules<T>(config);
 
-  const validationErrors = computed(() => validators.flatMap(validator => validator(target.value)));
+  const validationErrors = computed(() => validators.flatMap(validator => validator(target.value ?? {})));
 
   const filthMap: FieldFilth<T> = Object.fromEntries(config.fields
     .map(field => [field, false])) as FieldFilth<T>;

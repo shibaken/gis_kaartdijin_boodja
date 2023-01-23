@@ -8,7 +8,8 @@
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
   import CatalogueEntryDetailView from "./detailViews/EntryDetailView.vue";
   import CommunicationsLogModal from "../components/modals/CommunicationsLogModal.vue";
-  import { CatalogueTab, CatalogueView, NavigateEmitsOptions } from "./viewState.api";
+  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigateEmitsOptions, SubmissionDetailViewTabs,
+    SubscriptionDetailViewTabs } from "./viewState.api";
   import Card from "./widgets/Card.vue";
   import Accordion from "./widgets/Accordion.vue";
   import SideBarLeft from "./SideBarLeft.vue";
@@ -34,6 +35,9 @@
 
   const selectedTab = ref<CatalogueTab>(CatalogueTab.CatalogueEntries);
   const selectedView = ref<CatalogueView>(CatalogueView.List);
+  const selectedEntryDetailTab = ref<CatalogueDetailViewTabs>(CatalogueDetailViewTabs.Details)
+  const selectedSubmissionDetailTab = ref<SubmissionDetailViewTabs>(SubmissionDetailViewTabs.Details)
+  const selectedSubscriptionDetailTab = ref<SubscriptionDetailViewTabs>(SubscriptionDetailViewTabs.Details)
   const selectedViewEntry = ref<CatalogueEntry | undefined>();
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
@@ -66,10 +70,19 @@
       return;
     } else if (tab === CatalogueTab.CatalogueEntries) {
       selectedViewEntry.value = await catalogueEntryProvider.fetchCatalogueEntry(options.recordId);
+      if (options?.viewTab) {
+        selectedEntryDetailTab.value = options.viewTab as CatalogueDetailViewTabs;
+      }
     } else if (tab === CatalogueTab.LayerSubscriptions) {
       selectedViewSubscription.value = await layerSubscriptionProvider.fetchLayerSubscription(options.recordId);
+      if (options?.viewTab) {
+        selectedSubscriptionDetailTab.value = options.viewTab as SubscriptionDetailViewTabs;
+      }
     } else if (tab === CatalogueTab.LayerSubmissions) {
       selectedViewSubmission.value = await layerSubmissionProvider.fetchLayerSubmission(options.recordId);
+      if (options?.viewTab) {
+        selectedSubmissionDetailTab.value = options.viewTab as SubmissionDetailViewTabs;
+      }
     } else {
       console.warn("Selected view record was not a recognised type");
     }
@@ -136,13 +149,16 @@
       </card>
       <catalogue-entry-detail-view
         v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === CatalogueView.View || CatalogueView.Edit &&
-        !!selectedViewEntry" :catalogue-entry="selectedViewEntry" @navigate="navigate"/>
+        !!selectedViewEntry" :catalogue-entry="selectedViewEntry"
+        :active-tab="selectedEntryDetailTab" @navigate="navigate"/>
       <submission-detail-view
         v-if="selectedTab === CatalogueTab.LayerSubmissions && selectedView === CatalogueView.View &&
-         !!selectedViewSubmission" :layer-submission="selectedViewSubmission" @navigate="navigate"/>
+         !!selectedViewSubmission" :layer-submission="selectedViewSubmission"
+        :active-tab="selectedSubmissionDetailTab" @navigate="navigate"/>
       <subscription-detail-view
         v-if="selectedTab === CatalogueTab.LayerSubscriptions && selectedView === CatalogueView.View &&
-         !!selectedViewSubscription" :layer-subscription="selectedViewSubscription" @navigate="navigate"/>
+         !!selectedViewSubscription" :layer-subscription="selectedViewSubscription"
+        :active-tab="selectedSubscriptionDetailTab" @navigate="navigate"/>
     </div>
   </div>
   <communications-log-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"

@@ -1,22 +1,30 @@
 <script lang="ts" setup>
-  import { ref } from "vue";
-  import { CatalogueTab, CatalogueView, CatalogueDetailViewTabs, NavigationEmits } from "../viewState.api";
+  import { ref, watch } from "vue";
+  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
   import type { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
   import EntryViewDetailTab from "./EntryViewDetailTab.vue";
   import EntryViewAttributeTab from "./EntryViewAttributeTab.vue";
   import EntryViewSymbologyTab from "./EntryViewSymbologyTab.vue";
 
   const props = defineProps<{
-    catalogueEntry?: CatalogueEntry
+    catalogueEntry?: CatalogueEntry,
+    activeTab: CatalogueDetailViewTabs
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface NavEmits extends NavigationEmits {}
   const emit = defineEmits<NavEmits>();
   const activeTab = ref<CatalogueDetailViewTabs>(CatalogueDetailViewTabs.Details);
+  watch(props, () => activeTab.value = props.activeTab);
 
-  function onTabClick (tab: CatalogueDetailViewTabs) {
-    activeTab.value = tab;
+  function onTabClick (viewTab: CatalogueDetailViewTabs) {
+    if (viewTab !== props.activeTab) {
+      // props.catalogueEntry is never undefined but typescript doesn't register v-if null checks inside the template
+      emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, {
+        viewTab,
+        recordId: props.catalogueEntry!.id
+      });
+    }
   }
 </script>
 
@@ -46,7 +54,9 @@
   <entry-view-detail-tab v-if="activeTab === CatalogueDetailViewTabs.Details && catalogueEntry"
                          :entry="catalogueEntry"/>
   <entry-view-attribute-tab v-if="activeTab === CatalogueDetailViewTabs.AttributeTable && catalogueEntry"
-                            :entry="catalogueEntry"/>
+                            :entry="catalogueEntry"
+                            @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
   <entry-view-symbology-tab v-if="activeTab === CatalogueDetailViewTabs.Symbology && catalogueEntry"
-                            :entry="catalogueEntry" @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
+                            :entry="catalogueEntry"
+                            @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
 </template>

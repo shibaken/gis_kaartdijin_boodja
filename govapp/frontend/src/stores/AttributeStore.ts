@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
 import { Attribute } from "../providers/relatedEntityProvider.api";
 import { ref, Ref } from "vue";
+import { AttributeCrudType } from "./AttributeStore.api";
 
 export const useAttributeStore = defineStore("attribute",  () => {
   const attributes: Ref<Attribute[]> = ref([]);
-  const editingAttribute: Ref<Partial<Attribute>> = ref({});
+  const editingAttribute: Ref<Partial<Attribute> | undefined> = ref(undefined);
+  const attributeCrudType: Ref<AttributeCrudType> = ref(AttributeCrudType.None);
 
   function setAttributes (newAttributes: Array<Attribute>) {
     attributes.value = newAttributes;
@@ -28,12 +30,12 @@ export const useAttributeStore = defineStore("attribute",  () => {
 
   function removeAttribute (id: number) {
     if (!attributes.value.find(value => value.id === id)) {
-      throw new Error(`\`updateAttribute\`: Tried to delete non-existent attribute: ${id}`);
+      throw new Error(`\`removeAttribute\`: Tried to delete non-existent attribute: ${id}`);
     }
 
     attributes.value = attributes.value.filter(value => value.id !== id);
   }
 
-  return { attributes, editingAttribute, setEditingAttribute, setAttributes, updateAttribute, addAttribute,
+  return { attributes, editingAttribute, attributeCrudType, setEditingAttribute, setAttributes, updateAttribute, addAttribute,
     removeAttribute };
 });

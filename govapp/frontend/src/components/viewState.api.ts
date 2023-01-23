@@ -4,31 +4,31 @@ export enum CatalogueTab {
   LayerSubscriptions = "Layer Subscriptions"
 }
 export enum CatalogueDetailViewTabs {
-  Details,
-  AttributeTable,
-  Symbology,
-  Metadata
+  Details = "Details",
+  AttributeTable = "Attribute Table",
+  Symbology = "Symbology",
+  Metadata = "Metadata"
 }
 
 export enum CatalogueView {
-  List,
-  View,
-  Edit,
-  History
+  List = "List",
+  View = "View",
+  Edit = "Edit",
+  History = "History"
 }
 
 export enum SubmissionDetailViewTabs {
-  Details,
-  Map
+  Details = "Details",
+  Map = "Map"
 }
 
 export enum SubscriptionDetailViewTabs {
-  Details,
-  RelatedItems
+  Details = "Details",
+  RelatedItems = "Related Items"
 }
 
 export type NavigateEmitsOptions = {
-    viewTab?: CatalogueDetailViewTabs,
+    viewTab?: CatalogueDetailViewTabs | SubmissionDetailViewTabs | SubscriptionDetailViewTabs,
     recordId: number
 }
 export type NavigationEmits = (

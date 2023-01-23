@@ -46,13 +46,13 @@
 <template>
   <div class="d-flex flex-row">
     <div class="d-flex flex-column w-auto">
-      <form-input field="name" name="Name" type="text" :value="editingAttribute.name" :is-invalid="invalidFields.name" @value-updated="updateValue"/>
+      <form-input field="name" name="Name" type="text" :value="editingAttribute?.name" :is-invalid="invalidFields.name" @value-updated="updateValue"/>
     </div>
     <div class="d-flex flex-column w-auto mx-3">
-      <form-input field="type" name="Type" type="text" :value="editingAttribute.type" :is-invalid="invalidFields.type" @value-updated="updateValue"/>
+      <form-input field="type" name="Type" type="text" :value="editingAttribute?.type" :is-invalid="invalidFields.type" @value-updated="updateValue"/>
     </div>
     <div class="d-flex flex-column w-auto">
-      <form-input field="order" name="Order" type="text" :value="editingAttribute.order?.toString()" :is-invalid="invalidFields.order" @value-updated="updateValue"/>
+      <form-input field="order" name="Order" type="text" :value="editingAttribute?.order?.toString()" :is-invalid="invalidFields.order" @value-updated="updateValue"/>
     </div>
   </div>
 </template>

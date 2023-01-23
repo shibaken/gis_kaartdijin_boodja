@@ -6,7 +6,8 @@
     show: boolean,
     modalSize?: "modal-sm" | "modal-md" | "modal-lg" | "modal-xl",
     showSaveButton?: boolean,
-    enableSaveButton?: boolean
+    enableSaveButton?: boolean,
+    saveButtonText?: string
   }>();
 
   const emit = defineEmits<{
@@ -40,7 +41,7 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="emit('close')">Close</button>
             <button type="button" class="btn btn-primary" v-if="showSaveButton" @click="emit('save')"
                     :disabled="!enableSaveButton">
-              Save
+              {{ saveButtonText ?? "Save" }}
             </button>
           </slot>
         </div>
