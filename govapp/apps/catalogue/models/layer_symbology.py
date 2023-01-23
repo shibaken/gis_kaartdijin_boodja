@@ -8,6 +8,7 @@ import reversion
 # Local
 from . import catalogue_entries
 from .. import mixins
+from .. import validators
 from .... import gis
 
 
@@ -15,7 +16,7 @@ from .... import gis
 class LayerSymbology(mixins.RevisionedMixin):
     """Model for a Layer Symbology."""
     name = models.TextField()
-    sld = models.TextField()
+    sld = models.TextField(validators=[validators.validate_xml, validators.validate_sld])
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
         related_name="symbology",
@@ -38,11 +39,9 @@ class LayerSymbology(mixins.RevisionedMixin):
 
     def publish(self) -> None:
         """Publishes the style to GeoServer."""
-        # Retrieve Workspace Name
-        workspace = self.catalogue_entry.workspace.name
-
         # Push Style to GeoServer
-        gis.geoserver.GeoServer(workspace=workspace).upload_style(
+        gis.geoserver.GeoServer().upload_style(
+            workspace=self.catalogue_entry.workspace.name,
             layer=self.catalogue_entry.metadata.name,
             name=self.name,
             sld=self.sld,
