@@ -11,18 +11,23 @@ from .. import mixins
 from .. import utils
 
 
-class NotificationType(models.IntegerChoices):
-    """Enumeration for a Notification Type."""
-    ON_APPROVE = 1
+class EmailNotificationType(models.IntegerChoices):
+    """Enumeration for an Email Notification Type."""
+    ON_NEW_DATA = 1
     ON_LOCK = 2
     BOTH = 3
+
+
+class WebhookNotificationType(models.IntegerChoices):
+    """Enumeration for a Webhook Notification Type."""
+    ON_NEW_DATA = 1
 
 
 @reversion.register()
 class EmailNotification(mixins.RevisionedMixin):
     """Model for an Email Notification."""
     name = models.TextField()
-    type = models.IntegerField(choices=NotificationType.choices)  # noqa: A003
+    type = models.IntegerField(choices=EmailNotificationType.choices)  # noqa: A003
     email = models.TextField()
     catalogue_entry = models.ForeignKey(
         catalogue_entries.CatalogueEntry,
@@ -33,14 +38,14 @@ class EmailNotification(mixins.RevisionedMixin):
     # Custom Managers
     # These managers are required so that the reverse relationship on the
     # Catalogue Entries (i.e., `catalogue_entry.email_notifications`) can be
-    # easily filtered without knowing/importing the `NotificationType`
+    # easily filtered without knowing/importing the `EmailNotificationType`
     # implementation detail (which in this case would be a circular import).
     # These managers allow usage such as:
     # `catalogue_entry.email_notifications(manager="on_lock").all()`.
     objects = models.Manager()
-    on_approve = utils.filtered_manager(type=NotificationType.ON_APPROVE)  # type: ignore[django-manager-missing]
-    on_lock = utils.filtered_manager(type=NotificationType.ON_LOCK)  # type: ignore[django-manager-missing]
-    both = utils.filtered_manager(type=NotificationType.BOTH)  # type: ignore[django-manager-missing]
+    on_new_data = utils.filtered_manager(type=EmailNotificationType.ON_NEW_DATA)  # type: ignore
+    on_lock = utils.filtered_manager(type=EmailNotificationType.ON_LOCK)  # type: ignore
+    both = utils.filtered_manager(type=EmailNotificationType.BOTH)  # type: ignore
 
     class Meta:
         """Email Notification Model Metadata."""
@@ -61,7 +66,7 @@ class EmailNotification(mixins.RevisionedMixin):
 class WebhookNotification(mixins.RevisionedMixin):
     """Model for a Webhook Notification."""
     name = models.TextField()
-    type = models.IntegerField(choices=NotificationType.choices)  # noqa: A003
+    type = models.IntegerField(choices=WebhookNotificationType.choices)  # noqa: A003
     url = models.URLField()
     catalogue_entry = models.ForeignKey(
         catalogue_entries.CatalogueEntry,
@@ -72,14 +77,12 @@ class WebhookNotification(mixins.RevisionedMixin):
     # Custom Managers
     # These managers are required so that the reverse relationship on the
     # Catalogue Entries (i.e., `catalogue_entry.webhook_notifications`) can be
-    # easily filtered without knowing/importing the `NotificationType`
+    # easily filtered without knowing/importing the `WebhookNotificationType`
     # implementation detail (which in this case would be a circular import).
     # These managers allow usage such as:
     # `catalogue_entry.webhook_notifications(manager="on_lock").all()`.
     objects = models.Manager()
-    on_approve = utils.filtered_manager(type=NotificationType.ON_APPROVE)  # type: ignore[django-manager-missing]
-    on_lock = utils.filtered_manager(type=NotificationType.ON_LOCK)  # type: ignore[django-manager-missing]
-    both = utils.filtered_manager(type=NotificationType.BOTH)  # type: ignore[django-manager-missing]
+    on_new_data = utils.filtered_manager(type=WebhookNotificationType.ON_NEW_DATA)  # type: ignore
 
     class Meta:
         """Webhook Notification Model Metadata."""
