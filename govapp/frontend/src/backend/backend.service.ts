@@ -189,7 +189,7 @@ export class BackendService {
   }
 
   public async getRawCustodians (): Promise<PaginatedRecord<RawCustodian>> {
-    const response = await fetch("/api/catalogue/layers/custodians/");
+    const response = await fetch("/api/catalogue/custodians/");
     return await response.json() as PaginatedRecord<RawCustodian>;
   }
 

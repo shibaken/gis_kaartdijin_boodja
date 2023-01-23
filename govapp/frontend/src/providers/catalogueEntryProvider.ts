@@ -27,12 +27,19 @@ export class CatalogueEntryProvider {
   private async rawToCatalogueEntry (entry: RawCatalogueEntry): Promise<CatalogueEntry> {
     const entryStatuses: RecordStatus<CatalogueEntryStatus>[] = useCatalogueEntryStore().entryStatuses;
     const users = await userProvider.users;
-    let user: User | undefined;
+    let user: User | undefined,
+      custodian: User | undefined;
 
     if (typeof entry.assigned_to === "number") {
       const matchUser = users.find(match => match.id === entry.assigned_to);
       user = matchUser ?? await userProvider.fetchUser(entry.assigned_to);
     }
+
+    if (typeof entry.custodian === "number") {
+      const matchCustodian = users.find(match => match.id === entry.custodian);
+      custodian = matchCustodian ?? await userProvider.fetchUser(entry.custodian);
+    }
+
     const editors: Array<User> = [];
     const toFetch: Array<number> = [];
     entry.editors.forEach(editorId => {
@@ -55,7 +62,7 @@ export class CatalogueEntryProvider {
       description: entry.description,
       status: statusProvider.getRecordStatusFromId(entry.status, entryStatuses),
       updatedAt: entry.updated_at,
-      custodian: user, // TODO: update to work with new custodian API
+      custodian,
       assignedTo: user,
       subscription: entry.subscription,
       activeLayer: entry.active_layer,

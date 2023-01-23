@@ -1,30 +1,22 @@
 <script lang="ts" setup>
-  import { computed } from "vue";
+  import { onMounted, Ref, ref } from "vue";
   import { useCatalogueEntryStore } from "../../stores/CatalogueEntryStore";
   import FormInput from "./FormInput.vue";
   import FormSelect from "./FormSelect.vue";
   import { storeToRefs } from "pinia";
-  import { UserProvider } from "../../providers/userProvider";
+  import { userProvider } from "../../providers/userProvider";
   import { DateTime } from "luxon";
   import { User } from "../../backend/backend.api";
   import { LayerSubmissionFilter } from "../../providers/layerSubmissionProvider.api";
+  import type { Custodian } from "../../providers/userProvider.api";
 
   // get Stores and fetch with `storeToRef` to
   const catalogueEntryStore = useCatalogueEntryStore();
-  const { filters, catalogueEntries, entryStatuses } = storeToRefs(catalogueEntryStore);
+  const { filters, entryStatuses } = storeToRefs(catalogueEntryStore);
   const { setFilter } = catalogueEntryStore;
 
-  const custodians = computed(() => {
-    const allCustodians = catalogueEntries.value.map(({ custodian }) => custodian);
-    return UserProvider.getUniqueUsers(allCustodians);
-  });
-
-  const assignedTo = computed(() => {
-    const allAssignedTo = catalogueEntries.value
-      .map(({ assignedTo }) => assignedTo as User)
-      .filter(user => !!user);
-    return UserProvider.getUniqueUsers(allAssignedTo);
-  });
+  const custodians: Ref<Custodian[]> = ref([]);
+  const assignedTo: Ref<User[]> = ref([]);
 
   function setDateFilter (field: keyof LayerSubmissionFilter, dateString: string) {
     // Date inputs trigger change events when moving between day/month/year
@@ -52,10 +44,15 @@
       setDateFilter(field, dateString);
     }
   }
+
+  onMounted(async () => {
+    custodians.value = await userProvider.fetchCustodians();
+    assignedTo.value = await userProvider.fetchUsers()
+  });
 </script>
 
 <template>
-  <form-select field="custodian" name="Custodian" :values="custodians.map(custodian => [custodian.username, custodian.id])"
+  <form-select field="custodian" name="Custodian" :values="custodians.map(cust => [cust.name, cust.id])"
                :value="filters.custodian" @value-updated="(field, value) => setFilter({ field, value })"
                :show-empty="true"/>
   <form-select field="status" name="Status" :values="entryStatuses.map(status => [status.label, status.id])"
