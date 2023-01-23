@@ -1,4 +1,3 @@
-
 """Kaartdijin Boodja Catalogue Django Application Emails."""
 
 
