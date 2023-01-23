@@ -2,7 +2,7 @@ import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
 import { CatalogueEntryStatus, PaginatedRecord, RawCatalogueEntry, RawCatalogueEntryFilter, RecordStatus,
   User } from "../backend/backend.api";
-import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.api";
+import { CatalogueEntry, CatalogueEntryFilter, Workspace } from "./catalogueEntryProvider.api";
 import { statusProvider } from "./statusProvider";
 import { userProvider } from "./userProvider";
 import { SortDirection } from "../components/viewState.api";
@@ -20,6 +20,8 @@ export class CatalogueEntryProvider {
   public init () {
     statusProvider.fetchStatuses<CatalogueEntryStatus>("entries")
       .then(statuses => useCatalogueEntryStore().entryStatuses = statuses);
+    catalogueEntryProvider.fetchWorkspaces()
+      .then(workspaces => useCatalogueEntryStore().workspaces = workspaces);
   }
 
   private async rawToCatalogueEntry (entry: RawCatalogueEntry): Promise<CatalogueEntry> {
@@ -60,7 +62,8 @@ export class CatalogueEntryProvider {
       layers: entry.layers,
       emailNotifications: entry.email_notifications,
       webhookNotifications: entry.webhook_notifications,
-      editors
+      editors,
+      workspace: useCatalogueEntryStore().workspaces.find(workspace => workspace.id === entry.workspace)
     } as CatalogueEntry;
   }
 
@@ -130,7 +133,7 @@ export class CatalogueEntryProvider {
     };
 
     useCatalogueEntryStore().$patch({
-      catalogueEntries: catalogueEntries,
+      catalogueEntries,
       catalogueEntryMeta
     });
 
@@ -202,6 +205,11 @@ export class CatalogueEntryProvider {
       useCatalogueEntryStore().updateEntry(updatedEntry);
       return updatedEntry;
     }
+  }
+
+  public async fetchWorkspaces (): Promise<Workspace[]> {
+    const data = await this.backend.getWorkspaces();
+    return data.results;
   }
 }
 

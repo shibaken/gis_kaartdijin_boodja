@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { Ref, ref, toRefs, watch } from "vue";
-import { CatalogueEntry, CatalogueEntryFilter } from "../providers/catalogueEntryProvider.api";
+import { CatalogueEntry, CatalogueEntryFilter, Workspace } from "../providers/catalogueEntryProvider.api";
 import { CatalogueEntryStatus, RecordStatus } from "../backend/backend.api";
 import { useTableFilterComposable } from "../tools/filterComposable";
 import { catalogueEntryProvider } from "../providers/catalogueEntryProvider";
@@ -11,6 +11,7 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   const entryStatuses = ref<RecordStatus<CatalogueEntryStatus>[]>([]);
   const catalogueEntries = ref<CatalogueEntry[]>([]);
   const catalogueEntryMeta: Ref<RecordMeta> = ref({ total: 0 });
+  const workspaces: Ref<Workspace[]> = ref([]);
 
   // Filters
   const tableFilterComposable = useTableFilterComposable<CatalogueEntryFilter>();
@@ -24,6 +25,6 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
       .map((entry: CatalogueEntry) => entry.id === patchedEntry.id ? patchedEntry : entry);
   }
 
-  return { catalogueEntries, catalogueEntryMeta, filters, setFilter,
-    clearFilters, entryStatuses, updateEntry };
+  return { catalogueEntries, catalogueEntryMeta, filters, setFilter, clearFilters, entryStatuses, workspaces,
+    updateEntry };
 });

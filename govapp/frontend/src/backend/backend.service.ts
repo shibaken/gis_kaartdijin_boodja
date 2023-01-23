@@ -4,6 +4,7 @@ import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCata
   RawCommunicationLog, RawPaginationFilter, RawAttributeFilter } from "./backend.api";
 import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
+import { Workspace } from "../providers/catalogueEntryProvider.api";
 
 const GEOSERVER_URL = import.meta.env.VITE_GEOSERVER_URL;
 
@@ -280,6 +281,16 @@ export class BackendService {
   public async getCommunicationTypes (): Promise<CommunicationLogType[]> {
     const response = await fetch("/api/logs/communications/type/");
     return (await response.json()).results;
+  }
+
+  public async getWorkspace(id: number): Promise<Workspace> {
+    const response = await fetch(`/api/catalogue/workspaces/${id}`);
+    return await response.json();
+  }
+
+  public async getWorkspaces(): Promise<PaginatedRecord<Workspace>> {
+    const response = await fetch("/api/catalogue/workspaces/");
+    return await response.json();
   }
 
   public async getWmtsCapabilities (): Promise<string> {

@@ -39,7 +39,7 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
     return !!user && !!currentEntry.value?.editors.find(editor => editor.id === user.id);
   }
 
-  const inEditorGroup = (user: User) => !!user.groups.find(group => group.name === "Catalogue Editor");
+  const inEditorGroup = (user: User) => !!user.groups.find(group => group.name === "Catalogue Editors");
 
   const isAssigned = (user: User) => {
     if (!currentEntry.value) {

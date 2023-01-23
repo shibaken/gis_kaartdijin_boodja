@@ -17,7 +17,8 @@ export let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "layers": [1],
     "email_notifications": [1],
     "webhook_notifications": [1],
-    "editors": [1, 2]
+    "editors": [1, 2],
+    "workspace": 1
   },
   {
     "id": 2,
@@ -32,7 +33,8 @@ export let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "layers": [2],
     "email_notifications": [2],
     "webhook_notifications": [2],
-    "editors": [2, 3]
+    "editors": [2, 3],
+    "workspace": 2
   },
   {
     "id": 3,
@@ -47,7 +49,8 @@ export let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "layers": [3],
     "email_notifications": [3],
     "webhook_notifications": [3],
-    "editors": [3]
+    "editors": [3],
+    "workspace": 3
   }
 ];
 

@@ -16,7 +16,7 @@ export class LayerSubmissionProvider {
     const submissionStatuses = await statusProvider
       .fetchStatuses<LayerSubmissionStatus>("layers/submissions");
 
-    const submissionEntry = await catalogueEntryProvider.getOrFetch(rawSubmission.catalogue_entry);
+    const { id: entryId, name, workspace } = await catalogueEntryProvider.getOrFetch(rawSubmission.catalogue_entry);
 
     return {
       id: rawSubmission.id,
@@ -25,7 +25,7 @@ export class LayerSubmissionProvider {
       file: rawSubmission.file,
       status: statusProvider.getRecordStatusFromId(rawSubmission.status, submissionStatuses),
       submittedDate: rawSubmission.submitted_at,
-      catalogueEntry: { id: submissionEntry.id, name: submissionEntry?.name },
+      catalogueEntry: { id: entryId, name, workspace },
       attributes: rawSubmission.attributes,
       metadata: rawSubmission.metadata,
       symbology: rawSubmission.symbology
@@ -71,7 +71,11 @@ export class LayerSubmissionProvider {
       } as LayerSubmission;
 
       if(linkedEntry) {
-        layerSubmission.catalogueEntry = { id: linkedEntry.id, name: linkedEntry.name };
+        layerSubmission.catalogueEntry = {
+          id: linkedEntry.id,
+          name: linkedEntry.name,
+          workspace: linkedEntry.workspace
+        };
       }
 
       return layerSubmission;
