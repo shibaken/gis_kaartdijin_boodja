@@ -1,5 +1,5 @@
 {% extends 'base_email.txt' %}
 
 {% block content %}
-A catalogue entry was locked!
+Kaartdijin Boodja catalogue entry '{{ name }}' has been edited. You may need to check for changed attributes, symbology etc.
 {% endblock %}

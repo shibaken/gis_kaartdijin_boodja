@@ -54,7 +54,7 @@ class Scanner:
                 log.error(f"Error absorbing file '{file}': {exc}")
 
                 # Notify!
-                notifications.file_absorb_failure()
+                notifications.file_absorb_failure(file)
 
         # Log
         log.info("Scanning storage staging area complete!")

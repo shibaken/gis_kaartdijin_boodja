@@ -1,5 +1,5 @@
 {% extends 'base_email.txt' %}
 
 {% block content %}
-A catalogue entry update failed!
+Kaartdijin Boodja catalogue entry '{{ name }}' failed to update. You may need to check whether the layer submission was correct.
 {% endblock %}

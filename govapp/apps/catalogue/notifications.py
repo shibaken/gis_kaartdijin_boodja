@@ -19,19 +19,29 @@ if TYPE_CHECKING:
     from .models import catalogue_entries
 
 
-def file_absorb_failure() -> None:
-    """Sends notifications for a file absorption failure."""
+def file_absorb_failure(file: str) -> None:
+    """Sends notifications for a file absorption failure.
+
+    Args:
+        file (str): File that failed to absorb.
+    """
     # Send Emails!
     emails.FileAbsorbFailEmail().send_to(
         *utils.all_administrators(),  # Send to all administrators
+        context={"name": file},
     )
 
 
-def catalogue_entry_creation() -> None:
-    """Sends notifications for a Catalogue Entry creation."""
+def catalogue_entry_creation(entry: "catalogue_entries.CatalogueEntry") -> None:
+    """Sends notifications for a Catalogue Entry creation.
+
+    Args:
+        entry (catalogue_entries.CatalogueEntry): Catalogue Entry to notify for
+    """
     # Send Emails
     emails.CatalogueEntryCreatedEmail().send_to(
         *utils.all_administrators(),  # All administrators
+        context={"name": entry.name},
     )
 
 
@@ -47,6 +57,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
         *entry.editors.all(),  # All editors
         *entry.email_notifications(manager="on_new_data").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
+        context={"name": entry.name},
     )
 
     # Retrieve the File from Storage
@@ -78,6 +89,7 @@ def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") ->
     emails.CatalogueEntryUpdateFailEmail().send_to(
         *utils.all_administrators(),  # All administrators
         *entry.editors.all(),  # All editors
+        context={"name": entry.name},
     )
 
 
@@ -93,4 +105,5 @@ def catalogue_entry_lock(entry: "catalogue_entries.CatalogueEntry") -> None:
         *entry.editors.all(),  # All editors
         *entry.email_notifications(manager="on_lock").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
+        context={"name": entry.name},
     )
