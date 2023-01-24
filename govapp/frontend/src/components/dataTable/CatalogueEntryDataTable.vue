@@ -57,7 +57,6 @@
         <SortableHeader name="Custodian" column="custodian" :direction="sortDirection('custodian')" @sort="onSort"/>
         <SortableHeader name="Status" column="status" :direction="sortDirection('status')" @sort="onSort"/>
         <SortableHeader name="Last Updated" column="updatedAt" :direction="sortDirection('updatedAt')" @sort="onSort"/>
-        <th>Time</th>
         <SortableHeader name="Assigned To" column="assignedTo" :direction="sortDirection('assignedTo')" @sort="onSort"/>
         <th>Action</th>
       </tr>
@@ -69,8 +68,7 @@
           <td>{{ row.name }}</td>
           <td>{{ row.custodian?.username }}</td>
           <td>{{ row.status.label }}</td>
-          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('dd/MM/yyyy')}}</td>
-          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('HH:mm') }}</td>
+          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('dd/MM/yyyy HH:mm')}}</td>
           <td>{{ row.assignedTo?.username }}</td>
           <td>
             <a href="#" class="me-2"

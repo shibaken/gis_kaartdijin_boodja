@@ -46,7 +46,7 @@ class LayerMetadataFilter(filters.FilterSet):
 class LayerSubmissionFilter(filters.FilterSet):
     """Layer Submission Filter."""
     submitted = filters.IsoDateTimeFromToRangeFilter(field_name="submitted_at")
-    order_by = filters.OrderingFilter(fields=("id", "name", "status", "submitted_at", "catalogue_entry"))
+    order_by = filters.OrderingFilter(fields=("id", "name", "status", "submitted_at", "catalogue_entry__name"))
 
     class Meta:
         """Layer Submission Filter Metadata."""
