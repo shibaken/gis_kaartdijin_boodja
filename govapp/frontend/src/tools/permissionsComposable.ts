@@ -16,9 +16,8 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
   const isLoggedInUserAdmin: ComputedRef<boolean> = computed(() => {
     return !!me.value?.groups.find(group => group.name === "Administrators");
   });
-  const isLoggedInUserEditor: ComputedRef<boolean> = computed(() => {
-    return !!me.value && !!currentEntry.value?.editors.find(editor => editor.id === me.value!.id);
-  });
+  const isLoggedInUserEditor: ComputedRef<boolean> = computed(() => !!me.value &&
+    !!currentEntry.value?.editors.find(editor => editor.id === me.value!.id));
 
   function isAdmin (_user?: User, _me?: boolean) {
     const user = _me ? me.value : _user;
@@ -28,7 +27,11 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
     return !!user &&!!user.groups.find(group => group.name === "Administrators");
   }
 
-  function isEntryEditor (_user?: User, _me: boolean = false) {
+  function isEntryEditor (entry: CatalogueEntry, user: User | undefined = me.value) {
+    return !!entry.editors.find(editor => editor.id === user?.id);
+  }
+
+  function isCurrentEntryEditor (_user?: User, _me: boolean = false) {
     const user = _me ? me.value : _user;
     if (!currentEntry.value) {
       calledWithoutEntry("isEntryEditor");
@@ -36,10 +39,10 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
     if (!user && !_me) {
       console.warn("`isEntryEditor`: User parameter must be set if `me` parameter is not `true`");
     }
-    return !!user && !!currentEntry.value?.editors.find(editor => editor.id === user.id);
+    return !!user && !!currentEntry.value && isEntryEditor(currentEntry.value, user);
   }
 
-  const inEditorGroup = (user: User) => !!user.groups.find(group => group.name === "Catalogue Editors");
+  const inEditorGroup = (user: User) => !!user.groups.find(group => group.name === "Catalogue Editors")
 
   const isAssigned = (user: User) => {
     if (!currentEntry.value) {
@@ -51,7 +54,7 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
   const userCanLock = (user: User | undefined) => {
     let canLock: boolean = false;
     if (user) {
-      canLock = isAdmin(user) || inEditorGroup(user) && isEntryEditor(user) && isAssigned(user);
+      canLock = isAdmin(user) || inEditorGroup(user) && isCurrentEntryEditor(user) && isAssigned(user);
     }
     return canLock;
   }
@@ -59,7 +62,7 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
   const userCanAssign = (user: User | undefined) => {
     let assignable = false;
     if (user) {
-      assignable = isAdmin(user) || inEditorGroup(user) && isEntryEditor(user);
+      assignable = isAdmin(user) || inEditorGroup(user) && isCurrentEntryEditor(user);
     }
     return assignable;
   }
@@ -130,6 +133,6 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
     console.warn(`\`${method}\`: CatalogueEntry was not set in the permissions composable.`);
   }
   
-  return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, isEntryEditor, isAdmin, assignableUsers, assignUser, assignMe,
+  return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, isEntryEditor, isCurrentEntryEditor, isAdmin, assignableUsers, assignUser, assignMe,
   canAssign, declineClicked, updateCurrentEntry, isLoggedInUserAdmin, isLoggedInUserEditor };
 }

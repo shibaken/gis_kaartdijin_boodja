@@ -42,7 +42,7 @@
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
   const showAttributeModal: ComputedRef<boolean> = computed(
-    () => [ModalTypes.ATTRIBUTE_EDIT, ModalTypes.ATTRIBUTE_ADD, ModalTypes.ATTRIBUTE_DELETE]
+    () => [ModalTypes.AttributeEdit, ModalTypes.AttributeAdd, ModalTypes.AttributeDelete]
       .includes(modalStore.activeModal));
 
   const permissionsComposable = usePermissionsComposable(selectedViewEntry.value);
@@ -162,10 +162,10 @@
     </div>
   </div>
   <communications-log-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
-    :show="modalStore.activeModal === ModalTypes.COMMS_LOG || modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"
-    :add-log="modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"/>
+    :show="modalStore.activeModal === ModalTypes.CommsLog || modalStore.activeModal === ModalTypes.CommsLogAdd"
+    :add-log="modalStore.activeModal === ModalTypes.CommsLogAdd"/>
   <attributes-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
-    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.NONE"/>
+    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.None"/>
 </template>
 
 <style lang="scss">

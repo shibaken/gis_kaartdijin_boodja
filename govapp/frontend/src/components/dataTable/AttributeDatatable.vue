@@ -27,17 +27,17 @@
   function onEditClick (attribute: Attribute) {
     editingAttribute.value = attribute;
     attributeCrudType.value = AttributeCrudType.Edit;
-    modalStore.showModal(ModalTypes.ATTRIBUTE_EDIT);
+    modalStore.showModal(ModalTypes.AttributeEdit);
   }
 
   function onDeleteClick (attribute: Attribute) {
     editingAttribute.value = attribute;
     attributeCrudType.value = AttributeCrudType.Delete;
-    modalStore.showModal(ModalTypes.ATTRIBUTE_DELETE);
+    modalStore.showModal(ModalTypes.AttributeDelete);
   }
 
   function onEditEditingClick () {
-    modalStore.showModal(ModalTypes.ATTRIBUTE_EDIT);
+    modalStore.showModal(ModalTypes.AttributeEdit);
     attributeCrudType.value = AttributeCrudType.Edit;
   }
 

@@ -77,7 +77,7 @@
   function onNew () {
     editingAttribute.value = { catalogueEntry: props.entry };
     attributeCrudType.value = AttributeCrudType.New;
-    showModal(ModalTypes.ATTRIBUTE_ADD);
+    showModal(ModalTypes.AttributeAdd);
   }
 
   onMounted(async () => {

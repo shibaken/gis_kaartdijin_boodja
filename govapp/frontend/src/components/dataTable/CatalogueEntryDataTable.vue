@@ -10,10 +10,10 @@
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawCatalogueEntryFilter } from "../../backend/backend.api";
   import { catalogueEntryProvider } from "../../providers/catalogueEntryProvider";
-  import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
+  import { usePermissionsComposable } from "../../tools/permissionsComposable";
+  import { PermissionsComposable } from "../../tools/permissionsComposable.api";
 
   const props = withDefaults(defineProps<{
-      catalogueEntry?: CatalogueEntry,
       view: CatalogueView
     }>(),
     {
@@ -23,6 +23,7 @@
   // get Stores and fetch with `storeToRef`
   const catalogueEntryStore = useCatalogueEntryStore();
   const { catalogueEntries, filters, catalogueEntryMeta } = storeToRefs(catalogueEntryStore);
+  const permissionsComposable: PermissionsComposable = usePermissionsComposable();
 
   /**
    * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
@@ -73,7 +74,7 @@
           <td>
             <a href="#" class="me-2"
                @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
-              {{ view === CatalogueView.Edit ? "Edit" : "View" }}
+              {{ permissionsComposable.isEntryEditor(row) ? "Edit" : "View" }}
             </a>
           </td>
         </template>
