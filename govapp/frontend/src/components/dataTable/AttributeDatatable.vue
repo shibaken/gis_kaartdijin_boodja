@@ -60,7 +60,7 @@
     </template>
     <template #data>
       <tr v-if="filteredAttributes.length > 0" v-for="(row, index) in filteredAttributes" :key="index">
-        <td>{{ row.id }}</td>
+        <td>AT{{ row.id }}</td>
         <td>{{ row.name }}</td>
         <td>{{ row.type }}</td>
         <td>{{ row.order }}</td>
