@@ -23,25 +23,25 @@
   const formDirty = ref(false);
   const attributeModeText = computed(() => {
     switch (props.mode) {
-      case ModalTypes.ATTRIBUTE_ADD:
+      case ModalTypes.AttributeAdd:
         return "Add";
-      case ModalTypes.ATTRIBUTE_EDIT:
+      case ModalTypes.AttributeEdit:
         return "Edit";
-      case ModalTypes.ATTRIBUTE_DELETE:
+      case ModalTypes.AttributeDelete:
         return "Delete";
     }
   });
   const modalSize = computed(() => {
     switch (props.mode) {
-      case ModalTypes.ATTRIBUTE_ADD:
+      case ModalTypes.AttributeAdd:
         return "modal-lg";
-      case ModalTypes.ATTRIBUTE_EDIT:
+      case ModalTypes.AttributeEdit:
         return "modal-xl";
-      case ModalTypes.ATTRIBUTE_DELETE:
+      case ModalTypes.AttributeDelete:
         return "modal-md";
     }
   });
-  const showForm = computed(() => [ModalTypes.ATTRIBUTE_ADD, ModalTypes.ATTRIBUTE_EDIT].includes(props.mode));
+  const showForm = computed(() => [ModalTypes.AttributeAdd, ModalTypes.AttributeEdit].includes(props.mode));
 
   async function onAcceptClick () {
     modalStore.hideModal();

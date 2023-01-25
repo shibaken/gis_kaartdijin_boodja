@@ -1,6 +1,5 @@
 <script lang="ts" setup>
   import DataTable from "./DataTable.vue";
-  import PlusCircleFill from "../icons/plusCircleFill.vue";
   import CollapsibleRow from "./CollapsibleRow.vue";
   import DataTablePagination from "./DataTablePagination.vue";
   import { onMounted } from "vue";
@@ -40,9 +39,10 @@
         <th></th>
         <SortableHeader name="Number" column="number" alt-field="id" :direction="sortDirection('id')" @sort="onSort"/>
         <SortableHeader name="Name" column="name" :direction="sortDirection('name')" @sort="onSort"/>
-        <SortableHeader name="Submitted Date" column="submittedDate" :direction="sortDirection('submittedDate')" @sort="onSort"/>
-        <SortableHeader name="Filename" column="file" :direction="sortDirection('file')" @sort="onSort"/>
-        <SortableHeader name="Catalogue" column="catalogue" :direction="sortDirection('catalogue')" @sort="onSort"/>
+        <SortableHeader name="Submitted Date" column="submittedDate" :direction="sortDirection('submittedAt')"
+                        alt-field="submittedAt" @sort="onSort"/>
+        <SortableHeader name="Catalogue" column="catalogue" :direction="sortDirection('catalogue')"
+                        alt-field="catalogue_entry__name" @sort="onSort"/>
         <SortableHeader name="Status" column="status" :direction="sortDirection('status')" @sort="onSort"/>
         <th>Action</th>
       </tr>
@@ -52,8 +52,7 @@
         <template #cells>
           <td>LM{{ row.id }}</td>
           <td>{{ row.name }}</td>
-          <td>{{ DateTime.fromISO(row.submittedDate).toFormat('dd/MM/yyyy')}}</td>
-          <td>{{ DateTime.fromISO(row.submittedDate).toFormat('HH:mm') }}</td>
+          <td>{{ DateTime.fromISO(row.submittedDate).toFormat('dd/MM/yyyy HH:mm')}}</td>
           <td>
             <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View,
             { recordId: row.catalogueEntry?.id })">
@@ -70,13 +69,10 @@
         </template>
         <template #content>
           <td colspan="9">
-            <span class="fw-bold small">Catalogue layer description: </span>
+            <span class="fw-bold small">Layer Submission description: </span> {{ row.description }}
           </td>
         </template>
       </CollapsibleRow>
-      <tr>
-        <td colspan="8"><PlusCircleFill colour="#4284BC"></PlusCircleFill></td>
-      </tr>
     </template>
     <template #pagination>
       <DataTablePagination :current-page="currentPage" :num-pages="numPages" :page-size="pageSize"
