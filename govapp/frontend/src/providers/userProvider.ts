@@ -1,7 +1,7 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { RawUser, RawUserFilter, User } from "../backend/backend.api";
-import { UserFilter } from "./userProvider.api";
+import { RawCustodian, RawUser, RawUserFilter, User } from "../backend/backend.api";
+import { Custodian, UserFilter } from "./userProvider.api";
 
 export class UserProvider {
   // Get the backend stub if the test flag is used.
@@ -21,6 +21,16 @@ export class UserProvider {
     } as User;
   }
 
+  public rawToCustodian (rawCustodian: RawCustodian): Custodian {
+    return {
+      id: rawCustodian.id,
+      name: rawCustodian.name,
+      contactName: rawCustodian.contact_name,
+      contactEmail: rawCustodian.contact_email,
+      contactPhone: rawCustodian.contact_phone
+    };
+  }
+
   public async fetchUser (userId: number): Promise<User> {
     return this.rawToUser(await this.backend.getUser(userId));
   }
@@ -33,6 +43,11 @@ export class UserProvider {
 
     const users = await this.backend.getUsers(filters);
     return await Promise.all(users.results.map(user => this.rawToUser(user)));
+  }
+
+  public async fetchCustodians (): Promise<Custodian[]> {
+    const rawCustodians = await this.backend.getRawCustodians();
+    return rawCustodians.results.map(this.rawToCustodian);
   }
 
   public async fetchMe () {

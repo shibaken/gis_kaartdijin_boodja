@@ -13,8 +13,7 @@ export enum CatalogueDetailViewTabs {
 export enum CatalogueView {
   List = "List",
   View = "View",
-  Edit = "Edit",
-  History = "History"
+  Edit = "Edit"
 }
 
 export enum SubmissionDetailViewTabs {

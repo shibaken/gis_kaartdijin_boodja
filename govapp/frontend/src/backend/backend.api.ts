@@ -34,6 +34,7 @@ export interface RawCatalogueEntry {
   email_notifications: Array<number>;
   webhook_notifications: Array<number>;
   editors: Array<number>;
+  workspace: number;
 }
 
 export interface RawLayerSubmission {

@@ -2,7 +2,7 @@ import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
 import { CatalogueEntryStatus, PaginatedRecord, RawCatalogueEntry, RawCatalogueEntryFilter, RecordStatus,
   User } from "../backend/backend.api";
-import { CatalogueEntry, CatalogueEntryFilter } from "./catalogueEntryProvider.api";
+import { CatalogueEntry, CatalogueEntryFilter, Workspace } from "./catalogueEntryProvider.api";
 import { statusProvider } from "./statusProvider";
 import { userProvider } from "./userProvider";
 import { SortDirection } from "../components/viewState.api";
@@ -20,17 +20,26 @@ export class CatalogueEntryProvider {
   public init () {
     statusProvider.fetchStatuses<CatalogueEntryStatus>("entries")
       .then(statuses => useCatalogueEntryStore().entryStatuses = statuses);
+    catalogueEntryProvider.fetchWorkspaces()
+      .then(workspaces => useCatalogueEntryStore().workspaces = workspaces);
   }
 
   private async rawToCatalogueEntry (entry: RawCatalogueEntry): Promise<CatalogueEntry> {
     const entryStatuses: RecordStatus<CatalogueEntryStatus>[] = useCatalogueEntryStore().entryStatuses;
     const users = await userProvider.users;
-    let user: User | undefined;
+    let user: User | undefined,
+      custodian: User | undefined;
 
     if (typeof entry.assigned_to === "number") {
       const matchUser = users.find(match => match.id === entry.assigned_to);
       user = matchUser ?? await userProvider.fetchUser(entry.assigned_to);
     }
+
+    if (typeof entry.custodian === "number") {
+      const matchCustodian = users.find(match => match.id === entry.custodian);
+      custodian = matchCustodian ?? await userProvider.fetchUser(entry.custodian);
+    }
+
     const editors: Array<User> = [];
     const toFetch: Array<number> = [];
     entry.editors.forEach(editorId => {
@@ -53,14 +62,15 @@ export class CatalogueEntryProvider {
       description: entry.description,
       status: statusProvider.getRecordStatusFromId(entry.status, entryStatuses),
       updatedAt: entry.updated_at,
-      custodian: user, // TODO: update to work with new custodian API
+      custodian,
       assignedTo: user,
       subscription: entry.subscription,
       activeLayer: entry.active_layer,
       layers: entry.layers,
       emailNotifications: entry.email_notifications,
       webhookNotifications: entry.webhook_notifications,
-      editors
+      editors,
+      workspace: useCatalogueEntryStore().workspaces.find(workspace => workspace.id === entry.workspace)
     } as CatalogueEntry;
   }
 
@@ -130,7 +140,7 @@ export class CatalogueEntryProvider {
     };
 
     useCatalogueEntryStore().$patch({
-      catalogueEntries: catalogueEntries,
+      catalogueEntries,
       catalogueEntryMeta
     });
 
@@ -202,6 +212,11 @@ export class CatalogueEntryProvider {
       useCatalogueEntryStore().updateEntry(updatedEntry);
       return updatedEntry;
     }
+  }
+
+  public async fetchWorkspaces (): Promise<Workspace[]> {
+    const data = await this.backend.getWorkspaces();
+    return data.results;
   }
 }
 

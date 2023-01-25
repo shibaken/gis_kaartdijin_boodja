@@ -77,7 +77,6 @@
                @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
               {{ view === CatalogueView.Edit ? "Edit" : "View" }}
             </a>
-            <a href="#">History</a>
           </td>
         </template>
         <template #content>

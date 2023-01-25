@@ -7,6 +7,7 @@ import { catalogueEntryProvider } from "./catalogueEntryProvider";
 import { WMTSCapabilities } from "ol/format";
 import { optionsFromCapabilities } from "ol/source/WMTS";
 import type { Options } from "ol/source/WMTS";
+import { Workspace } from "./catalogueEntryProvider.api";
 
 export class RelatedEntityProvider {
   // Get the backend stub if the test flag is used.
@@ -120,13 +121,13 @@ export class RelatedEntityProvider {
     return this.toSymbology(await this.backend.patchRawSymbology(id, sld));
   }
 
-  public async fetchWmtsCapabilities (layerName: string, styleName = "default"): Promise<Options | null> {
+  public async fetchWmtsCapabilities (workspace: Workspace, layerName: string, styleName = "default"): Promise<Options | null> {
     const parser = new WMTSCapabilities();
     const text = await this.backend.getWmtsCapabilities();
     const result = parser.read(text);
     return optionsFromCapabilities(result, {
-      layer: "Catalogue:" + layerName, //TODO: hardcoded. Needs to be linked up
-      style: "Catalogue:" + styleName
+      layer: `${workspace.name}:` + layerName,
+      style: `${workspace.name}:` + styleName
     });
   }
 
