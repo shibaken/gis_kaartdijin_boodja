@@ -1,4 +1,4 @@
-"""Kaartdijin Boodja Catalogue Django Application Notification Models."""
+"""Kaartdijin Boodja Publisher Django Application Notification Models."""
 
 
 # Third-Party
@@ -8,19 +8,19 @@ import reversion
 # Local
 from govapp.common import mixins
 from govapp.common import utils
-from govapp.apps.catalogue.models import catalogue_entries
+from govapp.apps.publisher.models import publish_entries
 
 
 class EmailNotificationType(models.IntegerChoices):
     """Enumeration for an Email Notification Type."""
-    ON_NEW_DATA = 1
+    ON_PUBLISH = 1
     ON_LOCK = 2
     BOTH = 3
 
 
 class WebhookNotificationType(models.IntegerChoices):
     """Enumeration for a Webhook Notification Type."""
-    ON_NEW_DATA = 1
+    ON_PUBLISH = 1
 
 
 @reversion.register()
@@ -29,21 +29,21 @@ class EmailNotification(mixins.RevisionedMixin):
     name = models.TextField()
     type = models.IntegerField(choices=EmailNotificationType.choices)  # noqa: A003
     email = models.TextField()
-    catalogue_entry = models.ForeignKey(
-        catalogue_entries.CatalogueEntry,
+    publish_entry = models.ForeignKey(
+        publish_entries.PublishEntry,
         related_name="email_notifications",
         on_delete=models.CASCADE,
     )
 
     # Custom Managers
     # These managers are required so that the reverse relationship on the
-    # Catalogue Entries (i.e., `catalogue_entry.email_notifications`) can be
+    # Publish Entries (i.e., `publish_entry.email_notifications`) can be
     # easily filtered without knowing/importing the `EmailNotificationType`
     # implementation detail (which in this case would be a circular import).
     # These managers allow usage such as:
-    # `catalogue_entry.email_notifications(manager="on_lock").all()`.
+    # `publish_entry.email_notifications(manager="on_lock").all()`.
     objects = models.Manager()
-    on_new_data = utils.filtered_manager(type=EmailNotificationType.ON_NEW_DATA)  # type: ignore
+    on_publish = utils.filtered_manager(type=EmailNotificationType.ON_PUBLISH)  # type: ignore
     on_lock = utils.filtered_manager(type=EmailNotificationType.ON_LOCK)  # type: ignore
     both = utils.filtered_manager(type=EmailNotificationType.BOTH)  # type: ignore
 
@@ -68,21 +68,21 @@ class WebhookNotification(mixins.RevisionedMixin):
     name = models.TextField()
     type = models.IntegerField(choices=WebhookNotificationType.choices)  # noqa: A003
     url = models.URLField()
-    catalogue_entry = models.ForeignKey(
-        catalogue_entries.CatalogueEntry,
+    publish_entry = models.ForeignKey(
+        publish_entries.PublishEntry,
         related_name="webhook_notifications",
         on_delete=models.CASCADE,
     )
 
     # Custom Managers
     # These managers are required so that the reverse relationship on the
-    # Catalogue Entries (i.e., `catalogue_entry.webhook_notifications`) can be
+    # Publish Entries (i.e., `publish_entry.webhook_notifications`) can be
     # easily filtered without knowing/importing the `WebhookNotificationType`
     # implementation detail (which in this case would be a circular import).
     # These managers allow usage such as:
-    # `catalogue_entry.webhook_notifications(manager="on_lock").all()`.
+    # `publish_entry.webhook_notifications(manager="on_lock").all()`.
     objects = models.Manager()
-    on_new_data = utils.filtered_manager(type=WebhookNotificationType.ON_NEW_DATA)  # type: ignore
+    on_publish = utils.filtered_manager(type=WebhookNotificationType.ON_PUBLISH)  # type: ignore
 
     class Meta:
         """Webhook Notification Model Metadata."""

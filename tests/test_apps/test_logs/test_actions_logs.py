@@ -78,31 +78,31 @@ def test_flow(
     ).json()["results"] == [
         {
             "id": 1,
-            "who": 2,
+            "who": user.pk,
             "what": "Catalogue entry was locked",
             "when": "2022-12-17T00:00:00Z",  # Time is frozen
         },
         {
             "id": 2,
-            "who": 2,
+            "who": user.pk,
             "what": "Catalogue entry was unlocked",
             "when": "2022-12-17T00:00:00Z",  # Time is frozen
         },
         {
             "id": 3,
-            "who": 2,
+            "who": user.pk,
             "what": "Catalogue entry was unassigned",
             "when": "2022-12-17T00:00:00Z",  # Time is frozen
         },
         {
             "id": 4,
-            "who": 2,
+            "who": user.pk,
             "what": f"Catalogue entry was assigned to {entry.assigned_to} (id: {entry.assigned_to.pk})",
             "when": "2022-12-17T00:00:00Z",  # Time is frozen
         },
         {
             "id": 5,
-            "who": 2,
+            "who": user.pk,
             "what": "Catalogue entry was declined",
             "when": "2022-12-17T00:00:00Z",  # Time is frozen
         },

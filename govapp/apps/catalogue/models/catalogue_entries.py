@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from govapp.apps.catalogue.models import layer_subscriptions
     from govapp.apps.catalogue.models import layer_symbology
     from govapp.apps.catalogue.models import notifications
+    from govapp.apps.publisher.models import publish_entries
 
 
 # Shortcuts
@@ -51,6 +52,7 @@ class CatalogueEntryStatus(models.IntegerChoices):
         "symbology",
         "email_notifications",
         "webhook_notifications",
+        "publish_entry",
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
@@ -92,6 +94,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     symbology: "layer_symbology.LayerSymbology"
     email_notifications: "models.Manager[notifications.EmailNotification]"
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
+    publish_entry: "publish_entries.PublishEntry"
 
     class Meta:
         """Catalogue Entry Model Metadata."""
@@ -220,8 +223,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 # Set Catalogue Entry to Pending
                 self.status = CatalogueEntryStatus.PENDING
 
-            # Publish the Symbology
-            self.symbology.publish()
+            # Publish if Required
+            self.publish_entry.publish()
 
             # Save the Catalogue Entry
             self.save()

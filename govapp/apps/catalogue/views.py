@@ -211,37 +211,6 @@ class CatalogueEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
-    @decorators.action(detail=True, methods=["POST"])
-    def geoserver(self, request: request.Request, pk: str) -> response.Response:
-        """Re-pushes the Catalogue Entry to GeoServer.
-
-        Args:
-            request (request.Request): API request.
-            pk (str): Primary key of the Catalogue Entry.
-
-        Returns:
-            response.Response: Empty response confirming success.
-        """
-        # Retrieve Catalogue Entry
-        # Help `mypy` by casting the resulting object to a Catalogue Entry
-        catalogue_entry = self.get_object()
-        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
-
-        # Publish to GeoServer!
-        catalogue_entry.symbology.publish()
-        catalogue_entry.active_layer.publish()
-
-        # Add Action Log Entry
-        logs_utils.add_to_actions_log(
-            user=request.user,
-            model=catalogue_entry,
-            action="Catalogue entry was re-published to GeoServer"
-        )
-
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
-
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):

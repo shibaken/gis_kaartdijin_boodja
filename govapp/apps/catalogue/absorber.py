@@ -166,10 +166,6 @@ class Absorber:
             catalogue_entry=catalogue_entry,
         )
 
-        # Publish Layer and Symbology
-        catalogue_entry.active_layer.publish()
-        catalogue_entry.symbology.publish()
-
         # Notify!
         notifications.catalogue_entry_creation(catalogue_entry)
 
@@ -222,8 +218,8 @@ class Absorber:
 
         # Check Layer Submission
         if success:
-            # Publish Layer
-            catalogue_entry.active_layer.publish()
+            # Publish
+            catalogue_entry.publish_entry.publish()
 
             # Notify!
             notifications.catalogue_entry_update_success(catalogue_entry)

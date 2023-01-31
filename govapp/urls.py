@@ -46,6 +46,7 @@ urlpatterns = [
     urls.path("api/docs/", urls.include("govapp.apps.swagger.urls")),
     urls.path("api/catalogue/", urls.include("govapp.apps.catalogue.urls")),
     urls.path("api/logs/", urls.include("govapp.apps.logs.urls")),
+    urls.path("api/publish/", urls.include("govapp.apps.publisher.urls")),
 
     # Management Command Endpoints
     urls.path("api/management/", urls.include("govapp.commands"))

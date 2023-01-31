@@ -1,4 +1,4 @@
-"""Kaartdijin Boodja Catalogue Django Application Custom Actions."""
+"""Kaartdijin Boodja Django Application Mixins."""
 
 
 # Third-Party

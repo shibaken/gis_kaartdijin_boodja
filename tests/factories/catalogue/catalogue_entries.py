@@ -19,6 +19,7 @@ from tests.factories.catalogue import layer_submissions
 from tests.factories.catalogue import layer_symbology
 from tests.factories.catalogue import notifications
 from tests.factories.catalogue import workspaces
+from tests.factories.publisher import publish_entries
 
 # Typing
 from typing import Any
@@ -63,6 +64,10 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
     layers = factory.RelatedFactoryList(
         layer_submissions.LayerSubmissionFactory,
         size=lambda: random.randint(1, 5),  # noqa: S311
+        factory_related_name="catalogue_entry",
+    )
+    publish_entry = factory.RelatedFactory(
+        publish_entries.PublishEntryFactory,
         factory_related_name="catalogue_entry",
     )
 

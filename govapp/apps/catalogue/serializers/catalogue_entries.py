@@ -33,6 +33,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "attributes",
             "metadata",
             "symbology",
+            "publish_entry",
         )
         read_only_fields = (
             "id",
@@ -48,4 +49,5 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "attributes",
             "metadata",
             "symbology",
+            "publish_entry",
         )
