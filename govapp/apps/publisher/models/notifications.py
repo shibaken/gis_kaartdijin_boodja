@@ -18,11 +18,6 @@ class EmailNotificationType(models.IntegerChoices):
     BOTH = 3
 
 
-class WebhookNotificationType(models.IntegerChoices):
-    """Enumeration for a Webhook Notification Type."""
-    ON_PUBLISH = 1
-
-
 @reversion.register()
 class EmailNotification(mixins.RevisionedMixin):
     """Model for an Email Notification."""
@@ -51,43 +46,6 @@ class EmailNotification(mixins.RevisionedMixin):
         """Email Notification Model Metadata."""
         verbose_name = "Email Notification"
         verbose_name_plural = "Email Notifications"
-
-    def __str__(self) -> str:
-        """Provides a string representation of the object.
-
-        Returns:
-            str: Human readable string representation of the object.
-        """
-        # Generate String and Return
-        return f"{self.name}"
-
-
-@reversion.register()
-class WebhookNotification(mixins.RevisionedMixin):
-    """Model for a Webhook Notification."""
-    name = models.TextField()
-    type = models.IntegerField(choices=WebhookNotificationType.choices)  # noqa: A003
-    url = models.URLField()
-    publish_entry = models.ForeignKey(
-        publish_entries.PublishEntry,
-        related_name="webhook_notifications",
-        on_delete=models.CASCADE,
-    )
-
-    # Custom Managers
-    # These managers are required so that the reverse relationship on the
-    # Publish Entries (i.e., `publish_entry.webhook_notifications`) can be
-    # easily filtered without knowing/importing the `WebhookNotificationType`
-    # implementation detail (which in this case would be a circular import).
-    # These managers allow usage such as:
-    # `publish_entry.webhook_notifications(manager="on_lock").all()`.
-    objects = models.Manager()
-    on_publish = utils.filtered_manager(type=WebhookNotificationType.ON_PUBLISH)  # type: ignore
-
-    class Meta:
-        """Webhook Notification Model Metadata."""
-        verbose_name = "Webhook Notification"
-        verbose_name_plural = "Webhook Notifications"
 
     def __str__(self) -> str:
         """Provides a string representation of the object.

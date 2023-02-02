@@ -23,11 +23,12 @@ log = logging.getLogger(__name__)
 class PublishChannelFrequency(models.IntegerChoices):
     """Enumeration for a Publish Channel Frequency."""
     ON_CHANGE = 1
-    DAILY = 3
-    WEEKLY = 4
-    MONTHLY = 5
-    QUARTERLY = 6
-    YEARLY = 7
+
+
+class CDDPPublishChannelMode(models.IntegerChoices):
+    """Enumeration for a CDDP Publish Channel Mode."""
+    AZURE = 1
+    AZURE_AND_SHAREPOINT = 2
 
 
 @reversion.register()
@@ -35,6 +36,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
     name = models.TextField()
     description = models.TextField()
+    mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
     publish_entry = models.OneToOneField(
         publish_entries.PublishEntry,
@@ -56,34 +58,25 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.name}"
 
-    def publish(self, force: bool = False) -> None:
+    def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
-            force (bool): Force publish, regardless of frequency.
+            symbology_only (bool): Whether to publish symbology only.
         """
         # Log
-        log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}' ({force=})")
+        log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}'")
 
-        # Check Frequency
-        if self.frequency != PublishChannelFrequency.ON_CHANGE and not force:
-            # Do not publish
-            log.info(f"Frequency is '{self.frequency}', skipping...")
+        # Check Mode
+        match self.mode:
+            case CDDPPublishChannelMode.AZURE:
+                # Publish only to Azure
+                self.publish_azure()
 
-            # Exit early
-            return
-
-        # Publish!
-        self.publish_azure()
-        self.publish_sharepoint()
-
-    def publish_sharepoint(self) -> None:
-        """Publishes the Catalogue Entry to SharePoint if applicable."""
-        # Log
-        log.info(f"Publishing '{self}' to SharePoint")
-
-        # TODO
-        ...
+            case CDDPPublishChannelMode.AZURE_AND_SHAREPOINT:
+                # Publish to Azure and Sharepoint
+                self.publish_azure()
+                self.publish_sharepoint()
 
     def publish_azure(self) -> None:
         """Publishes the Catalogue Entry to Azure if applicable."""
@@ -93,12 +86,27 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         # TODO
         ...
 
+    def publish_sharepoint(self) -> None:
+        """Publishes the Catalogue Entry to SharePoint if applicable."""
+        # Log
+        log.info(f"Publishing '{self}' to SharePoint")
+
+        # TODO
+        ...
+
+
+class GeoServerPublishChannelMode(models.IntegerChoices):
+    """Enumeration for a GeoServer Publish Channel Mode."""
+    WMS = 1
+    WMS_AND_WFS = 2
+
 
 @reversion.register()
 class GeoServerPublishChannel(mixins.RevisionedMixin):
     """Model for a GeoServer Publish Channel."""
     name = models.TextField()
     description = models.TextField()
+    mode = models.IntegerField(choices=GeoServerPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
     publish_entry = models.OneToOneField(
         publish_entries.PublishEntry,
@@ -120,30 +128,37 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.name}"
 
-    def publish(self, force: bool = False) -> None:
+    def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
-            force (bool): Force publish, regardless of frequency.
+            symbology_only (bool): Whether to publish symbology only.
         """
         # Log
-        log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}' ({force=})")
+        log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}'")
 
-        # Check Frequency
-        if self.frequency != PublishChannelFrequency.ON_CHANGE and not force:
-            # Do not publish
-            log.info(f"Frequency is '{self.frequency}', skipping...")
+        # Publish Symbology
+        self.publish_geoserver_symbology()
 
-            # Exit early
+        # Check Symbology Only Flag
+        if symbology_only:
+            # Exit Early
             return
 
-        # Publish!
-        self.publish_geoserver()
+        # Check Mode
+        match self.mode:
+            case GeoServerPublishChannelMode.WMS:
+                # Publish to GeoServer (WMS Only)
+                self.publish_geoserver_layer(wms=True, wfs=False)
 
-    def publish_geoserver(self) -> None:
-        """Publishes the Catalogue Entry to GeoServer if applicable."""
+            case GeoServerPublishChannelMode.WMS_AND_WFS:
+                # Publish to GeoServer (WMS and WFS)
+                self.publish_geoserver_layer(wms=True, wfs=True)
+
+    def publish_geoserver_symbology(self) -> None:
+        """Publishes the Symbology to GeoServer if applicable."""
         # Log
-        log.info(f"Publishing '{self}' to GeoServer")
+        log.info(f"Publishing '{self}' (Symbology) to GeoServer")
 
         # Publish Style to GeoServer
         gis.geoserver.GeoServer().upload_style(
@@ -152,6 +167,16 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             name=self.publish_entry.catalogue_entry.symbology.name,
             sld=self.publish_entry.catalogue_entry.symbology.sld,
         )
+
+    def publish_geoserver_layer(self, wms: bool, wfs: bool) -> None:
+        """Publishes the Catalogue Entry to GeoServer if applicable.
+
+        Args:
+            wms (bool): Whether to enable WMS capabilities.
+            wfs (bool): Whether to enable WFS capabilities.
+        """
+        # Log
+        log.info(f"Publishing '{self}' (Layer) to GeoServer")
 
         # Retrieve the Layer File from Storage
         filepath = sharepoint.SharepointStorage().get_from_url(

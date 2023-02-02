@@ -26,11 +26,6 @@ class PublishEntryFactory(factory.django.DjangoModelFactory):
         size=lambda: random.randint(1, 5),  # noqa: S311
         factory_related_name="publish_entry",
     )
-    webhook_notifications = factory.RelatedFactoryList(
-        notifications.WebhookNotificationFactory,
-        size=lambda: random.randint(1, 5),  # noqa: S311
-        factory_related_name="publish_entry",
-    )
 
     class Meta:
         """Publish Entry Factory Metadata."""

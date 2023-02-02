@@ -18,14 +18,3 @@ class EmailNotificationFactory(factory.django.DjangoModelFactory):
     class Meta:
         """Email Notification Factory Metadata."""
         model = models.notifications.EmailNotification
-
-
-class WebhookNotificationFactory(factory.django.DjangoModelFactory):
-    """Factory for an Webhook Notification."""
-    name = factory.Sequence(lambda n: f"Webhook Notification {n + 1}")
-    type = factory.fuzzy.FuzzyChoice(models.notifications.WebhookNotificationType)  # noqa: A003
-    url = factory.Faker("uri")
-
-    class Meta:
-        """Webhook Notification Factory Metadata."""
-        model = models.notifications.WebhookNotification

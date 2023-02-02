@@ -13,6 +13,7 @@ router = routers.DefaultRouter()
 router.register("entries", views.PublishEntryViewSet)
 router.register("channels/cddp", views.CDDPPublishChannelViewSet)
 router.register("channels/geoserver", views.GeoServerPublishChannelViewSet)
+router.register("notifications/emails", views.EmailNotificationViewSet)
 
 
 # Catalogue URL Patterns

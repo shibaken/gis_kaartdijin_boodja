@@ -13,3 +13,4 @@ from govapp.apps.publisher import models
 admin.site.register(models.publish_channels.CDDPPublishChannel, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_channels.GeoServerPublishChannel, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_entries.PublishEntry, reversion.admin.VersionAdmin)
+admin.site.register(models.notifications.EmailNotification, reversion.admin.VersionAdmin)

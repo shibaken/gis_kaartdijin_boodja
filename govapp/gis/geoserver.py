@@ -58,18 +58,17 @@ class GeoServer:
         log.info(f"Uploading Geopackage '{filepath}' to GeoServer")
 
         # Construct URL
-        url = "{0}/rest/workspaces/{1}/datastores/{2}/file.gpkg?filename={3}".format(
+        url = "{0}/rest/workspaces/{1}/datastores/{2}/file.gpkg".format(
             self.service_url,
             workspace,
             layer,
-            filepath.name,
         )
 
         # Perform Request
         response = httpx.put(
             url=url,
             content=filepath.read_bytes(),
-            params={"update": "overwrite"},
+            params={"filename": filepath.name, "update": "overwrite"},
             auth=(self.username, self.password),
         )
 

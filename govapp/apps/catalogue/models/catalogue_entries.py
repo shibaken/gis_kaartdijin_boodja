@@ -18,7 +18,7 @@ from govapp.apps.catalogue.models import custodians
 from govapp.apps.catalogue.models import workspaces
 
 # Typing
-from typing import TYPE_CHECKING, Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 
 # Type Checking
 if TYPE_CHECKING:
@@ -223,8 +223,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 # Set Catalogue Entry to Pending
                 self.status = CatalogueEntryStatus.PENDING
 
-            # Publish if Required
-            self.publish_entry.publish()
+            # Publish Symbology
+            self.publish_entry.publish(symbology_only=True)
 
             # Save the Catalogue Entry
             self.save()

@@ -1,4 +1,4 @@
-"""Kaartdijin Boodja Catalogue Django Application Permissions."""
+"""Kaartdijin Boodja Publisher Django Application Permissions."""
 
 
 # Third-Party
@@ -8,14 +8,14 @@ from rest_framework import viewsets
 
 # Local
 from govapp.apps.accounts import utils
-from govapp.apps.catalogue import models
+from govapp.apps.publisher import models
 
 # Typing
 from typing import Any
 
 
-class IsCatalogueEntryPermissions(permissions.BasePermission):
-    """Permissions for the Catalogue Entry ViewSet."""
+class IsPublishEntryPermissions(permissions.BasePermission):
+    """Permissions for the Publish Entry ViewSet."""
 
     def has_permission(  # type: ignore
         self,
@@ -33,16 +33,16 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
         """
         # Check Action
         if view.action in ("create", "destroy"):
-            # Creates and Destroys are not allowed by anyone
-            allowed = False
+            # Creates and Destroys might be allowed, but we delegate it to `has_object_permission`
+            allowed = True
 
         elif view.action in ("list", "retrieve", "update", "partial_update",
-                             "lock", "unlock", "decline", "assign", "unassign"):
+                             "lock", "unlock", "assign", "unassign", "publish"):
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
             # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
             # Assigning and Unassigning also might be allowed, again we delegate it to `has_object_permission`
-            # Re-publishing to GeoServer might be allowed, again we delegate it to `has_object_permission`
+            # Manually publishing might be allowed, again we delegate it to `has_object_permission`
             allowed = True
 
         else:
@@ -71,53 +71,63 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             bool: Whether permission is allowed.
         """
         # Check Action
-        if view.action in ("create", "destroy"):
-            # Creates and Destroys are not allowed by anyone
-            allowed = False
-
-        elif view.action in ("list", "retrieve"):
+        if view.action in ("list", "retrieve"):
             # Retrieves and Lists are always allowed by anyone
             allowed = True
 
-        elif view.action in ("update", "partial_update"):
-            # Update and Partial Update
-            # Check Catalogue Entry specific permissions
-            # 1. Object is a Catalogue Entry
-            # 2. User is in the Catalogue Editors group
-            # 3. User is one of this Catalogue Entry's editors
-            # 4. Catalogue Entry is `assigned_to` this user
-            # 5. Catalogue Entry is unlocked
+        elif view.action in ("create", "destroy", "update", "partial_update"):
+            # Creates, Destroys, Updates and Partial Updates
+            # Check Publish Entry specific permissions
+            # 1. Object is a Publish Entry
+            # 2. User is in the Administrators group
+            # 3. User is one of this Publish Entry's editors
+            # 4. Publish Entry is `assigned_to` this user
+            # 5. Publish Entry is unlocked
             allowed = (
-                isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and utils.is_catalogue_editor(request.user)
+                isinstance(obj, models.publish_entries.PublishEntry)
+                and utils.is_administrator(request.user)
                 and obj.is_editor(request.user)
                 and obj.assigned_to == request.user
                 and obj.is_unlocked()
             )
 
-        elif view.action in ("lock", "unlock", "decline"):
+        elif view.action in ("lock", "unlock"):
             # Lock, Unlock and Decline
-            # 1. Object is a Catalogue Entry
-            # 2. User is in the Catalogue Editors group
-            # 3. User is one of this Catalogue Entry's editors
-            # 4. Catalogue Entry is `assigned_to` this user
+            # 1. Object is a Publish Entry
+            # 2. User is in the Administrators group
+            # 3. User is one of this Publish Entry's editors
+            # 4. Publish Entry is `assigned_to` this user
             allowed = (
-                isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and utils.is_catalogue_editor(request.user)
+                isinstance(obj, models.publish_entries.PublishEntry)
+                and utils.is_administrator(request.user)
                 and obj.is_editor(request.user)
                 and obj.assigned_to == request.user
             )
 
         elif view.action in ("assign", "unassign"):
             # Assign and Unassign
-            # Assigning or Unassigning a Catalogue Entry has its own set of rules
-            # 1. Object is a Catalogue Entry
-            # 2. User is in the Catalogue Editors group
-            # 3. User is one of this Catalogue Entry's editors
+            # Assigning or Unassigning a Publish Entry has its own set of rules
+            # 1. Object is a Publish Entry
+            # 2. User is in the Administrators group
+            # 3. User is one of this Publish Entry's editors
             allowed = (
-                isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and utils.is_catalogue_editor(request.user)
+                isinstance(obj, models.publish_entries.PublishEntry)
+                and utils.is_administrator(request.user)
                 and obj.is_editor(request.user)
+            )
+
+        elif view.action == "publish":
+            # Publish
+            # Check Publish Entry specific permissions
+            # 1. Object is a Publish Entry
+            # 2. User is in the Administrators group
+            # 3. User is one of this Publish Entry's editors
+            # 4. Publish Entry is locked
+            allowed = (
+                isinstance(obj, models.publish_entries.PublishEntry)
+                and utils.is_administrator(request.user)
+                and obj.is_editor(request.user)
+                and obj.is_locked()
             )
 
         else:
@@ -130,8 +140,8 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
         return allowed
 
 
-class HasCatalogueEntryPermissions(permissions.BasePermission):
-    """Permissions for the Model with a Catalogue Entry ViewSet."""
+class HasPublishEntryPermissions(permissions.BasePermission):
+    """Permissions for the Model with a Publish Entry ViewSet."""
 
     def has_permission(  # type: ignore
         self,
@@ -150,19 +160,19 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
         # Check Action
         if view.action == "create":
             # Create
-            # Check Catalogue Entry specific permissions
-            # 1. Request contains a reference to a Catalogue Entry
-            # 2. User is in the Catalogue Editor group
-            # 3. User is one of this Catalogue Entry's editors
-            # 4. Catalogue Entry is `assigned_to` this user
-            # 5. Catalogue Entry is unlocked
-            catalogue_entry = models.catalogue_entries.CatalogueEntry.from_request(request)
+            # Check Publish Entry specific permissions
+            # 1. Request contains a reference to a Publish Entry
+            # 2. User is in the Administrators group
+            # 3. User is one of this Publish Entry's editors
+            # 4. Publish Entry is `assigned_to` this user
+            # 5. Publish Entry is unlocked
+            publish_entry = models.publish_entries.PublishEntry.from_request(request)
             allowed = (
-                catalogue_entry is not None
-                and utils.is_catalogue_editor(request.user)
-                and catalogue_entry.is_editor(request.user)
-                and catalogue_entry.assigned_to == request.user
-                and catalogue_entry.is_unlocked()
+                publish_entry is not None
+                and utils.is_administrator(request.user)
+                and publish_entry.is_editor(request.user)
+                and publish_entry.assigned_to == request.user
+                and publish_entry.is_unlocked()
             )
 
         elif view.action in ("destroy", "list", "retrieve", "update", "partial_update"):
@@ -203,19 +213,19 @@ class HasCatalogueEntryPermissions(permissions.BasePermission):
 
         elif view.action in ("destroy", "update", "partial_update"):
             # Destroy, Update and Partial Update
-            # Check Catalogue Entry specific permissions
-            # 1. Object has a Catalogue Entry attached to it
-            # 2. User is in the Catalogue Editors group
-            # 3. User is one of this Catalogue Entry's editors
-            # 4. Catalogue Entry is `assigned_to` this user
-            # 5. Catalogue Entry is unlocked
+            # Check Publish Entry specific permissions
+            # 1. Object has a Publish Entry attached to it
+            # 2. User is in the Administrators group
+            # 3. User is one of this Publish Entry's editors
+            # 4. Publish Entry is `assigned_to` this user
+            # 5. Publish Entry is unlocked
             allowed = (
-                hasattr(obj, "catalogue_entry")
-                and isinstance(obj.catalogue_entry, models.catalogue_entries.CatalogueEntry)
-                and utils.is_catalogue_editor(request.user)
-                and obj.catalogue_entry.is_editor(request.user)
-                and obj.catalogue_entry.assigned_to == request.user
-                and obj.catalogue_entry.is_unlocked()
+                hasattr(obj, "publish_entry")
+                and isinstance(obj.publish_entry, models.publish_entries.PublishEntry)
+                and utils.is_administrator(request.user)
+                and obj.publish_entry.is_editor(request.user)
+                and obj.publish_entry.assigned_to == request.user
+                and obj.publish_entry.is_unlocked()
             )
 
         else:

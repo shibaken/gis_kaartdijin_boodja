@@ -5,7 +5,7 @@
 from django.db import models
 
 # Typing
-from typing import Any
+from typing import Any, Optional
 
 
 def filtered_manager(**kwargs: Any) -> models.manager.BaseManager:
@@ -24,3 +24,13 @@ def filtered_manager(**kwargs: Any) -> models.manager.BaseManager:
 
     # Return Manager
     return Manager()
+
+
+def string_to_boolean(value: Optional[str]) -> bool:
+    """Coerces a string value to a boolean.
+
+    Returns:
+        bool: The coerced boolean value.
+    """
+    # Parse and Return
+    return True if value and value.lower() == "true" else False
