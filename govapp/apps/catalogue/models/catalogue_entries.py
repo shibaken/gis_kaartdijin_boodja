@@ -58,6 +58,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     name = models.TextField()
     description = models.TextField()
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     editors = models.ManyToManyField(
         UserModel,
