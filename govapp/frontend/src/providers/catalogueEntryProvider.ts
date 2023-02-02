@@ -9,6 +9,7 @@ import { SortDirection } from "../components/viewState.api";
 import { toSnakeCase } from "../util/strings";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
 import { Custodian } from "./userProvider.api";
+import { relatedEntityProvider } from "./relatedEntityProvider";
 
 export class CatalogueEntryProvider {
   // Get the backend stub if the test flag is used.
@@ -64,6 +65,7 @@ export class CatalogueEntryProvider {
       name: entry.name,
       description: entry.description,
       status: statusProvider.getRecordStatusFromId(entry.status, entryStatuses),
+      createdAt: entry.created_at,
       updatedAt: entry.updated_at,
       custodian,
       assignedTo: user,
@@ -73,7 +75,8 @@ export class CatalogueEntryProvider {
       emailNotifications: entry.email_notifications,
       webhookNotifications: entry.webhook_notifications,
       editors,
-      workspace: useCatalogueEntryStore().workspaces.find(workspace => workspace.id === entry.workspace)
+      workspace: useCatalogueEntryStore().workspaces.find(workspace => workspace.id === entry.workspace),
+      metadata: await relatedEntityProvider.getOrFetchMetadata(entry.metadata)
     } as CatalogueEntry;
   }
 

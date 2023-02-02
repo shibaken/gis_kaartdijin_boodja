@@ -5,6 +5,7 @@
   import EntryViewDetailTab from "./EntryViewDetailTab.vue";
   import EntryViewAttributeTab from "./EntryViewAttributeTab.vue";
   import EntryViewSymbologyTab from "./EntryViewSymbologyTab.vue";
+  import EntryViewMetadataTab from "./EntryViewMetadataTab.vue";
 
   const props = defineProps<{
     catalogueEntry?: CatalogueEntry,
@@ -58,6 +59,8 @@
                             :entry="catalogueEntry"
                             @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
   <entry-view-symbology-tab v-if="activeTab === CatalogueDetailViewTabs.Symbology && catalogueEntry"
+                            :entry="catalogueEntry"/>
+  <entry-view-metadata-tab v-if="activeTab === CatalogueDetailViewTabs.Metadata && catalogueEntry"
                             :entry="catalogueEntry"
                             @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
 </template>

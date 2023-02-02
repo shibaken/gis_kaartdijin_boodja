@@ -2,12 +2,14 @@ import { PaginationFilter } from "./providerCommon.api";
 import { CatalogueEntryStatus, RawCatalogueEntry, RecordStatus, User } from "../backend/backend.api";
 import { SortDirection } from "../components/viewState.api";
 import { Custodian } from "./userProvider.api";
+import { Metadata } from "./relatedEntityProvider.api";
 
 export interface CatalogueEntry {
   id: number;
   name: string;
   description: string;
   status: RecordStatus<CatalogueEntryStatus>;
+  createdAt: string;
   updatedAt: string;
   custodian: Custodian;
   assignedTo?: User;
@@ -18,6 +20,7 @@ export interface CatalogueEntry {
   webhookNotifications: Array<number>;
   editors: Array<User>;
   workspace: Workspace;
+  metadata: Metadata;
 }
 
 export interface CatalogueEntryFilter extends PaginationFilter {

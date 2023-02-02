@@ -25,6 +25,7 @@ export interface RawCatalogueEntry {
   name: string;
   description: string;
   status: number;
+  created_at: string;
   updated_at: string;
   custodian?: number;
   assigned_to?: number;
@@ -35,6 +36,7 @@ export interface RawCatalogueEntry {
   webhook_notifications: Array<number>;
   editors: Array<number>;
   workspace: number;
+  metadata: number;
 }
 
 export interface RawLayerSubmission {

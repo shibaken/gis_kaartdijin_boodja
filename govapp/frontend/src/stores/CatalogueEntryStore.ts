@@ -5,6 +5,7 @@ import { CatalogueEntryStatus, RecordStatus } from "../backend/backend.api";
 import { useTableFilterComposable } from "../tools/filterComposable";
 import { catalogueEntryProvider } from "../providers/catalogueEntryProvider";
 import { RecordMeta } from "../providers/providerCommon.api";
+import { Metadata } from "../providers/relatedEntityProvider.api";
 
 export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   // Status shouldn't need to change so pass it as a static list
@@ -12,6 +13,7 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   const catalogueEntries = ref<CatalogueEntry[]>([]);
   const catalogueEntryMeta: Ref<RecordMeta> = ref({ total: 0 });
   const workspaces: Ref<Workspace[]> = ref([]);
+  const metadataList: Ref<Metadata[]> = ref([]);
 
   // Filters
   const tableFilterComposable = useTableFilterComposable<CatalogueEntryFilter>();
@@ -26,5 +28,5 @@ export const useCatalogueEntryStore = defineStore("catalogueEntries", () => {
   }
 
   return { catalogueEntries, catalogueEntryMeta, filters, setFilter, clearFilters, entryStatuses, workspaces,
-    updateEntry };
+    metadataList, updateEntry };
 });

@@ -1,12 +1,13 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { Attribute, Symbology } from "./relatedEntityProvider.api";
+import { Attribute, Metadata, Symbology } from "./relatedEntityProvider.api";
 import { Group, PaginatedRecord, RawAttribute, RawSymbology } from "../backend/backend.api";
 import { catalogueEntryProvider } from "./catalogueEntryProvider";
 import { WMTSCapabilities } from "ol/format";
 import { optionsFromCapabilities } from "ol/source/WMTS";
 import type { Options } from "ol/source/WMTS";
 import { Workspace } from "./catalogueEntryProvider.api";
+import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
 
 export class RelatedEntityProvider {
   // Get the backend stub if the test flag is used.
@@ -133,6 +134,22 @@ export class RelatedEntityProvider {
   public async getGroups (): Promise<PaginatedRecord<Group>> {
     const response = await fetch("/api/accounts/groups/");
     return await response.json() as PaginatedRecord<Group>;
+  }
+
+  public async fetchMetadata (id: number): Promise<Metadata> {
+    const rawMetadata = await this.backend.getRawMetadata(id);
+
+    return {
+      id: rawMetadata.id,
+      createdAt: rawMetadata.created_at,
+      name: rawMetadata.name,
+      catalogueEntryId: rawMetadata.catalogue_entry
+    } as Metadata;
+  }
+
+  public async getOrFetchMetadata (id: number): Promise<Metadata> {
+    return useCatalogueEntryStore().metadataList
+      .find(metadata => metadata.id === id) ?? await this.fetchMetadata(id);
   }
 }
 

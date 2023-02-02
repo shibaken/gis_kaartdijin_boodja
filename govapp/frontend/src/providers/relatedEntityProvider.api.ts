@@ -19,5 +19,5 @@ export interface Metadata {
   id:	number;
   name:	string;
   createdAt:	string;
-  catalogueEntry: CatalogueEntry;
+  catalogueEntryId: number;
 }
