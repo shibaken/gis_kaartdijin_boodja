@@ -22,7 +22,7 @@
   const formData: Ref<Partial<CommunicationLog>> = ref({ createdAt: DateTime.now().toISODate()});
 
   const logNewConfig: ValidationConfig<CommunicationLog> = {
-    fields: ["type", "from"]
+    mandatory: ["type", "from"]
   };
 
   const computedValidation = useComputedValidation<CommunicationLog>(logNewConfig, formData);

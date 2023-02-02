@@ -2,7 +2,8 @@
   import FormInput from "../widgets/FormInput.vue";
   import { storeToRefs } from "pinia";
   import { computed, toRefs, watch } from "vue";
-  import { useComputedValidation, ValidationConfig } from "../../tools/formValidationComposable";
+  import { MappingValidationError, useComputedValidation,
+    ValidationConfig } from "../../tools/formValidationComposable";
   import { useAttributeStore } from "../../stores/AttributeStore";
   import { Attribute } from "../../providers/relatedEntityProvider.api";
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
@@ -12,12 +13,14 @@
     catalogueEntry: CatalogueEntry
   }>();
   const emit = defineEmits<{
-    (e: "valid-value-updated", value: Omit<Attribute, "id">): void
+    (e: "valid-value-updated", value: Omit<Attribute, "id">): void,
+    (e: "field-errors-updated", errors: Array<MappingValidationError>): void
   }>();
 
   const { attributes, editingAttribute } = storeToRefs(useAttributeStore());
   const attributeNewConfig: ValidationConfig<Attribute> = {
-    fields: ["type", "name", "type", "order", "catalogueEntry"]
+    mandatory: ["name", "type", "order", "catalogueEntry"],
+    isInteger: ["order"]
   };
 
   const computedValidation = useComputedValidation<Attribute>(attributeNewConfig, editingAttribute);
@@ -37,7 +40,9 @@
   ));
 
   watch(invalidFields, () => {
-    if (props.formDirty && validationErrors.value.length === 0) {
+    emit("field-errors-updated", validationErrors.value);
+    if (validationErrors.value.length === 0) {
+      // Update the valid value, and whether the form is error free
       emit("valid-value-updated", editingAttribute.value as Omit<Attribute, "id">);
     }
   });

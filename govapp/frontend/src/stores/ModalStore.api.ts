@@ -1,11 +1,11 @@
 export enum ModalTypes {
-  None,
-  CommsLog,
-  CommsLogAdd,
-  AttributeAdd,
-  AttributeEdit,
-  AttributeDelete,
-  NotificationAdd,
-  NotificationEdit,
-  NotificationDelete
+  None = "None",
+  CommsLog = "Comms Log",
+  CommsLogAdd = "Comm sLog Add",
+  AttributeAdd = "Attribute Add",
+  AttributeEdit = "Attribute Edit",
+  AttributeDelete = "Attribute Delete",
+  NotificationAdd = "Notification Add",
+  NotificationEdit = "Notification Edit",
+  NotificationDelete = "Notification Delete"
 }

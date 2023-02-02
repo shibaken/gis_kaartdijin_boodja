@@ -1,7 +1,7 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
   RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
-  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter } from "./backend.api";
+  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter, RawNotificationFilter } from "./backend.api";
 import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
 import { Workspace } from "../providers/catalogueEntryProvider.api";
@@ -102,9 +102,11 @@ export class BackendService {
     return await response.json() as RawUser;
   }
 
-  public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {
+  public async getNotifications (notificationType: NotificationRequestType, filter: RawNotificationFilter):
+      Promise<PaginatedRecord<RawNotification>> {
     const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
-    const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/`);
+    const params = stripNullParams<RawNotificationFilter>(filter);
+    const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/`, params);
     return await response.json() as PaginatedRecord<RawNotification>;
   }
 
@@ -112,6 +114,37 @@ export class BackendService {
     const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
     const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/type/`);
     return await response.json() as PaginatedRecord<NotificationType>;
+  }
+
+  protected async modifyNotification(notificationType: NotificationRequestType,
+      notification: Partial<Omit<RawNotification, "id">>, method: "patch" | "post", id?: number): Promise<RawNotification> {
+    if (!id && method === "patch") {
+      throw new Error("`patchRawNotification`: Tried to patch an notification without providing an ID");
+    }
+
+    const response = await fetcher(`/api/catalogue/notifications/${notificationType}/${id ? `${id}/` : ""}`, {
+      method,
+      body: JSON.stringify(notification)
+    });
+    return await response.json() as RawNotification;
+  }
+
+  public async patchRawNotification (notificationType: NotificationRequestType,
+      notification: Partial<Omit<RawNotification, "id">>, id?: number): Promise<RawNotification> {
+    return this.modifyNotification(notificationType, notification, "patch", id);
+  }
+
+  public async postRawNotification (notificationType: NotificationRequestType,
+      notification: Omit<RawNotification, "id">): Promise<RawNotification> {
+    return this.modifyNotification(notificationType, notification, "post");
+  }
+
+  public async deleteNotification (notificationType: NotificationRequestType, id: number): Promise<number> {
+    const response = await fetcher(`/api/catalogue/notifications/${notificationType}/${id}`, {
+      method: 'delete'
+    });
+
+    return response.status;
   }
 
   public async getRawSymbology (entryId: number): Promise<RawSymbology> {

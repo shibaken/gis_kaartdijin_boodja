@@ -2,12 +2,13 @@
   import Modal from "../../components/widgets/Modal.vue";
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
   import { useModalStore } from "../../stores/ModalStore";
-  import { computed, ref } from "vue";
+  import { computed, Ref, ref, watch } from "vue";
   import { ModalTypes } from "../../stores/ModalStore.api";
   import { Attribute } from "../../providers/relatedEntityProvider.api";
   import AttributesAddForm from "../detailViews/AttributesAddForm.vue";
   import { useAttributeStore } from "../../stores/AttributeStore";
   import { storeToRefs } from "pinia";
+  import { MappingValidationError } from "../../tools/formValidationComposable";
 
   const props = defineProps<{
     show: boolean,
@@ -18,7 +19,6 @@
   const modalStore = useModalStore();
   const attributeStore = useAttributeStore();
   const { editingAttribute } = storeToRefs(attributeStore);
-  const { removeAttribute } = attributeStore;
 
   const formDirty = ref(false);
   const attributeModeText = computed(() => {
@@ -42,9 +42,13 @@
     }
   });
   const showForm = computed(() => [ModalTypes.AttributeAdd, ModalTypes.AttributeEdit].includes(props.mode));
+  const validationErrors: Ref<MappingValidationError[] | undefined> = ref();
 
   async function onAcceptClick () {
-    modalStore.hideModal();
+    formDirty.value = true;
+    if (validationErrors.value && validationErrors.value.length === 0 || props.mode === ModalTypes.AttributeDelete) {
+      modalStore.hideModal();
+    }
   }
 
   function valuesUpdated (values: Partial<Attribute>) {
@@ -53,23 +57,32 @@
     }
   }
 
+  function errorsUpdated (errors: Array<MappingValidationError>) {
+    validationErrors.value = errors;
+  }
+
   function onClose () {
     modalStore.hideModal();
     editingAttribute.value = undefined;
     formDirty.value = false;
   }
+
+  watch(editingAttribute, () => {
+    if (!editingAttribute.value) {
+      formDirty.value = false;
+    }
+  });
 </script>
 
 <template>
-  <modal :show="show" modal-id="attribute-log" :modal-size="modalSize"
-         :show-save-button="true" :enable-save-button="true" save-button-text="OK"
+  <modal :show="show" modal-id="attribute-log" :modal-size="modalSize" :show-save-button="true" save-button-text="OK"
          @close="onClose" @save="onAcceptClick">
     <template #header>
       <h1>{{ attributeModeText }} Attribute</h1>
     </template>
     <template #body v-if="catalogueEntry">
-      <attributes-add-form v-if="showForm" @valid-value-updated="valuesUpdated" :catalogue-entry="catalogueEntry"
-                         :form-dirty="formDirty"/>
+      <attributes-add-form v-if="showForm" :catalogue-entry="catalogueEntry" :form-dirty="formDirty"
+                           @valid-value-updated="valuesUpdated" @field-errors-updated="errorsUpdated"/>
     </template>
   </modal>
 </template>

@@ -1,14 +1,17 @@
 <script lang="ts" setup>
   import { useModalStore } from "../../stores/ModalStore";
 
-  const props = defineProps<{
-    modalId: string,
-    show: boolean,
-    modalSize?: "modal-sm" | "modal-md" | "modal-lg" | "modal-xl",
-    showSaveButton?: boolean,
-    enableSaveButton?: boolean,
-    saveButtonText?: string
-  }>();
+  const props = withDefaults(defineProps<{
+      modalId: string,
+      show: boolean,
+      modalSize?: "modal-sm" | "modal-md" | "modal-lg" | "modal-xl",
+      showSaveButton?: boolean,
+      enableSaveButton?: boolean,
+      saveButtonText?: string
+    }>(),
+    {
+    enableSaveButton: true
+  });
 
   const emit = defineEmits<{
     (e: "close"): void
