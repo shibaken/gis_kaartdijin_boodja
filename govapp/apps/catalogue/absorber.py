@@ -29,7 +29,7 @@ class Absorber:
     def __init__(self) -> None:
         """Instantiates the Absorber."""
         # Storage
-        self.storage = sharepoint.SharepointStorage()
+        self.storage = sharepoint.sharepoint_input()
 
     def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
@@ -48,7 +48,7 @@ class Absorber:
         # The file is renamed to include a UTC timestamp, to avoid collisions
         timestamp = datetime.datetime.utcnow()
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
-        archive_directory = f"{conf.settings.SHAREPOINT_ARCHIVE_AREA}/{timestamp.year}"
+        archive_directory = f"{conf.settings.SHAREPOINT_INPUT_ARCHIVE_AREA}/{timestamp.year}"
         archive_path = f"{archive_directory}/{filepath.stem}.{timestamp_str}{filepath.suffix}"
         archive = self.storage.put(archive_path, filepath.read_bytes())  # Move file to archive
         self.storage.delete(path)  # Delete file in staging area

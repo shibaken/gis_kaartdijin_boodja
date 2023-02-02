@@ -6,11 +6,13 @@ import logging
 import shutil
 
 # Third-Party
+from django import conf
 from django.db import models
 import reversion
 
 # Local
 from govapp import gis
+from govapp.common import azure
 from govapp.common import mixins
 from govapp.common import sharepoint
 from govapp.apps.publisher.models import publish_entries
@@ -83,16 +85,57 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Publishing '{self}' to Azure")
 
-        # TODO
-        ...
+        # Retrieve the Layer File from Storage
+        filepath = sharepoint.sharepoint_input().get_from_url(
+            url=self.publish_entry.catalogue_entry.active_layer.file,
+        )
+
+        # Convert Layer to GeoPackage
+        geopackage = gis.conversions.to_geopackage(
+            filepath=filepath,
+            layer=self.publish_entry.catalogue_entry.metadata.name,
+        )
+
+        # Construct Path
+        publish_path = f"{geopackage.name}"
+
+        # Push to Azure
+        azure.azure_output().put(
+            path=publish_path,
+            contents=geopackage.read_bytes(),
+        )
+
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(filepath.parent, ignore_errors=True)
 
     def publish_sharepoint(self) -> None:
         """Publishes the Catalogue Entry to SharePoint if applicable."""
         # Log
         log.info(f"Publishing '{self}' to SharePoint")
 
-        # TODO
-        ...
+        # Retrieve the Layer File from Storage
+        filepath = sharepoint.sharepoint_input().get_from_url(
+            url=self.publish_entry.catalogue_entry.active_layer.file,
+        )
+
+        # Convert Layer to GeoPackage
+        geopackage = gis.conversions.to_geopackage(
+            filepath=filepath,
+            layer=self.publish_entry.catalogue_entry.metadata.name,
+        )
+
+        # Construct Path
+        publish_directory = conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA
+        publish_path = f"{publish_directory}/{geopackage.name}"
+
+        # Push to Sharepoint
+        sharepoint.sharepoint_output().put(
+            path=publish_path,
+            contents=geopackage.read_bytes(),
+        )
+
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(filepath.parent, ignore_errors=True)
 
 
 class GeoServerPublishChannelMode(models.IntegerChoices):
@@ -161,7 +204,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         log.info(f"Publishing '{self}' (Symbology) to GeoServer")
 
         # Publish Style to GeoServer
-        gis.geoserver.GeoServer().upload_style(
+        gis.geoserver.geoserver().upload_style(
             workspace=self.publish_entry.catalogue_entry.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,
@@ -179,7 +222,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         log.info(f"Publishing '{self}' (Layer) to GeoServer")
 
         # Retrieve the Layer File from Storage
-        filepath = sharepoint.SharepointStorage().get_from_url(
+        filepath = sharepoint.sharepoint_input().get_from_url(
             url=self.publish_entry.catalogue_entry.active_layer.file,
         )
 
@@ -190,7 +233,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         )
 
         # Push Layer to GeoServer
-        gis.geoserver.GeoServer().upload_geopackage(
+        gis.geoserver.geoserver().upload_geopackage(
             workspace=self.publish_entry.catalogue_entry.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             filepath=geopackage,

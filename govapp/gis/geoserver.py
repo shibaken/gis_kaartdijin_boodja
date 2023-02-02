@@ -22,21 +22,21 @@ class GeoServer:
 
     def __init__(
         self,
-        service_url: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
+        service_url: str,
+        username: str,
+        password: str,
     ) -> None:
         """Instantiates the GeoServer Abstraction.
 
         Args:
-            service_url (Optional[str]): URL to the GeoServer service.
-            username (Optional[str]): Username for the GeoServer service.
-            password (Optional[str]): Password for the GeoServer service.
+            service_url (str): URL to the GeoServer service.
+            username (str): Username for the GeoServer service.
+            password (str): Password for the GeoServer service.
         """
         # Instance Attributes
-        self.service_url = service_url or conf.settings.GEOSERVER_URL
-        self.username = username or conf.settings.GEOSERVER_USERNAME
-        self.password = password or conf.settings.GEOSERVER_PASSWORD
+        self.service_url = service_url
+        self.username = username
+        self.password = password
 
         # Strip Trailing Slash from Service URL
         self.service_url = self.service_url.rstrip("/")
@@ -250,3 +250,17 @@ class GeoServer:
 
         # Return None
         return None
+
+
+def geoserver() -> GeoServer:
+    """Helper constructor to instantiate GeoServer.
+
+    Returns:
+        GeoServer: Configured GeoServer instance.
+    """
+    # Construct and Return
+    return GeoServer(
+        service_url=conf.settings.GEOSERVER_URL,
+        username=conf.settings.GEOSERVER_USERNAME,
+        password=conf.settings.GEOSERVER_PASSWORD,
+    )

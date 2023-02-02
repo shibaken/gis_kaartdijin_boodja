@@ -23,7 +23,7 @@ class Scanner:
     def __init__(self) -> None:
         """Instantiates the Scanner."""
         # Storage
-        self.storage = sharepoint.SharepointStorage()
+        self.storage = sharepoint.sharepoint_input()
 
     def scan(self) -> None:
         """Scans for new files in the staging area to be absorbed."""
@@ -31,7 +31,7 @@ class Scanner:
         log.info("Scanning storage staging area for files to absorb")
 
         # Retrieve file from remote storage staging area
-        files = self.storage.list(conf.settings.SHAREPOINT_STAGING_AREA)
+        files = self.storage.list(conf.settings.SHAREPOINT_INPUT_STAGING_AREA)
 
         # Check for files
         if not files:
