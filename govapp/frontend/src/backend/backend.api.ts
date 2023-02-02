@@ -203,8 +203,5 @@ export interface RawCommunicationLog {
   user?: number;
 }
 
-/**
- * Update types
- */
-export type RawEntryPatch = Pick<RawCatalogueEntry, "description" | "custodian" | "assigned_to">;
-export type EntryPatch = Pick<CatalogueEntry, "description" | "custodian" | "assignedTo">;
+export type RawEntryPatch = Pick<RawCatalogueEntry, "name" | "description" | "custodian" | "assigned_to">;
+export type EntryPatch = Pick<CatalogueEntry, "name" | "description" | "custodian" | "assignedTo">;

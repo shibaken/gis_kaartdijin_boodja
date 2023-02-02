@@ -8,6 +8,7 @@ export class UserProvider {
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
   // Load all users; they're used for the select inputs
   public users = this.fetchUsers();
+  public custodians = this.fetchCustodians();
   public me = this.fetchMe();
   public groups = this.fetchGroups();
 
@@ -43,6 +44,10 @@ export class UserProvider {
 
     const users = await this.backend.getUsers(filters);
     return await Promise.all(users.results.map(user => this.rawToUser(user)));
+  }
+
+  public async fetchCustodian (id: number): Promise<Custodian> {
+    return this.rawToCustodian(await this.backend.getRawCustodian(id));
   }
 
   public async fetchCustodians (): Promise<Custodian[]> {
