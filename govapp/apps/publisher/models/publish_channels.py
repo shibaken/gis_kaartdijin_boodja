@@ -17,6 +17,7 @@ from govapp.common import azure
 from govapp.common import mixins
 from govapp.common import sharepoint
 from govapp.apps.publisher.models import publish_entries
+from govapp.apps.publisher.models import workspaces
 
 
 # Logging
@@ -154,6 +155,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     description = models.TextField()
     mode = models.IntegerField(choices=GeoServerPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
+    workspace = models.ForeignKey(
+        workspaces.Workspace,
+        related_name="publish_channels",
+        on_delete=models.PROTECT,
+    )
     publish_entry = models.OneToOneField(
         publish_entries.PublishEntry,
         related_name="geoserver_channel",
@@ -208,7 +214,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Publish Style to GeoServer
         gis.geoserver.geoserver().upload_style(
-            workspace=self.publish_entry.catalogue_entry.workspace.name,
+            workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,
             sld=self.publish_entry.catalogue_entry.symbology.sld,
@@ -237,7 +243,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Push Layer to GeoServer
         gis.geoserver.geoserver().upload_geopackage(
-            workspace=self.publish_entry.catalogue_entry.workspace.name,
+            workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             filepath=geopackage,
         )

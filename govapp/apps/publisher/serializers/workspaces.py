@@ -1,11 +1,11 @@
-"""Kaartdijin Boodja Catalogue Django Serializers."""
+"""Kaartdijin Boodja Publisher Django Serializers."""
 
 
 # Third-Party
 from rest_framework import serializers
 
 # Local
-from govapp.apps.catalogue import models
+from govapp.apps.publisher import models
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):

@@ -1,4 +1,4 @@
-"""Kaartdijin Boodja Catalogue Django Application Workspace Models."""
+"""Kaartdijin Boodja Publisher Django Application Workspace Models."""
 
 
 # Third-Party

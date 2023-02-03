@@ -19,7 +19,6 @@ router.register("layers/subscriptions", views.LayerSubscriptionViewSet)
 router.register("layers/symbologies", views.LayerSymbologyViewSet)
 router.register("notifications/emails", views.EmailNotificationViewSet)
 router.register("notifications/webhooks", views.WebhookNotificationViewSet)
-router.register("workspaces", views.WorkspaceViewSet)
 
 
 # Catalogue URL Patterns

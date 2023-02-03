@@ -2,7 +2,6 @@
 
 
 # Third-Party
-from django import conf
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.db import models
@@ -15,7 +14,6 @@ from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.catalogue import notifications as notifications_utils
 from govapp.apps.catalogue import utils
 from govapp.apps.catalogue.models import custodians
-from govapp.apps.catalogue.models import workspaces
 
 # Typing
 from typing import Optional, Union, TYPE_CHECKING
@@ -77,12 +75,6 @@ class CatalogueEntry(mixins.RevisionedMixin):
         null=True,
         related_name="assigned",
         on_delete=models.SET_NULL,
-    )
-    workspace = models.ForeignKey(
-        workspaces.Workspace,
-        default=conf.settings.GEOSERVER_DEFAULT_WORKSPACE_ID,
-        related_name="catalogue_entries",
-        on_delete=models.PROTECT,
     )
 
     # Type Hints for Reverse Relations

@@ -38,3 +38,11 @@ class EmailNotificationFilter(filters.FilterSet):
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
         fields = ()
+
+
+class WorkspaceFilter(filters.FilterSet):
+    """Workspace Filter."""
+    class Meta:
+        """Workspace Filter Metadata."""
+        model = models.workspaces.Workspace
+        fields = ()

@@ -18,7 +18,6 @@ from tests.factories.catalogue import layer_metadata
 from tests.factories.catalogue import layer_submissions
 from tests.factories.catalogue import layer_symbology
 from tests.factories.catalogue import notifications
-from tests.factories.catalogue import workspaces
 from tests.factories.publisher import publish_entries
 
 # Typing
@@ -36,7 +35,6 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
     status = factory.fuzzy.FuzzyChoice(models.catalogue_entries.CatalogueEntryStatus)
     custodian = factory.SubFactory(custodians.CustodianFactory)
     assigned_to = factory.SubFactory(accounts.users.UserFactory)
-    workspace = factory.SubFactory(workspaces.WorkspaceFactory)
 
     attributes = factory.RelatedFactoryList(
         layer_attributes.LayerAttributeFactory,

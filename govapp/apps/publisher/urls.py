@@ -14,6 +14,7 @@ router.register("entries", views.PublishEntryViewSet)
 router.register("channels/cddp", views.CDDPPublishChannelViewSet)
 router.register("channels/geoserver", views.GeoServerPublishChannelViewSet)
 router.register("notifications/emails", views.EmailNotificationViewSet)
+router.register("workspaces", views.WorkspaceViewSet)
 
 
 # Catalogue URL Patterns

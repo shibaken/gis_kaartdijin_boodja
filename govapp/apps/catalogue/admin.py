@@ -26,4 +26,3 @@ admin.site.register(models.layer_subscriptions.LayerSubscription, reversion.admi
 admin.site.register(models.layer_symbology.LayerSymbology, reversion.admin.VersionAdmin)
 admin.site.register(models.notifications.EmailNotification, reversion.admin.VersionAdmin)
 admin.site.register(models.notifications.WebhookNotification, reversion.admin.VersionAdmin)
-admin.site.register(models.workspaces.Workspace, reversion.admin.VersionAdmin)

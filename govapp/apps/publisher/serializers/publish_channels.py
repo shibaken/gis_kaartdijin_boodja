@@ -21,6 +21,7 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
             "mode",
             "frequency",
             "path",
+            "workspace",
             "publish_entry",
         )
         read_only_fields = (

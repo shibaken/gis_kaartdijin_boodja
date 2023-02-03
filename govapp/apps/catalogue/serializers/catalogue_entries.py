@@ -24,7 +24,6 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "editors",
             "custodian",
             "assigned_to",
-            "workspace",
             "subscription",
             "active_layer",
             "layers",

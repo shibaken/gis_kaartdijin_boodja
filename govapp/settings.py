@@ -231,7 +231,6 @@ CRON_CLASSES = [
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
 GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
 GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
-GEOSERVER_DEFAULT_WORKSPACE_ID = decouple.config("GEOSERVER_DEFAULT_WORKSPACE_ID", default=1, cast=int)  # Must match db
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":

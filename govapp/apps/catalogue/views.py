@@ -334,12 +334,3 @@ class WebhookNotificationViewSet(
     filterset_class = filters.WebhookNotificationFilter
     search_fields = ["name", "url"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
-
-
-@drf_utils.extend_schema(tags=["Catalogue - Workspaces"])
-class WorkspaceViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
-    """Workspace View Set."""
-    queryset = models.workspaces.Workspace.objects.all()
-    serializer_class = serializers.workspaces.WorkspaceSerializer
-    filterset_class = filters.WorkspaceFilter
-    search_fields = ["name"]

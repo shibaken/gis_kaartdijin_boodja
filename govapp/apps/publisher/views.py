@@ -355,3 +355,12 @@ class EmailNotificationViewSet(
     filterset_class = filters.EmailNotificationFilter
     search_fields = ["name", "email"]
     permission_classes = [permissions.HasPublishEntryPermissions]
+
+
+@drf_utils.extend_schema(tags=["Catalogue - Workspaces"])
+class WorkspaceViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+    """Workspace View Set."""
+    queryset = models.workspaces.Workspace.objects.all()
+    serializer_class = serializers.workspaces.WorkspaceSerializer
+    filterset_class = filters.WorkspaceFilter
+    search_fields = ["name"]
