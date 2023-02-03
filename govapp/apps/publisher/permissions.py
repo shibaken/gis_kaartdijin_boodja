@@ -37,7 +37,8 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             allowed = True
 
         elif view.action in ("list", "retrieve", "update", "partial_update",
-                             "lock", "unlock", "assign", "unassign", "publish"):
+                             "lock", "unlock", "assign", "unassign", "publish",
+                             "publish_cddp", "publish_geoserver"):
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
             # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
@@ -116,7 +117,7 @@ class IsPublishEntryPermissions(permissions.BasePermission):
                 and obj.is_editor(request.user)
             )
 
-        elif view.action == "publish":
+        elif view.action in ("publish", "publish_cddp", "publish_geoserver"):
             # Publish
             # Check Publish Entry specific permissions
             # 1. Object is a Publish Entry

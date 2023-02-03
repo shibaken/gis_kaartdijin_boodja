@@ -3,6 +3,7 @@
 
 # Standard
 import logging
+import pathlib
 import shutil
 
 # Third-Party
@@ -40,6 +41,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
     description = models.TextField()
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
+    path = models.TextField()
     publish_entry = models.OneToOneField(
         publish_entries.PublishEntry,
         related_name="cddp_channel",
@@ -97,7 +99,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         )
 
         # Construct Path
-        publish_path = f"{geopackage.name}"
+        publish_directory = pathlib.Path(self.path)
+        publish_path = str(publish_directory / geopackage.name)
 
         # Push to Azure
         azure.azure_output().put(
@@ -125,8 +128,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         )
 
         # Construct Path
-        publish_directory = conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA
-        publish_path = f"{publish_directory}/{geopackage.name}"
+        publish_directory = pathlib.Path(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA)
+        publish_path = str(publish_directory / self.path / geopackage.name)
 
         # Push to Sharepoint
         sharepoint.sharepoint_output().put(

@@ -105,21 +105,70 @@ class PublishEntry(mixins.RevisionedMixin):
         # Log
         log.info(f"Publishing '{self.catalogue_entry}' - '{self}' ({symbology_only=})")
 
+        # Publish CDDP
+        self.publish_cddp(symbology_only)
+
+        # Publish GeoServer
+        self.publish_geoserver(symbology_only)
+
+    def publish_cddp(self, symbology_only: bool = False) -> None:
+        """Publishes to CDDP channel if applicable.
+
+        Args:
+            symbology_only (bool): Flag to only publish symbology.
+        """
+        # Check for Publish Channel
+        if not hasattr(self, "cddp_channel"):
+            # Log
+            log.info(f"'{self}' has no CDDP Publish Channel")
+
+            # Exit Early
+            return
+
+        # Log
+        log.info(f"Publishing '{self.catalogue_entry}' - '{self.cddp_channel}' ({symbology_only=})")
+
         # Handle Errors
         try:
-            # Check for Channel
-            if hasattr(self, "cddp_channel"):
-                # Publish!
-                self.cddp_channel.publish(symbology_only)
-
-            # Check for Channel
-            if hasattr(self, "geoserver_channel"):
-                # Publish!
-                self.geoserver_channel.publish(symbology_only)
+            # Publish!
+            self.cddp_channel.publish(symbology_only)
 
         except Exception as exc:
             # Log
-            log.error(f"Unable to publish: {exc}")
+            log.error(f"Unable to publish to CDDP Publish Channel: {exc}")
+
+            # Send Failure Emails
+            notifications_utils.publish_entry_publish_failure(self)
+
+        else:
+            # Send Success Emails
+            notifications_utils.publish_entry_publish_success(self)
+
+    def publish_geoserver(self, symbology_only: bool = False) -> None:
+        """Publishes to GeoServer channel if applicable.
+
+        Args:
+            symbology_only (bool): Flag to only publish symbology.
+        """
+        # Check for Publish Channel
+        if not hasattr(self, "geoserver_channel"):
+            # Log
+            log.info(f"'{self}' has no GeoServer Publish Channel")
+
+            # Exit Early
+            return
+
+        # Log
+        log.info(f"Publishing '{self.catalogue_entry}' - '{self.geoserver_channel}' ({symbology_only=})")
+
+        # Handle Errors
+        try:
+            # Publish!
+            self.geoserver_channel.publish(symbology_only)
+
+        except Exception as exc:
+            # Log
+            log.error(f"Unable to publish to GeoServer Publish Channel: {exc}")
 
             # Send Failure Emails
             notifications_utils.publish_entry_publish_failure(self)
