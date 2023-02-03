@@ -21,7 +21,6 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
             "mode",
             "frequency",
             "path",
-            "workspace",
             "publish_entry",
         )
         read_only_fields = (
@@ -52,6 +51,7 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
             "description",
             "mode",
             "frequency",
+            "workspace",
             "publish_entry",
         )
         read_only_fields = (

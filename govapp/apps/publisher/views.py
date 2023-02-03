@@ -357,7 +357,7 @@ class EmailNotificationViewSet(
     permission_classes = [permissions.HasPublishEntryPermissions]
 
 
-@drf_utils.extend_schema(tags=["Catalogue - Workspaces"])
+@drf_utils.extend_schema(tags=["Publisher - Workspaces"])
 class WorkspaceViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     """Workspace View Set."""
     queryset = models.workspaces.Workspace.objects.all()
