@@ -8,6 +8,7 @@ from rest_framework import viewsets
 
 # Local
 from govapp.apps.accounts import utils
+from govapp.apps.catalogue import models as catalogue_models
 from govapp.apps.publisher import models
 
 # Typing
@@ -32,11 +33,20 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             bool: Whether permission is allowed.
         """
         # Check Action
-        if view.action in ("create", "destroy"):
-            # Creates and Destroys might be allowed, but we delegate it to `has_object_permission`
-            allowed = True
+        if view.action == "create":
+            # Create
+            # Check Publish Entry specific permissions
+            # 1. Request contains a reference to a Catalogue Entry
+            # 2. User is in the Administrators group
+            # 3. User is one of this Catalogue Entry's editors
+            catalogue_entry = catalogue_models.catalogue_entries.CatalogueEntry.from_request(request)
+            allowed = (
+                catalogue_entry is not None
+                and utils.is_administrator(request.user)
+                and catalogue_entry.is_editor(request.user)
+            )
 
-        elif view.action in ("list", "retrieve", "update", "partial_update",
+        elif view.action in ("destroy", "list", "retrieve", "update", "partial_update",
                              "lock", "unlock", "assign", "unassign", "publish",
                              "publish_cddp", "publish_geoserver"):
             # Retrieves and Lists are always allowed by anyone
@@ -76,8 +86,8 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             # Retrieves and Lists are always allowed by anyone
             allowed = True
 
-        elif view.action in ("create", "destroy", "update", "partial_update"):
-            # Creates, Destroys, Updates and Partial Updates
+        elif view.action in ("destroy", "update", "partial_update"):
+            # Destroys, Updates and Partial Updates
             # Check Publish Entry specific permissions
             # 1. Object is a Publish Entry
             # 2. User is in the Administrators group
