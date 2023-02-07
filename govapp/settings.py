@@ -197,7 +197,7 @@ SHAREPOINT_OUTPUT_URL = decouple.config("SHAREPOINT_OUTPUT_URL", default="https:
 SHAREPOINT_OUTPUT_USERNAME = decouple.config("SHAREPOINT_OUTPUT_USERNAME", default=None)
 SHAREPOINT_OUTPUT_PASSWORD = decouple.config("SHAREPOINT_OUTPUT_PASSWORD", default=None)
 SHAREPOINT_OUTPUT_LIST = decouple.config("SHAREPOINT_OUTPUT_LIST", default="Shared Documents")
-SHAREPOINT_OUTPUT_PUBLISH_AREA = decouple.config("SHAREPOINT_OUTPUT_PUBLISH_AREA", default="General/GIS1-Corporate/Data")  # noqa: E501
+SHAREPOINT_OUTPUT_PUBLISH_AREA = decouple.config("SHAREPOINT_OUTPUT_PUBLISH_AREA", default="GIS1-Corporate/Data")  # noqa: E501
 
 # Azure Settings
 # Azure Output settings are for the Publisher (Output)
