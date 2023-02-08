@@ -80,6 +80,14 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}'")
 
+        # Check Symbology Only Flag
+        if symbology_only:
+            # Log
+            log.info(f"Skipping due to {symbology_only=}")
+
+            # Exit Early
+            return
+
         # Check Mode
         match self.mode:
             case CDDPPublishChannelMode.AZURE:
@@ -220,6 +228,9 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Check Symbology Only Flag
         if symbology_only:
+            # Log
+            log.info(f"Skipping due to {symbology_only=}")
+
             # Exit Early
             return
 
