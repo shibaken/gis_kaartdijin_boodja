@@ -18,6 +18,7 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "format",
             "mode",
             "frequency",
             "path",

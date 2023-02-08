@@ -35,11 +35,19 @@ class CDDPPublishChannelMode(models.IntegerChoices):
     AZURE_AND_SHAREPOINT = 2
 
 
+class CDDPPublishChannelFormat(models.IntegerChoices):
+    """Enumeration for a Publish Channel Format."""
+    GEOPACKAGE = 1
+    SHAPEFILE = 2
+    GEODATABASE = 3
+
+
 @reversion.register()
 class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
     name = models.TextField()
     description = models.TextField()
+    format = models.IntegerField(choices=CDDPPublishChannelFormat.choices)  # noqa: A003
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
     path = models.TextField()
@@ -93,20 +101,29 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             url=self.publish_entry.catalogue_entry.active_layer.file,
         )
 
-        # Convert Layer to GeoPackage
-        geopackage = gis.conversions.to_geopackage(
+        # Select Conversion Function
+        match self.format:
+            case CDDPPublishChannelFormat.GEOPACKAGE:
+                function = gis.conversions.to_geopackage
+            case CDDPPublishChannelFormat.SHAPEFILE:
+                function = gis.conversions.to_shapefile
+            case CDDPPublishChannelFormat.GEODATABASE:
+                function = gis.conversions.to_geodatabase
+
+        # Convert Layer to Chosen Format
+        converted = function(
             filepath=filepath,
             layer=self.publish_entry.catalogue_entry.metadata.name,
         )
 
         # Construct Path
         publish_directory = pathlib.Path(self.path)
-        publish_path = str(publish_directory / geopackage.name)
+        publish_path = str(publish_directory / converted.name)
 
         # Push to Azure
         azure.azure_output().put(
             path=publish_path,
-            contents=geopackage.read_bytes(),
+            contents=converted.read_bytes(),
         )
 
         # Delete local temporary copy of file if we can
@@ -122,20 +139,29 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             url=self.publish_entry.catalogue_entry.active_layer.file,
         )
 
-        # Convert Layer to GeoPackage
-        geopackage = gis.conversions.to_geopackage(
+        # Select Conversion Function
+        match self.format:
+            case CDDPPublishChannelFormat.GEOPACKAGE:
+                function = gis.conversions.to_geopackage
+            case CDDPPublishChannelFormat.SHAPEFILE:
+                function = gis.conversions.to_shapefile
+            case CDDPPublishChannelFormat.GEODATABASE:
+                function = gis.conversions.to_geodatabase
+
+        # Convert Layer to Chosen Format
+        converted = function(
             filepath=filepath,
             layer=self.publish_entry.catalogue_entry.metadata.name,
         )
 
         # Construct Path
         publish_directory = pathlib.Path(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA)
-        publish_path = str(publish_directory / self.path / geopackage.name)
+        publish_path = str(publish_directory / self.path / converted.name)
 
         # Push to Sharepoint
         sharepoint.sharepoint_output().put(
             path=publish_path,
-            contents=geopackage.read_bytes(),
+            contents=converted.read_bytes(),
         )
 
         # Delete local temporary copy of file if we can
