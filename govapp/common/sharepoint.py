@@ -117,6 +117,21 @@ class SharepointStorage:
         relative_path = os.path.dirname(os.path.join(self.root, path))
         filename = os.path.basename(path)
 
+        # Recursively create directories if they don't exist
+        # The Sharepoint API can only create a directory one level deep if it
+        # doesn't already exist. However, the interface here presents no
+        # restrictions on the depth of the filepath to push. As such, we need
+        # to manually ensure each directory already exists by creating them.
+        # For example, given the relative path:
+        #   - "a/b/c/d"
+        # The following code will create the directories in order:
+        #   - "a"
+        #   - "a/b"
+        #   - "a/b/c"
+        #   - "a/b/c/d"
+        for directory in reversed(pathlib.Path(relative_path).parents[:-1]):
+            self.site.Folder(str(directory))
+
         # Upload File
         self.site.Folder(relative_path).upload_file(contents, filename)
 

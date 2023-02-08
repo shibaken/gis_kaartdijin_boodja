@@ -1,8 +1,10 @@
 """Azure Storage Service."""
 
 
+# Standard
+import pathlib
+
 # Third-Party
-from azure.storage import blob
 from django import conf
 
 
@@ -11,28 +13,17 @@ class AzureStorage:
 
     def __init__(
         self,
-        connection_string: str,
-        container: str,
+        sync_directory: pathlib.Path,
     ) -> None:
         """Instantiates the Azure Storage.
 
         Args:
-            connection_string (str): Connection string for the Azure storage.
-            container (str): Root container for the Azure storage.
+            sync_directory (pathlib.Path): Sync directory.
         """
         # Instance Variables
-        self.connection_string = connection_string
-        self.container = container
+        self.sync_directory = sync_directory
 
-        # Azure Connection
-        self.service_client: blob.BlobServiceClient = blob.BlobServiceClient.from_connection_string(
-            conn_str=self.connection_string,
-        )
-        self.container_client = self.service_client.get_container_client(  # type: ignore[attr-defined]
-            container=self.container,
-        )
-
-    def put(self, path: str, contents: bytes) -> str:
+    def put(self, path: str, contents: bytes) -> pathlib.Path:
         """Puts a file into the Azure Storage.
 
         Args:
@@ -40,16 +31,17 @@ class AzureStorage:
             contents (bytes): Contents of the file.
 
         Returns:
-            str: URL path to the uploaded file.
+            pathlib.Path: Path to the written file.
         """
-        # Upload File
-        result = self.container_client.upload_blob(
-            name=path,
-            data=contents,
-        )
+        # Construct Output Directory
+        output_path = self.sync_directory / path
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write File
+        output_path.write_bytes(contents)
 
         # Return
-        return result.url  # type: ignore[no-any-return]
+        return output_path
 
 
 def azure_output() -> AzureStorage:
@@ -60,6 +52,5 @@ def azure_output() -> AzureStorage:
     """
     # Construct and Return
     return AzureStorage(
-        connection_string=conf.settings.AZURE_OUTPUT_CONNECTION_STRING,
-        container=conf.settings.AZURE_OUTPUT_CONTAINER,
+        sync_directory=conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY,
     )
