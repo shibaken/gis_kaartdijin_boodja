@@ -96,6 +96,10 @@ export interface RawSymbologyFilter extends RawPaginationFilter {
   catalogue_entry?: number
 }
 
+export interface RawNotificationFilter extends RawPaginationFilter {
+  id__in?: Array<number>;
+}
+
 export interface PaginationState {
   currentPage: number;
   numPages: number;
@@ -119,9 +123,10 @@ export interface User {
   groups: Array<Group>;
 }
 
+// determines API path
 export enum NotificationRequestType {
-  Email,
-  Webhook,
+  Email = "emails",
+  Webhook = "webhooks",
 }
 
 export interface RawNotification {

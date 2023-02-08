@@ -29,6 +29,7 @@
   import SubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
   import { usePermissionsComposable } from "../tools/permissionsComposable";
   import AttributesModal from "./modals/AttributesModal.vue";
+  import NotificationsModal from "./modals/NotificationsModal.vue";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
   const modalStore = useModalStore();
@@ -44,6 +45,9 @@
   const showAttributeModal: ComputedRef<boolean> = computed(
     () => [ModalTypes.AttributeEdit, ModalTypes.AttributeAdd, ModalTypes.AttributeDelete]
       .includes(modalStore.activeModal));
+  const showNotificationModal: ComputedRef<boolean> = computed(() => [ModalTypes.NotificationEdit,
+    ModalTypes.NotificationAdd, ModalTypes.NotificationDelete]
+    .includes(modalStore.activeModal));
 
   const permissionsComposable = usePermissionsComposable(selectedViewEntry.value);
   const currentEntryView = computed(() => {
@@ -165,7 +169,9 @@
     :show="modalStore.activeModal === ModalTypes.CommsLog || modalStore.activeModal === ModalTypes.CommsLogAdd"
     :add-log="modalStore.activeModal === ModalTypes.CommsLogAdd"/>
   <attributes-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
-    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.None"/>
+                    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.None"/>
+  <notifications-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry" :show="showNotificationModal"
+                       :mode="showNotificationModal ? modalStore.activeModal : ModalTypes.None"/>
 </template>
 
 <style lang="scss">

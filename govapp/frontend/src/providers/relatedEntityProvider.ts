@@ -1,8 +1,7 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
 import { Attribute, Symbology } from "./relatedEntityProvider.api";
-import { EntryPatch, Group, PaginatedRecord, RawAttribute, RawCustodian, RawMetadata,
-  RawSymbology } from "../backend/backend.api";
+import { EntryPatch, Group, PaginatedRecord, RawAttribute, RawSymbology } from "../backend/backend.api";
 import { catalogueEntryProvider } from "./catalogueEntryProvider";
 import { WMTSCapabilities } from "ol/format";
 import { optionsFromCapabilities } from "ol/source/WMTS";
@@ -129,21 +128,6 @@ export class RelatedEntityProvider {
       layer: `${workspace.name}:` + layerName,
       style: `${workspace.name}:` + styleName
     });
-  }
-
-  public async getRawAttributes (): Promise<PaginatedRecord<RawAttribute>> {
-    const response = await fetch("/api/catalogue/layers/attribute/");
-    return await response.json() as PaginatedRecord<RawAttribute>;
-  }
-
-  public async getRawMetadataList (): Promise<PaginatedRecord<RawMetadata>> {
-    const response = await fetch("/api/catalogue/layers/metadata/");
-    return await response.json() as PaginatedRecord<RawMetadata>;
-  }
-
-  public async getRawCustodians (): Promise<PaginatedRecord<RawCustodian>> {
-    const response = await fetch("/api/catalogue/layers/custodians/");
-    return await response.json() as PaginatedRecord<RawCustodian>;
   }
 
   public async getGroups (): Promise<PaginatedRecord<Group>> {

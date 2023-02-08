@@ -4,19 +4,23 @@
   import FormInput from "../widgets/FormInput.vue";
   import FormTextarea from "../widgets/FormTextarea.vue";
   import NotificationsCard from "../widgets/NotificationsCard.vue";
+  import { usePermissionsComposable } from "../../tools/permissionsComposable";
 
-  defineProps<{
+  const props = defineProps<{
     entry: CatalogueEntry
   }>();
+
+  const { isEntryEditor } = usePermissionsComposable();
 </script>
 
 <template>
   <accordion id-prefix="details" header-text="Details" class="mt-4">
     <template #body>
       <div class="form d-flex gap-3 flex-column">
-        <form-input field="name" name="Name" :value="entry?.name" type="text" :readonly="true"/>
+        <form-input field="name" name="Name" :value="entry?.name" type="text" :readonly="isEntryEditor(entry)"
+                    @value-updated=""/>
         <form-input field="custodian" name="Custodian" :value="entry?.custodian?.username" type="text"
-                    :readonly="true"/>
+                    :readonly="isEntryEditor(entry)"/>
       </div>
     </template>
   </accordion>
@@ -27,5 +31,5 @@
       </div>
     </template>
   </accordion>
-  <notifications-card/>
+  <notifications-card :entry="entry"/>
 </template>

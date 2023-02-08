@@ -78,7 +78,7 @@ class EmailNotificationFilter(filters.FilterSet):
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
-        fields = ()
+        fields = {"id": ["in"]}
 
 
 class WebhookNotificationFilter(filters.FilterSet):
@@ -86,7 +86,7 @@ class WebhookNotificationFilter(filters.FilterSet):
     class Meta:
         """Webhook Notification Filter Metadata."""
         model = models.notifications.WebhookNotification
-        fields = ()
+        fields = {"id": ["in"]}
 
 
 class WorkspaceFilter(filters.FilterSet):
