@@ -33,13 +33,28 @@ function fetcher (input: RequestInfo | URL, init: RequestInit = {}) {
   return fetch(request);
 }
 
-export function stripNullParams<T extends object> (filter: T): Params {
+export function stripNullParams<T extends object> (params: T): Params {
   return Object.fromEntries(
-    Object.entries(filter)
+    Object.entries(params)
       .filter(([_, value]) => {
         return value != null;
       })
   );
+}
+
+/*
+ * Replaces nulls with empty strings in order to retain the values when patching
+ */
+export function replaceNullParams<T extends object> (params: T): Params {
+  const updatedWithNulls = Object.fromEntries(
+    Object.entries(params)
+      .map(([key, value]) => {
+        const mappedValue = typeof value === "undefined" ? "" : value;
+        return [key, mappedValue];
+      })
+  );
+
+  return updatedWithNulls as Params;
 }
 
 export class BackendService {
@@ -237,7 +252,9 @@ export class BackendService {
   }
 
   public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch): Promise<RawCatalogueEntry> {
-    const params = stripNullParams(updatedEntry);
+    // Don't strip null params when patching potentially empty values
+    const params = replaceNullParams(updatedEntry);
+
     const response = await fetcher(`/api/catalogue/entries/${entryId}/`, {
       method: "patch",
       body: JSON.stringify(params)

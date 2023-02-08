@@ -1,7 +1,7 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
 import { Attribute, Symbology } from "./relatedEntityProvider.api";
-import { EntryPatch, Group, PaginatedRecord, RawAttribute, RawSymbology } from "../backend/backend.api";
+import { Group, PaginatedRecord, RawAttribute, RawSymbology } from "../backend/backend.api";
 import { catalogueEntryProvider } from "./catalogueEntryProvider";
 import { WMTSCapabilities } from "ol/format";
 import { optionsFromCapabilities } from "ol/source/WMTS";
@@ -133,14 +133,6 @@ export class RelatedEntityProvider {
   public async getGroups (): Promise<PaginatedRecord<Group>> {
     const response = await fetch("/api/accounts/groups/");
     return await response.json() as PaginatedRecord<Group>;
-  }
-
-  public async updateCatalogueEntry (entryId: number, { description, custodian, assignedTo }: EntryPatch) {
-    return await this.backend.patchCatalogueEntry(entryId, {
-      description,
-      custodian: custodian?.id,
-      assigned_to: assignedTo?.id
-    });
   }
 }
 

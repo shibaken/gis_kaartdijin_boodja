@@ -1,6 +1,7 @@
 import { PaginationFilter } from "./providerCommon.api";
 import { CatalogueEntryStatus, RawCatalogueEntry, RecordStatus, User } from "../backend/backend.api";
 import { SortDirection } from "../components/viewState.api";
+import { Custodian } from "./userProvider.api";
 
 export interface CatalogueEntry {
   id: number;
@@ -8,7 +9,7 @@ export interface CatalogueEntry {
   description: string;
   status: RecordStatus<CatalogueEntryStatus>;
   updatedAt: string;
-  custodian: User;
+  custodian: Custodian;
   assignedTo?: User;
   subscription: number;
   activeLayer: number;

@@ -67,7 +67,7 @@
         <template #cells>
           <td>CE{{ row.id }}</td>
           <td>{{ row.name }}</td>
-          <td>{{ row.custodian?.username }}</td>
+          <td>{{ row.custodian?.name }}</td>
           <td>{{ row.status.label }}</td>
           <td>{{ DateTime.fromISO(row.updatedAt).toFormat('dd/MM/yyyy HH:mm')}}</td>
           <td>{{ row.assignedTo?.username }}</td>

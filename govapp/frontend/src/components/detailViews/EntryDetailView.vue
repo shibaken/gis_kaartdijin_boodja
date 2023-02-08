@@ -52,7 +52,8 @@
     </button>
   </nav>
   <entry-view-detail-tab v-if="activeTab === CatalogueDetailViewTabs.Details && catalogueEntry"
-                         :entry="catalogueEntry"/>
+                         :entry="catalogueEntry"
+                         @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
   <entry-view-attribute-tab v-if="activeTab === CatalogueDetailViewTabs.AttributeTable && catalogueEntry"
                             :entry="catalogueEntry"
                             @navigate="(tab, view, options) => emit('navigate', tab, view, options)"/>
