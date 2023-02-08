@@ -248,5 +248,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             filepath=geopackage,
         )
 
+        # Set Default Style
+        gis.geoserver.geoserver().set_default_style(
+            workspace=self.workspace.name,
+            layer=self.publish_entry.catalogue_entry.metadata.name,
+            name=self.publish_entry.catalogue_entry.symbology.name,
+        )
+
         # Delete local temporary copy of file if we can
         shutil.rmtree(filepath.parent, ignore_errors=True)

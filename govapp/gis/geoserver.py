@@ -125,31 +125,6 @@ class GeoServer:
             # Check Response
             response.raise_for_status()
 
-            # Log
-            log.info(f"Setting Style '{name}' as Default in GeoServer")
-
-            # Set Default Layer Style
-            url = "{0}/rest/workspaces/{1}/layers/{2}.xml".format(
-                self.service_url,
-                workspace,
-                layer,
-            )
-
-            # Perform Request
-            # This only works with XML (GeoServer is broken)
-            response = httpx.put(
-                url=url,
-                content=f"<layer><defaultStyle><name>{name}</name></defaultStyle></layer>",
-                headers={"Content-Type": "application/xml"},
-                auth=(self.username, self.password),
-            )
-
-            # Log
-            log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
-
-            # Check Response
-            response.raise_for_status()
-
         # Log
         log.info(f"Uploading Style '{name}' to GeoServer")
 
@@ -214,6 +189,44 @@ class GeoServer:
 
         # Return None
         return None
+
+    def set_default_style(
+        self,
+        workspace: str,
+        layer: str,
+        name: str,
+    ) -> None:
+        """Sets the default style for a layer in GeoServer.
+
+        Args:
+            workspace (str): Workspace to upload files to.
+            layer (str): Name of the layer to set default style for.
+            name (str): Name of the style.
+        """
+        # Log
+        log.info(f"Setting style '{name}' as default for '{layer}' in GeoServer")
+
+        # Set Default Layer Style
+        url = "{0}/rest/workspaces/{1}/layers/{2}.xml".format(
+            self.service_url,
+            workspace,
+            layer,
+        )
+
+        # Perform Request
+        # This only works with XML (GeoServer is broken)
+        response = httpx.put(
+            url=url,
+            content=f"<layer><defaultStyle><name>{name}</name></defaultStyle></layer>",
+            headers={"Content-Type": "application/xml"},
+            auth=(self.username, self.password),
+        )
+
+        # Log
+        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+        # Check Response
+        response.raise_for_status()
 
     def validate_style(self, sld: str) -> Optional[dict[str, Any]]:
         """Validates SLD using the GeoServer OGC API.
