@@ -34,6 +34,7 @@ export interface RawCatalogueEntry {
   email_notifications: Array<number>;
   webhook_notifications: Array<number>;
   editors: Array<number>;
+  workspace: number;
 }
 
 export interface RawLayerSubmission {
@@ -58,6 +59,7 @@ export interface RawUser {
 export interface RawPaginationFilter extends Record<string, unknown> {
   offset?: number;
   limit?: number;
+  search?: string;
 }
 
 export interface RawLayerSubscriptionFilter extends RawPaginationFilter {
@@ -94,6 +96,10 @@ export interface RawSymbologyFilter extends RawPaginationFilter {
   catalogue_entry?: number
 }
 
+export interface RawNotificationFilter extends RawPaginationFilter {
+  id__in?: Array<number>;
+}
+
 export interface PaginationState {
   currentPage: number;
   numPages: number;
@@ -117,9 +123,10 @@ export interface User {
   groups: Array<Group>;
 }
 
+// determines API path
 export enum NotificationRequestType {
-  Email,
-  Webhook,
+  Email = "emails",
+  Webhook = "webhooks",
 }
 
 export interface RawNotification {
@@ -196,8 +203,5 @@ export interface RawCommunicationLog {
   user?: number;
 }
 
-/**
- * Update types
- */
-export type RawEntryPatch = Pick<RawCatalogueEntry, "description" | "custodian" | "assigned_to">;
-export type EntryPatch = Pick<CatalogueEntry, "description" | "custodian" | "assignedTo">;
+export type RawEntryPatch = Pick<RawCatalogueEntry, "name" | "description" | "custodian" | "assigned_to">;
+export type EntryPatch = Pick<CatalogueEntry, "name" | "description" | "custodian" | "assignedTo">;

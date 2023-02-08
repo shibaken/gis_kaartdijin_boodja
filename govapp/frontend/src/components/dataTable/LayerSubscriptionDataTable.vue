@@ -61,7 +61,6 @@
           <td>
             <a href="#" class="me-2"
                @click="emit('navigate', CatalogueTab.LayerSubscriptions, CatalogueView.View, { recordId: row.id })">View</a>
-            <a href="#">History</a>
           </td>
         </template>
         <template #content>

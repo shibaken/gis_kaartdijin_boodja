@@ -8,7 +8,8 @@
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
   import CatalogueEntryDetailView from "./detailViews/EntryDetailView.vue";
   import CommunicationsLogModal from "../components/modals/CommunicationsLogModal.vue";
-  import { CatalogueTab, CatalogueView, NavigateEmitsOptions } from "./viewState.api";
+  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigateEmitsOptions, SubmissionDetailViewTabs,
+    SubscriptionDetailViewTabs } from "./viewState.api";
   import Card from "./widgets/Card.vue";
   import Accordion from "./widgets/Accordion.vue";
   import SideBarLeft from "./SideBarLeft.vue";
@@ -28,18 +29,25 @@
   import SubscriptionDetailView from "./detailViews/SubscriptionDetailView.vue";
   import { usePermissionsComposable } from "../tools/permissionsComposable";
   import AttributesModal from "./modals/AttributesModal.vue";
+  import NotificationsModal from "./modals/NotificationsModal.vue";
 
   const { catalogueEntries } = storeToRefs(useCatalogueEntryStore())
   const modalStore = useModalStore();
 
   const selectedTab = ref<CatalogueTab>(CatalogueTab.CatalogueEntries);
   const selectedView = ref<CatalogueView>(CatalogueView.List);
+  const selectedEntryDetailTab = ref<CatalogueDetailViewTabs>(CatalogueDetailViewTabs.Details)
+  const selectedSubmissionDetailTab = ref<SubmissionDetailViewTabs>(SubmissionDetailViewTabs.Details)
+  const selectedSubscriptionDetailTab = ref<SubscriptionDetailViewTabs>(SubscriptionDetailViewTabs.Details)
   const selectedViewEntry = ref<CatalogueEntry | undefined>();
   const selectedViewSubmission = ref<LayerSubmission | undefined>();
   const selectedViewSubscription = ref<LayerSubscription | undefined>();
   const showAttributeModal: ComputedRef<boolean> = computed(
-    () => [ModalTypes.ATTRIBUTE_EDIT, ModalTypes.ATTRIBUTE_ADD, ModalTypes.ATTRIBUTE_DELETE]
+    () => [ModalTypes.AttributeEdit, ModalTypes.AttributeAdd, ModalTypes.AttributeDelete]
       .includes(modalStore.activeModal));
+  const showNotificationModal: ComputedRef<boolean> = computed(() => [ModalTypes.NotificationEdit,
+    ModalTypes.NotificationAdd, ModalTypes.NotificationDelete]
+    .includes(modalStore.activeModal));
 
   const permissionsComposable = usePermissionsComposable(selectedViewEntry.value);
   const currentEntryView = computed(() => {
@@ -66,10 +74,19 @@
       return;
     } else if (tab === CatalogueTab.CatalogueEntries) {
       selectedViewEntry.value = await catalogueEntryProvider.fetchCatalogueEntry(options.recordId);
+      if (options?.viewTab) {
+        selectedEntryDetailTab.value = options.viewTab as CatalogueDetailViewTabs;
+      }
     } else if (tab === CatalogueTab.LayerSubscriptions) {
       selectedViewSubscription.value = await layerSubscriptionProvider.fetchLayerSubscription(options.recordId);
+      if (options?.viewTab) {
+        selectedSubscriptionDetailTab.value = options.viewTab as SubscriptionDetailViewTabs;
+      }
     } else if (tab === CatalogueTab.LayerSubmissions) {
       selectedViewSubmission.value = await layerSubmissionProvider.fetchLayerSubmission(options.recordId);
+      if (options?.viewTab) {
+        selectedSubmissionDetailTab.value = options.viewTab as SubmissionDetailViewTabs;
+      }
     } else {
       console.warn("Selected view record was not a recognised type");
     }
@@ -136,20 +153,25 @@
       </card>
       <catalogue-entry-detail-view
         v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === CatalogueView.View || CatalogueView.Edit &&
-        !!selectedViewEntry" :catalogue-entry="selectedViewEntry" @navigate="navigate"/>
+        !!selectedViewEntry" :catalogue-entry="selectedViewEntry"
+        :active-tab="selectedEntryDetailTab" @navigate="navigate"/>
       <submission-detail-view
         v-if="selectedTab === CatalogueTab.LayerSubmissions && selectedView === CatalogueView.View &&
-         !!selectedViewSubmission" :layer-submission="selectedViewSubmission" @navigate="navigate"/>
+         !!selectedViewSubmission" :layer-submission="selectedViewSubmission"
+        :active-tab="selectedSubmissionDetailTab" @navigate="navigate"/>
       <subscription-detail-view
         v-if="selectedTab === CatalogueTab.LayerSubscriptions && selectedView === CatalogueView.View &&
-         !!selectedViewSubscription" :layer-subscription="selectedViewSubscription" @navigate="navigate"/>
+         !!selectedViewSubscription" :layer-subscription="selectedViewSubscription"
+        :active-tab="selectedSubscriptionDetailTab" @navigate="navigate"/>
     </div>
   </div>
   <communications-log-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
-    :show="modalStore.activeModal === ModalTypes.COMMS_LOG || modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"
-    :add-log="modalStore.activeModal === ModalTypes.COMMS_LOG_ADD"/>
+    :show="modalStore.activeModal === ModalTypes.CommsLog || modalStore.activeModal === ModalTypes.CommsLogAdd"
+    :add-log="modalStore.activeModal === ModalTypes.CommsLogAdd"/>
   <attributes-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry"
-    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.NONE"/>
+                    :show="showAttributeModal" :mode="showAttributeModal ? modalStore.activeModal : ModalTypes.None"/>
+  <notifications-modal v-if="selectedViewEntry" :catalogue-entry="selectedViewEntry" :show="showNotificationModal"
+                       :mode="showNotificationModal ? modalStore.activeModal : ModalTypes.None"/>
 </template>
 
 <style lang="scss">

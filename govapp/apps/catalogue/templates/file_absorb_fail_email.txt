@@ -1,5 +1,5 @@
 {% extends 'base_email.txt' %}
 
 {% block content %}
-A file failed to absorb!
+Kaartdijin Boodja was unable to absorb file '{{ name }}'. You may need to check whether this is a valid GIS file.
 {% endblock %}

@@ -1,13 +1,17 @@
 <script lang="ts" setup>
   import { useModalStore } from "../../stores/ModalStore";
 
-  const props = defineProps<{
-    modalId: string,
-    show: boolean,
-    modalSize?: "modal-sm" | "modal-md" | "modal-lg" | "modal-xl",
-    showSaveButton?: boolean,
-    enableSaveButton?: boolean
-  }>();
+  const props = withDefaults(defineProps<{
+      modalId: string,
+      show: boolean,
+      modalSize?: "modal-sm" | "modal-md" | "modal-lg" | "modal-xl",
+      showSaveButton?: boolean,
+      enableSaveButton?: boolean,
+      saveButtonText?: string
+    }>(),
+    {
+    enableSaveButton: true
+  });
 
   const emit = defineEmits<{
     (e: "close"): void
@@ -40,7 +44,7 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="emit('close')">Close</button>
             <button type="button" class="btn btn-primary" v-if="showSaveButton" @click="emit('save')"
                     :disabled="!enableSaveButton">
-              Save
+              {{ saveButtonText ?? "Save" }}
             </button>
           </slot>
         </div>

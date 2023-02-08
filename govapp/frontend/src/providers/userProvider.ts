@@ -1,13 +1,14 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { RawUser, RawUserFilter, User } from "../backend/backend.api";
-import { UserFilter } from "./userProvider.api";
+import { RawCustodian, RawUser, RawUserFilter, User } from "../backend/backend.api";
+import { Custodian, UserFilter } from "./userProvider.api";
 
 export class UserProvider {
   // Get the backend stub if the test flag is used.
   private backend: BackendService = import.meta.env.MODE === "mock" ? new BackendServiceStub() : new BackendService();
   // Load all users; they're used for the select inputs
   public users = this.fetchUsers();
+  public custodians = this.fetchCustodians();
   public me = this.fetchMe();
   public groups = this.fetchGroups();
 
@@ -19,6 +20,16 @@ export class UserProvider {
       username,
       groups: groups.map(groupId => providerGroups.find(group => group.id === groupId))
     } as User;
+  }
+
+  public rawToCustodian (rawCustodian: RawCustodian): Custodian {
+    return {
+      id: rawCustodian.id,
+      name: rawCustodian.name,
+      contactName: rawCustodian.contact_name,
+      contactEmail: rawCustodian.contact_email,
+      contactPhone: rawCustodian.contact_phone
+    };
   }
 
   public async fetchUser (userId: number): Promise<User> {
@@ -33,6 +44,15 @@ export class UserProvider {
 
     const users = await this.backend.getUsers(filters);
     return await Promise.all(users.results.map(user => this.rawToUser(user)));
+  }
+
+  public async fetchCustodian (id: number): Promise<Custodian> {
+    return this.rawToCustodian(await this.backend.getRawCustodian(id));
+  }
+
+  public async fetchCustodians (): Promise<Custodian[]> {
+    const rawCustodians = await this.backend.getRawCustodians();
+    return rawCustodians.results.map(this.rawToCustodian);
   }
 
   public async fetchMe () {

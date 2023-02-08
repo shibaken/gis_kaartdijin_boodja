@@ -1,5 +1,5 @@
 {% extends 'base_email.txt' %}
 
 {% block content %}
-A new catalogue entry was created!
+Kaartdijin Boodja catalogue entry '{{ name }}' has been created.
 {% endblock %}

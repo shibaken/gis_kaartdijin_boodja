@@ -17,10 +17,11 @@
 
   onMounted(async () => {
     const symbology = await relatedEntityProvider.fetchSymbology(props.submission.catalogueEntry.id)
-    const options = await relatedEntityProvider.fetchWmtsCapabilities(props.submission.name, symbology?.name);
+    const options = await relatedEntityProvider.fetchWmtsCapabilities(props.submission.catalogueEntry.workspace,
+      props.submission.name, symbology?.name);
 
     if (options) {
-      options.style = "Catalogue:" + symbology?.name
+      options.style = `${props.submission.catalogueEntry.workspace.name}:` + symbology?.name
     }
     if (options) {
       const wmts = new WMTS(options),

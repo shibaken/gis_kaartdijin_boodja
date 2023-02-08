@@ -23,7 +23,7 @@
     formDirty.value = true;
     if (formValues.value) {
       await logsProvider.addCommunicationLog(props.catalogueEntry.id, formValues.value as CommunicationLog);
-      modalStore.activeModal = ModalTypes.COMMS_LOG;
+      modalStore.activeModal = ModalTypes.CommsLog;
     }
   }
 

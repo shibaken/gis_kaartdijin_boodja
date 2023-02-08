@@ -9,8 +9,15 @@ import reversion.admin
 from . import models
 
 
+class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
+    """Custom Django Admin for Catalogue Entries."""
+    # This provides a better interface for `ManyToMany` fields
+    # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
+    filter_horizontal = ["editors"]
+
+
 # Register Models
-admin.site.register(models.catalogue_entries.CatalogueEntry, reversion.admin.VersionAdmin)
+admin.site.register(models.catalogue_entries.CatalogueEntry, CatalogueEntryAdmin)
 admin.site.register(models.custodians.Custodian, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_attributes.LayerAttribute, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_metadata.LayerMetadata, reversion.admin.VersionAdmin)

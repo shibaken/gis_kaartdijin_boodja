@@ -11,7 +11,7 @@ export interface LayerSubmission {
   file: string;
   status: RecordStatus<LayerSubmissionStatus>;
   submittedDate: string;
-  catalogueEntry: Pick<CatalogueEntry, "id" | "name">;
+  catalogueEntry: Pick<CatalogueEntry, "id" | "name" | "workspace">;
   attributes: Array<number>;
   metadata: number;
   symbology: number;

@@ -6,11 +6,11 @@
   const modalStore = useModalStore();
 
   function onLogShowClick () {
-    modalStore.showModal(ModalTypes.COMMS_LOG);
+    modalStore.showModal(ModalTypes.CommsLog);
   }
 
   function onLogAddClick () {
-    modalStore.showModal(ModalTypes.COMMS_LOG_ADD);
+    modalStore.showModal(ModalTypes.CommsLogAdd);
   }
 </script>
 

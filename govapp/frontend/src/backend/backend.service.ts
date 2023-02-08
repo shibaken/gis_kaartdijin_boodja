@@ -1,9 +1,10 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
   RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
-  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter } from "./backend.api";
+  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter, RawNotificationFilter } from "./backend.api";
 import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
+import { Workspace } from "../providers/catalogueEntryProvider.api";
 
 const GEOSERVER_URL = import.meta.env.VITE_GEOSERVER_URL;
 
@@ -32,13 +33,28 @@ function fetcher (input: RequestInfo | URL, init: RequestInit = {}) {
   return fetch(request);
 }
 
-export function stripNullParams<T extends object> (filter: T): Params {
+export function stripNullParams<T extends object> (params: T): Params {
   return Object.fromEntries(
-    Object.entries(filter)
+    Object.entries(params)
       .filter(([_, value]) => {
         return value != null;
       })
   );
+}
+
+/*
+ * Replaces nulls with empty strings in order to retain the values when patching
+ */
+export function replaceNullParams<T extends object> (params: T): Params {
+  const updatedWithNulls = Object.fromEntries(
+    Object.entries(params)
+      .map(([key, value]) => {
+        const mappedValue = typeof value === "undefined" ? "" : value;
+        return [key, mappedValue];
+      })
+  );
+
+  return updatedWithNulls as Params;
 }
 
 export class BackendService {
@@ -101,9 +117,11 @@ export class BackendService {
     return await response.json() as RawUser;
   }
 
-  public async getNotifications (notificationType: NotificationRequestType): Promise<PaginatedRecord<RawNotification>> {
+  public async getNotifications (notificationType: NotificationRequestType, filter: RawNotificationFilter):
+      Promise<PaginatedRecord<RawNotification>> {
     const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
-    const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/`);
+    const params = stripNullParams<RawNotificationFilter>(filter);
+    const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/`, params);
     return await response.json() as PaginatedRecord<RawNotification>;
   }
 
@@ -111,6 +129,37 @@ export class BackendService {
     const notificationTypePath = notificationType === NotificationRequestType.Email ? "emails" : "webhooks";
     const response = await fetch(`/api/catalogue/notifications/${notificationTypePath}/type/`);
     return await response.json() as PaginatedRecord<NotificationType>;
+  }
+
+  protected async modifyNotification(notificationType: NotificationRequestType,
+      notification: Partial<Omit<RawNotification, "id">>, method: "patch" | "post", id?: number): Promise<RawNotification> {
+    if (!id && method === "patch") {
+      throw new Error("`patchRawNotification`: Tried to patch an notification without providing an ID");
+    }
+
+    const response = await fetcher(`/api/catalogue/notifications/${notificationType}/${id ? `${id}/` : ""}`, {
+      method,
+      body: JSON.stringify(notification)
+    });
+    return await response.json() as RawNotification;
+  }
+
+  public async patchRawNotification (notificationType: NotificationRequestType,
+      notification: Partial<Omit<RawNotification, "id">>, id?: number): Promise<RawNotification> {
+    return this.modifyNotification(notificationType, notification, "patch", id);
+  }
+
+  public async postRawNotification (notificationType: NotificationRequestType,
+      notification: Omit<RawNotification, "id">): Promise<RawNotification> {
+    return this.modifyNotification(notificationType, notification, "post");
+  }
+
+  public async deleteNotification (notificationType: NotificationRequestType, id: number): Promise<number> {
+    const response = await fetcher(`/api/catalogue/notifications/${notificationType}/${id}`, {
+      method: 'delete'
+    });
+
+    return response.status;
   }
 
   public async getRawSymbology (entryId: number): Promise<RawSymbology> {
@@ -188,7 +237,7 @@ export class BackendService {
   }
 
   public async getRawCustodians (): Promise<PaginatedRecord<RawCustodian>> {
-    const response = await fetch("/api/catalogue/layers/custodians/");
+    const response = await fetch("/api/catalogue/custodians/");
     return await response.json() as PaginatedRecord<RawCustodian>;
   }
 
@@ -203,7 +252,9 @@ export class BackendService {
   }
 
   public async patchCatalogueEntry (entryId: number, updatedEntry: RawEntryPatch): Promise<RawCatalogueEntry> {
-    const params = stripNullParams(updatedEntry);
+    // Don't strip null params when patching potentially empty values
+    const params = replaceNullParams(updatedEntry);
+
     const response = await fetcher(`/api/catalogue/entries/${entryId}/`, {
       method: "patch",
       body: JSON.stringify(params)
@@ -280,6 +331,16 @@ export class BackendService {
   public async getCommunicationTypes (): Promise<CommunicationLogType[]> {
     const response = await fetch("/api/logs/communications/type/");
     return (await response.json()).results;
+  }
+
+  public async getWorkspace(id: number): Promise<Workspace> {
+    const response = await fetch(`/api/catalogue/workspaces/${id}`);
+    return await response.json();
+  }
+
+  public async getWorkspaces(): Promise<PaginatedRecord<Workspace>> {
+    const response = await fetch("/api/catalogue/workspaces/");
+    return await response.json();
   }
 
   public async getWmtsCapabilities (): Promise<string> {

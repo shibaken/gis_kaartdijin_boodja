@@ -171,7 +171,7 @@ class Absorber:
         catalogue_entry.symbology.publish()
 
         # Notify!
-        notifications.catalogue_entry_creation()
+        notifications.catalogue_entry_creation(catalogue_entry)
 
         # Return
         return True

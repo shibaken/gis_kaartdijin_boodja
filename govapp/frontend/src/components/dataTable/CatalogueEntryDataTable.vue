@@ -10,10 +10,10 @@
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawCatalogueEntryFilter } from "../../backend/backend.api";
   import { catalogueEntryProvider } from "../../providers/catalogueEntryProvider";
-  import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
+  import { usePermissionsComposable } from "../../tools/permissionsComposable";
+  import { PermissionsComposable } from "../../tools/permissionsComposable.api";
 
   const props = withDefaults(defineProps<{
-      catalogueEntry?: CatalogueEntry,
       view: CatalogueView
     }>(),
     {
@@ -23,6 +23,7 @@
   // get Stores and fetch with `storeToRef`
   const catalogueEntryStore = useCatalogueEntryStore();
   const { catalogueEntries, filters, catalogueEntryMeta } = storeToRefs(catalogueEntryStore);
+  const permissionsComposable: PermissionsComposable = usePermissionsComposable();
 
   /**
    * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
@@ -57,7 +58,6 @@
         <SortableHeader name="Custodian" column="custodian" :direction="sortDirection('custodian')" @sort="onSort"/>
         <SortableHeader name="Status" column="status" :direction="sortDirection('status')" @sort="onSort"/>
         <SortableHeader name="Last Updated" column="updatedAt" :direction="sortDirection('updatedAt')" @sort="onSort"/>
-        <th>Time</th>
         <SortableHeader name="Assigned To" column="assignedTo" :direction="sortDirection('assignedTo')" @sort="onSort"/>
         <th>Action</th>
       </tr>
@@ -67,17 +67,15 @@
         <template #cells>
           <td>CE{{ row.id }}</td>
           <td>{{ row.name }}</td>
-          <td>{{ row.custodian?.username }}</td>
+          <td>{{ row.custodian?.name }}</td>
           <td>{{ row.status.label }}</td>
-          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('dd/MM/yyyy')}}</td>
-          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('HH:mm') }}</td>
+          <td>{{ DateTime.fromISO(row.updatedAt).toFormat('dd/MM/yyyy HH:mm')}}</td>
           <td>{{ row.assignedTo?.username }}</td>
           <td>
             <a href="#" class="me-2"
                @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
-              {{ view === CatalogueView.Edit ? "Edit" : "View" }}
+              {{ permissionsComposable.isEntryEditor(row) ? "Edit" : "View" }}
             </a>
-            <a href="#">History</a>
           </td>
         </template>
         <template #content>
