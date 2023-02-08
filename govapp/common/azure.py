@@ -52,5 +52,5 @@ def azure_output() -> AzureStorage:
     """
     # Construct and Return
     return AzureStorage(
-        sync_directory=conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY,
+        sync_directory=pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY),
     )
