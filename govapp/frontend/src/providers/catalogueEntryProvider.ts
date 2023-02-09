@@ -1,6 +1,6 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { CatalogueEntryStatus, PaginatedRecord, RawCatalogueEntry, RawCatalogueEntryFilter, RecordStatus,
+import { CatalogueEntryStatus, EntryPatch, PaginatedRecord, RawCatalogueEntry, RawCatalogueEntryFilter, RecordStatus,
   User } from "../backend/backend.api";
 import { CatalogueEntry, CatalogueEntryFilter, Workspace } from "./catalogueEntryProvider.api";
 import { statusProvider } from "./statusProvider";
@@ -8,6 +8,7 @@ import { userProvider } from "./userProvider";
 import { SortDirection } from "../components/viewState.api";
 import { toSnakeCase } from "../util/strings";
 import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
+import { Custodian } from "./userProvider.api";
 
 export class CatalogueEntryProvider {
   // Get the backend stub if the test flag is used.
@@ -27,8 +28,10 @@ export class CatalogueEntryProvider {
   private async rawToCatalogueEntry (entry: RawCatalogueEntry): Promise<CatalogueEntry> {
     const entryStatuses: RecordStatus<CatalogueEntryStatus>[] = useCatalogueEntryStore().entryStatuses;
     const users = await userProvider.users;
+    const custodians = await userProvider.custodians;
+
     let user: User | undefined,
-      custodian: User | undefined;
+      custodian: Custodian | undefined;
 
     if (typeof entry.assigned_to === "number") {
       const matchUser = users.find(match => match.id === entry.assigned_to);
@@ -36,8 +39,8 @@ export class CatalogueEntryProvider {
     }
 
     if (typeof entry.custodian === "number") {
-      const matchCustodian = users.find(match => match.id === entry.custodian);
-      custodian = matchCustodian ?? await userProvider.fetchUser(entry.custodian);
+      const matchCustodian = custodians.find(match => match.id === entry.custodian);
+      custodian = matchCustodian ?? await userProvider.fetchCustodian(entry.custodian);
     }
 
     const editors: Array<User> = [];
@@ -217,6 +220,18 @@ export class CatalogueEntryProvider {
   public async fetchWorkspaces (): Promise<Workspace[]> {
     const data = await this.backend.getWorkspaces();
     return data.results;
+  }
+
+  public async updateCatalogueEntry (entryId: number, { name, description, custodian }: EntryPatch) {
+    const updatedEntry = await this.backend.patchCatalogueEntry(entryId, {
+      name,
+      description,
+      custodian: custodian?.id ? parseInt(custodian.id.toString()) : undefined
+    });
+
+    useCatalogueEntryStore().updateEntry(await this.rawToCatalogueEntry(updatedEntry));
+
+    return updatedEntry;
   }
 }
 
