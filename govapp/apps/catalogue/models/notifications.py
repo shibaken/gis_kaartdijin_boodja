@@ -6,9 +6,9 @@ from django.db import models
 import reversion
 
 # Local
-from . import catalogue_entries
-from .. import mixins
-from .. import utils
+from govapp.common import mixins
+from govapp.common import utils
+from govapp.apps.catalogue.models import catalogue_entries
 
 
 class EmailNotificationType(models.IntegerChoices):

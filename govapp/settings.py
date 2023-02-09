@@ -185,12 +185,23 @@ LOGGING = {
 }
 
 # Sharepoint Settings
-SHAREPOINT_URL = decouple.config("SHAREPOINT_URL", default="https://dpaw.sharepoint.com/teams/KaartdijinBoodja-dev")
-SHAREPOINT_USERNAME = decouple.config("SHAREPOINT_USERNAME", default=None)  # TODO: Credentials?
-SHAREPOINT_PASSWORD = decouple.config("SHAREPOINT_PASSWORD", default=None)  # TODO: Credentials?
-SHAREPOINT_LIST = decouple.config("SHAREPOINT_LIST", default="Shared Documents")
-SHAREPOINT_STAGING_AREA = decouple.config("SHAREPOINT_STAGING_AREA", default="KaartdijinBoodjaLayerSubmissionStagingArea")  # noqa: E501
-SHAREPOINT_ARCHIVE_AREA = decouple.config("SHAREPOINT_ARCHIVE_AREA", default="KaartdijinBoodjaLayerSubmissionArchive")
+# Sharepoint Input settings are for the Catalogue (Input)
+SHAREPOINT_INPUT_URL = decouple.config("SHAREPOINT_INPUT_URL", default="https://dpaw.sharepoint.com/teams/KaartdijinBoodja-dev")  # noqa: E501
+SHAREPOINT_INPUT_USERNAME = decouple.config("SHAREPOINT_INPUT_USERNAME", default=None)
+SHAREPOINT_INPUT_PASSWORD = decouple.config("SHAREPOINT_INPUT_PASSWORD", default=None)
+SHAREPOINT_INPUT_LIST = decouple.config("SHAREPOINT_INPUT_LIST", default="Shared Documents")
+SHAREPOINT_INPUT_STAGING_AREA = decouple.config("SHAREPOINT_INPUT_STAGING_AREA", default="KaartdijinBoodjaLayerSubmissionStagingArea")  # noqa: E501
+SHAREPOINT_INPUT_ARCHIVE_AREA = decouple.config("SHAREPOINT_INPUT_ARCHIVE_AREA", default="KaartdijinBoodjaLayerSubmissionArchive")  # noqa: E501
+# Sharepoint Output settings are for the Publisher (Output)
+SHAREPOINT_OUTPUT_URL = decouple.config("SHAREPOINT_OUTPUT_URL", default="https://dpaw.sharepoint.com/teams/oim-cddp-UAT")  # noqa: E501
+SHAREPOINT_OUTPUT_USERNAME = decouple.config("SHAREPOINT_OUTPUT_USERNAME", default=None)
+SHAREPOINT_OUTPUT_PASSWORD = decouple.config("SHAREPOINT_OUTPUT_PASSWORD", default=None)
+SHAREPOINT_OUTPUT_LIST = decouple.config("SHAREPOINT_OUTPUT_LIST", default="Shared Documents")
+SHAREPOINT_OUTPUT_PUBLISH_AREA = decouple.config("SHAREPOINT_OUTPUT_PUBLISH_AREA", default="GIS1-Corporate/Data")  # noqa: E501
+
+# Azure Settings
+# Azure Output settings are for the Publisher (Output)
+AZURE_OUTPUT_SYNC_DIRECTORY = decouple.config("AZURE_OUTPUT_SYNC_DIRECTORY", default="sync")
 
 # Email
 DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
@@ -219,7 +230,6 @@ CRON_CLASSES = [
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
 GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
 GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
-GEOSERVER_DEFAULT_WORKSPACE_ID = decouple.config("GEOSERVER_DEFAULT_WORKSPACE_ID", default=1, cast=int)  # Must match db
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":

@@ -11,8 +11,8 @@ from rest_framework import response
 from rest_framework import viewsets
 
 # Local
-from . import serializers
-from . import filters
+from govapp.apps.accounts import serializers
+from govapp.apps.accounts import filters
 
 
 # Shortcuts

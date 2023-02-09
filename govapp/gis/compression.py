@@ -4,6 +4,7 @@
 # Standard
 import logging
 import pathlib
+import shutil
 import tarfile
 import zipfile
 
@@ -14,6 +15,32 @@ import rarfile
 
 # Logging
 log = logging.getLogger(__name__)
+
+
+def compress(directory: pathlib.Path) -> pathlib.Path:
+    """Compresses a directory.
+
+    Args:
+        directory (pathlib.Path): Directory to be compressed.
+
+    Returns:
+        pathlib.Path: Path to the compressed archive.
+    """
+    # Log
+    log.info(f"Attemping to compress '{directory}'")
+
+    # Compress!
+    compressed_path = shutil.make_archive(
+        base_name=str(directory),
+        format="zip",
+        root_dir=str(directory),
+    )
+
+    # Log
+    log.info(f"Compressed '{directory}' -> '{compressed_path}'")
+
+    # Return
+    return pathlib.Path(compressed_path)
 
 
 def decompress(file: pathlib.Path) -> pathlib.Path:

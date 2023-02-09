@@ -1,0 +1,5 @@
+{% extends 'base_email.txt' %}
+
+{% block content %}
+Kaartdijin Boodja publish entry '{{ name }}' failed to publish. You may need to check the logs.
+{% endblock %}

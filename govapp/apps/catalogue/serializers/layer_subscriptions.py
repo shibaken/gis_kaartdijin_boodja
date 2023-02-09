@@ -5,7 +5,7 @@
 from rest_framework import serializers
 
 # Local
-from .. import models
+from govapp.apps.catalogue import models
 
 
 class LayerSubscriptionSerializer(serializers.ModelSerializer):

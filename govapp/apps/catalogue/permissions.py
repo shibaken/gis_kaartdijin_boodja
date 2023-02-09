@@ -7,8 +7,8 @@ from rest_framework import request
 from rest_framework import viewsets
 
 # Local
-from . import models
-from ..accounts import utils
+from govapp.apps.accounts import utils
+from govapp.apps.catalogue import models
 
 # Typing
 from typing import Any
@@ -37,8 +37,7 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             allowed = False
 
         elif view.action in ("list", "retrieve", "update", "partial_update",
-                             "lock", "unlock", "decline", "assign", "unassign",
-                             "geoserver"):
+                             "lock", "unlock", "decline", "assign", "unassign"):
             # Retrieves and Lists are always allowed by anyone
             # Updates might be allowed, but we delegate it to `has_object_permission`
             # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
@@ -119,20 +118,6 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
                 isinstance(obj, models.catalogue_entries.CatalogueEntry)
                 and utils.is_catalogue_editor(request.user)
                 and obj.is_editor(request.user)
-            )
-
-        elif view.action == "geoserver":
-            # Re-Publish to GeoServer
-            # Re-Publishing a Catalogue Entry to GeoServer has its own set of rules
-            # 1. Object is a Catalogue Entry
-            # 2. User is in the Catalogue Editors group
-            # 3. User is one of this Catalogue Entry's editors
-            # 4. Catalogue Entry is Locked
-            allowed = (
-                isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and utils.is_catalogue_editor(request.user)
-                and obj.is_editor(request.user)
-                and obj.is_locked()
             )
 
         else:

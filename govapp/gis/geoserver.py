@@ -22,21 +22,21 @@ class GeoServer:
 
     def __init__(
         self,
-        service_url: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
+        service_url: str,
+        username: str,
+        password: str,
     ) -> None:
         """Instantiates the GeoServer Abstraction.
 
         Args:
-            service_url (Optional[str]): URL to the GeoServer service.
-            username (Optional[str]): Username for the GeoServer service.
-            password (Optional[str]): Password for the GeoServer service.
+            service_url (str): URL to the GeoServer service.
+            username (str): Username for the GeoServer service.
+            password (str): Password for the GeoServer service.
         """
         # Instance Attributes
-        self.service_url = service_url or conf.settings.GEOSERVER_URL
-        self.username = username or conf.settings.GEOSERVER_USERNAME
-        self.password = password or conf.settings.GEOSERVER_PASSWORD
+        self.service_url = service_url
+        self.username = username
+        self.password = password
 
         # Strip Trailing Slash from Service URL
         self.service_url = self.service_url.rstrip("/")
@@ -58,18 +58,17 @@ class GeoServer:
         log.info(f"Uploading Geopackage '{filepath}' to GeoServer")
 
         # Construct URL
-        url = "{0}/rest/workspaces/{1}/datastores/{2}/file.gpkg?filename={3}".format(
+        url = "{0}/rest/workspaces/{1}/datastores/{2}/file.gpkg".format(
             self.service_url,
             workspace,
             layer,
-            filepath.name,
         )
 
         # Perform Request
         response = httpx.put(
             url=url,
             content=filepath.read_bytes(),
-            params={"update": "overwrite"},
+            params={"filename": filepath.name, "update": "overwrite"},
             auth=(self.username, self.password),
         )
 
@@ -117,31 +116,6 @@ class GeoServer:
                         "filename": f"{name}.sld"
                     }
                 },
-                auth=(self.username, self.password),
-            )
-
-            # Log
-            log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
-
-            # Check Response
-            response.raise_for_status()
-
-            # Log
-            log.info(f"Setting Style '{name}' as Default in GeoServer")
-
-            # Set Default Layer Style
-            url = "{0}/rest/workspaces/{1}/layers/{2}.xml".format(
-                self.service_url,
-                workspace,
-                layer,
-            )
-
-            # Perform Request
-            # This only works with XML (GeoServer is broken)
-            response = httpx.put(
-                url=url,
-                content=f"<layer><defaultStyle><name>{name}</name></defaultStyle></layer>",
-                headers={"Content-Type": "application/xml"},
                 auth=(self.username, self.password),
             )
 
@@ -216,6 +190,44 @@ class GeoServer:
         # Return None
         return None
 
+    def set_default_style(
+        self,
+        workspace: str,
+        layer: str,
+        name: str,
+    ) -> None:
+        """Sets the default style for a layer in GeoServer.
+
+        Args:
+            workspace (str): Workspace to upload files to.
+            layer (str): Name of the layer to set default style for.
+            name (str): Name of the style.
+        """
+        # Log
+        log.info(f"Setting style '{name}' as default for '{layer}' in GeoServer")
+
+        # Set Default Layer Style
+        url = "{0}/rest/workspaces/{1}/layers/{2}.xml".format(
+            self.service_url,
+            workspace,
+            layer,
+        )
+
+        # Perform Request
+        # This only works with XML (GeoServer is broken)
+        response = httpx.put(
+            url=url,
+            content=f"<layer><defaultStyle><name>{name}</name></defaultStyle></layer>",
+            headers={"Content-Type": "application/xml"},
+            auth=(self.username, self.password),
+        )
+
+        # Log
+        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+        # Check Response
+        response.raise_for_status()
+
     def validate_style(self, sld: str) -> Optional[dict[str, Any]]:
         """Validates SLD using the GeoServer OGC API.
 
@@ -251,3 +263,17 @@ class GeoServer:
 
         # Return None
         return None
+
+
+def geoserver() -> GeoServer:
+    """Helper constructor to instantiate GeoServer.
+
+    Returns:
+        GeoServer: Configured GeoServer instance.
+    """
+    # Construct and Return
+    return GeoServer(
+        service_url=conf.settings.GEOSERVER_URL,
+        username=conf.settings.GEOSERVER_USERNAME,
+        password=conf.settings.GEOSERVER_PASSWORD,
+    )

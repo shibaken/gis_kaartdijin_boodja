@@ -5,7 +5,7 @@
 from rest_framework import routers
 
 # Local
-from . import views
+from govapp.apps.catalogue import views
 
 
 # Router
@@ -19,7 +19,6 @@ router.register("layers/subscriptions", views.LayerSubscriptionViewSet)
 router.register("layers/symbologies", views.LayerSymbologyViewSet)
 router.register("notifications/emails", views.EmailNotificationViewSet)
 router.register("notifications/webhooks", views.WebhookNotificationViewSet)
-router.register("workspaces", views.WorkspaceViewSet)
 
 
 # Catalogue URL Patterns

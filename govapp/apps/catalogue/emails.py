@@ -2,7 +2,7 @@
 
 
 # Local
-from ..emails import emails
+from govapp.apps.emails import emails
 
 
 class CatalogueEntryLockedEmail(emails.TemplateEmailBase):

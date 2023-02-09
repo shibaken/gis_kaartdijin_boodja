@@ -8,9 +8,9 @@ import pathlib
 from osgeo import ogr
 
 # Local
-from . import base
-from .. import compression
-from .. import utils
+from govapp.gis import compression
+from govapp.gis import utils
+from govapp.gis.readers import base
 
 # Typing
 from typing import Iterable

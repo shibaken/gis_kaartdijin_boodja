@@ -5,7 +5,7 @@
 import pathlib
 
 # Local
-from .readers import base
+from govapp.gis.readers import base
 
 # Typing
 from typing import Any, Generator, Optional, TypeVar

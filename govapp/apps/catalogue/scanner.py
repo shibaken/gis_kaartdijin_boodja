@@ -8,9 +8,9 @@ import logging
 from django import conf
 
 # Local
-from . import absorber
-from . import notifications
-from . import sharepoint
+from govapp.common import sharepoint
+from govapp.apps.catalogue import absorber
+from govapp.apps.catalogue import notifications
 
 
 # Logging
@@ -23,7 +23,7 @@ class Scanner:
     def __init__(self) -> None:
         """Instantiates the Scanner."""
         # Storage
-        self.storage = sharepoint.SharepointStorage()
+        self.storage = sharepoint.sharepoint_input()
 
     def scan(self) -> None:
         """Scans for new files in the staging area to be absorbed."""
@@ -31,7 +31,7 @@ class Scanner:
         log.info("Scanning storage staging area for files to absorb")
 
         # Retrieve file from remote storage staging area
-        files = self.storage.list(conf.settings.SHAREPOINT_STAGING_AREA)
+        files = self.storage.list(conf.settings.SHAREPOINT_INPUT_STAGING_AREA)
 
         # Check for files
         if not files:

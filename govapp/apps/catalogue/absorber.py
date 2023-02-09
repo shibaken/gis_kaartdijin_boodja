@@ -12,11 +12,11 @@ from django import conf
 from django.db import transaction
 
 # Local
-from . import models
-from . import notifications
-from . import sharepoint
-from . import utils
-from ...gis import readers
+from govapp.common import sharepoint
+from govapp.gis import readers
+from govapp.apps.catalogue import models
+from govapp.apps.catalogue import notifications
+from govapp.apps.catalogue import utils
 
 
 # Logging
@@ -29,7 +29,7 @@ class Absorber:
     def __init__(self) -> None:
         """Instantiates the Absorber."""
         # Storage
-        self.storage = sharepoint.SharepointStorage()
+        self.storage = sharepoint.sharepoint_input()
 
     def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
@@ -48,7 +48,7 @@ class Absorber:
         # The file is renamed to include a UTC timestamp, to avoid collisions
         timestamp = datetime.datetime.utcnow()
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
-        archive_directory = f"{conf.settings.SHAREPOINT_ARCHIVE_AREA}/{timestamp.year}"
+        archive_directory = f"{conf.settings.SHAREPOINT_INPUT_ARCHIVE_AREA}/{timestamp.year}"
         archive_path = f"{archive_directory}/{filepath.stem}.{timestamp_str}{filepath.suffix}"
         archive = self.storage.put(archive_path, filepath.read_bytes())  # Move file to archive
         self.storage.delete(path)  # Delete file in staging area
@@ -166,10 +166,6 @@ class Absorber:
             catalogue_entry=catalogue_entry,
         )
 
-        # Publish Layer and Symbology
-        catalogue_entry.active_layer.publish()
-        catalogue_entry.symbology.publish()
-
         # Notify!
         notifications.catalogue_entry_creation(catalogue_entry)
 
@@ -222,8 +218,8 @@ class Absorber:
 
         # Check Layer Submission
         if success:
-            # Publish Layer
-            catalogue_entry.active_layer.publish()
+            # Publish
+            catalogue_entry.publish_entry.publish()
 
             # Notify!
             notifications.catalogue_entry_update_success(catalogue_entry)

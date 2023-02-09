@@ -6,9 +6,9 @@ from drf_spectacular import utils as drf_utils
 from rest_framework import viewsets
 
 # Local
-from . import models
-from . import serializers
-from ..catalogue import mixins
+from govapp.common import mixins
+from govapp.apps.logs import models
+from govapp.apps.logs import serializers
 
 
 @drf_utils.extend_schema(tags=["Logs - Communications Logs"])

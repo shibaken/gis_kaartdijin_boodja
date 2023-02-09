@@ -1,0 +1,5 @@
+{% extends 'base_email.txt' %}
+
+{% block content %}
+Kaartdijin Boodja publish entry '{{ name }}' has been edited. You may need to check for updated publish channels.
+{% endblock %}

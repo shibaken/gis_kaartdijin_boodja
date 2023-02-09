@@ -9,7 +9,7 @@ import pathlib
 from django.core.management import base
 
 # Local
-from ... import absorber
+from govapp.apps.catalogue import absorber
 
 # Typing
 from typing import Any

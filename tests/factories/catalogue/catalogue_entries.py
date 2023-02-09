@@ -10,15 +10,15 @@ import factory
 import factory.fuzzy
 
 # Local
-from . import custodians
-from . import layer_attributes
-from . import layer_metadata
-from . import layer_submissions
-from . import layer_symbology
-from . import notifications
-from . import workspaces
-from .. import accounts
 from govapp.apps.catalogue import models
+from tests.factories import accounts
+from tests.factories.catalogue import custodians
+from tests.factories.catalogue import layer_attributes
+from tests.factories.catalogue import layer_metadata
+from tests.factories.catalogue import layer_submissions
+from tests.factories.catalogue import layer_symbology
+from tests.factories.catalogue import notifications
+from tests.factories.publisher import publish_entries
 
 # Typing
 from typing import Any
@@ -35,7 +35,6 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
     status = factory.fuzzy.FuzzyChoice(models.catalogue_entries.CatalogueEntryStatus)
     custodian = factory.SubFactory(custodians.CustodianFactory)
     assigned_to = factory.SubFactory(accounts.users.UserFactory)
-    workspace = factory.SubFactory(workspaces.WorkspaceFactory)
 
     attributes = factory.RelatedFactoryList(
         layer_attributes.LayerAttributeFactory,
@@ -63,6 +62,10 @@ class CatalogueEntryFactory(factory.django.DjangoModelFactory):
     layers = factory.RelatedFactoryList(
         layer_submissions.LayerSubmissionFactory,
         size=lambda: random.randint(1, 5),  # noqa: S311
+        factory_related_name="catalogue_entry",
+    )
+    publish_entry = factory.RelatedFactory(
+        publish_entries.PublishEntryFactory,
         factory_related_name="catalogue_entry",
     )
 

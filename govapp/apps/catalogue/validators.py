@@ -6,7 +6,7 @@ from django.core import exceptions
 from lxml import etree  # noqa: S410
 
 # Local
-from ... import gis
+from govapp import gis
 
 
 def validate_xml(value: str) -> None:
@@ -38,7 +38,7 @@ def validate_sld(value: str) -> None:
         ValidationError: Raised if the value is deemed invalid.
     """
     # Validate SLD with GeoServer
-    result = gis.geoserver.GeoServer().validate_style(value)
+    result = gis.geoserver.geoserver().validate_style(value)
 
     # Check
     if result:
