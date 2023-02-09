@@ -41,7 +41,6 @@ RUN pip install --upgrade pip
 # Install Python libs using pyproject.toml and poetry.lock
 FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
 WORKDIR /app
-ENV SETUPTOOLS_USE_DISTUTILS=stdlib
 ENV POETRY_VERSION=1.3.2
 RUN curl -sSL https://install.python-poetry.org | python -
 RUN ln -s /root/.local/bin/poetry /usr/bin/poetry
