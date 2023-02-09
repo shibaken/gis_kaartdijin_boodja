@@ -17,7 +17,7 @@ RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils libproj-dev gdal-bin python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent 
+RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent 
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
@@ -25,7 +25,12 @@ RUN apt-get install --no-install-recommends -y rsyslog
 RUN apt-get install --no-install-recommends -y software-properties-common 
 RUN add-apt-repository ppa:deadsnakes/ppa -y
 RUN apt update
-RUN apt-get install --no-install-recommends -y  python3.11
+RUN apt-get install --no-install-recommends -y  python3.10
+
+# Install GDAL
+RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+RUN apt update
+RUN apt-get install --no-install-recommends -y gdal-bin python3-gdal
 
 RUN update-ca-certificates
 # install node 18
@@ -33,17 +38,18 @@ RUN touch install_node.sh
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x -o install_node.sh
 RUN chmod +x install_node.sh && ./install_node.sh
 RUN apt-get install -y nodejs
-RUN ln -s /usr/bin/python3.11 /usr/bin/python
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
 RUN pip install --upgrade pip
 
 # Install Python libs using pyproject.toml and poetry.lock
 FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
 WORKDIR /app
-ENV POETRY_VERSION=1.2.1
-RUN pip install "poetry==$POETRY_VERSION"
+ENV POETRY_VERSION=1.3.2
+RUN curl -sSL https://install.python-poetry.org | python -
+RUN ln -s /root/.local/bin/poetry /usr/bin/poetry
 RUN poetry config virtualenvs.create false
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --only main --no-interaction --no-ansi
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
 # Install the project (ensure that frontend projects have been built prior to this step).
