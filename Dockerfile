@@ -23,6 +23,9 @@ RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
 RUN apt-get install --no-install-recommends -y rsyslog
 RUN apt-get install --no-install-recommends -y software-properties-common 
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt update
+RUN apt-get install --no-install-recommends -y  python3.10
 
 # Install GDAL
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
@@ -35,7 +38,7 @@ RUN touch install_node.sh
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x -o install_node.sh
 RUN chmod +x install_node.sh && ./install_node.sh
 RUN apt-get install -y nodejs
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
 RUN pip install --upgrade pip
 
 # Install Python libs using pyproject.toml and poetry.lock
