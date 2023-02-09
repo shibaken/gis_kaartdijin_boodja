@@ -25,7 +25,7 @@ RUN apt-get install --no-install-recommends -y rsyslog
 RUN apt-get install --no-install-recommends -y software-properties-common 
 RUN add-apt-repository ppa:deadsnakes/ppa -y
 RUN apt update
-RUN apt-get install --no-install-recommends -y  python3.11
+RUN apt-get install --no-install-recommends -y python3.11 python3.11-dev python3.11-distutils
 
 RUN update-ca-certificates
 # install node 18
@@ -39,11 +39,13 @@ RUN pip install --upgrade pip
 # Install Python libs using pyproject.toml and poetry.lock
 FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
 WORKDIR /app
-ENV POETRY_VERSION=1.2.1
-RUN pip install "poetry==$POETRY_VERSION"
+ENV SETUPTOOLS_USE_DISTUTILS=stdlib
+ENV POETRY_VERSION=1.3.2
+RUN curl -sSL https://install.python-poetry.org | python -
+RUN ln -s /root/.local/bin/poetry /usr/bin/poetry
 RUN poetry config virtualenvs.create false
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --only main --no-interaction --no-ansi
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
 # Install the project (ensure that frontend projects have been built prior to this step).
