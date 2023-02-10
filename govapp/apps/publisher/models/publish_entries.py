@@ -46,7 +46,11 @@ class PublishEntry(mixins.RevisionedMixin):
     description = models.TextField()
     status = models.IntegerField(choices=PublishEntryStatus.choices, default=PublishEntryStatus.LOCKED)
     updated_at = models.DateTimeField(auto_now=True)
-    editors = models.ManyToManyField(UserModel, blank=True)
+    editors = models.ManyToManyField(
+        UserModel,
+        blank=True,
+        limit_choices_to=accounts_utils.limit_to_administrators,  # type: ignore[arg-type]
+    )
     assigned_to = models.ForeignKey(
         UserModel,
         default=None,
