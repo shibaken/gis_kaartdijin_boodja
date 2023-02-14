@@ -26,10 +26,13 @@ class GeoServerPublishChannelFilter(filters.FilterSet):
 
 class PublishEntryFilter(filters.FilterSet):
     """Publish Entry Filter."""
+    updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
+    order_by = filters.OrderingFilter(fields=("id", "name", "status", "updated_at", "assigned_to"))
+
     class Meta:
         """Publish Entry Filter Metadata."""
         model = models.publish_entries.PublishEntry
-        fields = ()
+        fields = {"id": ["in"], "assigned_to": ["exact"], "status": ["in", "exact"]}
 
 
 class EmailNotificationFilter(filters.FilterSet):
@@ -37,7 +40,7 @@ class EmailNotificationFilter(filters.FilterSet):
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
-        fields = ()
+        fields = {"id": ["in"]}
 
 
 class WorkspaceFilter(filters.FilterSet):
