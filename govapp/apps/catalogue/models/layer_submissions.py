@@ -26,7 +26,7 @@ class LayerSubmissionStatus(models.IntegerChoices):
 class LayerSubmission(mixins.RevisionedMixin):
     """Model for a Layer Submission."""
     name = models.TextField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     file = models.URLField()
     is_active = models.BooleanField()
     status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)

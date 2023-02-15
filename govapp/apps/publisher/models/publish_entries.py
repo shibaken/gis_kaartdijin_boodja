@@ -43,7 +43,7 @@ class PublishEntryStatus(models.IntegerChoices):
 class PublishEntry(mixins.RevisionedMixin):
     """Model for a Publish Entry."""
     name = models.TextField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     status = models.IntegerField(choices=PublishEntryStatus.choices, default=PublishEntryStatus.LOCKED)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(blank=True, null=True)

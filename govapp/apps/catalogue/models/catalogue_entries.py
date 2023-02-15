@@ -56,7 +56,7 @@ class CatalogueEntryStatus(models.IntegerChoices):
 class CatalogueEntry(mixins.RevisionedMixin):
     """Model for a Catalogue Entry."""
     name = models.TextField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     updated_at = models.DateTimeField(auto_now=True)
     editors = models.ManyToManyField(
