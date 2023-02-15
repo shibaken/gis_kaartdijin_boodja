@@ -219,8 +219,10 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 # Set Catalogue Entry to Pending
                 self.status = CatalogueEntryStatus.PENDING
 
-            # Publish Symbology
-            self.publish_entry.publish(symbology_only=True)
+            # Check for Publish Entry
+            if hasattr(self, "publish_entry"):
+                # Publish Symbology
+                self.publish_entry.publish(symbology_only=True)
 
             # Save the Catalogue Entry
             self.save()
