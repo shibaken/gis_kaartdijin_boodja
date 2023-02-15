@@ -219,7 +219,7 @@ class Absorber:
         # Check Layer Submission
         if success:
             # Check for Publish Entry
-            if hasattr(self, "publish_entry"):
+            if hasattr(catalogue_entry, "publish_entry"):
                 # Publish
                 catalogue_entry.publish_entry.publish()
 
