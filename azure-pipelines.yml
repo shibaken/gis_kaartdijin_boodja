@@ -31,4 +31,13 @@ stages:
               $(tagDate)
         containerRegistry: DockerHub
         repository: dbcawa/gis_kaartdijin_boodja
- 
+    - task: Docker@2
+      displayName: Dev Build image and Push
+      inputs:
+        command: buildAndPush
+        dockerfile: '$(Build.SourcesDirectory)/dockerdev/Dockerfile'
+        tags: | 
+              gis_kaartdijin_boodja_dev_latest
+              gis_kaartdijin_boodja_dev_$(tagDate)              
+        containerRegistry: DockerHub
+        repository: dbcawa/docker_app_dev    
