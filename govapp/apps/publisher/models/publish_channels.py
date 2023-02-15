@@ -9,6 +9,7 @@ import shutil
 # Third-Party
 from django import conf
 from django.db import models
+from django.utils import timezone
 import reversion
 
 # Local
@@ -47,6 +48,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
     name = models.TextField()
     description = models.TextField()
+    published_at = models.DateTimeField(blank=True, null=True)
     format = models.IntegerField(choices=CDDPPublishChannelFormat.choices)  # noqa: A003
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
@@ -98,6 +100,13 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 # Publish to Azure and Sharepoint
                 self.publish_azure()
                 self.publish_sharepoint()
+
+        # Update Published At
+        publish_time = timezone.now()
+        self.publish_entry.published_at = publish_time
+        self.publish_entry.save()
+        self.published_at = publish_time
+        self.save()
 
     def publish_azure(self) -> None:
         """Publishes the Catalogue Entry to Azure if applicable."""
@@ -187,6 +196,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     """Model for a GeoServer Publish Channel."""
     name = models.TextField()
     description = models.TextField()
+    published_at = models.DateTimeField(blank=True, null=True)
     mode = models.IntegerField(choices=GeoServerPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
     workspace = models.ForeignKey(
@@ -243,6 +253,13 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             case GeoServerPublishChannelMode.WMS_AND_WFS:
                 # Publish to GeoServer (WMS and WFS)
                 self.publish_geoserver_layer(wms=True, wfs=True)
+
+        # Update Published At
+        publish_time = timezone.now()
+        self.publish_entry.published_at = publish_time
+        self.publish_entry.save()
+        self.published_at = publish_time
+        self.save()
 
     def publish_geoserver_symbology(self) -> None:
         """Publishes the Symbology to GeoServer if applicable."""

@@ -13,7 +13,7 @@ class CDDPPublishChannelFilter(filters.FilterSet):
     class Meta:
         """CDDP Publish Channel Filter Metadata."""
         model = models.publish_channels.CDDPPublishChannel
-        fields = ()
+        fields = {"id": ["in"]}
 
 
 class GeoServerPublishChannelFilter(filters.FilterSet):
@@ -21,15 +21,19 @@ class GeoServerPublishChannelFilter(filters.FilterSet):
     class Meta:
         """GeoServer Publish Channel Filter Metadata."""
         model = models.publish_channels.GeoServerPublishChannel
-        fields = ()
+        fields = {"id": ["in"]}
 
 
 class PublishEntryFilter(filters.FilterSet):
     """Publish Entry Filter."""
+    updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
+    published = filters.IsoDateTimeFromToRangeFilter(field_name="published_at")
+    order_by = filters.OrderingFilter(fields=("id", "name", "status", "updated_at", "published_at", "assigned_to"))
+
     class Meta:
         """Publish Entry Filter Metadata."""
         model = models.publish_entries.PublishEntry
-        fields = ()
+        fields = {"id": ["in"], "assigned_to": ["exact"], "status": ["in", "exact"]}
 
 
 class EmailNotificationFilter(filters.FilterSet):
@@ -37,7 +41,7 @@ class EmailNotificationFilter(filters.FilterSet):
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
-        fields = ()
+        fields = {"id": ["in"]}
 
 
 class WorkspaceFilter(filters.FilterSet):

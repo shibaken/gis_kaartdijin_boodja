@@ -18,6 +18,7 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "published_at",
             "format",
             "mode",
             "frequency",
@@ -26,6 +27,7 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
+            "published_at",
             "publish_entry",
         )
 
@@ -38,6 +40,10 @@ class CDDPPublishChannelCreateSerializer(serializers.ModelSerializer):
         fields = CDDPPublishChannelSerializer.Meta.fields
         # No read only fields on this serializer
         # This allows the `create` action to specify a Publish Entry
+        read_only_fields = (
+            "id",
+            "published_at",
+        )
 
 
 class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
@@ -50,6 +56,7 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "published_at",
             "mode",
             "frequency",
             "workspace",
@@ -57,6 +64,7 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
+            "published_at",
             "publish_entry",
         )
 
@@ -69,3 +77,7 @@ class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
         fields = GeoServerPublishChannelSerializer.Meta.fields
         # No read only fields on this serializer
         # This allows the `create` action to specify a Publish Entry
+        read_only_fields = (
+            "id",
+            "published_at",
+        )

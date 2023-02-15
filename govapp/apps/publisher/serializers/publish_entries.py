@@ -18,12 +18,22 @@ class PublishEntrySerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "status",
+            "updated_at",
+            "published_at",
+            "editors",
+            "assigned_to",
             "catalogue_entry",
             "cddp_channel",
             "geoserver_channel",
         )
         read_only_fields = (
             "id",
+            "status",
+            "updated_at",
+            "published_at",
+            "editors",
+            "assigned_to",
             "catalogue_entry",
             "cddp_channel",
             "geoserver_channel",
@@ -40,6 +50,11 @@ class PublishEntryCreateSerializer(serializers.ModelSerializer):
         # This allows the `create` action to specify a Catalogue Entry
         read_only_fields = (
             "id",
+            "status",
+            "updated_at",
+            "published_at",
+            "editors",
+            "assigned_to",
             "cddp_channel",
             "geoserver_channel",
         )
