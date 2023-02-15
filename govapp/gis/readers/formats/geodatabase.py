@@ -5,9 +5,9 @@
 import pathlib
 
 # Local
-from .. import base
-from .. import types
-from ... import utils
+from govapp.gis import utils
+from govapp.gis.readers import base
+from govapp.gis.readers import types
 
 
 class GeoDatabaseReader(base.LayerReader):

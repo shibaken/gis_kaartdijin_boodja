@@ -5,7 +5,7 @@
 import factory
 
 # Local
-from govapp.apps.catalogue import models
+from govapp.apps.publisher import models
 
 
 class WorkspaceFactory(factory.django.DjangoModelFactory):

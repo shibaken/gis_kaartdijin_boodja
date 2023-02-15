@@ -1,20 +1,15 @@
 """Kaartdijin Boodja Catalogue Django Application Layer Submission Models."""
 
 
-# Standard
-import shutil
-
 # Third-Party
 from django.db import models
 import reversion
 
 # Local
-from . import catalogue_entries
-from . import layer_metadata
-from .. import mixins
-from .. import sharepoint
-from .. import utils
-from .... import gis
+from govapp.common import mixins
+from govapp.apps.catalogue import utils
+from govapp.apps.catalogue.models import catalogue_entries
+from govapp.apps.catalogue.models import layer_metadata
 
 # Typing
 from typing import cast
@@ -132,24 +127,3 @@ class LayerSubmission(mixins.RevisionedMixin):
             # Create New Inactive Layer Submission with Status DECLINED
             self.status = LayerSubmissionStatus.DECLINED
             self.save()
-
-    def publish(self) -> None:
-        """Publishes the layer to GeoServer."""
-        # Retrieve the File from Storage
-        filepath = sharepoint.SharepointStorage().get_from_url(url=self.file)
-
-        # Convert Layer to GeoPackage
-        geopackage = gis.conversions.to_geopackage(
-            filepath=filepath,
-            layer=self.catalogue_entry.metadata.name,
-        )
-
-        # Push Layer to GeoServer
-        gis.geoserver.GeoServer().upload_geopackage(
-            workspace=self.catalogue_entry.workspace.name,
-            layer=self.catalogue_entry.metadata.name,
-            filepath=geopackage,
-        )
-
-        # Delete local temporary copy of file if we can
-        shutil.rmtree(filepath.parent, ignore_errors=True)

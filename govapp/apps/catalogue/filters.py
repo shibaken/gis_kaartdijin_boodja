@@ -5,7 +5,7 @@
 from django_filters import rest_framework as filters
 
 # Local
-from . import models
+from govapp.apps.catalogue import models
 
 
 class CatalogueEntryFilter(filters.FilterSet):
@@ -87,11 +87,3 @@ class WebhookNotificationFilter(filters.FilterSet):
         """Webhook Notification Filter Metadata."""
         model = models.notifications.WebhookNotification
         fields = {"id": ["in"]}
-
-
-class WorkspaceFilter(filters.FilterSet):
-    """Workspace Filter."""
-    class Meta:
-        """Workspace Filter Metadata."""
-        model = models.workspaces.Workspace
-        fields = ()

@@ -6,10 +6,9 @@ from django.db import models
 import reversion
 
 # Local
-from . import catalogue_entries
-from .. import mixins
-from .. import validators
-from .... import gis
+from govapp.common import mixins
+from govapp.apps.catalogue import validators
+from govapp.apps.catalogue.models import catalogue_entries
 
 
 @reversion.register()
@@ -36,13 +35,3 @@ class LayerSymbology(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
-
-    def publish(self) -> None:
-        """Publishes the style to GeoServer."""
-        # Push Style to GeoServer
-        gis.geoserver.GeoServer().upload_style(
-            workspace=self.catalogue_entry.workspace.name,
-            layer=self.catalogue_entry.metadata.name,
-            name=self.name,
-            sld=self.sld,
-        )

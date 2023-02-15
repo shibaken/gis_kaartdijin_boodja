@@ -2,3 +2,4 @@
 
 from . import accounts
 from . import catalogue
+from . import publisher

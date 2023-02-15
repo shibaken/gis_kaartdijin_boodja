@@ -11,34 +11,31 @@ import urllib.parse
 from django import conf
 import shareplum
 
-# Typing
-from typing import Optional
-
 
 class SharepointStorage:
     """Sharepoint Storage Service."""
 
     def __init__(
         self,
-        url: Optional[str] = None,
-        root: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
+        url: str,
+        root: str,
+        username: str,
+        password: str,
     ) -> None:
         """Instantiates the Sharepoint Storage.
 
         Args:
-            url (Optional[str]): URL for the Sharepoint storage.
-            root (Optional[str]): Root list for the Sharepoint storage.
-            username (Optional[str]): Username for the Sharepoint storage.
-            password (Optional[str]): Password for the Sharepoint storage.
+            url (str): URL for the Sharepoint storage.
+            root (str): Root list for the Sharepoint storage.
+            username (str): Username for the Sharepoint storage.
+            password (str): Password for the Sharepoint storage.
         """
         # Instance Variables
         self.temp = tempfile.mkdtemp()
-        self.url = url or conf.settings.SHAREPOINT_URL
-        self.root = root or conf.settings.SHAREPOINT_LIST
-        self.username = username or conf.settings.SHAREPOINT_USERNAME
-        self.password = password or conf.settings.SHAREPOINT_PASSWORD
+        self.url = url
+        self.root = root
+        self.username = username
+        self.password = password
 
         # Sharepoint Connection
         auth_url = urllib.parse.urljoin(self.url, "/")  # Retrieves root URL of Sharepoint site
@@ -120,6 +117,21 @@ class SharepointStorage:
         relative_path = os.path.dirname(os.path.join(self.root, path))
         filename = os.path.basename(path)
 
+        # Recursively create directories if they don't exist
+        # The Sharepoint API can only create a directory one level deep if it
+        # doesn't already exist. However, the interface here presents no
+        # restrictions on the depth of the filepath to push. As such, we need
+        # to manually ensure each directory already exists by creating them.
+        # For example, given the relative path:
+        #   - "a/b/c/d"
+        # The following code will create the directories in order:
+        #   - "a"
+        #   - "a/b"
+        #   - "a/b/c"
+        #   - "a/b/c/d"
+        for directory in reversed(pathlib.Path(relative_path).parents[:-1]):
+            self.site.Folder(str(directory))
+
         # Upload File
         self.site.Folder(relative_path).upload_file(contents, filename)
 
@@ -138,3 +150,33 @@ class SharepointStorage:
 
         # Delete File
         self.site.Folder(relative_path).delete_file(filename)
+
+
+def sharepoint_input() -> SharepointStorage:
+    """Helper constructor to instantiate SharepointStorage (input).
+
+    Returns:
+        SharepointStorage: Configured SharepointStorage instance.
+    """
+    # Construct and Return
+    return SharepointStorage(
+        url=conf.settings.SHAREPOINT_INPUT_URL,
+        root=conf.settings.SHAREPOINT_INPUT_LIST,
+        username=conf.settings.SHAREPOINT_INPUT_USERNAME,
+        password=conf.settings.SHAREPOINT_INPUT_PASSWORD,
+    )
+
+
+def sharepoint_output() -> SharepointStorage:
+    """Helper constructor to instantiate SharepointStorage (output).
+
+    Returns:
+        SharepointStorage: Configured SharepointStorage instance.
+    """
+    # Construct and Return
+    return SharepointStorage(
+        url=conf.settings.SHAREPOINT_OUTPUT_URL,
+        root=conf.settings.SHAREPOINT_OUTPUT_LIST,
+        username=conf.settings.SHAREPOINT_OUTPUT_USERNAME,
+        password=conf.settings.SHAREPOINT_OUTPUT_PASSWORD,
+    )

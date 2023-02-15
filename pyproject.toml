@@ -5,7 +5,7 @@ description = "DBCA CDDP Catalogue and Publishing Django REST API"
 authors = ["Gaia Resources <dev@gaiaresources.com.au>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 django = "^3.2.16"
 djangorestframework = "^3.14.0"
 python-decouple = "^3.6"
@@ -18,7 +18,7 @@ webtemplate_dbca = {git = "https://github.com/dbca-wa/webtemplate2.git"}
 drf-spectacular = "^0.24.2"
 django-filter = "^22.1"
 python-dateutil = "^2.8.2"
-shareplum = "^0.5.1"
+shareplum = {git = "https://github.com/jasonrollins/shareplum.git", rev = "55d860b"}
 django-reversion = "^5.0.4"
 django-reversion-rest-framework = "^1.1.2"
 django-cron = "^0.6.0"
@@ -88,6 +88,7 @@ log_cli_level = "DEBUG"
 log_cli_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] (%(name)-11s): %(message)s"
 log_cli_date_format = "%Y%m%dT%H%M%S"
 DJANGO_SETTINGS_MODULE = "tests.settings"
+filterwarnings = ["ignore::DeprecationWarning:django.*:"]
 
 [tool.coverage.run]
 branch = false

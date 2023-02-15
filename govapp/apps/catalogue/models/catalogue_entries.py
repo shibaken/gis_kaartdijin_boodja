@@ -2,7 +2,6 @@
 
 
 # Third-Party
-from django import conf
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.db import models
@@ -10,24 +9,24 @@ from rest_framework import request
 import reversion
 
 # Local
-from . import custodians
-from . import workspaces
-from .. import notifications as notifications_utils
-from .. import mixins
-from .. import utils
-from ...accounts import utils as accounts_utils
+from govapp.common import mixins
+from govapp.apps.accounts import utils as accounts_utils
+from govapp.apps.catalogue import notifications as notifications_utils
+from govapp.apps.catalogue import utils
+from govapp.apps.catalogue.models import custodians
 
 # Typing
-from typing import TYPE_CHECKING, Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 
 # Type Checking
 if TYPE_CHECKING:
-    from . import layer_attributes
-    from . import layer_metadata
-    from . import layer_submissions
-    from . import layer_subscriptions
-    from . import layer_symbology
-    from . import notifications
+    from govapp.apps.catalogue.models import layer_attributes
+    from govapp.apps.catalogue.models import layer_metadata
+    from govapp.apps.catalogue.models import layer_submissions
+    from govapp.apps.catalogue.models import layer_subscriptions
+    from govapp.apps.catalogue.models import layer_symbology
+    from govapp.apps.catalogue.models import notifications
+    from govapp.apps.publisher.models import publish_entries
 
 
 # Shortcuts
@@ -51,6 +50,7 @@ class CatalogueEntryStatus(models.IntegerChoices):
         "symbology",
         "email_notifications",
         "webhook_notifications",
+        "publish_entry",
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
@@ -59,7 +59,11 @@ class CatalogueEntry(mixins.RevisionedMixin):
     description = models.TextField()
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     updated_at = models.DateTimeField(auto_now=True)
-    editors = models.ManyToManyField(UserModel, blank=True)
+    editors = models.ManyToManyField(
+        UserModel,
+        blank=True,
+        limit_choices_to=accounts_utils.limit_to_catalogue_editors,  # type: ignore[arg-type]
+    )
     custodian = models.ForeignKey(
         custodians.Custodian,
         default=None,
@@ -76,12 +80,6 @@ class CatalogueEntry(mixins.RevisionedMixin):
         related_name="assigned",
         on_delete=models.SET_NULL,
     )
-    workspace = models.ForeignKey(
-        workspaces.Workspace,
-        default=conf.settings.GEOSERVER_DEFAULT_WORKSPACE_ID,
-        related_name="catalogue_entries",
-        on_delete=models.PROTECT,
-    )
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.
@@ -92,6 +90,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     symbology: "layer_symbology.LayerSymbology"
     email_notifications: "models.Manager[notifications.EmailNotification]"
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
+    publish_entry: "publish_entries.PublishEntry"
 
     class Meta:
         """Catalogue Entry Model Metadata."""
@@ -220,8 +219,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 # Set Catalogue Entry to Pending
                 self.status = CatalogueEntryStatus.PENDING
 
-            # Publish the Symbology
-            self.symbology.publish()
+            # Publish Symbology
+            self.publish_entry.publish(symbology_only=True)
 
             # Save the Catalogue Entry
             self.save()

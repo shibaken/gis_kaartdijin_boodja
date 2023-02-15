@@ -5,7 +5,7 @@
 from rest_framework import serializers
 
 # Local
-from .. import models
+from govapp.apps.catalogue import models
 
 
 class CatalogueEntrySerializer(serializers.ModelSerializer):
@@ -24,7 +24,6 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "editors",
             "custodian",
             "assigned_to",
-            "workspace",
             "subscription",
             "active_layer",
             "layers",
@@ -33,6 +32,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "attributes",
             "metadata",
             "symbology",
+            "publish_entry",
         )
         read_only_fields = (
             "id",
@@ -48,4 +48,5 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "attributes",
             "metadata",
             "symbology",
+            "publish_entry",
         )

@@ -5,6 +5,7 @@
 from django import conf
 from django.contrib import auth
 from django.contrib.auth import models
+from django.db.models import query
 
 # Typing
 from typing import Iterable, Union
@@ -68,3 +69,23 @@ def is_catalogue_editor(user: Union[models.User, models.AnonymousUser]) -> bool:
         not isinstance(user, models.AnonymousUser)  # Must be logged in
         and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
     )
+
+
+def limit_to_administrators() -> query.Q:
+    """Limits a fields choice to only objects in the Administrators group.
+
+    Returns:
+        query.Q: Query to limit object to those in the Administrators group.
+    """
+    # Construct Query and Return
+    return query.Q(groups__pk=conf.settings.GROUP_ADMINISTRATOR_ID)
+
+
+def limit_to_catalogue_editors() -> query.Q:
+    """Limits a fields choice to only objects in the Catalogue Editors group.
+
+    Returns:
+        query.Q: Query to limit object to those in the Catalogue Editors group.
+    """
+    # Construct Query and Return
+    return query.Q(groups__pk=conf.settings.GROUP_CATALOGUE_EDITOR_ID)

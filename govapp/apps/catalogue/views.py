@@ -12,14 +12,14 @@ from rest_framework import status
 from rest_framework import viewsets
 
 # Local
-from . import filters
-from . import mixins
-from . import models
-from . import permissions
-from . import serializers
-from ..accounts import permissions as accounts_permissions
-from ..logs import mixins as logs_mixins
-from ..logs import utils as logs_utils
+from govapp.common import mixins
+from govapp.apps.accounts import permissions as accounts_permissions
+from govapp.apps.catalogue import filters
+from govapp.apps.catalogue import models
+from govapp.apps.catalogue import permissions
+from govapp.apps.catalogue import serializers
+from govapp.apps.logs import mixins as logs_mixins
+from govapp.apps.logs import utils as logs_utils
 
 # Typing
 from typing import cast
@@ -211,37 +211,6 @@ class CatalogueEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
-    @decorators.action(detail=True, methods=["POST"])
-    def geoserver(self, request: request.Request, pk: str) -> response.Response:
-        """Re-pushes the Catalogue Entry to GeoServer.
-
-        Args:
-            request (request.Request): API request.
-            pk (str): Primary key of the Catalogue Entry.
-
-        Returns:
-            response.Response: Empty response confirming success.
-        """
-        # Retrieve Catalogue Entry
-        # Help `mypy` by casting the resulting object to a Catalogue Entry
-        catalogue_entry = self.get_object()
-        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
-
-        # Publish to GeoServer!
-        catalogue_entry.symbology.publish()
-        catalogue_entry.active_layer.publish()
-
-        # Add Action Log Entry
-        logs_utils.add_to_actions_log(
-            user=request.user,
-            model=catalogue_entry,
-            action="Catalogue entry was re-published to GeoServer"
-        )
-
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
-
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
@@ -365,12 +334,3 @@ class WebhookNotificationViewSet(
     filterset_class = filters.WebhookNotificationFilter
     search_fields = ["name", "url"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
-
-
-@drf_utils.extend_schema(tags=["Catalogue - Workspaces"])
-class WorkspaceViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
-    """Workspace View Set."""
-    queryset = models.workspaces.Workspace.objects.all()
-    serializer_class = serializers.workspaces.WorkspaceSerializer
-    filterset_class = filters.WorkspaceFilter
-    search_fields = ["name"]

@@ -5,7 +5,7 @@
 import pathlib
 
 # Local
-from .. import base
+from govapp.gis.readers import base
 
 
 class GeoJSONReader(base.LayerReader):

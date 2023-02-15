@@ -11,7 +11,7 @@ from rest_framework import serializers
 from rest_framework import viewsets
 
 # Local
-from govapp.apps.catalogue import mixins
+from govapp.common import mixins
 
 
 # Shortcuts

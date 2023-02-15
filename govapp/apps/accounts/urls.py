@@ -5,7 +5,7 @@
 from rest_framework import routers
 
 # Local
-from . import views
+from govapp.apps.accounts import views
 
 
 # Router

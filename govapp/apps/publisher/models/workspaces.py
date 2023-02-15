@@ -1,4 +1,4 @@
-"""Kaartdijin Boodja Catalogue Django Application Workspace Models."""
+"""Kaartdijin Boodja Publisher Django Application Workspace Models."""
 
 
 # Third-Party
@@ -6,7 +6,7 @@ from django.db import models
 import reversion
 
 # Local
-from .. import mixins
+from govapp.common import mixins
 
 
 @reversion.register()

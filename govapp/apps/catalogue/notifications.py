@@ -5,18 +5,18 @@
 import shutil
 
 # Local
-from . import emails
-from . import sharepoint
-from . import webhooks
-from ..accounts import utils
-from ... import gis
+from govapp import gis
+from govapp.common import sharepoint
+from govapp.apps.accounts import utils
+from govapp.apps.catalogue import emails
+from govapp.apps.catalogue import webhooks
 
 # Typing
 from typing import TYPE_CHECKING
 
 # Type Checking
 if TYPE_CHECKING:
-    from .models import catalogue_entries
+    from govapp.apps.catalogue.models import catalogue_entries
 
 
 def file_absorb_failure(file: str) -> None:
@@ -61,7 +61,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     )
 
     # Retrieve the File from Storage
-    filepath = sharepoint.SharepointStorage().get_from_url(url=entry.active_layer.file)
+    filepath = sharepoint.sharepoint_input().get_from_url(url=entry.active_layer.file)
 
     # Convert Layer to GeoJSON
     geojson = gis.conversions.to_geojson(
