@@ -68,8 +68,8 @@ class PublishEntry(mixins.RevisionedMixin):
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.
-    cddp_channel: "publish_channels.CDDPPublishChannel"
-    geoserver_channel: "publish_channels.GeoServerPublishChannel"
+    cddp_channel: "Optional[publish_channels.CDDPPublishChannel]"
+    geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
     email_notifications: "models.Manager[notifications.EmailNotification]"
 
     class Meta:
@@ -136,7 +136,7 @@ class PublishEntry(mixins.RevisionedMixin):
         # Handle Errors
         try:
             # Publish!
-            self.cddp_channel.publish(symbology_only)
+            self.cddp_channel.publish(symbology_only)  # type: ignore[union-attr]
 
         except Exception as exc:
             # Log
@@ -169,7 +169,7 @@ class PublishEntry(mixins.RevisionedMixin):
         # Handle Errors
         try:
             # Publish!
-            self.geoserver_channel.publish(symbology_only)
+            self.geoserver_channel.publish(symbology_only)  # type: ignore[union-attr]
 
         except Exception as exc:
             # Log

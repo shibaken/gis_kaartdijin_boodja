@@ -218,8 +218,10 @@ class Absorber:
 
         # Check Layer Submission
         if success:
-            # Publish
-            catalogue_entry.publish_entry.publish()
+            # Check for Publish Entry
+            if hasattr(catalogue_entry, "publish_entry"):
+                # Publish
+                catalogue_entry.publish_entry.publish()  # type: ignore[union-attr]
 
             # Notify!
             notifications.catalogue_entry_update_success(catalogue_entry)
