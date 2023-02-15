@@ -2392,22 +2392,26 @@ idna = {version = "*", optional = true, markers = "extra == \"idna2008\""}
 idna2008 = ["idna"]
 
 [[package]]
-name = "shareplum"
-version = "0.5.1"
+name = "SharePlum"
+version = "0.5.2"
 description = "Python SharePoint Library"
 category = "main"
 optional = false
 python-versions = "*"
-files = [
-    {file = "SharePlum-0.5.1-py2.py3-none-any.whl", hash = "sha256:e7450aafeb84d529f8fba2cac7057ab393ad921c4596ac411cf1c84af1a48a68"},
-    {file = "SharePlum-0.5.1.tar.gz", hash = "sha256:07a45d48920450092e56c33846fe17768d4611dc83a7314ef0140e57dee52966"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 lxml = "*"
 requests = "*"
 requests-ntlm = "*"
 requests-toolbelt = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/jasonrollins/shareplum.git"
+reference = "55d860b"
+resolved_reference = "55d860b99cccc4bb86437d48df9b0e2d3a974769"
 
 [[package]]
 name = "six"
@@ -2661,4 +2665,4 @@ brotli = ["Brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e9f4d2f19fc90814610579f8a0ff2bbe1d8beaf904ae72f03b415442ac5f2e0a"
+content-hash = "7446562b3cdb85e592ce334332c6c1e62f333906c00c9a39587fa0b4889d0093"
