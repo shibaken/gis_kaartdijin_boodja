@@ -42,7 +42,7 @@
         <SortableHeader name="Submitted Date" column="submittedDate" :direction="sortDirection('submittedAt')"
                         alt-field="submittedAt" @sort="onSort"/>
         <SortableHeader name="Catalogue" column="catalogue" :direction="sortDirection('catalogue')"
-                        alt-field="name" @sort="onSort"/>
+                        alt-field="catalogue_entry__name" @sort="onSort"/>
         <SortableHeader name="Status" column="status" :direction="sortDirection('status')" @sort="onSort"/>
         <th>Action</th>
       </tr>

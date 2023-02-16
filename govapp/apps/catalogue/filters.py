@@ -55,6 +55,17 @@ class LayerSubmissionFilter(filters.FilterSet):
         ),
     )
 
+    # This hack here allows us to Order by both "name" and
+    # "catalogue_entry__name" even though they are now the same thing. This
+    # means the ordering is backwards compatible with the frontend. As in the
+    # backend `name` and `catalogue_entry__name` are now the same thing (i.e.,
+    # `name` is just a proxy through to `catalogue_entry__name`), the
+    # `filters.OrderingFilter` will not allow both to be supplied. However, we
+    # can manually add the `catalogue_entry__name` with the hack below.
+    order_by.param_map["catalogue_entry__name"] = "catalogue_entry__name"
+    order_by.extra["choices"].append(("catalogue_entry__name", "Catalogue Entry Name"))
+    order_by.extra["choices"].append(("-catalogue_entry__name", "Catalogue Entry Name (descending)"))
+
     class Meta:
         """Layer Submission Filter Metadata."""
         model = models.layer_submissions.LayerSubmission
