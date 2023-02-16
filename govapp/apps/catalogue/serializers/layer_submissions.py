@@ -24,3 +24,14 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "created_at",
             "catalogue_entry",
         )
+        read_only_fields = (
+            "id",
+            "name",
+            "description",
+            "file",
+            "is_active",
+            "status",
+            "submitted_at",
+            "created_at",
+            "catalogue_entry",
+        )

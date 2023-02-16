@@ -13,7 +13,6 @@ from govapp.apps.catalogue.models import catalogue_entries
 @reversion.register()
 class LayerMetadata(mixins.RevisionedMixin):
     """Model for a Layer Metadata."""
-    name = models.TextField()
     created_at = models.DateTimeField()
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
@@ -34,3 +33,13 @@ class LayerMetadata(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Catalogue Entry's name to this model.
+
+        Returns:
+            str: Name of the Catalogue Entry.
+        """
+        # Retrieve and Return
+        return self.catalogue_entry.name

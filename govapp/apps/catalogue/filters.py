@@ -46,7 +46,14 @@ class LayerMetadataFilter(filters.FilterSet):
 class LayerSubmissionFilter(filters.FilterSet):
     """Layer Submission Filter."""
     submitted = filters.IsoDateTimeFromToRangeFilter(field_name="submitted_at")
-    order_by = filters.OrderingFilter(fields=("id", "name", "status", "submitted_at", "catalogue_entry__name"))
+    order_by = filters.OrderingFilter(
+        fields=(
+            "id",
+            ("catalogue_entry__name", "name"),  # Proxy through the Catalogue Entry name to sort by
+            "status",
+            "submitted_at",
+        ),
+    )
 
     class Meta:
         """Layer Submission Filter Metadata."""
@@ -57,7 +64,15 @@ class LayerSubmissionFilter(filters.FilterSet):
 class LayerSubscriptionFilter(filters.FilterSet):
     """Layer Subscription Filter."""
     subscribed = filters.IsoDateTimeFromToRangeFilter(field_name="subscribed_at")
-    order_by = filters.OrderingFilter(fields=("id", "name", "url", "status", "subscribed_at"))
+    order_by = filters.OrderingFilter(
+        fields=(
+            "id",
+            ("catalogue_entry__name", "name"),  # Proxy through the Catalogue Entry name to sort by
+            "url",
+            "status",
+            "subscribed_at",
+        )
+    )
 
     class Meta:
         """Layer Subscription Filter Metadata."""

@@ -19,7 +19,6 @@ class LayerSubscriptionStatus(models.IntegerChoices):
 @reversion.register()
 class LayerSubscription(mixins.RevisionedMixin):
     """Model for a Layer Subscription."""
-    name = models.TextField()
     url = models.URLField()
     frequency = models.DurationField()
     status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
@@ -43,3 +42,13 @@ class LayerSubscription(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Catalogue Entry's name to this model.
+
+        Returns:
+            str: Name of the Catalogue Entry.
+        """
+        # Retrieve and Return
+        return self.catalogue_entry.name

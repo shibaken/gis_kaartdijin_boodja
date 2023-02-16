@@ -42,7 +42,6 @@ class PublishEntryStatus(models.IntegerChoices):
 @reversion.register()
 class PublishEntry(mixins.RevisionedMixin):
     """Model for a Publish Entry."""
-    name = models.TextField()
     description = models.TextField(blank=True)
     status = models.IntegerField(choices=PublishEntryStatus.choices, default=PublishEntryStatus.LOCKED)
     updated_at = models.DateTimeField(auto_now=True)
@@ -85,6 +84,16 @@ class PublishEntry(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Catalogue Entry's name to this model.
+
+        Returns:
+            str: Name of the Catalogue Entry.
+        """
+        # Retrieve and Return
+        return self.catalogue_entry.name
 
     @classmethod
     def from_request(cls, request: request.Request) -> Optional["PublishEntry"]:
