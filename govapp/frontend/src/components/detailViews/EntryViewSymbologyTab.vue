@@ -5,14 +5,14 @@
   import { relatedEntityProvider } from "../../providers/relatedEntityProvider";
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
   import FormTextarea from "../widgets/FormTextarea.vue";
-  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import { CatalogueDetailViewTabs, CatalogueTab, ViewMode, NavigationCatalogueEmits } from "../viewState.api";
   import WorkflowFooter from "../widgets/WorkflowFooter.vue";
 
   const props = defineProps<{
     entry: CatalogueEntry
   }>();
 
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   const symbology: Ref<Symbology | undefined> = ref();
@@ -31,9 +31,9 @@
       relatedEntityProvider.updateSymbology(editingSymbology.value.id, editingSymbology.value?.sld);
 
       if (exit) {
-        emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.List);
+        emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.List);
       } else {
-        emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, {
+        emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.View, {
           viewTab: CatalogueDetailViewTabs.Metadata,
           recordId: props.entry.id
         });

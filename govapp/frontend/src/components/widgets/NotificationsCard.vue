@@ -9,7 +9,7 @@
   import { Notification } from "../../providers/notificationProvider.api";
   import { storeToRefs } from "pinia";
   import { useModalStore } from "../../stores/ModalStore";
-  import { NavigationEmits } from "../viewState.api";
+  import { NavigationCatalogueEmits } from "../viewState.api";
   import { notificationProvider } from "../../providers/notificationProvider";
   import { NotificationRequestType } from "../../backend/backend.api";
   import { usePermissionsComposable } from "../../tools/permissionsComposable";
@@ -25,7 +25,7 @@
   const { showModal } = useModalStore();
   const { isLoggedInUserEditor, isLoggedInUserAdmin } = usePermissionsComposable();
 
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   async function onSave() {

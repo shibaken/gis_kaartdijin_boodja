@@ -9,6 +9,7 @@ export let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "name": "Catalogue Entry 1",
     "description": "This is the first example catalogue entry",
     "status": 1,
+    "created_at": "2022-10-11T12:44:15.562984Z",
     "updated_at": "2022-10-13T04:26:24.629841Z",
     "custodian": 1,
     "assigned_to": 1,
@@ -18,13 +19,15 @@ export let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "email_notifications": [1],
     "webhook_notifications": [1],
     "editors": [1, 2],
-    "workspace": 1
+    "workspace": 1,
+    "metadata": 1
   },
   {
     "id": 2,
     "name": "Catalogue Entry 2",
     "description": "This is the second example catalogue entry",
     "status": 2,
+    "created_at": "2022-10-11T12:44:15.562984Z",
     "updated_at": "2022-10-12T21:05:32.325153Z",
     "custodian": 2,
     "assigned_to": 3,
@@ -34,13 +37,15 @@ export let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "email_notifications": [2],
     "webhook_notifications": [2],
     "editors": [2, 3],
-    "workspace": 2
+    "workspace": 2,
+    "metadata": 2
   },
   {
     "id": 3,
     "name": "Catalogue Entry 3",
     "description": "This is the third example catalogue entry",
     "status": 3,
+    "created_at": "2022-10-11T12:44:15.562984Z",
     "updated_at": "2022-10-11T12:44:15.562984Z",
     "custodian": 2,
     "assigned_to": undefined,
@@ -50,7 +55,8 @@ export let DUMMY_CATALOGUE_ENTRIES: Array<RawCatalogueEntry> = [
     "email_notifications": [3],
     "webhook_notifications": [3],
     "editors": [3],
-    "workspace": 3
+    "workspace": 3,
+    "metadata": 3
   }
 ];
 

@@ -7,7 +7,7 @@
   import { usePermissionsComposable } from "../../tools/permissionsComposable";
   import { computed, onMounted, Ref, ref } from "vue";
   import { catalogueEntryProvider } from "../../providers/catalogueEntryProvider";
-  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import { CatalogueDetailViewTabs, CatalogueTab, ViewMode, NavigationCatalogueEmits } from "../viewState.api";
   import WorkflowFooter from "../widgets/WorkflowFooter.vue";
   import FormSelect from "../widgets/FormSelect.vue";
   import { userProvider } from "../../providers/userProvider";
@@ -17,7 +17,7 @@
     entry: CatalogueEntry
   }>();
 
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   const editingEntry: Ref<CatalogueEntry> = ref(props.entry);
@@ -26,9 +26,9 @@
     await catalogueEntryProvider.updateCatalogueEntry(editingEntry.value.id, editingEntry.value);
 
     if (exit) {
-      emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.List);
+      emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.List);
     } else {
-      emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, {
+      emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.View, {
         viewTab: CatalogueDetailViewTabs.AttributeTable,
         recordId: props.entry.id
       });

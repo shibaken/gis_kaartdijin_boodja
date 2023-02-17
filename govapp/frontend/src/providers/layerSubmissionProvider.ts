@@ -14,7 +14,7 @@ export class LayerSubmissionProvider {
   public async fetchLayerSubmission (id: number): Promise<LayerSubmission> {
     const rawSubmission = await this.backend.getLayerSubmission(id);
     const submissionStatuses = await statusProvider
-      .fetchStatuses<LayerSubmissionStatus>("layers/submissions");
+      .fetchStatuses<LayerSubmissionStatus>("catalogue/layers/submissions");
 
     const { id: entryId, name, workspace } = await catalogueEntryProvider.getOrFetch(rawSubmission.catalogue_entry);
 
@@ -51,7 +51,7 @@ export class LayerSubmissionProvider {
 
     const { previous, next, count, results } = await this.backend.getLayerSubmissions(rawFilter);
     const submissionStatuses = await statusProvider
-      .fetchStatuses<LayerSubmissionStatus>("layers/submissions");
+      .fetchStatuses<LayerSubmissionStatus>("catalogue/layers/submissions");
     const linkedEntries = await catalogueEntryProvider
       .getOrFetchList(results.map(entry => entry.catalogue_entry));
 

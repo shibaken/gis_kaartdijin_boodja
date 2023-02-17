@@ -2,7 +2,7 @@
   import DataTable from "./DataTable.vue";
   import { storeToRefs } from "pinia";
   import { onMounted, watch } from "vue";
-  import { NavigationEmits } from "../viewState.api";
+  import { NavigationCatalogueEmits } from "../viewState.api";
   import SortableHeader from "./SortableHeader.vue";
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
@@ -25,7 +25,7 @@
    * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   function setPage (pageNumber: number) {
