@@ -278,4 +278,34 @@ cron job is defined at `govapp/apps/catalogue/cron.py` in the `ScannerCronJob` c
 management command defined at `govapp/apps/catalogue/management/commands/scan.py`.
 
 ## Other Information
-...
+Listed below are any tips, tricks and idiosyncrasies that might be useful to know for this project.
+
+### Choices Mixin (`govapp.common.mixins.ChoicesMixin`)
+* This mixin dynamically (via introspecting its parent viewset) adds API endpoints for any field that has "choices"
+* This allows the frontend to retrieve the choices via the REST API, and removes the need for hard-coding them
+* This mixin was created to avoid a huge load of boiler-plate - manually implementing multiple actions for every field
+  containing a "choice"
+* For example, this mixin adds the `/catalogue/entries/status/` and `/catalogue/entries/status/{id}` endpoints to the
+  Catalogue Entries viewset.
+
+### Model "name" Fields
+* Due to the naming consolidation in [#95](https://github.com/dbca-wa/gis_kaartdijin_boodja/pull/95), many of the models
+  only have a *virtual* name field
+* That is, their "name" is just an `@property` that returns the related `catalogue_entry.name`
+* As it is not an *actual* field in the database, we are limited in where we can use it
+* Much of Django's automatic/inbuilt functionality relies on actual model fields
+* This means care must be taken within functionality such as filtering, searching, ordering, serialization, etc.
+
+### Azure Abstraction (`govapp.common.azure.AzureStorage`)
+* Due to technical constraints, we are unable to directly interface with an Azure API
+* As such, it was decided that the Azure abstraction will simply write to a local directory
+* This local directory (defined by `AZURE_OUTPUT_SYNC_DIRECTORY`) will be synced to Azure via an external process
+
+### Django `__init__.py` Re-Exports
+* Django detects certain parts of apps automatically
+* For example, it automatically detects each apps models from `models.py`
+* In this project, some of these files have been broken out into their own module directory
+* For example, rather than `govapp/apps/catalogue/models.py` we have `govapp/apps/catalogue/models/*.py`
+* This was done to improve readability, as the `models.py` can get quite large
+* As such each of the models *must* be re-exported in the `__init__.py` file or they will not be automatically detected
+* See `govapp/apps/catalogue/models/__init__.py` as an example
