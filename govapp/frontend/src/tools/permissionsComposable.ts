@@ -1,10 +1,11 @@
-import { computed, ComputedRef, ref } from "vue";
+import { computed, ComputedRef, Ref, ref } from "vue";
 import { Group, User } from "../backend/backend.api";
 import { userProvider } from "../providers/userProvider";
 import { CatalogueEntry } from "../providers/catalogueEntryProvider.api";
 import { catalogueEntryProvider } from "../providers/catalogueEntryProvider";
+import { PublishEntry } from "../providers/publisherProvider.api";
 
-export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
+export function usePermissionsComposable<T extends CatalogueEntry | PublishEntry>(entry?: T) {
   const groups = ref<Group[]>([]);
   const users = ref<User[]>([]);
   const me = ref<User>();
@@ -12,7 +13,7 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
   userProvider.users.then(result => users.value = result);
   userProvider.me.then(result => me.value = result);
 
-  const currentEntry = ref<CatalogueEntry | undefined>(catalogueEntry);
+  const currentEntry: Ref<T | undefined> = ref(entry) as Ref<T>;
   const isLoggedInUserAdmin: ComputedRef<boolean> = computed(() => {
     return !!me.value?.groups.find(group => group.name === "Administrators");
   });
@@ -27,7 +28,7 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
     return !!user &&!!user.groups.find(group => group.name === "Administrators");
   }
 
-  function isEntryEditor (entry: CatalogueEntry, user: User | undefined = me.value) {
+  function isEntryEditor (entry: T, user: User | undefined = me.value) {
     return !!entry.editors.find(editor => editor.id === user?.id);
   }
 
@@ -125,12 +126,12 @@ export function usePermissionsComposable(catalogueEntry?: CatalogueEntry) {
     }
   }
   
-  function updateCurrentEntry (newEntry: CatalogueEntry | undefined) {
+  function updateCurrentEntry (newEntry: T | undefined) {
     currentEntry.value = newEntry;
   }
 
   function calledWithoutEntry (method: string) {
-    console.warn(`\`${method}\`: CatalogueEntry was not set in the permissions composable.`);
+    console.warn(`\`${method}\`: Entry was not set in the permissions composable.`);
   }
   
   return { currentEntry, hasLockPermissions, canLock, canUnlock, lockClicked, isEntryEditor, isCurrentEntryEditor, isAdmin, assignableUsers, assignUser, assignMe,

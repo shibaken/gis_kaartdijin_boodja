@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import { ref, watch } from "vue";
-  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import { CatalogueDetailViewTabs, CatalogueTab, ViewMode, NavigationCatalogueEmits } from "../viewState.api";
   import type { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
   import EntryViewDetailTab from "./EntryViewDetailTab.vue";
   import EntryViewAttributeTab from "./EntryViewAttributeTab.vue";
@@ -13,7 +13,7 @@
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
   const activeTab = ref<CatalogueDetailViewTabs>(CatalogueDetailViewTabs.Details);
   watch(props, () => activeTab.value = props.activeTab);
@@ -21,7 +21,7 @@
   function onTabClick (viewTab: CatalogueDetailViewTabs) {
     if (viewTab !== props.activeTab) {
       // props.catalogueEntry is never undefined but typescript doesn't register v-if null checks inside the template
-      emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, {
+      emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.View, {
         viewTab,
         recordId: props.catalogueEntry!.id
       });
@@ -48,7 +48,7 @@
       Metadata
     </a>
     <button class="btn btn-outline-secondary mb-1 mt-1 ms-auto"
-            @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.List)">
+            @click="emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.List)">
       Back
     </button>
   </nav>

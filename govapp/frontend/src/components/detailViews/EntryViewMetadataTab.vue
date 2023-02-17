@@ -3,7 +3,7 @@
   import Card from "../widgets/Card.vue";
   import { Metadata } from "../../providers/relatedEntityProvider.api";
   import { CatalogueEntry } from "../../providers/catalogueEntryProvider.api";
-  import { NavigationEmits } from "../viewState.api";
+  import { NavigationCatalogueEmits } from "../viewState.api";
   import { LayerSubmission } from "../../providers/layerSubmissionProvider.api";
   import { layerSubmissionProvider } from "../../providers/layerSubmissionProvider";
 
@@ -11,7 +11,7 @@
     entry: CatalogueEntry
   }>();
 
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   const metadata: Ref<Metadata | undefined> = ref();

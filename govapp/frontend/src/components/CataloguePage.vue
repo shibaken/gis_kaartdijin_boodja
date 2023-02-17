@@ -8,7 +8,7 @@
   import LayerSubmissionFilter from "./widgets/LayerSubmissionFilter.vue";
   import CatalogueEntryDetailView from "./detailViews/EntryDetailView.vue";
   import CommunicationsLogModal from "../components/modals/CommunicationsLogModal.vue";
-  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigateEmitsOptions, SubmissionDetailViewTabs,
+  import { CatalogueDetailViewTabs, CatalogueTab, ViewMode, CatalogueNavigateEmitsOptions, SubmissionDetailViewTabs,
     SubscriptionDetailViewTabs } from "./viewState.api";
   import Card from "./widgets/Card.vue";
   import Accordion from "./widgets/Accordion.vue";
@@ -35,7 +35,7 @@
   const modalStore = useModalStore();
 
   const selectedTab = ref<CatalogueTab>(CatalogueTab.CatalogueEntries);
-  const selectedView = ref<CatalogueView>(CatalogueView.List);
+  const selectedView = ref<ViewMode>(ViewMode.List);
   const selectedEntryDetailTab = ref<CatalogueDetailViewTabs>(CatalogueDetailViewTabs.Details)
   const selectedSubmissionDetailTab = ref<SubmissionDetailViewTabs>(SubmissionDetailViewTabs.Details)
   const selectedSubscriptionDetailTab = ref<SubscriptionDetailViewTabs>(SubscriptionDetailViewTabs.Details)
@@ -52,8 +52,8 @@
   const permissionsComposable = usePermissionsComposable(selectedViewEntry.value);
   const currentEntryView = computed(() => {
     return permissionsComposable.isLoggedInUserAdmin.value || permissionsComposable.isLoggedInUserEditor.value ?
-      CatalogueView.Edit :
-      CatalogueView.View;
+      ViewMode.Edit :
+      ViewMode.View;
   })
 
   watch(catalogueEntries, () => {
@@ -61,7 +61,7 @@
     permissionsComposable.updateCurrentEntry(selectedViewEntry.value);
   }, { deep: true });
 
-  async function navigate (tab: CatalogueTab, view: CatalogueView, options?: NavigateEmitsOptions) {
+  async function navigate (tab: CatalogueTab, view: ViewMode, options?: CatalogueNavigateEmitsOptions | undefined): Promise<void> {
     selectedView.value = view;
     selectedViewEntry.value = undefined;
     selectedViewSubmission.value = undefined;
@@ -104,29 +104,29 @@
 </script>
 
 <template>
-  <ul class="nav nav-pills mb-4" v-if="selectedView === CatalogueView.List">
+  <ul class="nav nav-pills mb-4" v-if="selectedView === ViewMode.List">
     <li class="nav-item">
       <button class="nav-link" aria-current="page" href="#"
               :class='{ active: selectedTab === CatalogueTab.CatalogueEntries }'
-              @click='navigate(CatalogueTab.CatalogueEntries, CatalogueView.List)'>Catalogue Entries</button>
+              @click='navigate(CatalogueTab.CatalogueEntries, ViewMode.List)'>Catalogue Entries</button>
     </li>
     <li class="nav-item">
       <button class="nav-link" href="#"
               :class='{ active: selectedTab === CatalogueTab.LayerSubmissions }'
-              @click='navigate(CatalogueTab.LayerSubmissions, CatalogueView.List)'>Layer Submissions</button>
+              @click='navigate(CatalogueTab.LayerSubmissions, ViewMode.List)'>Layer Submissions</button>
     </li>
     <li class="nav-item">
       <button class="nav-link" href="#" :class='{ active: selectedTab === CatalogueTab.LayerSubscriptions }'
-              @click='navigate(CatalogueTab.LayerSubscriptions, CatalogueView.List)'>Layer Subscriptions</button>
+              @click='navigate(CatalogueTab.LayerSubscriptions, ViewMode.List)'>Layer Subscriptions</button>
     </li>
   </ul>
 
   <div class="d-flex flex-row">
-    <div id="side-bar-wrapper" v-if="selectedView === CatalogueView.View">
+    <div id="side-bar-wrapper" v-if="selectedView === ViewMode.View">
       <side-bar-left :entry="selectedViewEntry"/>
     </div>
     <div class="w-100">
-      <card v-if="selectedView === CatalogueView.List">
+      <card v-if="selectedView === ViewMode.List">
         <template #header>
           <h4>{{ selectedTab }}</h4>
         </template>
@@ -152,15 +152,15 @@
         </template>
       </card>
       <catalogue-entry-detail-view
-        v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === CatalogueView.View || CatalogueView.Edit &&
+        v-if="selectedTab === CatalogueTab.CatalogueEntries && selectedView === ViewMode.View || ViewMode.Edit &&
         !!selectedViewEntry" :catalogue-entry="selectedViewEntry"
         :active-tab="selectedEntryDetailTab" @navigate="navigate"/>
       <submission-detail-view
-        v-if="selectedTab === CatalogueTab.LayerSubmissions && selectedView === CatalogueView.View &&
+        v-if="selectedTab === CatalogueTab.LayerSubmissions && selectedView === ViewMode.View &&
          !!selectedViewSubmission" :layer-submission="selectedViewSubmission"
         :active-tab="selectedSubmissionDetailTab" @navigate="navigate"/>
       <subscription-detail-view
-        v-if="selectedTab === CatalogueTab.LayerSubscriptions && selectedView === CatalogueView.View &&
+        v-if="selectedTab === CatalogueTab.LayerSubscriptions && selectedView === ViewMode.View &&
          !!selectedViewSubscription" :layer-subscription="selectedViewSubscription"
         :active-tab="selectedSubscriptionDetailTab" @navigate="navigate"/>
     </div>

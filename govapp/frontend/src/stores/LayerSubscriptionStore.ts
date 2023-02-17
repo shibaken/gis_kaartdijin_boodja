@@ -20,7 +20,7 @@ export type LayerSubscriptionStore = {
 }
 
 // Status shouldn't need to change so pass it as a static list
-export const subscriptionStatuses = statusProvider.fetchStatuses<LayerSubscriptionStatus>("layers/subscriptions");
+export const subscriptionStatuses = statusProvider.fetchStatuses<LayerSubscriptionStatus>("catalogue/layers/subscriptions");
 
 export const useLayerSubscriptionStore = defineStore("layerSubscription", () => {
   const layerSubscriptions: Ref<Array<LayerSubscription>> = ref([]);

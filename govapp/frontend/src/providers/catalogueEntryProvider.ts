@@ -20,7 +20,7 @@ export class CatalogueEntryProvider {
    * Usage of stores can only occur after store has been created and application mounted.
    */
   public init () {
-    statusProvider.fetchStatuses<CatalogueEntryStatus>("entries")
+    statusProvider.fetchStatuses<CatalogueEntryStatus>("catalogue/entries")
       .then(statuses => useCatalogueEntryStore().entryStatuses = statuses);
     catalogueEntryProvider.fetchWorkspaces()
       .then(workspaces => useCatalogueEntryStore().workspaces = workspaces);
@@ -81,14 +81,29 @@ export class CatalogueEntryProvider {
   }
 
   public async getOrFetch (id: number): Promise<CatalogueEntry> {
-    const storeMatch = useCatalogueEntryStore().catalogueEntries.find(entry => entry.id === id);
-    return storeMatch ? Promise.resolve(storeMatch) : this.fetchCatalogueEntry(id);
+    const entryStore = useCatalogueEntryStore();
+    let entry = entryStore.catalogueEntriesCache.find(entry => entry.id === id);
+    if (entry) {
+      return Promise.resolve(entry);
+    } else {
+      const fetchedEntry = this.fetchCatalogueEntry(id);
+
+      if (!fetchedEntry) {
+        throw new Error(`No catalogue entry found for id: ${id}`);
+      }
+
+      useCatalogueEntryStore().$patch({
+        catalogueEntries: [...entryStore.catalogueEntriesCache, await fetchedEntry]
+      });
+
+      return fetchedEntry;
+    }
   }
 
   public async getOrFetchList (ids: Array<number>): Promise<CatalogueEntry[]> {
-    const extantRecords: Array<CatalogueEntry> = Array.from(useCatalogueEntryStore().catalogueEntries);
+    const entryStore = useCatalogueEntryStore();
+    const extantRecords: Array<CatalogueEntry> = Array.from(useCatalogueEntryStore().catalogueEntriesCache);
     const recordsToFetch: Array<number> = [];
-
     extantRecords.forEach(record => {
       if (ids.indexOf(record.id) >= 0) {
         extantRecords.push(record);
@@ -100,6 +115,8 @@ export class CatalogueEntryProvider {
     if (recordsToFetch.length > 0) {
       const filter: CatalogueEntryFilter = { ids: recordsToFetch };
       const recordsToFetchResponse = await this.fetchCatalogueEntries(filter);
+      // Add new records to cache
+      entryStore.$patch({ catalogueEntries: entryStore.catalogueEntriesCache.concat(recordsToFetchResponse.results) });
       extantRecords.push(...recordsToFetchResponse.results);
     }
 
@@ -115,8 +132,7 @@ export class CatalogueEntryProvider {
 
   public async fetchCatalogueEntries ({
     ids, custodian, status, assignedTo, updateFrom, updateTo, sortBy, limit, offset
-  }: CatalogueEntryFilter):
-      Promise<PaginatedRecord<CatalogueEntry>> {
+  }: CatalogueEntryFilter): Promise<PaginatedRecord<CatalogueEntry>> {
     let sortString = "";
     if (sortBy && sortBy.column) {
       if (sortBy.direction === SortDirection.Descending) {
