@@ -14,7 +14,6 @@ from govapp.apps.catalogue.models import catalogue_entries
 @reversion.register()
 class LayerSymbology(mixins.RevisionedMixin):
     """Model for a Layer Symbology."""
-    name = models.TextField()
     sld = models.TextField(validators=[validators.validate_xml, validators.validate_sld])
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
@@ -35,3 +34,13 @@ class LayerSymbology(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Catalogue Entry's name to this model.
+
+        Returns:
+            str: Name of the Catalogue Entry.
+        """
+        # Retrieve and Return
+        return self.catalogue_entry.name

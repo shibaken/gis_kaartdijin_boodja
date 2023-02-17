@@ -89,7 +89,7 @@ class Absorber:
 
         # Retrieve existing catalogue entry from the database
         # Here we specifically check the Layer Metadata name
-        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(metadata__name=metadata.name).first()
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()
 
         # Check existing catalogue entry
         if not catalogue_entry:
@@ -133,7 +133,6 @@ class Absorber:
 
         # Create Layer Submission
         models.layer_submissions.LayerSubmission.objects.create(
-            name=metadata.name,
             description=metadata.description,
             file=archive,
             is_active=True,  # Active!
@@ -144,7 +143,6 @@ class Absorber:
 
         # Create Layer Metadata
         models.layer_metadata.LayerMetadata.objects.create(
-            name=metadata.name,
             created_at=metadata.created_at,
             catalogue_entry=catalogue_entry,
         )
@@ -161,7 +159,6 @@ class Absorber:
 
         # Create Layer Symbology
         models.layer_symbology.LayerSymbology.objects.create(
-            name=symbology.name,
             sld=symbology.sld,
             catalogue_entry=catalogue_entry,
         )
@@ -201,7 +198,6 @@ class Absorber:
 
         # Create New Layer Submission
         layer_submission = models.layer_submissions.LayerSubmission.objects.create(
-            name=metadata.name,
             description=metadata.description,
             file=archive,
             is_active=False,  # Starts out Inactive

@@ -46,7 +46,6 @@ class CDDPPublishChannelFormat(models.IntegerChoices):
 @reversion.register()
 class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
-    name = models.TextField()
     description = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
     format = models.IntegerField(choices=CDDPPublishChannelFormat.choices)  # noqa: A003
@@ -72,6 +71,16 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Publish Entry's name to this model.
+
+        Returns:
+            str: Name of the Publish Entry.
+        """
+        # Retrieve and Return
+        return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
@@ -194,7 +203,6 @@ class GeoServerPublishChannelMode(models.IntegerChoices):
 @reversion.register()
 class GeoServerPublishChannel(mixins.RevisionedMixin):
     """Model for a GeoServer Publish Channel."""
-    name = models.TextField()
     description = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
     mode = models.IntegerField(choices=GeoServerPublishChannelMode.choices)
@@ -223,6 +231,16 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Publish Entry's name to this model.
+
+        Returns:
+            str: Name of the Publish Entry.
+        """
+        # Retrieve and Return
+        return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
