@@ -7,7 +7,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('catalogue', '0013_limit_editors_choices'),
+        ('catalogue', '0015_remove_names'),
     ]
 
     operations = [
