@@ -39,6 +39,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "id",
             "name",
             "status",
+            "created_at",
             "updated_at",
             "editors",
             "assigned_to",
