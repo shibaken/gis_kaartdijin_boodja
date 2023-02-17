@@ -151,7 +151,7 @@ Each of these directories is elaborated on below:
 * Provides utility classess for handling permissions on RESTAPI endpoints
 
 **`govapp/apps/catalogue`**
-* Main application within the project
+* One of the main applications within the project
 * Provides models, serializers, filters, permissions and REST API endpoints for interacting with the catalogue
 * Provides cron jobs and functionality for scanning and absorbing GIS files from Sharepoint
 
@@ -202,52 +202,60 @@ Each of these directories is elaborated on below:
 * Standard `django` migrations for the `logs` models
 
 **`govapp/apps/publisher`**
-* ...
+* One of the main applications within the project
+* Provides models, serializers, filters, permissions and REST API endpoints for interacting with the publisher
 
 **`govapp/apps/publisher/migrations`**
-* ...
+* Standard `django` migrations for the `publisher` models
 
 **`govapp/apps/publisher/models`**
-* ...
+* Provides the models for the `publisher` app
+* Each model is defined within its own file for readability:
+  - `notifications`
+  - `publish_channels`
+  - `publish_entries`
+  - `workspaces`
 
 **`govapp/apps/publisher/serializers`**
-* ...
+* Provides the serializers for the models outlined above
 
 **`govapp/apps/publisher/templates`**
-* ...
+* Provides email templates for the `publisher` email notifications
 
 **`govapp/apps/swagger`**
-* ...
+* Provides automatic OpenAPI documentation and Swagger UI
+* Go to `/api/docs` to see interactive fully documented REST API
 
 **`govapp/common`**
-* ...
+* Provides common functionality among all of the applications
+* For example:
+  - Azure abstraction (now just moving files to a dircetory)
+  - Sharepoint abstraction
+  - Utility mixins (e.g., `django-reversion`, automatic choices API endpoints, multiple serializer endpoints)
+  - Other common utility functions
 
 **`govapp/gis`**
-* ...
+* Provides all GIS functionality, including interactions with `GDAL` and `ogr2ogr`
+* Provides compression utilities (compressing and decompressing multi-file archives)
+* Provides utlities to convert between GIS file types (e.g., `gpkg`, `shp`, `gdb`) using `ogr2ogr`
+* Provides GeoServer API abstraction
 
 **`govapp/gis/readers`**
-* ...
+* Provides base file reading functionality for GIS files
+* Defines interface to read *attributes*, *metadata* and *symbology* from *ANY* GIS file type supported by GDAL
+* This was adapted from `ogrinfo` source code
+* See: https://github.com/OSGeo/gdal/blob/master/swig/python/gdal-utils/osgeo_utils/samples/ogrinfo.py
 
 **`govapp/gis/readers/formats`**
-* ...
+* Provides format specific readers implementing the interface defined above
+* Currently supported:
+  - `geodatabase`
+  - `geojson`
+  - `geopackage`
+  - `shapefile`
 
 **`govapp/templates`**
-* ...
-
-**`govapp/templates/govapp`**
-* ...
-
-**`govapp/templates/registration`**
-* ...
-
-**`govapp/templates/webtemplate_dbca`**
-* ...
-
-**`govapp/templates/webtemplate_dbca/includes`**
-* ...
-
-**`govapp/templatetags`**
-* ...
+* Part of the DBCA template
 
 ## Crons
 The Cron jobs in this project are managed by `django-cron`. The `django-cron` settings can be found within the
