@@ -37,6 +37,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
+            "name",
             "status",
             "updated_at",
             "editors",

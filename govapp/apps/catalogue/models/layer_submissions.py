@@ -25,8 +25,7 @@ class LayerSubmissionStatus(models.IntegerChoices):
 @reversion.register()
 class LayerSubmission(mixins.RevisionedMixin):
     """Model for a Layer Submission."""
-    name = models.TextField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     file = models.URLField()
     is_active = models.BooleanField()
     status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)
@@ -52,6 +51,16 @@ class LayerSubmission(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Catalogue Entry's name to this model.
+
+        Returns:
+            str: Name of the Catalogue Entry.
+        """
+        # Retrieve and Return
+        return self.catalogue_entry.name
 
     def is_declined(self) -> bool:
         """Determines whether the Layer Submission is declined.

@@ -3,7 +3,6 @@
         "model": "catalogue.LayerSubscription",
         "pk": 1,
         "fields": {
-            "name": "Layer Subscription 1",
             "url": "https://www.abc.net.au/",
             "frequency": "1 11:11:11",
             "status": 1,
@@ -15,7 +14,6 @@
         "model": "catalogue.LayerSubscription",
         "pk": 2,
         "fields": {
-            "name": "Layer Subscription 2",
             "url": "https://www.sbs.com.au/",
             "frequency": "2 22:22:22",
             "status": 2,
@@ -27,7 +25,6 @@
         "model": "catalogue.LayerSubscription",
         "pk": 3,
         "fields": {
-            "name": "Layer Subscription 3",
             "url": "https://www.nit.com.au/",
             "frequency": "3 33:33:33",
             "status": 3,

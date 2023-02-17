@@ -237,7 +237,7 @@ class LayerAttributeViewSet(
     serializer_class = serializers.layer_attributes.LayerAttributeSerializer
     serializer_classes = {"create": serializers.layer_attributes.LayerAttributeCreateSerializer}
     filterset_class = filters.LayerAttributeFilter
-    search_fields = ["name", "type"]
+    search_fields = ["name", "type", "catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -253,7 +253,7 @@ class LayerMetadataViewSet(
     queryset = models.layer_metadata.LayerMetadata.objects.all()
     serializer_class = serializers.layer_metadata.LayerMetadataSerializer
     filterset_class = filters.LayerMetadataFilter
-    search_fields = ["name"]
+    search_fields = ["catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
@@ -268,7 +268,7 @@ class LayerSubmissionViewSet(
     queryset = models.layer_submissions.LayerSubmission.objects.all()
     serializer_class = serializers.layer_submissions.LayerSubmissionSerializer
     filterset_class = filters.LayerSubmissionFilter
-    search_fields = ["name", "description", "catalogue_entry__name"]
+    search_fields = ["description", "catalogue_entry__name"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
@@ -277,7 +277,7 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSe
     queryset = models.layer_subscriptions.LayerSubscription.objects.all()
     serializer_class = serializers.layer_subscriptions.LayerSubscriptionSerializer
     filterset_class = filters.LayerSubscriptionFilter
-    search_fields = ["name"]
+    search_fields = ["catalogue_entry__name"]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
@@ -292,7 +292,7 @@ class LayerSymbologyViewSet(
     queryset = models.layer_symbology.LayerSymbology.objects.all()
     serializer_class = serializers.layer_symbology.LayerSymbologySerializer
     filterset_class = filters.LayerSymbologyFilter
-    search_fields = ["name"]
+    search_fields = ["catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 

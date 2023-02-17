@@ -16,7 +16,6 @@ from tests.factories.publisher import notifications
 
 class PublishEntryFactory(factory.django.DjangoModelFactory):
     """Factory for a Publish Entry."""
-    name = factory.Sequence(lambda n: f"Publish Entry {n + 1}")
     description = factory.Faker("paragraph")
     status = factory.fuzzy.FuzzyChoice(models.publish_entries.PublishEntryStatus)
     assigned_to = factory.SubFactory(accounts.users.UserFactory)
