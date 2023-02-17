@@ -9,6 +9,7 @@ database. The backend uses Poetry to manage its dependencies.
 * [Development](#development)
   + [Requirements](#requirements)
   + [Development Environment](#development-environment)
+  + [GeoServer](#geoserver)
   + [Linting](#linting)
   + [Type-Checking](#type-checking)
   + [Unit-Testing](#unit-testing)
@@ -57,6 +58,13 @@ $ gdal-config --version
 # Install Python GDAL Manually
 $ pip install gdal==`gdal-config --version`
 ```
+
+### GeoServer
+A development instance of GeoServer can be quickly spun-up using `docker-compose`:
+```shell
+$ docker-compose up
+```
+See `docker-compose.yml` for more details.
 
 ### Linting
 To run the linting process:
