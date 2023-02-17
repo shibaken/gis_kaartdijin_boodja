@@ -4,6 +4,26 @@ The backend of Kaartdijin Boodja is a [Python](https://www.python.org/) [Django]
 using [Django REST Framework](https://www.django-rest-framework.org/) backed by a [PostgreSQL](https://www.postgresql.org/)
 database. The backend uses Poetry to manage its dependencies.
 
+## Table of Contents
+* [Overview](#overview)
+* [Development](#development)
+  + [Requirements](#requirements)
+  + [Development Environment](#development-environment)
+  + [Linting](#linting)
+  + [Type-Checking](#type-checking)
+  + [Unit-Testing](#unit-testing)
+  + [Development Server](#development-server)
+  + [Management Commands](#management-commands)
+* [Configuration](#configuration)
+* [Structure](#structure)
+* [Crons](#crons)
+  + [Scanner](#scanner)
+* [Other Information](#other-information)
+  + [Choices Mixin (`govapp.common.mixins.ChoicesMixin`)](#choices-mixin---govappcommonmixinschoicesmixin--)
+  + [Model "name" Fields](#model--name--fields)
+  + [Azure Abstraction (`govapp.common.azure.AzureStorage`)](#azure-abstraction---govappcommonazureazurestorage--)
+  + [Django `__init__.py` Re-Exports](#django----init--py--re-exports)
+
 ## Development
 ### Requirements
 * [Python 3.10](https://www.python.org/downloads/release/python-3100/)
