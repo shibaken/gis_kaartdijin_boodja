@@ -10,7 +10,7 @@ export enum CatalogueDetailViewTabs {
   Metadata = "Metadata"
 }
 
-export enum CatalogueView {
+export enum ViewMode {
   List = "List",
   View = "View",
   Edit = "Edit"
@@ -26,19 +26,42 @@ export enum SubscriptionDetailViewTabs {
   RelatedItems = "Related Items"
 }
 
-export type NavigateEmitsOptions = {
+export type CatalogueNavigateEmitsOptions = {
     viewTab?: CatalogueDetailViewTabs | SubmissionDetailViewTabs | SubscriptionDetailViewTabs,
     recordId: number
 }
-export type NavigationEmits = (
+
+export type NavigationCatalogueEmits = (
   e: "navigate",
   tab: CatalogueTab,
-  view: CatalogueView,
-  options?: NavigateEmitsOptions
+  view: ViewMode,
+  options?: CatalogueNavigateEmitsOptions
+) => void;
+
+export type NavigationPublishEmits = (
+  e: "navigate",
+  tab: PublishTab,
+  view: ViewMode,
+  options?: PublishNavigateEmitsOptions
 ) => void;
 
 export enum SortDirection {
   Ascending = "ascending",
   Descending = "descending",
   None = "none"
+}
+
+// Publish
+
+export enum PublishTab {
+  PublishEntries = "Publish Entries"
+}
+
+export enum PublishDetailViewTabs {
+  Details = "Details"
+}
+
+export type PublishNavigateEmitsOptions = {
+  viewTab?: PublishDetailViewTabs,
+  recordId: number
 }

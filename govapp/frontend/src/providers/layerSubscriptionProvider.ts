@@ -15,7 +15,7 @@ export class LayerSubscriptionProvider {
 
   public async fetchLayerSubscription (id: number): Promise<LayerSubscription> {
     const rawSubscription = await this.backend.getLayerSubscription(id);
-    const subscriptionStatuses = await this.statusProvider.fetchStatuses<LayerSubscriptionStatus>("layers/subscriptions");
+    const subscriptionStatuses = await this.statusProvider.fetchStatuses<LayerSubscriptionStatus>("catalogue/layers/subscriptions");
     const linkedEntry = await catalogueEntryProvider.getOrFetch(rawSubscription.catalogue_entry);
 
     const layerSubscription = {
@@ -52,7 +52,7 @@ export class LayerSubscriptionProvider {
     } as RawLayerSubscriptionFilter;
 
     const { previous, next, count, results } = await this.backend.getLayerSubscriptions(rawFilter);
-    const subscriptionStatuses = await this.statusProvider.fetchStatuses("layers/subscriptions");
+    const subscriptionStatuses = await this.statusProvider.fetchStatuses("catalogue/layers/subscriptions");
     const linkedCatalogueEntries = await catalogueEntryProvider
       .getOrFetchList(results.map(entry => entry.catalogue_entry));
     const layerSubscriptions = results.map(rawSubscription => {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import { ref, watch } from "vue";
-  import { CatalogueTab, CatalogueView, NavigationEmits, SubscriptionDetailViewTabs } from "../viewState.api";
+  import { CatalogueTab, ViewMode, NavigationCatalogueEmits, SubscriptionDetailViewTabs } from "../viewState.api";
   import { LayerSubscription } from "../../providers/layerSubscriptionProvider.api";
   import SubscriptionViewDetailTab from "./SubscriptionViewDetailTab.vue";
 
@@ -10,7 +10,7 @@
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
   const activeTab = ref<SubscriptionDetailViewTabs>(SubscriptionDetailViewTabs.Details);
   watch(props, () => activeTab.value = props.activeTab);
@@ -31,7 +31,7 @@
       Attribute Table
     </a>
     <button class="btn btn-outline-secondary mb-1 mt-1 ms-auto"
-      @click="emit('navigate', CatalogueTab.LayerSubscriptions, CatalogueView.List)">
+      @click="emit('navigate', CatalogueTab.LayerSubscriptions, ViewMode.List)">
       Back
     </button>
   </nav>

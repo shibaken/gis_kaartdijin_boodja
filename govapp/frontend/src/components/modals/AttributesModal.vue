@@ -80,7 +80,7 @@
     <template #header>
       <h1>{{ attributeModeText }} Attribute</h1>
     </template>
-    <template #body v-if="catalogueEntry">
+    <template #body v-if="catalogueEntry && props.mode !== ModalTypes.AttributeDelete">
       <attributes-add-form v-if="showForm" :catalogue-entry="catalogueEntry" :form-dirty="formDirty"
                            @valid-value-updated="valuesUpdated" @field-errors-updated="errorsUpdated"/>
     </template>

@@ -2,14 +2,14 @@
   import { LayerSubmission } from "../../providers/layerSubmissionProvider.api";
   import Accordion from "../widgets/Accordion.vue";
   import FormInput from "../widgets/FormInput.vue";
-  import { CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import { CatalogueTab, ViewMode, NavigationCatalogueEmits } from "../viewState.api";
 
   const props = defineProps<{
     submission: LayerSubmission
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 </script>
 
@@ -22,7 +22,7 @@
                     :readonly="true"/>
         <label>
           <small>Catalogue Entry</small><br/>
-          <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View,
+          <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.View,
             { recordId: submission.catalogueEntry?.id })">
             {{ submission.catalogueEntry.name }}
           </a>

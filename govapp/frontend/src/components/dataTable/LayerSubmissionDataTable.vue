@@ -6,8 +6,8 @@
   import { useLayerSubmissionStore } from "../../stores/LayerSubmissionStore";
   import { storeToRefs } from "pinia";
   import { DateTime } from "luxon";
-  import { NavigationEmits } from "../viewState.api";
-  import { CatalogueTab, CatalogueView } from "../viewState.api";
+  import { NavigationCatalogueEmits } from "../viewState.api";
+  import { CatalogueTab, ViewMode } from "../viewState.api";
   import SortableHeader from "./SortableHeader.vue";
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawLayerSubmissionFilter } from "../../backend/backend.api";
@@ -22,7 +22,7 @@
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   const { sortDirection, onSort } = useTableSortComposable<RawLayerSubmissionFilter>(filters);
@@ -54,14 +54,14 @@
           <td>{{ row.name }}</td>
           <td>{{ DateTime.fromISO(row.submittedDate).toFormat('dd/MM/yyyy HH:mm')}}</td>
           <td>
-            <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View,
+            <a href="#" @click="emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.View,
             { recordId: row.catalogueEntry?.id })">
               {{ row.catalogueEntry?.name }}
             </a>
           </td>
           <td>{{ row.status.label }}</td>
           <td>
-            <a href="#" @click="emit('navigate', CatalogueTab.LayerSubmissions, CatalogueView.View,
+            <a href="#" @click="emit('navigate', CatalogueTab.LayerSubmissions, ViewMode.View,
             { recordId: row.id })">
               View
             </a>

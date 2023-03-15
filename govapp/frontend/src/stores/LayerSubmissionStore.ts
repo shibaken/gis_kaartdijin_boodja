@@ -20,7 +20,7 @@ export type LayerSubmissionStore = {
 }
 
 // Status shouldn't need to change so pass it as a static list
-export const submissionStatuses = statusProvider.fetchStatuses<LayerSubmissionStatus>("layers/submissions");
+export const submissionStatuses = statusProvider.fetchStatuses<LayerSubmissionStatus>("catalogue/layers/submissions");
 
 export const useLayerSubmissionStore = defineStore("layerSubmission", () => {
   const layerSubmissions: Ref<Array<LayerSubmission>> = ref([]);

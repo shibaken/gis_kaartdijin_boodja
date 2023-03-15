@@ -1,10 +1,12 @@
 import { Group, NotificationRequestType, NotificationType, RawAttribute, RawCatalogueEntry, RawCatalogueEntryFilter,
   RawCustodian, RawLayerSubmission, RawLayerSubmissionFilter, RawLayerSubscription, RawLayerSubscriptionFilter,
-  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser,
-  RawCommunicationLog, RawPaginationFilter, RawAttributeFilter, RawNotificationFilter } from "./backend.api";
+  RawMetadata, RawNotification, RawSymbology, RawUserFilter, RecordStatus, RawEntryPatch, RawUser, RawCommunicationLog,
+  RawPaginationFilter, RawAttributeFilter, RawNotificationFilter, RawCddpPublishChannel, RawGeoserverPublishChannel,
+  RawPublishEntry, RawPublishEntryFilter } from "./backend.api";
 import { CommunicationLogType } from "../providers/logsProvider.api";
 import type { PaginatedRecord, Params, StatusType } from "./backend.api";
 import { Workspace } from "../providers/catalogueEntryProvider.api";
+import { PaginationFilter } from "../providers/providerCommon.api";
 
 const GEOSERVER_URL = import.meta.env.VITE_GEOSERVER_URL;
 
@@ -81,7 +83,7 @@ export class BackendService {
   }
 
   public async getLayerSubmission (id: number): Promise<RawLayerSubmission> {
-    const response = await fetch(`/api/catalogue/layers/submissions/${id}/`);
+    const response = await fetch(`/api/catalogue/catalogue/layers/submissions/${id}/`);
     return await response.json() as RawLayerSubmission;
   }
 
@@ -92,12 +94,12 @@ export class BackendService {
   }
 
   public async getStatus<T> (statusType: StatusType, statusId: number): Promise<RecordStatus<T>> {
-    const response = await fetch(`/api/catalogue/${statusType}/status/${statusId}`);
+    const response = await fetch(`/api/${statusType}/status/${statusId}`);
     return await response.json() as RecordStatus<T>;
   }
 
   public async getStatuses<T> (statusType: StatusType): Promise<PaginatedRecord<RecordStatus<T>>> {
-    const response = await fetch(`/api/catalogue/${statusType}/status/`);
+    const response = await fetch(`/api/${statusType}/status/`);
     return await response.json() as PaginatedRecord<RecordStatus<T>>;
   }
 
@@ -231,6 +233,21 @@ export class BackendService {
     return await response.json() as PaginatedRecord<RawMetadata>;
   }
 
+  public async patchRawMetadata (metadata: Partial<Omit<RawMetadata, "id">>, id?: number): Promise<RawMetadata> {
+    return this.modifyMetadata(metadata, "patch", id);
+  }
+
+  protected async modifyMetadata (metadata: Partial<Omit<RawMetadata, "id">>, method: "patch" | "post", id?: number): Promise<RawMetadata> {
+    if (!id && method === "patch") {
+      throw new Error("`patchRawMetadata`: Tried to patch a symbology without providing an ID");
+    }
+    const response = await fetcher(`/api/catalogue/layers/metadata/${id ? `${id}/` : ""}`, {
+      method,
+      body: JSON.stringify(metadata)
+    });
+    return await response.json();
+  }
+
   public async getRawCustodian (id: number): Promise<RawCustodian> {
     const response = await fetch(`/api/catalogue/layers/custodians/${id}/`);
     return await response.json() as RawCustodian;
@@ -346,5 +363,28 @@ export class BackendService {
   public async getWmtsCapabilities (): Promise<string> {
     const response = await fetch(`${GEOSERVER_URL}/geoserver/gwc/service/wmts?request=GetCapabilities`);
     return (await response.text());
+  }
+
+  public async getCddpPublishChannels (filter: PaginationFilter): Promise<PaginatedRecord<RawCddpPublishChannel>> {
+    const params = stripNullParams<RawPublishEntryFilter>(filter);
+    const response = await fetch(`/api/publish/channels/cddp/?` + new URLSearchParams(params));
+    return await response.json();
+  }
+
+  public async getGeoserverPublishChannels (filter: PaginationFilter): Promise<PaginatedRecord<RawGeoserverPublishChannel>> {
+    const params = stripNullParams<RawPublishEntryFilter>(filter);
+    const response = await fetch(`/api/publish/channels/geoserver/?` + new URLSearchParams(params));
+    return await response.json();
+  }
+
+  public async getPublishEntry (id: number): Promise<RawPublishEntry> {
+    const response = await fetch(`/api/publish/entries/${id}/`);
+    return await response.json();
+  }
+
+  public async getPublishEntries (filter: RawPublishEntryFilter): Promise<PaginatedRecord<RawPublishEntry>> {
+    const params = stripNullParams<RawPublishEntryFilter>(filter);
+    const response = await fetch(`/api/publish/entries/?` + new URLSearchParams(params));
+    return await response.json();
   }
 }

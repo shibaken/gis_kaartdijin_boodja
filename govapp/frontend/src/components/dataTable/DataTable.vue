@@ -35,7 +35,7 @@
       <form-select name="Page Size" field="pageSize" :value="pageSize.toString()"
                  :values="[['10', 10], ['50', 50], ['100', 100]]" :show-empty="false"
                  @value-updated="setPageSize"/>
-      <form-input class="d-flex align-content-end" field="search" name="Search" type="string"/>
+      <form-input class="d-flex align-content-end" field="search" name="Search" type="text"/>
     </div>
   </slot>
   <div class="table-responsive">

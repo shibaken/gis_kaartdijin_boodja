@@ -1,6 +1,6 @@
 <script lang="ts" setup>
   import { ref, watch } from "vue";
-  import { CatalogueTab, CatalogueView, NavigationEmits, SubmissionDetailViewTabs } from "../viewState.api";
+  import { CatalogueTab, ViewMode, NavigationCatalogueEmits, SubmissionDetailViewTabs } from "../viewState.api";
   import { LayerSubmission } from "../../providers/layerSubmissionProvider.api";
   import SubmissionViewDetailTab from "./SubmissionViewDetailTab.vue";
   import SubmissionViewMapTab from "./SubmissionViewMapTab.vue";
@@ -11,7 +11,7 @@
   }>();
 
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
   const activeTab = ref<SubmissionDetailViewTabs>(props.activeTab);
   watch(props, () => activeTab.value = props.activeTab);
@@ -31,7 +31,7 @@
       Map
     </a>
     <button class="btn btn-outline-secondary mb-1 mt-1 ms-auto"
-      @click="emit('navigate', CatalogueTab.LayerSubmissions, CatalogueView.List)">
+      @click="emit('navigate', CatalogueTab.LayerSubmissions, ViewMode.List)">
       Back
     </button>
   </nav>

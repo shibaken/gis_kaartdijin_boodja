@@ -1,8 +1,10 @@
 <script lang="ts" setup>
   withDefaults(defineProps<{
-    disabled: boolean
+    disabled: boolean,
+    continueDisabled: boolean
   }>(), {
-    disabled: false
+    disabled: false,
+    continueDisabled: false
   });
 
   const emit = defineEmits<{
@@ -16,7 +18,7 @@
   <div class="footer-buttons mt-3">
     <button type="button" class="reset-button btn btn-outline-danger mx-1" :disabled="disabled"
             @click="emit('reset')">Reset</button>
-    <button type="button" class="save-button btn btn-primary mx-1" :disabled="disabled"
+    <button v-if="!continueDisabled" type="button" class="save-button btn btn-primary mx-1" :disabled="disabled"
             @click="emit('save-continue')">Save and Continue</button>
     <button type="button" class="save-button btn btn-primary mx-1" :disabled="disabled"
             @click="emit('save-exit')">Save and Exit</button>

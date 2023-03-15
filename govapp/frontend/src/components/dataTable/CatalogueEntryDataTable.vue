@@ -5,7 +5,7 @@
   import { storeToRefs } from "pinia";
   import { onMounted } from "vue";
   import { DateTime } from "luxon";
-  import { CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import { CatalogueTab, ViewMode, NavigationCatalogueEmits } from "../viewState.api";
   import SortableHeader from "./SortableHeader.vue";
   import { useTableSortComposable } from "../../tools/sortComposable";
   import { RawCatalogueEntryFilter } from "../../backend/backend.api";
@@ -14,10 +14,10 @@
   import { PermissionsComposable } from "../../tools/permissionsComposable.api";
 
   const props = withDefaults(defineProps<{
-      view: CatalogueView
+      view: ViewMode
     }>(),
     {
-      view: CatalogueView.View
+      view: ViewMode.View
     });
 
   // get Stores and fetch with `storeToRef`
@@ -29,7 +29,7 @@
    * Workaround for external typing. See https://vuejs.org/api/sfc-script-setup.html#type-only-props-emit-declarations
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   function setPage (pageNumber: number) {
@@ -73,7 +73,7 @@
           <td>{{ row.assignedTo?.username }}</td>
           <td>
             <a href="#" class="me-2"
-               @click="emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, { recordId: row.id })">
+               @click="emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.View, { recordId: row.id })">
               {{ permissionsComposable.isEntryEditor(row) ? "Edit" : "View" }}
             </a>
           </td>

@@ -5,9 +5,10 @@
   import { usePermissionsComposable } from "../tools/permissionsComposable";
   import { watch } from "vue";
   import { PermissionsComposable } from "../tools/permissionsComposable.api";
+  import { PublishEntry } from "../providers/publisherProvider.api";
 
   const props = defineProps<{
-    entry: CatalogueEntry | undefined
+    entry: CatalogueEntry | PublishEntry | undefined
   }>();
 
   let permissionsComposable: PermissionsComposable = usePermissionsComposable(props.entry);

@@ -14,7 +14,6 @@ from govapp.apps.catalogue import models
 
 class LayerSubmissionFactory(factory.django.DjangoModelFactory):
     """Factory for a Layer Submission."""
-    name = factory.Sequence(lambda n: f"Layer Submission {n + 1}")
     description = factory.Faker("paragraph")
     file = factory.Faker("uri")
     is_active = False
