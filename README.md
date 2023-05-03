@@ -94,3 +94,7 @@ They are:
   - contains the department base templates, base packages and backend code
 - `govapp/frontend` 
   - Contains node web app frontend code
+
+
+# Prebuilt GDAL wheel files that can be install with pip (alternative solution when pip install gdal doesn't work)
+https://girder.github.io/large_image_wheels/

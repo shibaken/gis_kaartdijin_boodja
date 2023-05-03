@@ -1,0 +1,78 @@
+<div class="modal fade" id="ManageEditorsModal" tabindex="-1" aria-labelledby="ManageEditorsModal" aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-xl">
+         <div class="modal-content">
+              <div class="modal-header">
+                   <h5 class="modal-title" >Manage Editors</h5>
+                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+              <div class="alert alert-danger" role="alert" id='new-publish-popup-error' style='display:none'>
+              </div>
+              <div class="alert alert-success" role="alert" id='new-publish-popup-success' style='display:none'>
+              </div>
+              <form>
+          </div>
+          <div id='publish-editors-details'>
+
+               <div class='col-12 round-box px-3' id='publish-editors'>
+                         <div class='col-12 bg-light p-3 p-1'>
+                              <div class='row'>
+                                   <div class='col-12 pb-2'>
+                                        <h5>Add Editor</h5>
+                                   </div>
+                                   <div class='col-6'>
+                                        <input type='publish-editor-search-person' class='form-control' placeholder='Enter name / email of person.'>
+                                   </div>
+                                   <div class='col-6'>
+                                        
+                                   </div>
+                              </div>
+                         </div>
+                         <br>
+                         <table id="example" class="table" style="width:100%">
+                              <thead class='table-dark'>
+                              <tr>
+                                   <th>ID</th>
+                                   <th>First Name</th>
+                                   <th>Last Name</th>
+                                   <th>Email</th>                              
+                                   <th>Action</th>
+                              </tr>
+                              </thead>
+                              <tbody id='publish-editors-tbody'>
+                              <tr>
+                                   <td colspan="7" class='text-center'>No Results</td>
+                              </tr>
+                              </tbody>
+                         </table>         
+
+               </div>
+    
+         </div>
+ 
+          <div class='col-12 px-3'>
+                    <div class='col-12'>
+                             <div class='col-12'>
+                             <label for="" class="form-label">&nbsp;</label>
+                             </div>
+                             <div class='col-12 text-end'>                           
+                                  &nbsp;&nbsp;
+                                  
+                                  <div class="spinner-border text-primary" role="status" style="display:none" id="newpublish-loader-popup">
+                                       <span class="visually-hidden">Loading...</span>
+                                  </div>
+                                  &nbsp;&nbsp;&nbsp;
+                                  <BR>
+                             </div>
+                             <BR>
+                    </div>
+             </div>
+         </div>         
+       </div>
+       </form>
+  
+       <div class="modal-footer">
+       </div>
+     </div>
+   </div>
+ </div>

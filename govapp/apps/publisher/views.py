@@ -164,6 +164,60 @@ class PublishEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
+    @decorators.action(detail=True, methods=["GET"], url_path=r"geoserver")
+    def geoserver_list(self, request: request.Request, pk: str) -> response.Response:
+        """Produce a list of GeoServer publish configurations
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Publish Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Publish Entry
+        # Help `mypy` by casting the resulting object to a Publish Entry
+        publish_entry = self.get_object()
+        publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
+        geoserver_publish_channel = models.publish_channels.GeoServerPublishChannel.objects.filter(publish_entry=publish_entry)
+        geoserver_list = []
+        for gpc in geoserver_publish_channel:
+            published_at = None;
+            if published_at:
+                published_at = gpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')
+            geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_name": gpc.workspace.name,"published_at": published_at})
+
+        # Return Response
+        return response.Response(geoserver_list, status=status.HTTP_200_OK)
+
+    @decorators.action(detail=True, methods=["GET"], url_path=r"cddp")
+    def cddp_list(self, request: request.Request, pk: str) -> response.Response:
+        """Produce a list of CDDP publish configurations
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Publish Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Publish Entry
+        # Help `mypy` by casting the resulting object to a Publish Entry
+        publish_entry = self.get_object()
+        publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
+        cddp_publish_channel = models.publish_channels.CDDPPublishChannel.objects.filter(publish_entry=publish_entry)
+        cddp_list = []
+        for cpc in cddp_publish_channel:
+            print (cpc)
+
+            published_at = None
+            if published_at:
+                 published_at = cpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')                 
+            cddp_list.append({"id": cpc.id, "format": cpc.format, "path": cpc.path, "mode": cpc.mode, "frequency": cpc.frequency, "published_at": published_at})
+
+        # Return Response
+        return response.Response(cddp_list, status=status.HTTP_200_OK)
+
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def lock(self, request: request.Request, pk: str) -> response.Response:
@@ -195,6 +249,102 @@ class PublishEntryViewSet(
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+
+    @drf_utils.extend_schema(request=None, responses=serializers.publish_entries.PublishEntryCreateEditorSerializer)
+    @decorators.action(detail=True, methods=["POST"], url_path=r"editors/add/(?P<user_pk>\d+)")
+    def add_editors(self, request: request.Request, pk: str, user_pk: str) -> response.Response:
+        """Unlocks the Publish Entry.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Publish Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Add Editor to Publish
+        # Help `mypy` by casting the resulting object to a Publish Entry
+        publish_entry = self.get_object()
+        publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
+        user = UserModel.objects.get(id=user_pk)
+        publish_entry.editors.add(user)
+
+        success = False
+        editors = publish_entry.editors.all()
+        if user in editors:
+            success = True
+
+        #Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=publish_entry,
+                action="Publish entry add editor {} with id {} ".format(user.first_name+' '+user.last_name, user_pk)
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses=serializers.publish_entries.PublishEntryListEditorSerializer)
+    @decorators.action(detail=True, methods=["GET"], url_path=r"editors")
+    def editors(self, request: request.Request, pk: str) -> response.Response:
+        """Unlocks the Publish Entry.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Publish Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Publish Entry
+        # Help `mypy` by casting the resulting object to a Publish Entry        
+        publish_entry = self.get_object()
+        editors = publish_entry.editors.all()
+        editors_list = []
+        for e in editors:
+            editors_list.append({'id': e.id,'first_name' : e.first_name,'last_name' : e.last_name, 'email': e.email})
+
+        # Return Response
+        return response.Response(editors_list, status=status.HTTP_200_OK)
+
+    @drf_utils.extend_schema(request=None, responses=serializers.publish_entries.PublishEntryCreateEditorSerializer)
+    @decorators.action(detail=True, methods=["DELETE"], url_path=r"editors/delete/(?P<user_pk>\d+)")
+    def delete_editors(self, request: request.Request, pk: str, user_pk: str) -> response.Response:
+        """Unlocks the Publish Entry.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Publish Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Publish Entry
+        # Help `mypy` by casting the resulting object to a Publish Entry
+        publish_entry = self.get_object()
+        publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
+        user = UserModel.objects.get(id=user_pk)
+        success = publish_entry.editors.remove(user)
+        success = False
+        editors = publish_entry.editors.all()
+        if user not in editors:
+            success = True
+   
+        #Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=publish_entry,
+                action="Publish entry delete editor {} with id {} ".format(user.first_name+' '+user.last_name, user_pk)
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
@@ -335,6 +485,40 @@ class GeoServerPublishChannelViewSet(
     filterset_class = filters.GeoServerPublishChannelFilter
     search_fields = ["publish_entry__catalogue_entry__name", "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
+
+
+    # @decorators.action(detail=True, methods=["POST"], url_path=r"list")
+    # def geoserver_list(self, request: request.Request, pk: str) -> response.Response:
+    #     """Publishes to the GeoServer Channel.
+
+    #     Args:
+    #         request (request.Request): API request.
+    #         pk (str): Primary key of the Publish Entry.
+
+    #     Returns:
+    #         response.Response: Empty response confirming success.
+    #     """
+    #     # Retrieve Publish Entry
+    #     # Help `mypy` by casting the resulting object to a Publish Entry
+    #     publish_entry = self.get_object()
+    #     publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
+
+    #     # Retrieve `symbology_only` Query Parameter
+    #     symbology_only = self.request.query_params.get("symbology_only")
+    #     symbology_only = utils.string_to_boolean(symbology_only)  # type: ignore[assignment]
+
+    #     # Publish!
+    #     publish_entry.publish_geoserver(symbology_only)
+
+    #     # Add Action Log Entry
+    #     logs_utils.add_to_actions_log(
+    #         user=request.user,
+    #         model=publish_entry,
+    #         action="Publish entry was manually re-published to the GeoServer channel"
+    #     )
+
+    #     # Return Response
+    #     return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @drf_utils.extend_schema(tags=["Publisher - Notifications (Email)"])

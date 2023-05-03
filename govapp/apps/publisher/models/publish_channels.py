@@ -46,7 +46,8 @@ class CDDPPublishChannelFormat(models.IntegerChoices):
 @reversion.register()
 class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
-    description = models.TextField(blank=True)
+    #name = models.TextField()
+    #description = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
     format = models.IntegerField(choices=CDDPPublishChannelFormat.choices)  # noqa: A003
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
@@ -70,7 +71,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.name}"
+        return f"{self.publish_entry.name}"
 
     @property
     def name(self) -> str:
@@ -203,6 +204,8 @@ class GeoServerPublishChannelMode(models.IntegerChoices):
 @reversion.register()
 class GeoServerPublishChannel(mixins.RevisionedMixin):
     """Model for a GeoServer Publish Channel."""
+    #name = models.TextField()
+    #description = models.TextField(blank=True)
     description = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
     mode = models.IntegerField(choices=GeoServerPublishChannelMode.choices)
@@ -230,7 +233,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.name}"
+        return f"{self.publish_entry.catalogue_entry.name}"
 
     @property
     def name(self) -> str:

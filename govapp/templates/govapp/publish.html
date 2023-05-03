@@ -1,0 +1,175 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+
+{% if request.user.is_authenticated is True %}
+      {% include "govapp/publish_new.html" %}
+
+      <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+
+      <div class="container" id="dashboard-table-container">
+            
+            <div class="card" >
+                  <div class="card-header fw-bold h4" style="padding:30px;">
+                        <div class="row">
+                        <div class="col-6">
+                              Publish
+                        </div>
+                        <div class="col-6 text-end">
+                              <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                        </div>
+                  </div>         
+                  </div>
+                  <div class="card-body collapse show" id="#box1-card-body">
+                        <div class="col-12 bg-light p-3">
+                              <B>Filters</B>
+                              <div class='row'>
+                                    <div class='col-12'>
+                                          <div class='row'>
+                                                <div class='col-3'>
+                                                      <label for="publish-name" class="form-label">Name</label>
+                                                      <input type="text" class="form-control" id="publish-name" >
+                                                </div>
+                                                <div class='col-3'>
+                                                      <label for="publish-custodian" class="form-label">Custodian</label>
+                                                      <input type="text" class="form-control" id="publish-custodian" placeholder="not working" >
+                                                </div>
+                                                <div class='col-3'>
+                                                      <label for="publish-status" class="form-label">Status</label>
+                                                      <select type="text" class="form-control" id="publish-status" >
+                                                            <option value="">All</option>
+                                                            <option value="1">Locked</option>
+                                                            <option value="2">Unlocked</option>
+                                                      </select>
+                                                </div>
+                                                <div class='col-3'>                                                
+                                                      &nbsp;
+                                                </div>
+                                          </div>
+                                    </div>
+                                    <div class='col-12'>
+                                          <div class='row'>
+                                                <div class='col-3'>
+                                                      <label for="publish-lastupdatedfrom" class="form-label">Last Updated From</label>
+                                                      <input type="text" class="form-control" id="publish-lastupdatedfrom"  placeholder="not working"  >
+
+                                                </div>
+                                                <div class='col-3'>
+                                                      <label for="publish-lastupdatedto" class="form-label">Last Updated To</label>
+                                                      <input type="text" class="form-control" id="publish-lastupdatedto" placeholder="not working"  >
+                                                </div>
+                                                <div class='col-3'>
+                                                      <label for="publish-assignedto" class="form-label">Assigned To</label>
+                                                      <input type="text" class="form-control" id="publish-assignedto" placeholder="not working" >
+                                                </div>
+                                                <div class='col-3'>
+                                                      &nbsp;
+                                                </div>
+                                          </div>
+                                    </div>
+                              </div>
+
+                              <div class='col-12'>
+                                    <div class='row'>
+                                          <div class='col-3'>
+                                                <label for="e1" class="form-label">Description</label>
+                                                <input type="text" class="form-control" id="publish-description" >
+
+                                          </div>
+                                          <div class='col-3'>
+                                                <label for="publish-number" class="form-label">Number</label>
+                                                <input type="text" class="form-control" id="publish-number" >
+                                          </div>
+                                          <div class='col-3'>
+                                                &nbsp;
+                                                
+                                          </div>
+                                          <div class='col-3 p-4'>
+                                                <button class="btn btn-primary btn-sm" aria-current="page" id='publish-filter-btn'>Filter</button>
+                                                &nbsp;
+                                          </div>
+                                    </div>
+                              </div>                        
+                        </div>                  
+
+                        <div class='col-12 pt-4'>
+                              <div class='row'>
+                                    <div class='col-6'>
+                                          &nbsp;
+                                    </div>
+                                    <div class='col-6 text-end'>
+                                          <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-btn'>New Publish Entry</button>
+                                    </div>
+                              </div>
+                        </div>                  
+                        <div class='col-12 pt-2 pb-2 '>
+                              <div class='row'>
+                                    <div class='col-6'>
+                                          <div class="row">
+                                                <div class="col-sm-12 col-md-6">
+                                                      <div class="dataTables_length" id="bookings-table_length">
+                                                            <label>Show 
+                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm">
+                                                                        <option value="10">10</option>
+                                                                        <option value="25">25</option>
+                                                                        <option value="50">50</option>
+                                                                        <option value="100">100</option>
+                                                                  </select> entries
+                                                            </label>
+                                                      </div>
+                                                </div>
+                                          </div>
+                                    </div>
+                                    <div class='col-6 text-end'>
+                                          <form class="row ">
+                                                <div class="col-4 text-end">
+                                                      &nbsp;
+                                                </div>
+                                                <div class="col-5 text-end">
+                                                      &nbsp;
+                                                </div>
+                                                <div class="col-3 text-end">  
+                                                      <button class="btn btn-secondary btn-sm" aria-current="page" href="#">Excel</button>    
+                                                      <button class="btn btn-secondary btn-sm" aria-current="page" href="#">CSV</button>
+                                                </div>
+                                          </form>
+                                    </div>
+                              </div>
+                        </div>     
+                        <div id='publish-table'>
+                              <table id="example" class="table" style="width:100%">
+                                    <thead class='table-dark'>
+                                    <tr>
+                                          <th>Number</th>
+                                          <th>Name</th>
+                                          <th>Custodian</th>
+                                          <th>Status</th>
+                                          <th>Last Updated</th>
+                                          <th>Assigned To</th>
+                                          <th>Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id='publish-tbody'>
+                                    <tr>
+                                          <td colspan="7" class='text-center'>No Results</td>
+                                    </tr>
+                                    </tbody>
+                              </table>                                  
+                        </div>           
+                        
+                  </div>
+            </div>
+
+      </div>
+      <script>
+            kbpublish.init_dashboard();
+            $(document).ready(function () {
+                  $('#example').DataTable();
+            });
+      </script>
+{% else %}
+      <div class="container" id="dashboard-table-container">
+            <h3>Permission Denied.  You are not authenticated.</h3>
+      </div>
+{% endif %}
+{% endblock %}

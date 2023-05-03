@@ -1,10 +1,11 @@
 {% extends "webtemplate_dbca/base_b5.html" %}
 
 {% block extra_css %}
-<!--<link rel="icon" type="image/png" href="/static/govapp/favicon.ico">-->
+	<link rel="icon" type="image/png" href="/static/govapp/favicon.ico">
 {% endblock %}
 
 {% block extra_js %}
+<script src="/static/js/kbpublish.js?ver={{ GIT_COMMIT_HASH }}"></script>
 <!-- any extra javascript goes here -->
 {% endblock %}
 
