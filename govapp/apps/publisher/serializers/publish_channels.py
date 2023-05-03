@@ -16,8 +16,8 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
         model = models.publish_channels.CDDPPublishChannel
         fields = (
             "id",
-            "name",
-            "description",
+            #"name",
+            #"description",
             "published_at",
             "format",
             "mode",
@@ -48,25 +48,32 @@ class CDDPPublishChannelCreateSerializer(serializers.ModelSerializer):
 
 class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
     """GeoServer Publish Channel Model Serializer."""
-
+    workspace_name = serializers.ReadOnlyField(source='workspace.name')
+    
     class Meta:
         """GeoServer Publish Channel Model Serializer Metadata."""
         model = models.publish_channels.GeoServerPublishChannel
-        fields = (
-            "id",
-            "name",
-            "description",
-            "published_at",
-            "mode",
-            "frequency",
-            "workspace",
-            "publish_entry",
-        )
+        fields = "__all__"
+        # fields = (
+        #     "id",
+        #     #"name",
+        #     #"description",
+        #     "published_at",
+        #     "mode",
+        #     "frequency",
+        #     "workspace",
+        #     "publish_entry",
+        #     "workspace_name"
+        # )
         read_only_fields = (
             "id",
             "published_at",
             "publish_entry",
+            "workspace_name",
+            "name",
+            "description"
         )
+        
 
 
 class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):

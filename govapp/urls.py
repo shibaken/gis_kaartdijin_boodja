@@ -49,7 +49,11 @@ urlpatterns = [
     urls.path("api/publish/", urls.include("govapp.apps.publisher.urls")),
 
     # Management Command Endpoints
-    urls.path("api/management/", urls.include("govapp.commands"))
+    urls.path("api/management/", urls.include("govapp.commands")),
+    
+    # Templates Pages
+    urls.path("publish/", views.PublishPage.as_view()),
+    urls.re_path("publish/(?P<pk>\d+)/", views.PublishView.as_view())
 ]
 
 # DBCA Template URLs

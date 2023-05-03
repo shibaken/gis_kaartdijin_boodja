@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         """User Model Serializer Metadata."""
         model = UserModel
-        fields = ("id", "username", "groups")
+        fields = ("id", "username", "groups","first_name", "last_name","email","is_active","is_staff")
 
 
 class GroupSerializer(serializers.ModelSerializer):

@@ -5,9 +5,19 @@
 from django import http
 from django import shortcuts
 from django.views.generic import base
+from django.contrib import auth
+from django import conf
+
+from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
+from govapp.apps.publisher.models import publish_entries as publish_entries_models
+from govapp.apps.catalogue.models import custodians as custodians_models
+from govapp.apps.publisher.models import workspaces as publish_workspaces_models
+from govapp.apps.accounts import utils
 
 # Typing
 from typing import Any
+
+UserModel = auth.get_user_model()
 
 
 class HomePage(base.TemplateView):
@@ -32,3 +42,107 @@ class HomePage(base.TemplateView):
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
+
+
+class PublishPage(base.TemplateView):
+    """Home page view."""
+
+    # Template name
+    template_name = "govapp/publish.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the HomePage view.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        # Construct Context
+        context: dict[str, Any] = {}
+        pe_list = []
+        catalogue_entry_list = []
+
+        # START - To be improved later todo a reverse table join      
+        ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
+        pe_obj = publish_entries_models.PublishEntry.objects.all()
+
+        for pe in pe_obj:            
+            pe_list.append(pe.catalogue_entry.id)
+
+        for ce in ce_obj:
+            if ce.id not in pe_list:
+                catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+                print (ce.id)    
+
+        # END - To be improved later todo a reverse table join    
+        context['catalogue_entry_list'] = catalogue_entry_list
+
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)
+    
+class PublishView(base.TemplateView):
+    """Home page view."""
+
+    # Template name
+    template_name = "govapp/publish_view.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the HomePage view.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        # Construct Context
+        context: dict[str, Any] = {}
+        has_edit_access = False
+        pe_list = []
+        catalogue_entry_list = []
+        custodians_obj = custodians_models.Custodian.objects.all()
+        publish_entry_obj = publish_entries_models.PublishEntry.objects.get(id=self.kwargs['pk'])
+        publish_workspaces = publish_workspaces_models.Workspace.objects.all()
+
+        # START - To be improved later todo a reverse table join      
+        ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
+        pe_obj = publish_entries_models.PublishEntry.objects.all()
+
+        for pe in pe_obj:            
+            pe_list.append(pe.catalogue_entry.id)
+
+        for ce in ce_obj:
+            if ce.id not in pe_list:
+                catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+                print (ce.id)    
+            if publish_entry_obj.catalogue_entry:  
+                if ce.id == publish_entry_obj.catalogue_entry.id:
+                    catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+        # END - To be improved later todo a reverse table join     
+
+        system_users_list = []
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        for su in system_users_obj:
+            system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
+                
+        is_administrator = utils.is_administrator(request.user)
+        if is_administrator is True and  publish_entry_obj.status == 2 and request.user == publish_entry_obj.assigned_to:
+            has_edit_access = True
+
+        context['catalogue_entry_list'] = catalogue_entry_list
+        context['publish_entry_obj'] = publish_entry_obj
+        context['custodians_obj'] = custodians_obj
+        context['system_users'] = system_users_list
+        context['publish_id'] = self.kwargs['pk']
+        context['has_edit_access'] = has_edit_access
+        context['publish_workspaces'] = publish_workspaces
+    
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)
+        

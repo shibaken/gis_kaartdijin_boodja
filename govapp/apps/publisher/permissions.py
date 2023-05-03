@@ -43,7 +43,7 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             allowed = (
                 catalogue_entry is not None
                 and utils.is_administrator(request.user)
-                and catalogue_entry.is_editor(request.user)
+                #and catalogue_entry.is_editor(request.user) 
             )
 
         elif view.action in ("destroy", "list", "retrieve", "update", "partial_update",
@@ -55,13 +55,11 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             # Assigning and Unassigning also might be allowed, again we delegate it to `has_object_permission`
             # Manually publishing might be allowed, again we delegate it to `has_object_permission`
             allowed = True
-
         else:
             # Allow all other actions by default
             # This allows dynamically generated actions such as the custom
             # 'choice' actions to be used by anyone
             allowed = True
-
         # Return
         return allowed
 
@@ -97,11 +95,11 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             allowed = (
                 isinstance(obj, models.publish_entries.PublishEntry)
                 and utils.is_administrator(request.user)
-                and obj.is_editor(request.user)
+                #and obj.is_editor(request.user)
                 and obj.assigned_to == request.user
                 and obj.is_unlocked()
             )
-
+           
         elif view.action in ("lock", "unlock"):
             # Lock, Unlock and Decline
             # 1. Object is a Publish Entry
@@ -111,7 +109,7 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             allowed = (
                 isinstance(obj, models.publish_entries.PublishEntry)
                 and utils.is_administrator(request.user)
-                and obj.is_editor(request.user)
+                #and obj.is_editor(request.user)
                 and obj.assigned_to == request.user
             )
 
@@ -124,7 +122,7 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             allowed = (
                 isinstance(obj, models.publish_entries.PublishEntry)
                 and utils.is_administrator(request.user)
-                and obj.is_editor(request.user)
+                #and obj.is_editor(request.user)
             )
 
         elif view.action in ("publish", "publish_cddp", "publish_geoserver"):
@@ -137,7 +135,7 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             allowed = (
                 isinstance(obj, models.publish_entries.PublishEntry)
                 and utils.is_administrator(request.user)
-                and obj.is_editor(request.user)
+                #and obj.is_editor(request.user)
                 and obj.is_locked()
             )
 
@@ -181,11 +179,10 @@ class HasPublishEntryPermissions(permissions.BasePermission):
             allowed = (
                 publish_entry is not None
                 and utils.is_administrator(request.user)
-                and publish_entry.is_editor(request.user)
+                #and publish_entry.is_editor(request.user)
                 and publish_entry.assigned_to == request.user
                 and publish_entry.is_unlocked()
             )
-
         elif view.action in ("destroy", "list", "retrieve", "update", "partial_update"):
             # Destroys might be allowed, but we delegate it to `has_object_permission`
             # Retrieves and Lists are always allowed by anyone
@@ -234,7 +231,7 @@ class HasPublishEntryPermissions(permissions.BasePermission):
                 hasattr(obj, "publish_entry")
                 and isinstance(obj.publish_entry, models.publish_entries.PublishEntry)
                 and utils.is_administrator(request.user)
-                and obj.publish_entry.is_editor(request.user)
+                #and obj.publish_entry.is_editor(request.user)
                 and obj.publish_entry.assigned_to == request.user
                 and obj.publish_entry.is_unlocked()
             )

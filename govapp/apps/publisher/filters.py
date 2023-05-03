@@ -33,7 +33,8 @@ class PublishEntryFilter(filters.FilterSet):
     class Meta:
         """Publish Entry Filter Metadata."""
         model = models.publish_entries.PublishEntry
-        fields = {"id": ["in"], "assigned_to": ["exact"], "status": ["in", "exact"]}
+        fields = {"id": ["exact"], "assigned_to": ["exact"], "status": ["exact"], "name": ['icontains'], "description": ['icontains'] }
+        #fields = {"name": ['contains'] }
 
 
 class EmailNotificationFilter(filters.FilterSet):

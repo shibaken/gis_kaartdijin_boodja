@@ -264,7 +264,7 @@ class PublishEntry(mixins.RevisionedMixin):
         # To be assigned, a user must be:
         # 1. In the Administrators group
         # 2. One of this Catalogue Entry's editors
-        if accounts_utils.is_administrator(user) and self.is_editor(user):
+        if accounts_utils.is_administrator(user): # and self.is_editor(user):
             # Assign user
             self.assigned_to = user
             self.save()
