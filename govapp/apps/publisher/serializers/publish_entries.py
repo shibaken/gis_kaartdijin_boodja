@@ -14,6 +14,7 @@ class PublishEntrySerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='assigned_to.first_name')
     last_name = serializers.ReadOnlyField(source='assigned_to.last_name')
     email = serializers.ReadOnlyField(source='assigned_to.email',)
+    name = serializers.ReadOnlyField(source='catalogue_entry.name',)
 
     class Meta:
         """Publish Entry Model Serializer Metadata."""

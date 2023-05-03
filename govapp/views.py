@@ -43,6 +43,18 @@ class HomePage(base.TemplateView):
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
 
+class ManagementCommandsView(base.TemplateView):
+    """Home page view."""
+
+    # Template name
+    template_name = "govapp/management_commands.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        # Construct Context
+        context: dict[str, Any] = {}
+
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)
 
 class PublishPage(base.TemplateView):
     """Home page view."""

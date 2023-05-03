@@ -117,7 +117,7 @@
                                                 </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
-                                                            <input type="text" class="form-control" id="publish-name" value="{{ publish_entry_obj.name }}" >
+                                                            <input type="text" readonly class="form-control-plaintext" id="publish-name" value="{{ publish_entry_obj.name }}" >
                                                       {% else %}
                                                             {{ publish_entry_obj.name }}
                                                       {% endif %}

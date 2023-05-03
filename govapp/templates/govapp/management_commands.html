@@ -1,0 +1,48 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+    {% if request.user.is_authenticated is True %}
+            <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+            <div class="container" id="dashboard-table-container">
+                <div class='col-12'>
+                                                
+                    <div id='publish-table'>
+                          <table id="example" class="table" style="width:100%">
+                                <thead class='table-dark'>
+                                <tr>
+                                      <th>Management Command</th>                                                             
+                                      <th>Action</th>
+                                      <th>Response</th>
+                                      
+                                </tr>
+                                </thead>
+                                <tbody id='publish-cddp-tbody'>
+                                <tr>
+                                      <td>Run Scanner</td>
+                                      <td class='text-end'><button class='btn btn-primary btn-sm' id='run-scanner'>RUN</button>
+                                        <button class="btn btn-primary btn-sm" type="button" id='run-scanner-loader' disabled>
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Loading...</span>
+                                          </button>
+
+
+                                       </td>
+                                       <td>
+                                        <span id='scanner-job-response-success' class='text-success'></span>
+                                        <span id='scanner-job-response-error' class='text-danger'></span>
+                                       </td>
+                                </tr>
+                                </tbody>
+                          </table>                                  
+                    </div>      
+              </div>
+            </div>
+            <script>
+                kbmanagementcommands.init();
+            </script>
+    {% else %}
+            <div class="container" id="dashboard-table-container">
+                  <h3>Permission Denied.  You are not authenticated.</h3>
+            </div>
+    {% endif %}
+{% endblock %}
