@@ -47,7 +47,7 @@ class PublishEntryViewSet(
     serializer_class = serializers.publish_entries.PublishEntrySerializer
     serializer_classes = {"create": serializers.publish_entries.PublishEntryCreateSerializer}
     filterset_class = filters.PublishEntryFilter
-    search_fields = ["name", "description", "catalogue_entry__name"]
+    search_fields = ["description", "catalogue_entry__name"]
     permission_classes = [permissions.IsPublishEntryPermissions]
 
     @drf_utils.extend_schema(
@@ -463,7 +463,7 @@ class CDDPPublishChannelViewSet(
     serializer_class = serializers.publish_channels.CDDPPublishChannelSerializer
     serializer_classes = {"create": serializers.publish_channels.CDDPPublishChannelCreateSerializer}
     filterset_class = filters.CDDPPublishChannelFilter
-    search_fields = ["publish_entry__name", "publish_entry__description"]
+    search_fields = ["publish_entry__catalogue_entry__name", "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
 
 
@@ -483,7 +483,7 @@ class GeoServerPublishChannelViewSet(
     serializer_class = serializers.publish_channels.GeoServerPublishChannelSerializer
     serializer_classes = {"create": serializers.publish_channels.GeoServerPublishChannelCreateSerializer}
     filterset_class = filters.GeoServerPublishChannelFilter
-    search_fields = ["publish_entry__name", "publish_entry__description"]
+    search_fields = ["publish_entry__catalogue_entry__name", "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
 
 

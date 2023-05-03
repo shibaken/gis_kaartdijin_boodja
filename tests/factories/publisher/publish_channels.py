@@ -12,7 +12,6 @@ from tests.factories.publisher import workspaces
 
 class CDDPPublishChannelFactory(factory.django.DjangoModelFactory):
     """Factory for a CDDP Publish Channel."""
-    name = factory.Sequence(lambda n: f"CDDP Publish Channel {n + 1}")
     description = factory.Faker("paragraph")
     mode = factory.fuzzy.FuzzyChoice(models.publish_channels.CDDPPublishChannelMode)
     frequency = factory.fuzzy.FuzzyChoice(models.publish_channels.PublishChannelFrequency)
@@ -25,7 +24,6 @@ class CDDPPublishChannelFactory(factory.django.DjangoModelFactory):
 
 class GeoServerPublishChannelFactory(factory.django.DjangoModelFactory):
     """Factory for a GeoServer Publish Channel."""
-    name = factory.Sequence(lambda n: f"GeoServer Publish Channel {n + 1}")
     description = factory.Faker("paragraph")
     mode = factory.fuzzy.FuzzyChoice(models.publish_channels.GeoServerPublishChannelMode)
     frequency = factory.fuzzy.FuzzyChoice(models.publish_channels.PublishChannelFrequency)

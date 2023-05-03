@@ -28,7 +28,16 @@ class PublishEntryFilter(filters.FilterSet):
     """Publish Entry Filter."""
     updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
     published = filters.IsoDateTimeFromToRangeFilter(field_name="published_at")
-    order_by = filters.OrderingFilter(fields=("id", "name", "status", "updated_at", "published_at", "assigned_to"))
+    order_by = filters.OrderingFilter(
+        fields=(
+            "id",
+            ("catalogue_entry__name", "name"),  # Proxy through the Catalogue Entry name to sort by
+            "status",
+            "updated_at",
+            "published_at",
+            "assigned_to",
+        )
+    )
 
     class Meta:
         """Publish Entry Filter Metadata."""

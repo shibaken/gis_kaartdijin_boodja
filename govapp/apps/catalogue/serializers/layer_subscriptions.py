@@ -14,3 +14,4 @@ class LayerSubscriptionSerializer(serializers.ModelSerializer):
         """Layer Subscription Model Serializer Metadata."""
         model = models.layer_subscriptions.LayerSubscription
         fields = ("id", "name", "url", "frequency", "status", "subscribed_at", "catalogue_entry")
+        read_only_fields = ("id", "name", "url", "frequency", "status", "subscribed_at", "catalogue_entry")

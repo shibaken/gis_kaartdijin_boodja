@@ -6,7 +6,7 @@
   import { onMounted, Ref } from "vue";
   import { useAttributeStore } from "../../stores/AttributeStore";
   import { storeToRefs } from "pinia";
-  import { CatalogueDetailViewTabs, CatalogueTab, CatalogueView, NavigationEmits } from "../viewState.api";
+  import { CatalogueDetailViewTabs, CatalogueTab, ViewMode, NavigationCatalogueEmits } from "../viewState.api";
   import { Attribute } from "../../providers/relatedEntityProvider.api";
   import WorkflowFooter from "../widgets/WorkflowFooter.vue";
   import { AttributeCrudType } from "../../stores/AttributeStore.api";
@@ -28,7 +28,7 @@
 
   const { showModal } = useModalStore();
 
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   function onReset () {
@@ -64,9 +64,9 @@
       }
       attributeCrudType.value = AttributeCrudType.None;
       if (exit) {
-        emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.List);
+        emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.List);
       } else {
-        emit('navigate', CatalogueTab.CatalogueEntries, CatalogueView.View, {
+        emit('navigate', CatalogueTab.CatalogueEntries, ViewMode.View, {
           viewTab: CatalogueDetailViewTabs.Symbology,
           recordId: props.entry.id
         });

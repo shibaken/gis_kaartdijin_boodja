@@ -30,16 +30,16 @@
        aria-labelledby="modalLabel" aria-hidden="true" @click="hide">
     <div class="modal-dialog" :class="modalSize" @click.stop>
       <div class="modal-content">
-        <div class="modal-header">
+        <div v-if="$slots.header"  class="modal-header" :class="{ 'border-bottom-0': !$slots.body }">
           <slot name="header">
             <h1 class="modal-title fs-5" id="modalLabel"></h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </slot>
         </div>
-        <div class="modal-body">
+        <div v-if="$slots.body" class="modal-body">
           <slot name="body"/>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" :class="{ 'border-top-0': !$slots.body }">
           <slot name="footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="emit('close')">Close</button>
             <button type="button" class="btn btn-primary" v-if="showSaveButton" @click="emit('save')"

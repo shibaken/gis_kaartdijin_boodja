@@ -25,6 +25,7 @@ export interface RawCatalogueEntry {
   name: string;
   description: string;
   status: number;
+  created_at: string;
   updated_at: string;
   custodian?: number;
   assigned_to?: number;
@@ -35,6 +36,7 @@ export interface RawCatalogueEntry {
   webhook_notifications: Array<number>;
   editors: Array<number>;
   workspace: number;
+  metadata: number;
 }
 
 export interface RawLayerSubmission {
@@ -112,10 +114,11 @@ export interface RecordStatus<T> {
   label: T | "Status not found";
 }
 
-export type StatusType = "entries"|"layers/submissions"|"layers/subscriptions";
+export type StatusType = "catalogue/entries"|"catalogue/layers/submissions"|"catalogue/layers/subscriptions"|"publish/entries";
 export type LayerSubscriptionStatus = "Active"|"Disabled";
 export type CatalogueEntryStatus = "Draft"|"Locked"|"Cancelled";
 export type LayerSubmissionStatus = "Submitted"|"Accepted"|"Declined";
+export type PublishEntryStatus = "Locked"|"Unlocked";
 
 export interface User {
   id: number;
@@ -205,3 +208,57 @@ export interface RawCommunicationLog {
 
 export type RawEntryPatch = Pick<RawCatalogueEntry, "name" | "description" | "custodian" | "assigned_to">;
 export type EntryPatch = Pick<CatalogueEntry, "name" | "description" | "custodian" | "assignedTo">;
+
+
+// Publish
+
+
+export interface RawCddpPublishChannel {
+  id: string;
+  name: string;
+  description: string;
+  format: number;
+  mode: number;
+  frequency: number;
+  path: string;
+  publish_entry: number;
+}
+
+export interface PublishChannelFormat {
+  id: number;
+  label: string
+}
+
+export interface RawGeoserverPublishChannel {
+  id: number;
+  name: number;
+  description: number;
+  mode: number;
+  frequency: number;
+  workspace: number;
+  publish_entry: number;
+}
+
+export interface RawPublishEntry {
+  id: number;
+  name: string;
+  description: string;
+
+  status: number;
+  updated_at: string;
+  published_at: string;
+  editors: Array<number>;
+  assigned_to: number;
+  catalogue_entry: number;
+  cddp_channel: number;
+  geoserver_channel: number;
+}
+
+export interface RawPublishEntryFilter extends RawPaginationFilter {
+  id__in?: Array<number>;
+  search?: string;
+  status?: string;
+  updated_before?: string;
+  updated_after?: string;
+  assigned_to?: string;
+}

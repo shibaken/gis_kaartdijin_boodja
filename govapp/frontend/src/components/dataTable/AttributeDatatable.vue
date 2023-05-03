@@ -1,7 +1,7 @@
 <script lang="ts" setup async>
   import DataTable from "./DataTable.vue";
   import { Attribute } from "../../providers/relatedEntityProvider.api";
-  import { NavigationEmits } from "../viewState.api";
+  import { NavigationCatalogueEmits } from "../viewState.api";
   import { ModalTypes } from "../../stores/ModalStore.api";
   import { useModalStore } from "../../stores/ModalStore";
   import { useAttributeStore } from "../../stores/AttributeStore";
@@ -9,7 +9,7 @@
   import { storeToRefs } from "pinia";
   import { AttributeCrudType } from "../../stores/AttributeStore.api";
 
-  interface NavEmits extends NavigationEmits {}
+  interface NavEmits extends NavigationCatalogueEmits {}
   const emit = defineEmits<NavEmits>();
 
   const modalStore = useModalStore();

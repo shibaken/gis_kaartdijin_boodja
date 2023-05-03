@@ -41,7 +41,7 @@
 </script>
 
 <template>
-  <Modal :show="show" modal-id="comms-log" :modal-size="addLog ? 'modal-lg' : 'modal-xl'" :show-save-button="addLog"
+  <modal :show="show" modal-id="comms-log" :modal-size="addLog ? 'modal-lg' : 'modal-xl'" :show-save-button="addLog"
          :enable-save-button="true" @close="onClose" @save="saveLog">
     <template #header>
       <h1>Communications Log</h1>
@@ -50,5 +50,5 @@
       <communications-log-datatable v-if="!addLog" :catalogue-entry="catalogueEntry"/>
       <communications-log-add-form v-if="addLog" @valid-value-updated="valuesUpdated" :form-dirty="formDirty"/>
     </template>
-  </Modal>
+  </modal>
 </template>

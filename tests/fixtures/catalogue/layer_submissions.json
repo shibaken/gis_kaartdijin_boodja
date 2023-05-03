@@ -3,7 +3,6 @@
         "model": "catalogue.LayerSubmission",
         "pk": 1,
         "fields": {
-            "name": "Layer Submission 1",
             "description": "This is the first example layer submission",
             "file": "https://www.google.com/",
             "is_active": true,
@@ -17,7 +16,6 @@
         "model": "catalogue.LayerSubmission",
         "pk": 2,
         "fields": {
-            "name": "Layer Submission 2",
             "description": "This is the second example layer submission",
             "file": "https://www.yahoo.com/",
             "is_active": true,
@@ -31,7 +29,6 @@
         "model": "catalogue.LayerSubmission",
         "pk": 3,
         "fields": {
-            "name": "Layer Submission 3",
             "description": "This is the third example layer submission",
             "file": "https://www.bing.com/",
             "is_active": true,

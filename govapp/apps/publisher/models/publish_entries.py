@@ -42,8 +42,7 @@ class PublishEntryStatus(models.IntegerChoices):
 @reversion.register()
 class PublishEntry(mixins.RevisionedMixin):
     """Model for a Publish Entry."""
-    name = models.TextField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     status = models.IntegerField(choices=PublishEntryStatus.choices, default=PublishEntryStatus.LOCKED)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(blank=True, null=True)
@@ -68,8 +67,8 @@ class PublishEntry(mixins.RevisionedMixin):
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.
-    cddp_channel: "publish_channels.CDDPPublishChannel"
-    geoserver_channel: "publish_channels.GeoServerPublishChannel"
+    cddp_channel: "Optional[publish_channels.CDDPPublishChannel]"
+    geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
     email_notifications: "models.Manager[notifications.EmailNotification]"
 
     class Meta:
@@ -85,6 +84,16 @@ class PublishEntry(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Catalogue Entry's name to this model.
+
+        Returns:
+            str: Name of the Catalogue Entry.
+        """
+        # Retrieve and Return
+        return self.catalogue_entry.name
 
     @classmethod
     def from_request(cls, request: request.Request) -> Optional["PublishEntry"]:
@@ -136,7 +145,7 @@ class PublishEntry(mixins.RevisionedMixin):
         # Handle Errors
         try:
             # Publish!
-            self.cddp_channel.publish(symbology_only)
+            self.cddp_channel.publish(symbology_only)  # type: ignore[union-attr]
 
         except Exception as exc:
             # Log
@@ -169,7 +178,7 @@ class PublishEntry(mixins.RevisionedMixin):
         # Handle Errors
         try:
             # Publish!
-            self.geoserver_channel.publish(symbology_only)
+            self.geoserver_channel.publish(symbology_only)  # type: ignore[union-attr]
 
         except Exception as exc:
             # Log

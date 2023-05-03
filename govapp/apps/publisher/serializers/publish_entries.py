@@ -22,6 +22,7 @@ class PublishEntrySerializer(serializers.ModelSerializer):
 
         read_only_fields = (
             "id",
+            "name",
             "status",
             "updated_at",
             "published_at",
@@ -49,6 +50,7 @@ class PublishEntryCreateSerializer(serializers.ModelSerializer):
         # This allows the `create` action to specify a Catalogue Entry
         read_only_fields = (
             "id",
+            "name",
             "status",
             "updated_at",
             "published_at",

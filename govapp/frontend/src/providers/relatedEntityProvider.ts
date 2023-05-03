@@ -1,12 +1,13 @@
 import { BackendService } from "../backend/backend.service";
 import { BackendServiceStub } from "../backend/backend.stub";
-import { Attribute, Symbology } from "./relatedEntityProvider.api";
-import { Group, PaginatedRecord, RawAttribute, RawSymbology } from "../backend/backend.api";
+import { Attribute, Metadata, Symbology } from "./relatedEntityProvider.api";
+import { Group, PaginatedRecord, RawAttribute, RawMetadata, RawSymbology } from "../backend/backend.api";
 import { catalogueEntryProvider } from "./catalogueEntryProvider";
 import { WMTSCapabilities } from "ol/format";
 import { optionsFromCapabilities } from "ol/source/WMTS";
 import type { Options } from "ol/source/WMTS";
 import { Workspace } from "./catalogueEntryProvider.api";
+import { useCatalogueEntryStore } from "../stores/CatalogueEntryStore";
 
 export class RelatedEntityProvider {
   // Get the backend stub if the test flag is used.
@@ -107,17 +108,26 @@ export class RelatedEntityProvider {
       } as Symbology;
   }
 
-  private async toSymbology(rawSymbology: RawSymbology): Promise<Symbology> {
+  private async rawToSymbology (raw: RawSymbology): Promise<Symbology> {
     return {
-      id: rawSymbology.id,
-      name: rawSymbology.name,
-      sld: rawSymbology.sld,
-      catalogueEntry: await catalogueEntryProvider.getOrFetch(rawSymbology.catalogue_entry)
+      id: raw.id,
+      name: raw.name,
+      sld: raw.sld,
+      catalogueEntry: await catalogueEntryProvider.getOrFetch(raw.catalogue_entry)
     } as Symbology;
   }
 
+  private rawToMetadata (raw: RawMetadata): Metadata {
+    return {
+      id: raw.id,
+      createdAt: raw.created_at,
+      name: raw.name,
+      catalogueEntryId: raw.catalogue_entry
+    } as Metadata;
+  }
+
   public async updateSymbology (id: number, sld: string): Promise<Symbology> {
-    return this.toSymbology(await this.backend.patchRawSymbology(id, sld));
+    return this.rawToSymbology(await this.backend.patchRawSymbology(id, sld));
   }
 
   public async fetchWmtsCapabilities (workspace: Workspace, layerName: string, styleName = "default"): Promise<Options | null> {
@@ -133,6 +143,21 @@ export class RelatedEntityProvider {
   public async getGroups (): Promise<PaginatedRecord<Group>> {
     const response = await fetch("/api/accounts/groups/");
     return await response.json() as PaginatedRecord<Group>;
+  }
+
+  public async fetchMetadata (id: number): Promise<Metadata> {
+    const rawMetadata = await this.backend.getRawMetadata(id);
+
+    return this.rawToMetadata(rawMetadata);
+  }
+
+  public async updateMetadata (id: number, metadata: Partial<Metadata>): Promise<Metadata> {
+    return this.rawToMetadata(await this.backend.patchRawMetadata(metadata, id));
+  }
+
+  public async getOrFetchMetadata (id: number): Promise<Metadata> {
+    return useCatalogueEntryStore().metadataList
+      .find(metadata => metadata.id === id) ?? await this.fetchMetadata(id);
   }
 }
 

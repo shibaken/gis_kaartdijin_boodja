@@ -56,8 +56,9 @@ class CatalogueEntryStatus(models.IntegerChoices):
 class CatalogueEntry(mixins.RevisionedMixin):
     """Model for a Catalogue Entry."""
     name = models.TextField()
-    description = models.TextField()
+    description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     editors = models.ManyToManyField(
         UserModel,
@@ -90,7 +91,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     symbology: "layer_symbology.LayerSymbology"
     email_notifications: "models.Manager[notifications.EmailNotification]"
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
-    publish_entry: "publish_entries.PublishEntry"
+    publish_entry: "Optional[publish_entries.PublishEntry]"
 
     class Meta:
         """Catalogue Entry Model Metadata."""
@@ -219,8 +220,10 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 # Set Catalogue Entry to Pending
                 self.status = CatalogueEntryStatus.PENDING
 
-            # Publish Symbology
-            self.publish_entry.publish(symbology_only=True)
+            # Check for Publish Entry
+            if hasattr(self, "publish_entry"):
+                # Publish Symbology
+                self.publish_entry.publish(symbology_only=True)  # type: ignore[union-attr]
 
             # Save the Catalogue Entry
             self.save()

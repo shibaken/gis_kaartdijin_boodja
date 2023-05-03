@@ -47,7 +47,7 @@ class CDDPPublishChannelFormat(models.IntegerChoices):
 class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
     #name = models.TextField()
-    #description = models.TextField()
+    #description = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
     format = models.IntegerField(choices=CDDPPublishChannelFormat.choices)  # noqa: A003
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
@@ -72,6 +72,16 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.publish_entry.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Publish Entry's name to this model.
+
+        Returns:
+            str: Name of the Publish Entry.
+        """
+        # Retrieve and Return
+        return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
@@ -195,7 +205,8 @@ class GeoServerPublishChannelMode(models.IntegerChoices):
 class GeoServerPublishChannel(mixins.RevisionedMixin):
     """Model for a GeoServer Publish Channel."""
     #name = models.TextField()
-    #description = models.TextField()
+    #description = models.TextField(blank=True)
+    description = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
     mode = models.IntegerField(choices=GeoServerPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
@@ -223,6 +234,16 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.publish_entry.catalogue_entry.name}"
+
+    @property
+    def name(self) -> str:
+        """Proxies the Publish Entry's name to this model.
+
+        Returns:
+            str: Name of the Publish Entry.
+        """
+        # Retrieve and Return
+        return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
