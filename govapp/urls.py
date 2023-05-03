@@ -52,6 +52,7 @@ urlpatterns = [
     urls.path("api/management/", urls.include("govapp.commands")),
     
     # Templates Pages
+    urls.re_path("management-commands/", views.ManagementCommandsView.as_view()),
     urls.path("publish/", views.PublishPage.as_view()),
     urls.re_path("publish/(?P<pk>\d+)/", views.PublishView.as_view())
 ]
