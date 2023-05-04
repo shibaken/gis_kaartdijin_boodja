@@ -463,7 +463,7 @@ class CDDPPublishChannelViewSet(
     serializer_class = serializers.publish_channels.CDDPPublishChannelSerializer
     serializer_classes = {"create": serializers.publish_channels.CDDPPublishChannelCreateSerializer}
     filterset_class = filters.CDDPPublishChannelFilter
-    search_fields = ["publish_entry__catalogue_entry__name", "publish_entry__description"]
+    search_fields = ["publish_entry__catalogue_entry__name",]# "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
 
 
