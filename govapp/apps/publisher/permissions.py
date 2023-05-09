@@ -54,6 +54,9 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
             # Assigning and Unassigning also might be allowed, again we delegate it to `has_object_permission`
             # Manually publishing might be allowed, again we delegate it to `has_object_permission`
+            print ("ACTION")
+            print (view.action)
+            
             allowed = True
         else:
             # Allow all other actions by default

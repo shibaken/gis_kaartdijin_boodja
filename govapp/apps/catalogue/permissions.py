@@ -101,13 +101,16 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
             # 2. User is in the Catalogue Editors group
             # 3. User is one of this Catalogue Entry's editors
             # 4. Catalogue Entry is `assigned_to` this user
-            allowed = (
-                isinstance(obj, models.catalogue_entries.CatalogueEntry)
-                and utils.is_catalogue_editor(request.user)
-                and obj.is_editor(request.user)
-                and obj.assigned_to == request.user
-            )
-
+            if utils.is_administrator(request.user) is True:
+                allowed = True
+            else: 
+                allowed = (
+                    isinstance(obj, models.catalogue_entries.CatalogueEntry)
+                    and utils.is_catalogue_editor(request.user)
+                    and obj.is_editor(request.user)
+                    and obj.assigned_to == request.user
+                )
+            
         elif view.action in ("assign", "unassign"):
             # Assign and Unassign
             # Assigning or Unassigning a Catalogue Entry has its own set of rules
@@ -119,13 +122,12 @@ class IsCatalogueEntryPermissions(permissions.BasePermission):
                 and utils.is_catalogue_editor(request.user)
                 and obj.is_editor(request.user)
             )
-
+            allowed =True
         else:
             # Allow all other actions by default
             # This allows dynamically generated actions such as the custom
             # 'choice' actions to be used by anyone
             allowed = True
-
         # Return
         return allowed
 

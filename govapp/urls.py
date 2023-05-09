@@ -53,8 +53,13 @@ urlpatterns = [
     
     # Templates Pages
     urls.re_path("management-commands/", views.ManagementCommandsView.as_view()),
+    # Publish
     urls.path("publish/", views.PublishPage.as_view()),
-    urls.re_path("publish/(?P<pk>\d+)/", views.PublishView.as_view())
+    urls.re_path("publish/(?P<pk>\d+)/", views.PublishView.as_view()),
+
+    # Catalogue    
+    urls.path("catalogue/entries/", views.CatalogueEntriesPage.as_view()),
+    urls.re_path("catalogue/entries/(?P<pk>\d+)/", views.CatalogueEntriesView.as_view())
 ]
 
 # DBCA Template URLs
