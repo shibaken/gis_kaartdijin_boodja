@@ -1,0 +1,251 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+      {% if request.user.is_authenticated is True %}
+
+            {% include "govapp/publish_manage_editors.html" %}
+
+            <div class="container" id="dashboard-table-container">
+                  <div class='row'>
+                        <div class='col-6'>
+                              <h3>{{ catalogue_entry_obj.name }}</h3>
+                        </div>
+                        <div class='col-6 text-end'>
+                              <button class='btn btn-primary btn-sm' id='catalogue-manage-editors-btn'>Manage Editors</button>
+                        </div>
+                  </div>
+                  <div class='row'>
+                        <div class='col-12'>
+                              &nbsp;
+                        </div>
+                  </div>
+
+                  <div class='row'>
+                        <div class='col-3'>
+                              <div class='col-12 border'>
+                                    <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
+                                          Logs
+                                    </div>
+                                    <div class='col-12 p-3 border-bottom'>
+                                          <p><b>Communication</b><br>
+                                          <a href=''>Show</a> | <a href=''>Add Entry</a></p>
+
+                                    </div>
+                                    <div class='col-12 p-3'>
+                                          <p><b>Actions</b><br>
+                                          <a href=''>Show</a></p>
+
+                                    </div>
+
+                              </div>
+                              <br>
+                              <div class='col-12 border'>
+                                    <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
+                                          Workflow
+                                    </div>
+                                    <div class='col-12 p-3 border-bottom'>
+                                          <p>
+                                                <b>Status</b>
+                                                <br>
+                                                {{ catalogue_entry_obj.get_status_display }}
+                                                <br>
+                                                <br>
+                                                <b>Currently assigned to</b>
+                                                
+                                                <div class='text-end'>                                          
+                                                      <select class='form-control' id="catalogue-assigned-to">
+                                                            <option value=''>-- Select One --</option>
+                                                            {% for su in system_users %}                                          
+                                                                  {% if catalogue_entry_obj.assigned_to.id == su.id %}
+                                                                        <option value='{{ su.id }}' selected>{{ su.first_name }} {{ su.last_name }}</option>
+                                                                  {% else %}
+                                                                        <option value='{{ su.id }}'>{{ su.first_name }} {{ su.last_name }}</option>
+                                                                  {% endif %}
+                                                            {% endfor %}
+                                                      </select>
+                                                
+                                                      <button class='btn btn-primary btn-sm' id='catalogue-assigned-to-btn' href=''>Assign</button>
+                                                </div>
+
+                                          </p>
+
+                                    </div>
+                                    <div class='col-12 p-3'>
+                                          <p>
+                                                <b>Actions</b><br>
+                                                {% if catalogue_entry_obj.status == 2 %}                                          
+                                                      <button class='btn btn-primary btn-sm' id='catalogue-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                {% else %}                                          
+                                                      <button class='btn btn-primary btn-sm' id='catalogue-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                {% endif %}
+                                                
+                                          </p>
+
+                                    </div>
+
+                              </div>
+
+
+                        </div>
+                        <div class='col-9'>
+
+
+                            <ul class="nav nav-tabs">
+                                <li class="nav-item">
+                                  <a class="nav-link active" aria-current="page" href="#">Details</a>
+                                </li>
+                                <li class="nav-item">
+                                      <a class="nav-link " aria-current="page" href="#">Attribute Table</a>
+                                </li>
+                                <li class="nav-item">
+                                      <a class="nav-link " aria-current="page" href="#">Symbology</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link " aria-current="page" href="#">Metadata</a>
+                                </li>
+                          </ul>
+
+
+                              <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+                              <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id" value="{{ catalogue_entry_id  }}">
+                              <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
+                              
+                              <div class="card" >
+                              <div class="card-header fw-bold h4" style="padding:30px;">
+                                    <div class="row">
+                                    <div class="col-6">
+                                          Details
+                                    </div>
+                                    <div class="col-6 text-end">
+                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                                    </div>
+                                    </div>         
+                              </div>
+                              <div class="card-body collapse show" id="box1-card-body">
+
+                                
+                                    <div class='row'>
+                                                <div class='col-3'>
+                                                      Name
+                                                </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
+                                                      {% else %}
+                                                            {{ catalogue_entry_obj.name }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'>
+                                                      &nbsp;
+                                                </div>                        
+
+                                                <div class='col-3'>
+                                                      Custodian
+                                                </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}                                          
+                                                            <select type="text" class="form-control" id="catalogue-custodian-entry" >
+                                                                  <option value="">Select One</option>
+                                                                  {% for cd in custodians_obj %}
+                                                                        {% if catalogue_entry_obj.custodian.id == cd.id %} 
+                                                                              <option value="{{ cd.id }}" selected>{{ cd.name }}</option>
+                                                                        {% else %}
+                                                                              <option value="{{ cd.id }}">{{ cd.name }}</option>
+                                                                        {% endif %}
+                                                                  {% endfor %}                                                            
+                                                            </select>
+                                                            {{ catalogue_entry_obj.catalogue_entry.custodian.name }}
+                                                      {% else %}
+                                                            {{ catalogue_entry_obj.catalogue_entry.custodian.name }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'>
+                                                      &nbsp;
+                                                </div>       
+
+                                                <div class='col-3'>
+                                                      Last Updated Date Time
+                                                </div>
+
+                                                <div class='col-5 p-1'>                              
+                                                      {{ catalogue_entry_obj.updated_at }}
+                                                </div>
+                                                <div class='col-4'>
+                                                      &nbsp;
+                                                </div>       
+
+
+                                    </div>
+                              </div>
+
+                        </div>
+                        <BR>
+
+                        <div class="card" >
+                              <div class="card-header fw-bold h4" style="padding:30px;">
+                                    <div class="row">
+                                    <div class="col-6">
+                                          Description
+                                    </div>
+                                    <div class="col-6 text-end">
+                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                    </div>
+                                    </div>         
+                              </div>
+                              <div class="card-body collapse show" id="box2-card-body">
+                                    <div class='row'>
+                                          <div class='col-12'>
+                                                {% if has_edit_access is True %}     
+                                                      <textarea class="form-control"id="catalogue-entry-description" rows="3">{{ catalogue_entry_obj.description }}</textarea>                                    
+                                                      &nbsp;
+                                                {% else %}
+                                                      {{ catalogue_entry_obj.description }}
+                                                {% endif %}
+                                          </div>                        
+                                    </div>
+                              </div>
+                        </div>
+                        <BR>
+
+                        <div class="card" >
+                              <div class="card-header fw-bold h4" style="padding:30px;">
+                                    <div class="row">
+                                    <div class="col-6">
+                                          Notification
+                                    </div>
+                                    <div class="col-6 text-end">
+                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
+                                    </div>
+                                    </div>         
+                              </div>
+                              <div class="card-body collapse show" id="box4-card-body">
+                                    Work in Progress
+                              </div>
+                        </div>
+                        <div class='col-12 pt-2'>
+                                    <div class='row'>
+                                          <div class='col-6'>
+                                                &nbsp;
+                                          </div>
+                                          <div class='col-6 text-end'>
+                                                {% if has_edit_access is True %}
+                                                      <button class="btn btn-primary" id='catalogue-entry-btn-save' aria-current="page" >Save</button>  
+                                                      <button class="btn btn-primary" id='catalogue-entry-btn-save-exit'  aria-current="page" >Save and exit</button>  
+                                                {% endif %}
+                                          </div>
+
+                                    </div>
+                        </div>
+                  </div>
+            </div>
+
+            <script>
+                kbcatalogue.init_catalogue_item();
+
+            </script>
+      {% else %}
+            <div class="container" id="dashboard-table-container">
+                  <h3>Permission Denied.  You are not authenticated.</h3>
+            </div>
+      {% endif %}
+{% endblock %}
