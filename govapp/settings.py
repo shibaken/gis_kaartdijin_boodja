@@ -209,7 +209,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = decouple.config("EMAIL_HOST", default="smtp.lan.fyi")
 EMAIL_PORT = decouple.config("EMAIL_PORT", default=25, cast=int)
 DEFAULT_FROM_EMAIL = "no-reply@dbca.wa.gov.au"
-
+EMAIL_INSTANCE = decouple.config("EMAIL_INSTANCE", default="PROD")
+ 
 # Group Settings
 # This must match what is in the database
 GROUP_ADMINISTRATOR_ID = 1

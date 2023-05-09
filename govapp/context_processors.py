@@ -23,5 +23,6 @@ def variables(request: http.HttpRequest) -> dict[str, Any]:
         "template_group": "kaartdijinboodja",
         "template_title": "",
         "app_build_url": conf.settings.DEV_APP_BUILD_URL,
-        "GIT_COMMIT_HASH": conf.settings.GIT_COMMIT_HASH
+        "GIT_COMMIT_HASH": conf.settings.GIT_COMMIT_HASH,
+        "DJANGO_SETTINGS": conf.settings
     }

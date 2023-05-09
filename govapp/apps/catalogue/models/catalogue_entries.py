@@ -172,7 +172,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
             bool: Whether the Catalogue Entry is unlocked.
         """
         # Check and Return
-        return self.status in (CatalogueEntryStatus.DRAFT, CatalogueEntryStatus.NEW_DRAFT)
+        return self.status in (CatalogueEntryStatus.DRAFT, CatalogueEntryStatus.NEW_DRAFT, CatalogueEntryStatus.PENDING)
 
     def is_new(self) -> bool:
         """Determines whether the Catalogue Entry is a new draft.
@@ -231,9 +231,11 @@ class CatalogueEntry(mixins.RevisionedMixin):
             # Send Emails
             notifications_utils.catalogue_entry_lock(self)
 
+
+            
             # Success!
             return True
-
+    
         # Failed
         return False
 
@@ -292,6 +294,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
         # 1. In the Catalogue Editors group
         # 2. One of this Catalogue Entry's editors
         if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
+            pass
+        if accounts_utils.is_administrator(user):
             # Assign user
             self.assigned_to = user
             self.save()
