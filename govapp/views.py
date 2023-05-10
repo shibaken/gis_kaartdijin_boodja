@@ -12,7 +12,8 @@ from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
 from govapp.apps.publisher.models import workspaces as publish_workspaces_models
-from govapp.apps.catalogue.models import layer_symbology as catalogue_layer_symbology
+from govapp.apps.catalogue.models import layer_symbology as catalogue_layer_symbology_models
+from govapp.apps.catalogue.models import layer_metadata as catalogue_layer_metadata_models
 from govapp.apps.accounts import utils
 
 # Typing
@@ -226,7 +227,7 @@ class CatalogueEntriesView(base.TemplateView):
         catalogue_entry_list = []
         catalogue_id = self.kwargs['pk']
         symbology_definition = ''
-
+        catalogue_layer_metadata = None
 
         custodians_obj = custodians_models.Custodian.objects.all()
         catalogue_entry_obj = catalogue_entries_models.CatalogueEntry.objects.get(id=self.kwargs['pk'])
@@ -260,9 +261,13 @@ class CatalogueEntriesView(base.TemplateView):
                 has_edit_access = True
 
 
-        catalogue_layer_symbology_obj = catalogue_layer_symbology.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
+        catalogue_layer_symbology_obj = catalogue_layer_symbology_models.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
         if catalogue_layer_symbology_obj.count() > 0:
             symbology_definition = catalogue_layer_symbology_obj[0]
+
+        catalogue_layer_metadata_obj = catalogue_layer_metadata_models.LayerMetadata.objects.filter(catalogue_entry=catalogue_id)
+        if catalogue_layer_metadata_obj.count() > 0:
+            catalogue_layer_metadata = catalogue_layer_metadata_obj[0]
 
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
@@ -271,6 +276,7 @@ class CatalogueEntriesView(base.TemplateView):
         context['catalogue_entry_id'] = self.kwargs['pk']
         context['tab'] = self.kwargs['tab']
         context['symbology_definition'] = symbology_definition
+        context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['has_edit_access'] = has_edit_access
     
         # Render Template and Return
