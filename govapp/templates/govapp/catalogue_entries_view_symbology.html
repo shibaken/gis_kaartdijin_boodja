@@ -15,10 +15,10 @@
           <div class='row'>
                 <div class='col-12'>
                       {% if has_edit_access is True %}     
-                            <textarea class="form-control" rows='20' id="catalogue-entry-symbology-definition" rows="3">{{ symbology_definition.sld }}</textarea>                                    
+                            <textarea class="form-control" rows='20' id="catalogue-entry-symbology-definition" >{{ symbology_definition.sld }}</textarea>                                    
                             &nbsp;
                       {% else %}
-                            {{ symbology_definition }}
+                            <textarea readonly class="form-control" rows='20' > {{ symbology_definition.sld }}</textarea>      
                       {% endif %}
                 </div>                        
           </div>
