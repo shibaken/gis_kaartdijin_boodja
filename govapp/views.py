@@ -12,6 +12,7 @@ from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
 from govapp.apps.publisher.models import workspaces as publish_workspaces_models
+from govapp.apps.catalogue.models import layer_symbology as catalogue_layer_symbology
 from govapp.apps.accounts import utils
 
 # Typing
@@ -223,8 +224,13 @@ class CatalogueEntriesView(base.TemplateView):
         has_edit_access = False
         pe_list = []
         catalogue_entry_list = []
+        catalogue_id = self.kwargs['pk']
+        symbology_definition = ''
+
+
         custodians_obj = custodians_models.Custodian.objects.all()
         catalogue_entry_obj = catalogue_entries_models.CatalogueEntry.objects.get(id=self.kwargs['pk'])
+
         # publish_workspaces = publish_workspaces_models.Workspace.objects.all()
 
         # # START - To be improved later todo a reverse table join      
@@ -253,11 +259,18 @@ class CatalogueEntriesView(base.TemplateView):
              if catalogue_entry_obj.status == 1 or catalogue_entry_obj.status == 4 or catalogue_entry_obj.status ==5:
                 has_edit_access = True
 
+
+        catalogue_layer_symbology_obj = catalogue_layer_symbology.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
+        if catalogue_layer_symbology_obj.count() > 0:
+            symbology_definition = catalogue_layer_symbology_obj[0]
+
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
         context['custodians_obj'] = custodians_obj
         context['system_users'] = system_users_list
         context['catalogue_entry_id'] = self.kwargs['pk']
+        context['tab'] = self.kwargs['tab']
+        context['symbology_definition'] = symbology_definition
         context['has_edit_access'] = has_edit_access
     
         # Render Template and Return

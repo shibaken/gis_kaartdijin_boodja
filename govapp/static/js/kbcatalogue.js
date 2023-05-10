@@ -1,6 +1,7 @@
 var kbcatalogue = { 
     var: {
          "catalogue_data_url": "/api/catalogue/entries/",
+         "catalogue_layer_symbology_url": "/api/catalogue/layers/symbologies/",
          catalogue_status: {
             1: "New Draft",
             2: "Locked",
@@ -29,6 +30,16 @@ var kbcatalogue = {
             kbcatalogue.save_catalogue('save-and-exit');
         });      
 
+        $( "#catalogue-entry-symbology-btn-save" ).click(function() {
+            console.log("Save Publish Table");
+            kbcatalogue.save_symbology('save');
+        });
+        $( "#ccatalogue-entry-symbology-btn-save-exit" ).click(function() {
+            console.log("Save Publish Table");
+            kbcatalogue.save_symbology('save-and-exit');
+        });   
+
+        
 
         $( "#catalogue-lock" ).click(function() {
             console.log("Locking");
@@ -51,6 +62,7 @@ var kbcatalogue = {
 
         var catalogue_entry_id = $('#catalogue_entry_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
+        var pagetab = $('#pagetab').val();
 
         $.ajax({
             url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/"+status_url+"/",
@@ -60,7 +72,7 @@ var kbcatalogue = {
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {
-                window.location = "/publish/"+publish_id;       
+                window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
             },
             error: function (error) {
                  alert("ERROR Changing Status");
@@ -73,7 +85,8 @@ var kbcatalogue = {
         var catalogueassignedto = $('#catalogue-assigned-to').val();
         var catalogue_entry_id = $('#catalogue_entry_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
-        
+        var pagetab = $('#pagetab').val();
+
         if (catalogueassignedto.length > 0) {  
             $.ajax({
                 url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/assign/"+catalogueassignedto+"/",
@@ -83,7 +96,7 @@ var kbcatalogue = {
                 success: function (response) {
                     var html = '';
                    
-                    window.location = "/catalogue/entries/"+catalogue_entry_id+"/";
+                    window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/"; 
            
                 },
                 error: function (error) {
@@ -106,6 +119,7 @@ var kbcatalogue = {
         var cataloguedescription = $('#catalogue-entry-description').val();
         var post_data = {"name": cataloguename, "description": cataloguedescription, "custodian": cataloguecustodianentry};
         var csrf_token = $("#csrfmiddlewaretoken").val();
+        var pagetab = $('#pagetab').val();
 
         $.ajax({
             url: kbcatalogue.var.catalogue_data_url+catalogue_id+"/",
@@ -120,7 +134,40 @@ var kbcatalogue = {
                 if (save_status == 'save-and-exit') {
                     window.location = '/catalogue/entries/';
                 } else {
-                   window.location = "/catalogue/entries/"+catalogue_id;
+                   window.location = "/catalogue/entries/"+catalogue_id+"/"+pagetab+"/"; 
+                }
+            },
+            error: function (error) {
+                 alert("ERROR Saving.");
+
+        
+            },
+        });
+
+
+    },
+    save_symbology: function(save_status) {        
+        var catalogue_id = $('#catalogue_entry_id').val();
+        var cataloguesymbologydefinition = $('#catalogue-entry-symbology-definition').val();    
+        var post_data = {"sld": cataloguesymbologydefinition};
+        var layer_symbology_id = $('#catalogue-entry-symbology-definition-id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        var pagetab = $('#pagetab').val();
+
+        $.ajax({
+            url: kbcatalogue.var.catalogue_layer_symbology_url+layer_symbology_id+"/",
+            //method: 'POST',
+            type: 'PUT',
+            //dataType: 'json',
+            headers: {'X-CSRFToken' : csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: 'application/json',
+            success: function (response) {
+
+                if (save_status == 'save-and-exit') {
+                    window.location = '/catalogue/entries/';
+                } else {
+                   window.location = "/catalogue/entries/"+catalogue_id+"/"+pagetab+"/"; 
                 }
             },
             error: function (error) {
@@ -199,7 +246,7 @@ var kbcatalogue = {
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             html+= " <td class='text-end'>";                        
-                            html+="  <a class='btn btn-primary btn-sm' href='/catalogue/entries/"+response.results[i].id+"/'>View</a>";
+                            html+="  <a class='btn btn-primary btn-sm' href='/catalogue/entries/"+response.results[i].id+"/details/'>View</a>";
                             html+="  <button class='btn btn-primary btn-sm'>History</button>";
                             html+="  </td>";
                             html+= "<tr>";
@@ -244,6 +291,4 @@ var kbcatalogue = {
             },
         });    
     },
-
-
 }
