@@ -14,15 +14,24 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     filter_horizontal = ["editors"]
+    search_fields = ('id','name',)
 
+class CustodianAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('id','name','contact_name','contact_email','contact_phone')
+
+class EmailNotificationAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('id','name','email')
+
+class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('catalogue_entry__id','sld')
 
 # Register Models
 admin.site.register(models.catalogue_entries.CatalogueEntry, CatalogueEntryAdmin)
-admin.site.register(models.custodians.Custodian, reversion.admin.VersionAdmin)
+admin.site.register(models.custodians.Custodian, CustodianAdmin)
 admin.site.register(models.layer_attributes.LayerAttribute, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_metadata.LayerMetadata, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_submissions.LayerSubmission, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_subscriptions.LayerSubscription, reversion.admin.VersionAdmin)
-admin.site.register(models.layer_symbology.LayerSymbology, reversion.admin.VersionAdmin)
-admin.site.register(models.notifications.EmailNotification, reversion.admin.VersionAdmin)
+admin.site.register(models.layer_symbology.LayerSymbology, LayerSymbologyAdmin)
+admin.site.register(models.notifications.EmailNotification, EmailNotificationAdmin)
 admin.site.register(models.notifications.WebhookNotification, reversion.admin.VersionAdmin)
