@@ -1,0 +1,37 @@
+<div class="card" >
+    <div class="card-header fw-bold h4" style="padding:30px;">
+          <div class="row">
+          <div class="col-6">
+                Symbology Definition 
+          </div>
+          <div class="col-6 text-end">
+                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+          </div>
+          </div>         
+    </div>
+    <div class="card-body collapse show" id="box2-card-body">        
+        <div class='row'>
+            <div class='col-3'>
+                Created
+            </div>
+            <div class='col-5 p-1'>
+                    {{ catalogue_layer_metadata.created_at }}
+            </div>
+            <div class='col-4'>
+                &nbsp;
+            </div>  
+
+            <div class='col-3'>
+                Name
+            </div>
+            <div class='col-5 p-1'>
+                    {{ catalogue_layer_metadata.catalogue_entry.name }}
+            </div>
+            <div class='col-4'>
+                &nbsp;
+            </div>  
+
+
+        </div>
+    </div>
+</div>
