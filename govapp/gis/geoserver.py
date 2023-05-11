@@ -229,6 +229,7 @@ class GeoServer:
         response.raise_for_status()
 
     def validate_style(self, sld: str) -> Optional[dict[str, Any]]:
+        #return None
         """Validates SLD using the GeoServer OGC API.
 
         Args:
