@@ -46,8 +46,9 @@ class CDDPPublishChannelFormat(models.IntegerChoices):
 @reversion.register()
 class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
-    #name = models.TextField()
-    #description = models.TextField(blank=True)
+    
+    name = models.TextField(blank=True, null=True, default='')
+    #description = models.TextField(blank=True)    
     published_at = models.DateTimeField(blank=True, null=True)
     format = models.IntegerField(choices=CDDPPublishChannelFormat.choices)  # noqa: A003
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
@@ -73,15 +74,15 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.publish_entry.name}"
 
-    @property
-    def name(self) -> str:
-        """Proxies the Publish Entry's name to this model.
+    # @property
+    # def name(self) -> str:
+    #     """Proxies the Publish Entry's name to this model.
 
-        Returns:
-            str: Name of the Publish Entry.
-        """
-        # Retrieve and Return
-        return self.publish_entry.name
+    #     Returns:
+    #         str: Name of the Publish Entry.
+    #     """
+    #     # Retrieve and Return
+    #     return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
@@ -122,11 +123,12 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         """Publishes the Catalogue Entry to Azure if applicable."""
         # Log
         log.info(f"Publishing '{self}' to Azure")
-
+        print ('publish_azure')
         # Retrieve the Layer File from Storage
         filepath = sharepoint.sharepoint_input().get_from_url(
             url=self.publish_entry.catalogue_entry.active_layer.file,
         )
+        print (filepath)
 
         # Select Conversion Function
         match self.format:
@@ -138,9 +140,13 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 function = gis.conversions.to_geodatabase
 
         # Convert Layer to Chosen Format
+        # converted = function(
+        #     filepath=filepath,
+        #     layer=self.publish_entry.catalogue_entry.metadata.name,
+        # )
         converted = function(
             filepath=filepath,
-            layer=self.publish_entry.catalogue_entry.metadata.name,
+            layer=self.name,
         )
 
         # Construct Path
