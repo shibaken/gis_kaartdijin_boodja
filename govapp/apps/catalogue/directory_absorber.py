@@ -48,7 +48,7 @@ class Absorber:
         # The file is renamed to include a UTC timestamp, to avoid collisions
         timestamp = datetime.datetime.utcnow()
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
-        storage_directory = f"{self.storage.get_data_storage_path()}/{timestamp.year}"
+        storage_directory = f"{self.storage.get_data_storage_path()}/{timestamp.year}/"
         if not os.path.exists(storage_directory):
             os.makedirs(storage_directory)
 
