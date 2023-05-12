@@ -236,3 +236,9 @@ GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
 if platform.machine() == "arm64":
     GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
     GEOS_LIBRARY_PATH = "/opt/homebrew/opt/geos/lib/libgeos_c.dylib"
+
+
+# Local Storage Paths
+PENDING_IMPORT_PATH=decouple.config("PENDING_IMPORT_PATH", default="./pending_imports/")
+DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
+
