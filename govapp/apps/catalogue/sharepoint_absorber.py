@@ -57,8 +57,9 @@ class Absorber:
 
         # Log
         log.info(f"Retrieved '{path}' -> '{filepath}'")
-        log.info(f"Archived '{path}' -> {archive_path} ({archive})")
-        storage_path = conf.settings.PENDING_IMPORT_PATH+filepath.stem+filepath.suffix)
+        log.info(f"Archived '{path}' -> {archive_path} ({archive})")    
+        storage_path = conf.settings.PENDING_IMPORT_PATH+filepath.stem+filepath.suffix
+        
         #storage_path = conf.settings.PENDING_IMPORT_PATH+ 
         self.local_storage.move_to_storage(filepath, storage_path) 
         # Copy sharepoint files to a local storage
