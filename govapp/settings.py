@@ -244,3 +244,5 @@ if platform.machine() == "arm64":
 PENDING_IMPORT_PATH=decouple.config("PENDING_IMPORT_PATH", default="./pending_imports/")
 DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
+
+TIME_ZONE = 'Australia/Perth'
