@@ -13,6 +13,7 @@ from django.db import transaction
 
 # Local
 from govapp.common import sharepoint
+from govapp.common import local_storage
 from govapp.gis import readers
 from govapp.apps.catalogue import models
 from govapp.apps.catalogue import notifications
@@ -30,6 +31,7 @@ class Absorber:
         """Instantiates the Absorber."""
         # Storage
         self.storage = sharepoint.sharepoint_input()
+        self.local_storage = local_storage.LocalStorage()
 
     def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
@@ -56,7 +58,9 @@ class Absorber:
         # Log
         log.info(f"Retrieved '{path}' -> '{filepath}'")
         log.info(f"Archived '{path}' -> {archive_path} ({archive})")
-
+        storage_path = conf.settings.PENDING_IMPORT_PATH+filepath.stem+filepath.suffix)
+        #storage_path = conf.settings.PENDING_IMPORT_PATH+ 
+        self.local_storage.move_to_storage(filepath, storage_path) 
         # Copy sharepoint files to a local storage
         ## Write code to move share point files with ENV in settings
 

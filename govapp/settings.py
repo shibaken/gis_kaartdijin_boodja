@@ -221,10 +221,12 @@ GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
 # Cron Jobs
 # https://django-cron.readthedocs.io/en/latest/installation.html
 # https://django-cron.readthedocs.io/en/latest/configuration.html
-CRON_SCANNER_CLASS = "govapp.apps.catalogue.cron.ScannerCronJob"
-CRON_SCANNER_PERIOD_MINS = 15  # Run every 5 minutes
+#CRON_SCANNER_CLASS = "govapp.apps.catalogue.cron.ScannerCronJob"
+CRON_SCANNER_PERIOD_MINS = 5  # Run every 5 minutes
 CRON_CLASSES = [
-    CRON_SCANNER_CLASS,
+    "govapp.apps.catalogue.cron.SharepointScannerCronJob",
+    "govapp.apps.catalogue.cron.DirectoryScannerCronJob"
+    #CRON_SCANNER_CLASS,
 ]
 
 # GeoServer Settings
