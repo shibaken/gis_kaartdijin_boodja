@@ -17,13 +17,14 @@ from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.publisher import notifications as notifications_utils
 from govapp.apps.catalogue.models import catalogue_entries
 
+
 # Typing
 from typing import Optional, Union, TYPE_CHECKING
 
 # Type Checking
 if TYPE_CHECKING:
     from govapp.apps.publisher.models import notifications
-    from govapp.apps.publisher.models import publish_channels
+#    from govapp.apps.publisher.models import publish_channels
 
 
 # Shortcuts
@@ -141,11 +142,15 @@ class PublishEntry(mixins.RevisionedMixin):
 
         # Log
         log.info(f"Publishing '{self.catalogue_entry}' - '{self.cddp_channel}' ({symbology_only=})")
-
+        from govapp.apps.publisher.models.publish_channels import CDDPPublishChannel
         # Handle Errors
         try:
             # Publish!
-            self.cddp_channel.publish(symbology_only)  # type: ignore[union-attr]
+            publish_channel_obj = CDDPPublishChannel.objects.filter(publish_entry=self.id)
+            for pc in publish_channel_obj:
+                pc.publish(symbology_only)
+
+            #self.cddp_channel.publish(symbology_only)  # type: ignore[union-attr]
 
         except Exception as exc:
             # Log

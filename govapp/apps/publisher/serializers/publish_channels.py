@@ -16,7 +16,7 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
         model = models.publish_channels.CDDPPublishChannel
         fields = (
             "id",
-            #"name",
+            "name",
             #"description",
             "published_at",
             "format",
@@ -26,8 +26,7 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
             "publish_entry",
         )
         read_only_fields = (
-            "id",
-            "name",
+            "id",        
             "published_at",
             "publish_entry",
         )
@@ -43,7 +42,6 @@ class CDDPPublishChannelCreateSerializer(serializers.ModelSerializer):
         # This allows the `create` action to specify a Publish Entry
         read_only_fields = (
             "id",
-            "name",
             "published_at",
         )
 

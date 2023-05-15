@@ -50,6 +50,8 @@ class Absorber:
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
         storage_directory = f"{self.storage.get_data_storage_path()}/{timestamp.year}/"
         if not os.path.exists(storage_directory):
+            print ("creating directory")
+            print (storage_directory)
             os.makedirs(storage_directory)
 
         storage_path = f"{storage_directory}{filepath.stem}.{timestamp_str}{self.storage.get_path_suffix(path)}"
@@ -66,11 +68,11 @@ class Absorber:
 
         # Loop through layers
         for layer in reader.layers():
-             # Log
-             log.info(f"Absorbing layer '{layer.name}' from '{storage_path}'")
+            # Log
+            log.info(f"Absorbing layer '{layer.name}' from '{storage_path}'")
 
-             # Absorb layer
-             self.absorb_layer(pathlib_storage_path, layer, storage_path)
+            # Absorb layer
+            self.absorb_layer(pathlib_storage_path, layer, storage_path)
 
         # # Delete local temporary copy of file if we can
         # shutil.rmtree(filepath.parent, ignore_errors=True)
@@ -125,7 +127,7 @@ class Absorber:
         """
         # Log
         log.info("Creating new catalogue entry")
-
+        
         # Calculate attributes hash
         attributes_hash = utils.attributes_hash(attributes)
 
@@ -196,10 +198,10 @@ class Absorber:
         """
         # Log
         log.info("Updating existing catalogue entry")
-
+        
         # Calculate Layer Submission Attributes Hash
         attributes_hash = utils.attributes_hash(attributes)
-
+        
         # Create New Layer Submission
         layer_submission = models.layer_submissions.LayerSubmission.objects.create(
             description=metadata.description,
@@ -208,18 +210,18 @@ class Absorber:
             created_at=metadata.created_at,
             hash=attributes_hash,
             catalogue_entry=catalogue_entry,
-        )        
+        )    
+            
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate()
         
         # Check Success
         success = not layer_submission.is_declined()
-
+        
         # Check Layer Submission
         if success:
             # Check for Publish Entry
-            if hasattr(catalogue_entry, "publish_entry"):
-                pass
+            if hasattr(catalogue_entry, "publish_entry"):                
                 # Publish
                 catalogue_entry.publish_entry.publish()  # type: ignore[union-attr]
 
@@ -229,6 +231,5 @@ class Absorber:
         else:
             # Send Update Failure Email
             directory_notifications.catalogue_entry_update_failure(catalogue_entry)
-        
         # Return
         return success

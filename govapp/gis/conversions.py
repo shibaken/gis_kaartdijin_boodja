@@ -43,12 +43,14 @@ def to_geopackage(filepath: pathlib.Path, layer: str) -> pathlib.Path:
             "-overwrite",
             str(output_filepath),
             str(filepath),
+            "-nln",
             str(layer),
         ]
     )
-
+    converted = {"uncompressed_filepath": output_filepath.parent}
     # Return
-    return output_filepath
+    return converted
+    #return output_filepath
 
 
 def to_geojson(filepath: pathlib.Path, layer: str) -> pathlib.Path:
@@ -79,12 +81,14 @@ def to_geojson(filepath: pathlib.Path, layer: str) -> pathlib.Path:
             "-overwrite",
             str(output_filepath),
             str(filepath),
+            "-nln",
             str(layer),
         ]
     )
-
+    converted = {"uncompressed_filepath": output_filepath.parent}
     # Return
-    return output_filepath
+    return converted
+    #return output_filepath
 
 
 def to_shapefile(filepath: pathlib.Path, layer: str) -> pathlib.Path:
@@ -110,7 +114,9 @@ def to_shapefile(filepath: pathlib.Path, layer: str) -> pathlib.Path:
     output_filepath = pathlib.Path(output_dir) / f"{layer}.shp"
     output_filepath.mkdir(parents=True, exist_ok=True)
     output_filepath = output_filepath / f"{layer}.shp"
-
+    print ("OUTPUTDDIR")
+    print (output_dir)
+    print (output_filepath)
     # Run Command
     subprocess.check_call(  # noqa: S603,S607
         [
@@ -118,15 +124,17 @@ def to_shapefile(filepath: pathlib.Path, layer: str) -> pathlib.Path:
             "-overwrite",
             str(output_filepath),
             str(filepath),
+            "-nln",
             str(layer),
         ]
     )
 
     # Compress!
     compressed_filepath = compression.compress(output_filepath.parent)
+    converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent}
 
     # Return
-    return compressed_filepath
+    return converted
 
 
 def to_geodatabase(filepath: pathlib.Path, layer: str) -> pathlib.Path:
