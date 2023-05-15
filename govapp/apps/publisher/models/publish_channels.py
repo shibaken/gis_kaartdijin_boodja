@@ -42,6 +42,7 @@ class CDDPPublishChannelFormat(models.IntegerChoices):
     GEOPACKAGE = 1
     SHAPEFILE = 2
     GEODATABASE = 3
+    GEOJSON = 4
 
 
 @reversion.register()
@@ -142,6 +143,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 function = gis.conversions.to_shapefile
             case CDDPPublishChannelFormat.GEODATABASE:
                 function = gis.conversions.to_geodatabase
+            case CDDPPublishChannelFormat.GEOJSON:
+                function = gis.conversions.to_geojson
 
         # Convert Layer to Chosen Format
         # converted = function(
@@ -161,8 +164,13 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         file_names = os.listdir(publish_directory['uncompressed_filepath'])
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
-            if os.path.isfile(new_output_path):
-                    os.remove(new_output_path)
+            
+            if self.format == 3:
+                if os.path.isdir(new_output_path): 
+                    shutil.rmtree(new_output_path)
+            else:
+                if os.path.isfile(new_output_path):                    
+                        os.remove(new_output_path)   
             shutil.move(os.path.join(publish_directory['uncompressed_filepath'], file_name), output_path)
             
         # # Push to Azure
