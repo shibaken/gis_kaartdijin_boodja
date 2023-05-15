@@ -2,6 +2,7 @@
 import os
 import pathlib
 import tempfile
+import shutil
 
 # Third-Party
 from django import conf
@@ -24,7 +25,8 @@ class LocalStorage():
     
     def move_to_storage(self, from_file_location, to_file_location):
         try:
-            os.rename(from_file_location,to_file_location)
+            #os.rename(from_file_location,to_file_location)
+            shutil.move(from_file_location,to_file_location)
         except Exception as e:
             print (e)
             return False
