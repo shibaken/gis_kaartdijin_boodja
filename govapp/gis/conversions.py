@@ -168,12 +168,16 @@ def to_geodatabase(filepath: pathlib.Path, layer: str) -> pathlib.Path:
             "-overwrite",
             str(output_filepath),
             str(filepath),
+            "-nln",
             str(layer),
         ]
     )
 
     # Compress!
-    compressed_filepath = compression.compress(output_filepath.parent)
+    #compressed_filepath = compression.compress(output_filepath.parent)
 
+    compressed_filepath = compression.compress(output_filepath.parent)
+    converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent}
     # Return
-    return compressed_filepath
+    return converted
+    #return compressed_filepath
