@@ -188,10 +188,12 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         log.info(f"Publishing '{self}' to SharePoint")
 
         # Retrieve the Layer File from Storage
-        filepath = sharepoint.sharepoint_input().get_from_url(
-            url=self.publish_entry.catalogue_entry.active_layer.file,
-        )
+        # filepath = sharepoint.sharepoint_input().get_from_url(
+        #     url=self.publish_entry.catalogue_entry.active_layer.file,
+        # )
+        filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file)  
 
+        
         # Select Conversion Function
         match self.format:
             case CDDPPublishChannelFormat.GEOPACKAGE:
@@ -200,22 +202,40 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 function = gis.conversions.to_shapefile
             case CDDPPublishChannelFormat.GEODATABASE:
                 function = gis.conversions.to_geodatabase
+            case CDDPPublishChannelFormat.GEOJSON:
+                function = gis.conversions.to_geojson
 
         # Convert Layer to Chosen Format
-        converted = function(
+        publish_directory = function(
             filepath=filepath,
             layer=self.publish_entry.catalogue_entry.metadata.name,
-        )
+        )    
+
 
         # Construct Path
-        publish_directory = pathlib.Path(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA)
-        publish_path = str(publish_directory / self.path / converted.name)
+        #publish_directory = pathlib.Path(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA)
+        #publish_path = str(publish_directory / self.path / converted.name)
+
+        geodb_dir = ""
+        if self.format == 3:
+            file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
+            if len(file_names_geodb) == 1:
+                geodb_dir = file_names_geodb[0]
+            
 
         # Push to Sharepoint
-        sharepoint.sharepoint_output().put(
-            path=publish_path,
-            contents=converted.read_bytes(),
-        )
+        file_names = os.listdir(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir))        
+        for file_name in file_names:            
+            new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.path,file_name)            
+            sharepoint.sharepoint_output().put(
+                path=new_output_path,
+                contents=pathlib.Path(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir,file_name)).read_bytes(),
+            )
+
+            # sharepoint.sharepoint_output().put(
+            #     path=os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,filepath),
+            #     contents=pathlib.Path(converted['compressed_filepath']).read_bytes(),
+            # )
 
         # Delete local temporary copy of file if we can
         #shutil.rmtree(filepath.parent, ignore_errors=True)
