@@ -5,6 +5,7 @@
 import logging
 import pathlib
 import shutil
+import os
 
 # Third-Party
 from django import conf
@@ -54,7 +55,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
     path = models.TextField()
-    publish_entry = models.OneToOneField(
+    publish_entry = models.ForeignKey(
         publish_entries.PublishEntry,
         related_name="cddp_channel",
         on_delete=models.CASCADE,
@@ -72,7 +73,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.publish_entry.name}"
+        return f"{self.name}"
 
     # @property
     # def name(self) -> str:
@@ -124,11 +125,14 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Publishing '{self}' to Azure")
         print ('publish_azure')
+        print (self.publish_entry.catalogue_entry.active_layer.file)
+       
         # Retrieve the Layer File from Storage
-        filepath = sharepoint.sharepoint_input().get_from_url(
-            url=self.publish_entry.catalogue_entry.active_layer.file,
-        )
-        print (filepath)
+        # filepath = sharepoint.sharepoint_input().get_from_url(
+        #     url=self.publish_entry.catalogue_entry.active_layer.file,
+        # )
+        
+        filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file)        
 
         # Select Conversion Function
         match self.format:
@@ -144,23 +148,31 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         #     filepath=filepath,
         #     layer=self.publish_entry.catalogue_entry.metadata.name,
         # )
-        converted = function(
+        publish_directory = function(
             filepath=filepath,
             layer=self.name,
         )
 
-        # Construct Path
-        publish_directory = pathlib.Path(self.path)
-        publish_path = str(publish_directory / converted.name)
+        # # Construct Path
+        output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY+"/"+self.path)
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
 
-        # Push to Azure
-        azure.azure_output().put(
-            path=publish_path,
-            contents=converted.read_bytes(),
-        )
+        file_names = os.listdir(publish_directory['uncompressed_filepath'])
+        for file_name in file_names:            
+            new_output_path = os.path.join(output_path,file_name)
+            if os.path.isfile(new_output_path):
+                    os.remove(new_output_path)
+            shutil.move(os.path.join(publish_directory['uncompressed_filepath'], file_name), output_path)
+            
+        # # Push to Azure
+        # azure.azure_output().put(
+        #     path=publish_path,
+        #     contents=converted.read_bytes(),
+        # )
 
         # Delete local temporary copy of file if we can
-        shutil.rmtree(filepath.parent, ignore_errors=True)
+        # shutil.rmtree(filepath.parent, ignore_errors=True)
 
     def publish_sharepoint(self) -> None:
         """Publishes the Catalogue Entry to SharePoint if applicable."""
@@ -198,7 +210,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         )
 
         # Delete local temporary copy of file if we can
-        shutil.rmtree(filepath.parent, ignore_errors=True)
+        #shutil.rmtree(filepath.parent, ignore_errors=True)
 
 
 class GeoServerPublishChannelMode(models.IntegerChoices):
@@ -337,4 +349,4 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         )
 
         # Delete local temporary copy of file if we can
-        shutil.rmtree(filepath.parent, ignore_errors=True)
+        #shutil.rmtree(filepath.parent, ignore_errors=True)

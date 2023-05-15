@@ -360,12 +360,13 @@ var kbpublish = {
     },
     create_publish_cddp: function() {
         var publish_id = $('#publish_id').val();
+        var newpublishname = $('#new-publish-cddp-name').val();
         var newpublishspatialformat = $('#new-publish-cddp-spatial-format').val();
         var newpublishspatialmode = $('#new-publish-cddp-spatial-mode').val();
         var newpublishfrequencytype = $('#new-publish-cddp-frequency-type').val();        
         var newpublishcddppath =  $('#new-publish-cddp-path').val();      
 
-        var post_data = {"format": newpublishspatialformat, "mode": newpublishspatialmode, "frequency": newpublishfrequencytype, "path": newpublishcddppath, "publish_entry": publish_id};
+        var post_data = {"format": newpublishspatialformat, "name" : newpublishname, "mode": newpublishspatialmode, "frequency": newpublishfrequencytype, "path": newpublishcddppath, "publish_entry": publish_id};
         var csrf_token = $("#csrfmiddlewaretoken").val();
        
         $('#new-publish-new-cddp-popup-error').html("");

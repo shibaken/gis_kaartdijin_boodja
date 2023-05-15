@@ -7,11 +7,12 @@ import pathlib
 import shutil
 import tarfile
 import zipfile
+import datetime
+import os
 
 # Third-Party
 import py7zr
 import rarfile
-
 
 # Logging
 log = logging.getLogger(__name__)
@@ -84,9 +85,19 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
         # Return the file unchanged
         return file
 
-    # Construct Path for Extraction
-    extracted_path = file.with_name(f"extracted_{file.stem}")
+    if not os.path.exists('/tmp/gis_processing/'):
+        os.makedirs('/tmp/gis_processing/')
 
+    print ("PREPARING EXTRACTING")
+    print (file.stem)
+    timestamp = datetime.datetime.utcnow()
+    timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
+
+    # Construct Path for Extraction
+    #extracted_path = file.with_name(f"extracted_{file.stem}_{timestamp_str}")
+    extracted_path = pathlib.Path("/tmp/gis_processing/extracted_"+file.stem+"_"+timestamp_str)
+
+    print (extracted_path)
     # Log
     log.info(f"Detected compression '{algorithm}'")
     log.info(f"Decompressing '{file}' -> '{extracted_path}'")

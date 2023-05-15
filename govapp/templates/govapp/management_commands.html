@@ -18,7 +18,7 @@
                                 </thead>
                                 <tbody id='publish-cddp-tbody'>
                                 <tr>
-                                      <td>Run Scanner</td>
+                                      <td>Run Directory Scanner</td>
                                       <td class='text-end'><button class='btn btn-primary btn-sm' id='run-scanner'>RUN</button>
                                         <button class="btn btn-primary btn-sm" type="button" id='run-scanner-loader' disabled>
                                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -32,6 +32,21 @@
                                         <span id='scanner-job-response-error' class='text-danger'></span>
                                        </td>
                                 </tr>
+                                <tr>
+                                    <td>Run Sharepoint Scanner</td>
+                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-sharepoint-scanner'>RUN</button>
+                                      <button class="btn btn-primary btn-sm" type="button" id='run-sharepoint-scanner-loader' disabled>
+                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                          <span class="visually-hidden">Loading...</span>
+                                        </button>
+
+
+                                     </td>
+                                     <td>
+                                      <span id='sharepoint-scanner-job-response-success' class='text-success'></span>
+                                      <span id='sharepoint-scanner-job-response-error' class='text-danger'></span>
+                                     </td>
+                              </tr>                                
                                 </tbody>
                           </table>                                  
                     </div>      
