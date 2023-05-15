@@ -202,26 +202,34 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 function = gis.conversions.to_shapefile
             case CDDPPublishChannelFormat.GEODATABASE:
                 function = gis.conversions.to_geodatabase
-        
+            case CDDPPublishChannelFormat.GEOJSON:
+                function = gis.conversions.to_geojson
+
         # Convert Layer to Chosen Format
         publish_directory = function(
             filepath=filepath,
             layer=self.publish_entry.catalogue_entry.metadata.name,
-        )        
+        )    
+
+
         # Construct Path
         #publish_directory = pathlib.Path(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA)
         #publish_path = str(publish_directory / self.path / converted.name)
-         
+
+        geodb_dir = ""
+        if self.format == 3:
+            file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
+            if len(file_names_geodb) == 1:
+                geodb_dir = file_names_geodb[0]
+            
+
         # Push to Sharepoint
-        file_names = os.listdir(publish_directory['uncompressed_filepath'])
-
+        file_names = os.listdir(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir))        
         for file_name in file_names:            
-            new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.path,file_name)
-            print (new_output_path)
-
+            new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.path,file_name)            
             sharepoint.sharepoint_output().put(
                 path=new_output_path,
-                contents=pathlib.Path(os.path.join(publish_directory['uncompressed_filepath'],file_name)).read_bytes(),
+                contents=pathlib.Path(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir,file_name)).read_bytes(),
             )
 
             # sharepoint.sharepoint_output().put(
