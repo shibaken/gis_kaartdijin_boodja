@@ -164,7 +164,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         file_names = os.listdir(publish_directory['uncompressed_filepath'])
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
-            
+
             if self.format == 3:
                 if os.path.isdir(new_output_path): 
                     shutil.rmtree(new_output_path)
@@ -200,6 +200,9 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 function = gis.conversions.to_shapefile
             case CDDPPublishChannelFormat.GEODATABASE:
                 function = gis.conversions.to_geodatabase
+            case CDDPPublishChannelFormat.GEOJSON:
+                function = gis.conversions.to_geojson
+
 
         # Convert Layer to Chosen Format
         converted = function(
@@ -332,9 +335,10 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         log.info(f"Publishing '{self}' (Layer) to GeoServer")
 
         # Retrieve the Layer File from Storage
-        filepath = sharepoint.sharepoint_input().get_from_url(
-            url=self.publish_entry.catalogue_entry.active_layer.file,
-        )
+        # filepath = sharepoint.sharepoint_input().get_from_url(
+        #     url=self.publish_entry.catalogue_entry.active_layer.file,
+        # )
+        filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
 
         # Convert Layer to GeoPackage
         geopackage = gis.conversions.to_geopackage(
