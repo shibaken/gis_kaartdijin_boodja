@@ -367,7 +367,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         gis.geoserver.geoserver().upload_geopackage(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
-            filepath=geopackage,
+            filepath=geopackage['uncompressed_filepath'],
         )
 
         # Set Default Style
