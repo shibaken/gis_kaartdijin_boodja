@@ -21,7 +21,8 @@ var kbpublish = {
             publish_cddp_format: {
                 1: "Geopackage",
                 2: "Shapefile",
-                3: "Geodatabase"
+                3: "Geodatabase",
+                4: "GeoJSON"
             },
             publish_cddp_mode: {
                 1: "Azure",
