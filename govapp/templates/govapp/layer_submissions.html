@@ -7,14 +7,13 @@
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
 
       <div class="container" id="dashboard-table-container">
- 
-            {% include "govapp/catalogue_nav.html" %}
 
+            {% include "govapp/catalogue_nav.html" %}
                   <div class="card" >
                         <div class="card-header fw-bold h4" style="padding:30px;">
                               <div class="row">
                               <div class="col-6">
-                                    Catalogue Entries
+                                    Layer Submissions
                               </div>
                               <div class="col-6 text-end">
                                     <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
@@ -211,10 +210,7 @@
 
       </div>
       <script>
-            kbcatalogue.init_dashboard();
-            $(document).ready(function () {
-                 // $('#example').DataTable();
-            });
+                    
       </script>
 {% else %}
       <div class="container" id="dashboard-table-container">

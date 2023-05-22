@@ -5,7 +5,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="/static/js/kbpublish.pagination.js?ver={{ GIT_COMMIT_HASH }}"></script>
 <script src="/static/js/kbpublish.js?ver={{ GIT_COMMIT_HASH }}"></script>
+<script src="/static/js/kbcatalogue.pagination.js?ver={{ GIT_COMMIT_HASH }}"></script>
 <script src="/static/js/kbcatalogue.js?ver={{ GIT_COMMIT_HASH }}"></script>
 <script src="/static/js/kbmanagementcommands.js?ver={{ GIT_COMMIT_HASH }}"></script>
 <!-- any extra javascript goes here -->

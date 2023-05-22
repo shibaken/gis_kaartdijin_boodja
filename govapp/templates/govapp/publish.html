@@ -101,7 +101,48 @@
                                           <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-btn'>New Publish Entry</button>
                                     </div>
                               </div>
-                        </div>                  
+                        </div>      
+                        
+                        
+
+                        <div class='col-12 pt-2 pb-2 '>
+                              <div class='row'>
+                                    <div class='col-6'>
+                                          <div class="row">
+                                                <div class="col-sm-12 col-md-6">
+                                                            &nbsp;
+                                                </div>
+                                          </div>
+                                    </div>
+                                    <div class='col-6 text-end'>
+                                          <div class="row">
+                                                <div class='col-12 text-end'>
+                                                      <form class="row ">
+                                                            <div class="col-4 text-end">
+                                                                  &nbsp;
+                                                                  
+                                                            </div>
+                                                            <div class="col-5 text-end">
+                                                                  &nbsp;
+                                                            </div>
+                                                            <div class="col-3 text-end">  
+                                                                  <button class="btn btn-secondary btn-sm" aria-current="page" href="#">Excel</button>    
+                                                                  <button class="btn btn-secondary btn-sm" aria-current="page" href="#">CSV</button>
+                                                            </div>
+                                                      </form>
+                                                </div>
+                                          </div>
+                                    </div>                                    
+
+                              </div>
+                        </div>  
+
+
+
+
+
+
+
                         <div class='col-12 pt-2 pb-2 '>
                               <div class='row'>
                                     <div class='col-6'>
@@ -121,21 +162,37 @@
                                           </div>
                                     </div>
                                     <div class='col-6 text-end'>
-                                          <form class="row ">
-                                                <div class="col-4 text-end">
-                                                      &nbsp;
+                                          <div class="row">
+                                                <div class="col-sm-12 col-md-12 text-end">
+                                                      <div class="dataTables_length" id="bookings-table_length">
+                                                            <label>Order By 
+                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm">
+                                                                        <option value="id">ID</option>
+                                                                        <option value="name">Name</option>
+                                                                        <option value="status">Status</option>
+                                                                        <option value="updated_at">Last Updated</option>
+                                                                        <option value="published_at">Last Published</option>
+                                                                        <option value="assigned_to">Assigned To</option>
+                                                                        <option value="custodian">Custodian</option>
+                                                                  </select> 
+                                                            </label>
+                                                      </div>
                                                 </div>
-                                                <div class="col-5 text-end">
-                                                      &nbsp;
-                                                </div>
-                                                <div class="col-3 text-end">  
-                                                      <button class="btn btn-secondary btn-sm" aria-current="page" href="#">Excel</button>    
-                                                      <button class="btn btn-secondary btn-sm" aria-current="page" href="#">CSV</button>
-                                                </div>
-                                          </form>
-                                    </div>
+                                          </div>
+                                    </div>                                    
+
                               </div>
-                        </div>     
+                        </div>   
+
+
+
+
+
+
+
+
+
+ 
                         <div id='publish-table'>
                               <table id="example" class="table" style="width:100%">
                                     <thead class='table-dark'>
@@ -154,7 +211,17 @@
                                           <td colspan="7" class='text-center'>No Results</td>
                                     </tr>
                                     </tbody>
-                              </table>                                  
+                              </table>  
+                              <nav aria-label="Page navigation example">
+                                    <ul class="pagination justify-content-end">
+                                      <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                      <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                      <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    </ul>
+                              </nav>  
+                              
                         </div>           
                         
                   </div>
@@ -164,7 +231,7 @@
       <script>
             kbpublish.init_dashboard();
             $(document).ready(function () {
-                  $('#example').DataTable();
+                 // $('#example').DataTable();
             });
       </script>
 {% else %}

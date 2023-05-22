@@ -32,6 +32,7 @@ var kbpublish = {
             },
 
     },
+    pagination: kbpublish_pagination,
     init_dashboard: function() {    
         $( "#publish-filter-btn" ).click(function() {
             console.log("Reload Publish Table");
