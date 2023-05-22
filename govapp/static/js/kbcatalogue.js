@@ -10,6 +10,7 @@ var kbcatalogue = {
             5: "Pending"
         },         
     },
+    pagination: kbcatalogue_pagination,
     init_dashboard: function() { 
         $( "#catalogue-filter-btn" ).click(function() {
             console.log("Reload Catalogue Table");
@@ -53,6 +54,12 @@ var kbcatalogue = {
             console.log("Assign To");
             kbcatalogue.set_assigned_to();
         });         
+        $( "#catalogue-attribute-new-btn" ).click(function() {
+            console.log("New Catalogue Attribute");
+            $('#NewCatalogueAttributeModal').modal('show');
+        });
+
+        
     },
     change_catalogue_status: function(status) {        
         var status_url = "lock";

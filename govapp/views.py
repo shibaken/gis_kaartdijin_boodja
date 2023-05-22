@@ -8,6 +8,7 @@ from django.views.generic import base
 from django.contrib import auth
 from django import conf
 
+
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
@@ -23,6 +24,29 @@ UserModel = auth.get_user_model()
 
 
 class HomePage(base.TemplateView):
+    """Home page view."""
+
+    # Template name
+    template_name = "govapp/home.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the HomePage view.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        # Construct Context
+        context: dict[str, Any] = {}
+        return http.HttpResponseRedirect('/catalogue/entries/')
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)
+
+class OldCatalogueVue(base.TemplateView):
     """Home page view."""
 
     # Template name
@@ -90,7 +114,7 @@ class PublishPage(base.TemplateView):
         for ce in ce_obj:
             if ce.id not in pe_list:
                 catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
-                print (ce.id)    
+                   
 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
@@ -134,7 +158,7 @@ class PublishView(base.TemplateView):
         for ce in ce_obj:
             if ce.id not in pe_list:
                 catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
-                print (ce.id)    
+                  
             if publish_entry_obj.catalogue_entry:  
                 if ce.id == publish_entry_obj.catalogue_entry.id:
                     catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
@@ -193,10 +217,10 @@ class CatalogueEntriesPage(base.TemplateView):
         for ce in ce_obj:
             if ce.id not in pe_list:
                 catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
-                print (ce.id)    
-
+                
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
+        context['tab'] = 'catalogue_entries'
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
@@ -278,7 +302,59 @@ class CatalogueEntriesView(base.TemplateView):
         context['symbology_definition'] = symbology_definition
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['has_edit_access'] = has_edit_access
+        
     
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
         
+
+
+
+class LayerSubmission(base.TemplateView):
+    """Layer Submissions view."""
+
+    # Template name
+    template_name = "govapp/layer_submissions.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the Submissions view.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        # Construct Context
+        context: dict[str, Any] = {}
+        context['tab'] = 'layer_submission'
+
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)    
+    
+
+class LayerSubscriptions(base.TemplateView):
+    """Layer Submissions view."""
+
+    # Template name
+    template_name = "govapp/layer_subscriptions.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the Submissions view.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        # Construct Context
+        context: dict[str, Any] = {}
+        context['tab'] = 'layer_subscriptions'
+
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)        

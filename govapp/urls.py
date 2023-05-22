@@ -61,6 +61,14 @@ urlpatterns = [
     urls.path("catalogue/entries/", views.CatalogueEntriesPage.as_view()),
     urls.re_path("catalogue/entries/(?P<pk>\d+)/(?P<tab>\w+)/", views.CatalogueEntriesView.as_view()),
 
+    urls.path("layer/submission/", views.LayerSubmission.as_view()),     
+    urls.path("layer/subscriptions/", views.LayerSubscriptions.as_view()),
+
+
+
+
+    urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
+
 ]
 
 # DBCA Template URLs
