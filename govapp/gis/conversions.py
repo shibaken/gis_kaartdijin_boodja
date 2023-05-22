@@ -164,6 +164,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str) -> pathlib.Path:
         [
             "ogr2ogr",
             "-overwrite",
+            "-append",
             str(output_filepath),
             str(filepath),
             "-nln",
