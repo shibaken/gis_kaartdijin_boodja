@@ -78,10 +78,9 @@ def to_geojson(filepath: pathlib.Path, layer: str) -> pathlib.Path:
     subprocess.check_call(  # noqa: S603,S607
         [
             "ogr2ogr",
-            "-overwrite",
+            "-unsetFid",
             str(output_filepath),
-            str(filepath),
-            "-nln",
+            str(filepath),            
             str(layer),
         ]
     )
