@@ -120,9 +120,9 @@ def to_shapefile(filepath: pathlib.Path, layer: str) -> pathlib.Path:
         [
             "ogr2ogr",
             "-overwrite",
+            "-unsetFid",
             str(output_filepath),
-            str(filepath),
-            "-nln",
+            str(filepath),        
             str(layer),
         ]
     )
