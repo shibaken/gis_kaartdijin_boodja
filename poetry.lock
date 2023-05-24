@@ -2710,8 +2710,24 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "wagov-utils"
+version = "1.3"
+description = "DBCA WA GOV utils"
+category = "main"
+optional = false
+python-versions = "*"
+files = []
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/dbca-wa/wagov_utils.git"
+reference = "HEAD"
+resolved_reference = "8875cbecf71d07393defb27f379cd9def8ac2f82"
+
+[[package]]
 name = "webtemplate-dbca"
-version = "2.0.7"
+version = "2.0.11"
 description = "Base HTML templates for DBCA Django projects"
 category = "main"
 optional = false
@@ -2746,4 +2762,4 @@ brotli = ["Brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7446562b3cdb85e592ce334332c6c1e62f333906c00c9a39587fa0b4889d0093"
+content-hash = "b63dd181e4a533f97a2861a5dbef41accb5790f0f3f7ad9c1ece3e6e1012d040"
