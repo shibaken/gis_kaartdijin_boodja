@@ -2711,7 +2711,7 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "wagov-utils"
-version = "1.3"
+version = "1.4"
 description = "DBCA WA GOV utils"
 category = "main"
 optional = false
@@ -2723,7 +2723,7 @@ develop = false
 type = "git"
 url = "https://github.com/dbca-wa/wagov_utils.git"
 reference = "HEAD"
-resolved_reference = "8875cbecf71d07393defb27f379cd9def8ac2f82"
+resolved_reference = "a308f7a9800a16b0fb9db131a23a4f92a807534b"
 
 [[package]]
 name = "webtemplate-dbca"
