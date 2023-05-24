@@ -15,7 +15,7 @@ from govapp.gis import compression
 log = logging.getLogger(__name__)
 
 
-def to_geopackage(filepath: pathlib.Path, layer: str) -> pathlib.Path:
+def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
     """Converts a GIS file to the GeoPackage format.
 
     Args:
@@ -53,7 +53,7 @@ def to_geopackage(filepath: pathlib.Path, layer: str) -> pathlib.Path:
     #return output_filepath
 
 
-def to_geojson(filepath: pathlib.Path, layer: str) -> pathlib.Path:
+def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
     """Converts a GIS file to the GeoJSON format.
 
     Args:
@@ -90,7 +90,7 @@ def to_geojson(filepath: pathlib.Path, layer: str) -> pathlib.Path:
     #return output_filepath
 
 
-def to_shapefile(filepath: pathlib.Path, layer: str) -> pathlib.Path:
+def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
     """Converts a GIS file to the ShapeFile format.
 
     Args:
@@ -112,7 +112,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str) -> pathlib.Path:
     output_dir = tempfile.mkdtemp()
     output_filepath = pathlib.Path(output_dir) / f"{layer}.shp"
     output_filepath.mkdir(parents=True, exist_ok=True)
-    output_filepath = output_filepath / f"{layer}.shp"
+    output_filepath = output_filepath / f"{catalogue_name}.shp"
 
     # Run Command
     subprocess.check_call(  # noqa: S603,S607
@@ -134,7 +134,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str) -> pathlib.Path:
     return converted
 
 
-def to_geodatabase(filepath: pathlib.Path, layer: str) -> pathlib.Path:
+def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
     """Converts a GIS file to the GeoDatabase format.
 
     Args:
