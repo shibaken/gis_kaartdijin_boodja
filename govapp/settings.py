@@ -204,13 +204,17 @@ SHAREPOINT_OUTPUT_PUBLISH_AREA = decouple.config("SHAREPOINT_OUTPUT_PUBLISH_AREA
 AZURE_OUTPUT_SYNC_DIRECTORY = decouple.config("AZURE_OUTPUT_SYNC_DIRECTORY", default="sync")
 
 # Email
-DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+#DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
+#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "wagov_utils.components.utils.email_backend.EmailBackend"
 EMAIL_HOST = decouple.config("EMAIL_HOST", default="smtp.lan.fyi")
 EMAIL_PORT = decouple.config("EMAIL_PORT", default=25, cast=int)
 DEFAULT_FROM_EMAIL = "no-reply@dbca.wa.gov.au"
 EMAIL_INSTANCE = decouple.config("EMAIL_INSTANCE", default="PROD")
- 
+NON_PROD_EMAIL = decouple.config("NON_PROD_EMAIL", default="")
+PRODUCTION_EMAIL= decouple.config("PRODUCTION_EMAIL", default=False, cast=bool)
+EMAIL_DELIVERY = decouple.config("EMAIL_DELIVERY", default="off")
+
 # Group Settings
 # This must match what is in the database
 GROUP_ADMINISTRATOR_ID = 1
