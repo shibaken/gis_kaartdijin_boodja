@@ -145,9 +145,9 @@
                                                 <div class="col-sm-12 col-md-6">
                                                       <div class="dataTables_length" id="bookings-table_length">
                                                             <label>Show 
-                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm">
-                                                                        <option value="10">10</option>
-                                                                        <option value="25">25</option>
+                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="catalogue-limit">
+                                                                        <option value="2">2</option>
+                                                                        <option value="5">5</option>
                                                                         <option value="50">50</option>
                                                                         <option value="100">100</option>
                                                                   </select> entries
@@ -161,7 +161,7 @@
                                                 <div class="col-sm-12 col-md-12 text-end">
                                                       <div class="dataTables_length" id="bookings-table_length">
                                                             <label>Order By 
-                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm">
+                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="catalogue-order-by" >
                                                                         <option value="id">ID</option>
                                                                         <option value="name">Name</option>
                                                                         <option value="status">Status</option>
@@ -196,12 +196,12 @@
                                     </tbody>
                               </table>   
                               <nav aria-label="Page navigation example">
-                                    <ul class="pagination justify-content-end">
-                                      <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    <ul class="pagination justify-content-end" id="paging_navi">
+                                          <!-- <li class="page-item"><a class="page-link" href="#" id="paging_btn_prev">Previous</a></li>
+                                          <li class="page-item"><a class="page-link" href="#"> 1 </a></li>
+                                          <li class="page-item"><a class="page-link" href="#"> 2 </a></li>
+                                          <li class="page-item"><a class="page-link" href="#"> 3 </a></li>
+                                          <li class="page-item"><a class="page-link" href="#" id="paging_btn_next">Next</a></li> -->
                                     </ul>
                               </nav>                               
                         </div>           
