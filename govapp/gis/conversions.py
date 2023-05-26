@@ -15,7 +15,7 @@ from govapp.gis import compression
 log = logging.getLogger(__name__)
 
 
-def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
+def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
     """Converts a GIS file to the GeoPackage format.
 
     Args:
@@ -36,24 +36,38 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pa
     output_dir = tempfile.mkdtemp()
     output_filepath = pathlib.Path(output_dir) / f"{layer}.gpkg"
 
-    # Run Command
-    subprocess.check_call(  # noqa: S603,S607
-        [
-            "ogr2ogr",
-            "-overwrite",
-            str(output_filepath),
-            str(filepath),
-            "-nln",
-            str(layer),
-        ]
-    )
+    if export_method =='geoserver':
+        subprocess.check_call(
+            [
+                "ogr2ogr",
+                "-overwrite",
+                str(output_filepath),
+                str(filepath),
+                str(layer),
+                "-nln",
+                str(layer),
+            ]
+        )
+
+    else:
+        # Run Command
+        subprocess.check_call(  # noqa: S603,S607
+            [
+                "ogr2ogr",
+                "-overwrite",
+                str(output_filepath),
+                str(filepath),
+                "-nln",
+                str(layer),
+            ]
+        )
     converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath}
     # Return
     return converted
     #return output_filepath
 
 
-def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
+def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
     """Converts a GIS file to the GeoJSON format.
 
     Args:
@@ -90,7 +104,7 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathl
     #return output_filepath
 
 
-def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
+def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
     """Converts a GIS file to the ShapeFile format.
 
     Args:
@@ -112,7 +126,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pat
     output_dir = tempfile.mkdtemp()
     output_filepath = pathlib.Path(output_dir) / f"{layer}.shp"
     output_filepath.mkdir(parents=True, exist_ok=True)
-    output_filepath = output_filepath / f"{catalogue_name}.shp"
+    output_filepath = output_filepath / f"{layer}.shp"
 
     # Run Command
     subprocess.check_call(  # noqa: S603,S607
@@ -122,7 +136,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pat
             "-unsetFid",
             str(output_filepath),
             str(filepath),        
-            str(layer),
+            str(catalogue_name),
         ]
     )
 
@@ -134,7 +148,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pat
     return converted
 
 
-def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str) -> pathlib.Path:
+def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
     """Converts a GIS file to the GeoDatabase format.
 
     Args:
