@@ -1,7 +1,7 @@
 var kbcatalogue_pagination = { 
     var: {
         "max_showon_pages" : 10,
-        "beginning_of_pagenumber" : 0
+        "beginning_of_pagenumber" : 0   // 0 means page 1
     },
     init:  function(kbcatalogue, response) {
         let limit = +$('#catalogue-limit').val();
@@ -23,7 +23,7 @@ var kbcatalogue_pagination = {
         // set html of page navigation buttons
         let beginning = this.var.beginning_of_pagenumber;
         let too_many = kbcatalogue.var.total_pages - beginning > this.var.max_showon_pages;
-        let end = too_many ? this.var.beginning_of_pagenumber + this.var.max_showon_pages : kbcatalogue.var.total_pages;
+        let end = too_many ? beginning + this.var.max_showon_pages : kbcatalogue.var.total_pages;
         var prev_status = (beginning > 0) ? null : "disabled";
         var next_status = too_many ? null : "disabled";
         var navi_html = "";

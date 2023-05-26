@@ -208,7 +208,7 @@ var kbcatalogue = {
         }
 
         let add_param = function(param_val, key){
-            if (params && 'name__icontains' in params){
+            if (params && key in params){
                 return;
             }
             if (param_val.length > 0) {
@@ -217,9 +217,7 @@ var kbcatalogue = {
             return;
         };
 
-        if (params && 'name__icontains' in params){
-            add_param($('#catalogue-name').val(), 'name__icontains');
-        }
+        add_param($('#catalogue-name').val(), 'name__icontains');
         add_param($('#catalogue-status').val(), 'status');
         add_param($('#catalogue-description').val(), 'description__icontains');
         add_param($('#catalogue-number').val().replace("PE", ""), 'id');
@@ -286,8 +284,7 @@ var kbcatalogue = {
                         $('.publish-table-button').hide();
 
                         // navigation bar
-                        let limit = +$('#catalogue-limit').val();
-                        kbcatalogue.var.total_pages = response.count / limit;
+                        kbcatalogue.var.total_pages = response.count / +$('#catalogue-limit').val();
                         kbcatalogue.pagination.init(kbcatalogue, response);
 
                     } else {
