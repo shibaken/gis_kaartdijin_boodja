@@ -10,25 +10,25 @@ var kbcatalogue = {
             5: "Pending"
         },
         "total_pages":0,
-        "offset_page":0
+        "current_page":0
     },
     pagination: kbcatalogue_pagination,
     init_dashboard: function() { 
         $( "#catalogue-filter-btn" ).click(function() {
             console.log("Reload Catalogue Table");
-            kbcatalogue.var.offset_page = 0;
+            kbcatalogue.var.current_page = 0;
             kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
         $( "#catalogue-limit" ).change(function() {
             console.log("Reload Catalogue");
-            kbcatalogue.var.offset_page = 0;
+            kbcatalogue.var.current_page = 0;
             kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
         $( "#catalogue-order-by" ).change(function() {
             console.log("Reload Catalogue");
-            kbcatalogue.var.offset_page = 0;
+            kbcatalogue.var.current_page = 0;
             kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
@@ -284,7 +284,7 @@ var kbcatalogue = {
                         $('.publish-table-button').hide();
 
                         // navigation bar
-                        kbcatalogue.var.total_pages = response.count / +$('#catalogue-limit').val();
+                        kbcatalogue.var.total_pages = Math.ceil(response.count / +$('#catalogue-limit').val());
                         kbcatalogue.pagination.init(kbcatalogue, response);
 
                     } else {
