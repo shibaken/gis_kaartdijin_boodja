@@ -210,7 +210,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         publish_directory = function(
             filepath=filepath,
             layer=self.publish_entry.catalogue_entry.metadata.name,
-            catalogue_name=self.publish_entry.catalogue_entry.name
+            catalogue_name=self.publish_entry.catalogue_entry.name,
+            export_method='cddp'
         )    
 
 
@@ -358,11 +359,13 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         #     url=self.publish_entry.catalogue_entry.active_layer.file,
         # )
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
-
+ 
         # Convert Layer to GeoPackage
         geopackage = gis.conversions.to_geopackage(
             filepath=filepath,
             layer=self.publish_entry.catalogue_entry.metadata.name,
+            catalogue_name=self.publish_entry.catalogue_entry.name,
+            export_method='geoserver'
         )
 
         # Push Layer to GeoServer
