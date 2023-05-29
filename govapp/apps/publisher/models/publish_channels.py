@@ -154,7 +154,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         publish_directory = function(
             filepath=filepath,
             layer=self.name,
-            catalogue_name=self.publish_entry.catalogue_entry.name
+            catalogue_name=self.publish_entry.catalogue_entry.name,
+            export_method='cddp'
         )
 
         # # Construct Path
