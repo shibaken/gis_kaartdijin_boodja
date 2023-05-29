@@ -11,7 +11,7 @@ var kbcatalogue = {
         },
         "total_pages":0,
         "current_page":0,
-        "limit":10
+        "limit":10,
     },
     pagination: kbcatalogue_pagination,
     init_dashboard: function() { 
@@ -23,7 +23,7 @@ var kbcatalogue = {
         });
         $( "#catalogue-limit" ).change(function() {
             console.log("Reload Catalogue");
-            kbcatalogue.var.limit = $(this).val();
+            kbcatalogue.var.limit = +$(this).val();
             kbcatalogue.var.current_page = 0;
             kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
@@ -34,7 +34,7 @@ var kbcatalogue = {
             kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
-        
+        kbcatalogue.var.limit = +$('#catalogue-limit').val()
         kbcatalogue.get_catalogue();
     },
     init_catalogue_item: function() { 
@@ -230,7 +230,7 @@ var kbcatalogue = {
     // },
     get_catalogue: function(url) {
         if (!url){
-            let url_params = kbcatalogue_pagination.make_get_catalogue_params_str();
+            let url_params = kbcatalogue.pagination.make_get_catalogue_params_str();
             url = kbcatalogue.var.catalogue_data_url+"?"+url_params;
         }
 
@@ -286,7 +286,7 @@ var kbcatalogue = {
                         $('.publish-table-button').hide();
 
                         // navigation bar
-                        kbcatalogue.var.total_pages = Math.ceil(response.count / this.var.limit);
+                        kbcatalogue.var.total_pages = Math.ceil(response.count / kbcatalogue.var.limit);
                         kbcatalogue.pagination.init(kbcatalogue);
 
                     } else {
