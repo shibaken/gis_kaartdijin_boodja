@@ -8,16 +8,30 @@ var kbcatalogue = {
             3: "Declined",
             4: "Draft",
             5: "Pending"
-        },         
+        },
+        "total_pages":0,
+        "current_page":0
     },
     pagination: kbcatalogue_pagination,
     init_dashboard: function() { 
         $( "#catalogue-filter-btn" ).click(function() {
             console.log("Reload Catalogue Table");
+            kbcatalogue.var.current_page = 0;
+            kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
-
-
+        $( "#catalogue-limit" ).change(function() {
+            console.log("Reload Catalogue");
+            kbcatalogue.var.current_page = 0;
+            kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
+            kbcatalogue.get_catalogue();
+        });
+        $( "#catalogue-order-by" ).change(function() {
+            console.log("Reload Catalogue");
+            kbcatalogue.var.current_page = 0;
+            kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
+            kbcatalogue.get_catalogue();
+        });
         
         kbcatalogue.get_catalogue();
     },
@@ -58,8 +72,6 @@ var kbcatalogue = {
             console.log("New Catalogue Attribute");
             $('#NewCatalogueAttributeModal').modal('show');
         });
-
-        
     },
     change_catalogue_status: function(status) {        
         var status_url = "lock";
@@ -186,33 +198,42 @@ var kbcatalogue = {
 
 
     },
-    get_catalogue: function() {
-        var name = $('#catalogue-name').val();
-        // custodian here
-        var status = $('#catalogue-status').val();
-        // last updated from
-        // last update to
-        // assigned to
-        var description = $('#catalogue-description').val();
-        var number = $('#catalogue-number').val();
-        number = number.replace("PE","");
+    make_get_catalogue_params_str : function(params){
         var url_params = "";
-        if (name.length > 0) {
-            url_params += "&name__icontains="+name;
-        }
-        if (status.length > 0) {
-            url_params += "&status="+status;
+
+        if (params){
+            for (var key in params){
+                url_params += "&" + key + "=" + params[key];
+            }
         }
 
-        if (description.length > 0) {
-            url_params += "&description__icontains="+description;
-        }
-        if (number.length > 0) {
-            url_params += "&id="+number;
+        let add_param = function(param_val, key){
+            if (params && key in params){
+                return;
+            }
+            if (param_val.length > 0) {
+                url_params += "&"+key+"="+param_val;
+            }
+            return;
+        };
+
+        add_param($('#catalogue-name').val(), 'name__icontains');
+        add_param($('#catalogue-status').val(), 'status');
+        add_param($('#catalogue-description').val(), 'description__icontains');
+        add_param($('#catalogue-number').val().replace("PE", ""), 'id');
+        add_param($('#catalogue-limit').val(), 'limit');
+        add_param($('#catalogue-order-by').val(), 'order_by');
+
+        return url_params;
+    },
+    get_catalogue: function(url) {
+        if (!url){
+            let url_params = kbcatalogue.make_get_catalogue_params_str();
+            url = kbcatalogue.var.catalogue_data_url+"?"+url_params;
         }
 
         $.ajax({
-            url: kbcatalogue.var.catalogue_data_url+"?"+url_params,
+            url: url,
             method: 'GET',
             dataType: 'json',
             contentType: 'application/json',
@@ -261,6 +282,10 @@ var kbcatalogue = {
                                            
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
+
+                        // navigation bar
+                        kbcatalogue.var.total_pages = Math.ceil(response.count / +$('#catalogue-limit').val());
+                        kbcatalogue.pagination.init(kbcatalogue, response);
 
                     } else {
                         $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
