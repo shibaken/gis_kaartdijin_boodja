@@ -60,6 +60,18 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
                 "-nln",
                 str(layer),
             ]
+            [
+                "ogr2ogr",
+                "-update",
+                "-overwrite",
+                "-nln", 
+                str(layer),                 #'Name' box in new CDDP dialogue
+                str(output_filepath),
+                str(filepath),              
+                str(catalogue_name)         # Catalogue name
+            ]
+
+
         )
     converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath}
     # Return
@@ -174,15 +186,27 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 
     # Run Command
     subprocess.check_call(  # noqa: S603,S607
+        # [
+        #     "ogr2ogr",
+        #     "-overwrite",
+        #     "-append",
+        #     str(output_filepath),
+        #     str(filepath),
+        #     "-nln",
+        #     str(layer),
+        # ]
         [
-            "ogr2ogr",
-            "-overwrite",
-            "-append",
-            str(output_filepath),
-            str(filepath),
-            "-nln",
-            str(layer),
+        "ogr2ogr",
+        "-update",
+        "-overwrite",
+        "-nln", 
+        str(layer),
+        str(output_filepath),
+        str(filepath),
+        str(layer)
         ]
+
+
     )
 
     # Compress!
