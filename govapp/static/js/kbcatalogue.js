@@ -189,41 +189,13 @@ var kbcatalogue = {
 
 
     },
-    // make_get_catalogue_params_str : function(params){
-    //     var url_params = "";
-
-    //     if (params){
-    //         for (var key in params){
-    //             url_params += "&" + key + "=" + params[key];
-    //         }
-    //     }
-
-    //     let add_param = function(param_val, key){
-    //         if (params && key in params){
-    //             return;
-    //         }
-    //         if (param_val.length > 0) {
-    //             url_params += "&"+key+"="+param_val;
-    //         }
-    //         return;
-    //     };
-
-    //     add_param($('#catalogue-name').val(), 'name__icontains');
-    //     add_param($('#catalogue-status').val(), 'status');
-    //     add_param($('#catalogue-description').val(), 'description__icontains');
-    //     add_param($('#catalogue-number').val().replace("PE", ""), 'id');
-    //     add_param($('#catalogue-limit').val(), 'limit');
-    //     add_param($('#catalogue-order-by').val(), 'order_by');
-
-    //     return url_params;
-    // },
     get_catalogue: function(params_str) {
         params = {
             name__icontains:        $('#catalogue-name').val(),
             status:                 $('#catalogue-status').val(),
             description__icontains: $('#catalogue-description').val(),
             id:                     $('#catalogue-number').val().replace("PE", ""),
-            limit:                  $('#entry-limit').val(),
+            limit:                  $('#catalogue-limit').val(),
             order_by:               $('#catalogue-order-by').val()
         }
 

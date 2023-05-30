@@ -31,15 +31,11 @@ var kbpublish = {
             publish_cddp_frequency: {
                 1: "OnChange"
             },
-            "total_pages":0,
-            "current_page":0,
-            "limit":10
     },
     pagination: kbpublish_pagination,
     init_dashboard: function() {    
         $( "#publish-filter-btn" ).click(function() {
             console.log("Reload Publish Table");
-            kbpublish.var.current_page = 0;
             kbpublish.get_publish();
         });
         $( "#publish-new-btn" ).click(function() {
@@ -61,17 +57,13 @@ var kbpublish = {
         }); 
         $( "#publish-limit" ).change(function(){
             console.log("Reload Publish");
-            kbpublish.var.limit = +$(this).val();
-            kbpublish.var.current_page = 0;
             kbpublish.get_publish();
         })
         $( "#publish-order-by" ).change(function(){
             console.log("Reload Reload Publish");
-            kbpublish.var.current_page = 0;
             kbpublish.get_publish();
         })
 
-        kbpublish.var.limit = +$('#publish-limit').val();
         kbpublish.get_publish();
     },
     init_publish_item: function() {    
@@ -577,7 +569,7 @@ var kbpublish = {
             status:                 $('#publish-status').val(),
             description__icontains: $('#publish-description').val(),
             id:                     $('#publish-number').val().replace("PE", ""),
-            limit:                  $('#entry-limit').val(),
+            limit:                  $('#publish-limit').val(),
             order_by:               $('#publish-order-by').val()
         }
 
