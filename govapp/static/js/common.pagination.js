@@ -1,21 +1,26 @@
 var common_pagination = { 
     var: {
-        max_showon_pages : 9
+        max_showon_pages : 9,
+        current_page : 0
     },
-    init : function(current, total, limit, set_current_page, make_get_params_str, get_page){
-        let range = common_pagination.make_page_range(current, total, this.var.max_showon_pages);
+    init : function(entry_count, params, get_page, limit, navi){
+        limit = +limit;
+        let total = Math.ceil(entry_count / limit);
+        let range = this.make_page_range(this.var.current_page, total, this.var.max_showon_pages);
         let beginning = range.beginning;
         let end = range.end;
 
-        let navi_html = common_pagination.make_btn_html(current, total, beginning, end);
-        $('#paging_navi').html(navi_html);
+        let navi_html = common_pagination.make_btn_html(common_pagination.var.current_page, total, beginning, end);
+        navi.html(navi_html);
 
         let set_btn_event = function(id, page_number){
             $(id).off('click').on('click', function(event){
                 event.preventDefault();
-                set_current_page(page_number);
-                let url_params = make_get_params_str({'limit':limit, 'offset':page_number*limit});
-                get_page(url_params)
+                common_pagination.var.current_page = page_number;
+                params.limit = limit;
+                params.offset = page_number*limit;
+                let params_str = common_pagination.make_get_params_str(params);
+                get_page(params_str);
             });
         }
 
@@ -23,8 +28,8 @@ var common_pagination = {
             set_btn_event('#paging_btn_'+(i+1), i);
         }
         //prev and next buttons
-        set_btn_event('#paging_btn_prev', kbcatalogue.var.current_page - 1);
-        set_btn_event('#paging_btn_next', kbcatalogue.var.current_page + 1);
+        set_btn_event('#paging_btn_prev', common_pagination.var.current_page - 1);
+        set_btn_event('#paging_btn_next', common_pagination.var.current_page + 1);
     },
     make_page_btn_html : function(id, text, status){
         var html = '<li class="page-item{disabled1}{current1}"{current2}><a class="page-link" href="#" id="'+id+'"{disabled2}>'+text+'</a></li>'
@@ -39,21 +44,13 @@ var common_pagination = {
         html = html.replace(/{disabled1}|{disabled2}|{current1}|{current2}/g, '');
         return html;
     },
-    add_param : function(url_params, params, param_val, key){
-        if (params && key in params){
-            return url_params;
-        }
-        if (param_val.length > 0) {
-            url_params += "&"+key+"="+param_val;
-        }
-        return url_params;
-    },
     make_get_params_str : function(params){
         var url_params = "";
 
         if (params){
             for (var key in params){
-                url_params += "&" + key + "=" + params[key];
+                if(params[key])
+                    url_params += "&" + key + "=" + params[key];
             }
         }
         return url_params;
@@ -75,7 +72,7 @@ var common_pagination = {
     },
     make_btn_html : function(current, total, beginning, end){
         var prev_status = (current == 0) ? "disabled" : null;
-        var next_status = (current+1 == total) ? "disabled" : null;
+        var next_status = (current+1 >= total) ? "disabled" : null;
         var navi_html = "";
         navi_html += this.make_page_btn_html("paging_btn_prev", "Previous", prev_status);
         for (let i = beginning ; i < end ; i++){

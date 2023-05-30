@@ -1,27 +1,26 @@
 var kbcatalogue_pagination = { 
-    var: {
-    },
-    pagination: common_pagination,
-    make_get_catalogue_params_str : function(params){
-        var url_params = this.pagination.make_get_params_str(params);
+    // var: {
+    // },
+    // pagination: common_pagination,
+    // make_get_catalogue_params_str : function(params){
+    //     var url_params = this.pagination.make_get_params_str(params);
 
-        url_params = this.pagination.add_param(url_params, params, $('#catalogue-name').val(), 'name__icontains');
-        url_params = this.pagination.add_param(url_params, params, $('#catalogue-status').val(), 'status');
-        url_params = this.pagination.add_param(url_params, params, $('#catalogue-description').val(), 'description__icontains');
-        url_params = this.pagination.add_param(url_params, params, $('#catalogue-number').val().replace("PE", ""), 'id');
-        url_params = this.pagination.add_param(url_params, params, $('#catalogue-limit').val(), 'limit');
-        url_params = this.pagination.add_param(url_params, params, $('#catalogue-order-by').val(), 'order_by');
+    //     url_params = this.pagination.add_param(url_params, params, $('#catalogue-name').val(), 'name__icontains');
+    //     url_params = this.pagination.add_param(url_params, params, $('#catalogue-status').val(), 'status');
+    //     url_params = this.pagination.add_param(url_params, params, $('#catalogue-description').val(), 'description__icontains');
+    //     url_params = this.pagination.add_param(url_params, params, $('#catalogue-number').val().replace("PE", ""), 'id');
+    //     url_params = this.pagination.add_param(url_params, params, $('#catalogue-limit').val(), 'limit');
+    //     url_params = this.pagination.add_param(url_params, params, $('#catalogue-order-by').val(), 'order_by');
 
-        return url_params;
-    },
-    init:  function(kbcatalogue) {
-        common_pagination.init(
-            kbcatalogue.var.current_page, 
-            kbcatalogue.var.total_pages,
-            kbcatalogue.var.limit, 
-            page_number => kbcatalogue.var.current_page = page_number,
-            params => this.make_get_catalogue_params_str(params),
-            url_params => kbcatalogue.get_catalogue(kbcatalogue.var.catalogue_data_url+"?"+url_params));
+    //     return url_params;
+    // },
+    // init:  function(get_data, entry_count) {
+    //     this.pagination.init(
+    //         kbcatalogue.var.current_page, 
+    //         entry_count,
+    //         kbcatalogue.var.limit, 
+    //         params => this.make_get_catalogue_params_str(params),
+    //         url_params => get_data(url_params));
         // let make_page_btn = function(id, text, status){
         //     var html = '<li class="page-item{disabled1}{current1}"{current2}><a class="page-link" href="#" id="'+id+'"{disabled2}>'+text+'</a></li>'
         //     if (status == 'disabled'){
@@ -105,5 +104,5 @@ var kbcatalogue_pagination = {
         // //     let url_params = make_get_catalogue_params_str({'limit':limit, 'offset':kbcatalogue.var.current_page*limit});
         // //     kbcatalogue.get_catalogue(kbcatalogue.var.catalogue_data_url+"?"+url_params);
         // // });
-    }
+    // }
 }

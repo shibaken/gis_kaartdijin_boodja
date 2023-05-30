@@ -31,12 +31,15 @@ var kbpublish = {
             publish_cddp_frequency: {
                 1: "OnChange"
             },
-
+            "total_pages":0,
+            "current_page":0,
+            "limit":10
     },
     pagination: kbpublish_pagination,
     init_dashboard: function() {    
         $( "#publish-filter-btn" ).click(function() {
             console.log("Reload Publish Table");
+            kbpublish.var.current_page = 0;
             kbpublish.get_publish();
         });
         $( "#publish-new-btn" ).click(function() {
@@ -56,8 +59,19 @@ var kbpublish = {
             console.log("Create Publish");           
             kbpublish.create_publish(); 
         }); 
+        $( "#publish-limit" ).change(function(){
+            console.log("Reload Publish");
+            kbpublish.var.limit = +$(this).val();
+            kbpublish.var.current_page = 0;
+            kbpublish.get_publish();
+        })
+        $( "#publish-order-by" ).change(function(){
+            console.log("Reload Reload Publish");
+            kbpublish.var.current_page = 0;
+            kbpublish.get_publish();
+        })
 
-        
+        kbpublish.var.limit = +$('#publish-limit').val();
         kbpublish.get_publish();
     },
     init_publish_item: function() {    
@@ -557,36 +571,23 @@ var kbpublish = {
 
 
     },
-    get_publish: function() {
-        var name = $('#publish-name').val();
-        // custodian here
-        var status = $('#publish-status').val();
-        // last updated from
-        // last update to
-        // assigned to
-        var description = $('#publish-description').val();
-        var number = $('#publish-number').val();
-        number = number.replace("PE","");
-        var url_params = "";
-        if (name.length > 0) {
-            url_params += "&name__icontains="+name;
-        }
-        if (status.length > 0) {
-            url_params += "&status="+status;
+    get_publish: function(params_str) {
+        params = {
+            name__icontains:        $('#publish-name').val(),
+            status:                 $('#publish-status').val(),
+            description__icontains: $('#publish-description').val(),
+            id:                     $('#publish-number').val().replace("PE", ""),
+            limit:                  $('#entry-limit').val(),
+            order_by:               $('#publish-order-by').val()
         }
 
-        if (description.length > 0) {
-            url_params += "&description__icontains="+description;
+        if (!params_str){
+            params_str = common_pagination.make_get_params_str(params);
         }
-        if (number.length > 0) {
-            url_params += "&id="+number;
-        }
-
-        
 
         //order_by=&limit=10" 
         $.ajax({
-            url: kbpublish.var.publish_data_url+"?"+url_params,
+            url: kbpublish.var.publish_data_url+"?"+params_str,
             method: 'GET',
             dataType: 'json',
             contentType: 'application/json',
@@ -643,6 +644,9 @@ var kbpublish = {
                                            
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
+
+                        // navigation bar
+                        common_pagination.init(response.count, params, kbpublish.get_publish, +params.limit, $('#paging_navi'));
 
                     } else {
                         $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
