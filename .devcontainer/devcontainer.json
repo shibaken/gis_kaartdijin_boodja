@@ -1,15 +1,15 @@
 {
 	"name": "GIS Kaartdijin Boodja Development",
-	"image": "dbcawa/docker_app_dev:gis_kaartdijin_boodja_latest",
+	"image": "dbcawa/docker_app_dev:gis_kaartdijin_boodja_dev_latest",
 	"remoteUser": "container",
 	"workspaceFolder": "/data/data/projects/gis_kaartdijin_boodja/",
 	"mounts": ["type=bind,source=/data/,target=/data/",
 	           "type=bind,source=/data/data/containerhome/,target=/home/container/"
 	          ],	
-	"appPort": [ "7008:8080","9071:9071","9072:9072","9073:9073","9074:9074","9075:9075"],
+	"appPort": [ "7018:8080","9136:9136","9137:9137","9138:9138","9139:9139","9140:9140"],
 	"runArgs": ["--env-file","${localEnv:HOME}/vscode-env/gis_kaartdijin_boodja.env",
 		   "--hostname","gis-kaartdijin-boodja-dev"
 		   ],
-	"forwardPorts": [9071,9072,9073,9074,9075],
+	"forwardPorts": [9136,9137,9138,9139,9140],
 	"initializeCommand" : "${localEnv:HOME}/docker-scripts-dev/windows_vbox/postgres_docker_load.sh"
 }
