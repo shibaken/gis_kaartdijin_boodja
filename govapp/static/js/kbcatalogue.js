@@ -11,6 +11,7 @@ var kbcatalogue = {
         },
     },
     pagination: kbcatalogue_pagination,
+    attribute: kbcatalogue_attribute,
     init_dashboard: function() { 
         $( "#catalogue-filter-btn" ).click(function() {
             console.log("Reload Catalogue Table");
@@ -43,9 +44,7 @@ var kbcatalogue = {
         $( "#ccatalogue-entry-symbology-btn-save-exit" ).click(function() {
             console.log("Save Publish Table");
             kbcatalogue.save_symbology('save-and-exit');
-        });   
-
-        
+        });           
 
         $( "#catalogue-lock" ).click(function() {
             console.log("Locking");
@@ -132,10 +131,8 @@ var kbcatalogue = {
         var pagetab = $('#pagetab').val();
 
         $.ajax({
-            url: kbcatalogue.var.catalogue_data_url+catalogue_id+"/",
-            //method: 'POST',
+            url: kbcatalogue.var.catalogue_data_url+catalogue_id+"/",            
             type: 'PUT',
-            //dataType: 'json',
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
             contentType: 'application/json',
@@ -217,8 +214,6 @@ var kbcatalogue = {
                             assigned_to_friendly = "";
                             if (response.results[i].first_name != null) {
 
-                                console.log ("HERE");
-                                
                                 assigned_to_friendly = response.results[i].first_name;
 
                                 if (response.results[i].last_name != null) {
