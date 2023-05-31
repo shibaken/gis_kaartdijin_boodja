@@ -54,14 +54,6 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
         subprocess.check_call(  # noqa: S603,S607
             [
                 "ogr2ogr",
-                "-overwrite",
-                str(output_filepath),
-                str(filepath),
-                "-nln",
-                str(layer),
-            ]
-            [
-                "ogr2ogr",
                 "-update",
                 "-overwrite",
                 "-nln", 
