@@ -9,30 +9,21 @@ var kbcatalogue = {
             4: "Draft",
             5: "Pending"
         },
-        "total_pages":0,
-        "current_page":0
     },
     pagination: kbcatalogue_pagination,
     init_dashboard: function() { 
         $( "#catalogue-filter-btn" ).click(function() {
             console.log("Reload Catalogue Table");
-            kbcatalogue.var.current_page = 0;
-            kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
         $( "#catalogue-limit" ).change(function() {
             console.log("Reload Catalogue");
-            kbcatalogue.var.current_page = 0;
-            kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
         $( "#catalogue-order-by" ).change(function() {
             console.log("Reload Catalogue");
-            kbcatalogue.var.current_page = 0;
-            kbcatalogue.pagination.var.beginning_of_pagenumber = 0;
             kbcatalogue.get_catalogue();
         });
-        
         kbcatalogue.get_catalogue();
     },
     init_catalogue_item: function() { 
@@ -198,42 +189,22 @@ var kbcatalogue = {
 
 
     },
-    make_get_catalogue_params_str : function(params){
-        var url_params = "";
-
-        if (params){
-            for (var key in params){
-                url_params += "&" + key + "=" + params[key];
-            }
+    get_catalogue: function(params_str) {
+        params = {
+            name__icontains:        $('#catalogue-name').val(),
+            status:                 $('#catalogue-status').val(),
+            description__icontains: $('#catalogue-description').val(),
+            id:                     $('#catalogue-number').val().replace("PE", ""),
+            limit:                  $('#catalogue-limit').val(),
+            order_by:               $('#catalogue-order-by').val()
         }
 
-        let add_param = function(param_val, key){
-            if (params && key in params){
-                return;
-            }
-            if (param_val.length > 0) {
-                url_params += "&"+key+"="+param_val;
-            }
-            return;
-        };
-
-        add_param($('#catalogue-name').val(), 'name__icontains');
-        add_param($('#catalogue-status').val(), 'status');
-        add_param($('#catalogue-description').val(), 'description__icontains');
-        add_param($('#catalogue-number').val().replace("PE", ""), 'id');
-        add_param($('#catalogue-limit').val(), 'limit');
-        add_param($('#catalogue-order-by').val(), 'order_by');
-
-        return url_params;
-    },
-    get_catalogue: function(url) {
-        if (!url){
-            let url_params = kbcatalogue.make_get_catalogue_params_str();
-            url = kbcatalogue.var.catalogue_data_url+"?"+url_params;
+        if (!params_str){
+            params_str = common_pagination.make_get_params_str(params);
         }
 
         $.ajax({
-            url: url,
+            url: kbcatalogue.var.catalogue_data_url+"?"+params_str,
             method: 'GET',
             dataType: 'json',
             contentType: 'application/json',
@@ -284,8 +255,7 @@ var kbcatalogue = {
                         $('.publish-table-button').hide();
 
                         // navigation bar
-                        kbcatalogue.var.total_pages = Math.ceil(response.count / +$('#catalogue-limit').val());
-                        kbcatalogue.pagination.init(kbcatalogue, response);
+                        common_pagination.init(response.count, params, kbcatalogue.get_catalogue, +params.limit, $('#paging_navi'));
 
                     } else {
                         $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
