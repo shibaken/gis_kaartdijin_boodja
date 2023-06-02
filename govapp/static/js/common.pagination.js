@@ -10,7 +10,7 @@ var common_pagination = {
         let beginning = range.beginning;
         let end = range.end;
 
-        let navi_html = common_pagination.make_btn_html(common_pagination.var.current_page, total, beginning, end);
+        let navi_html = this.make_btn_html(common_pagination.var.current_page, total, beginning, end);
         navi.html(navi_html);
 
         let set_btn_event = function(id, page_number){
@@ -31,6 +31,18 @@ var common_pagination = {
         set_btn_event('#paging_btn_prev', common_pagination.var.current_page - 1);
         set_btn_event('#paging_btn_next', common_pagination.var.current_page + 1);
     },
+    make_get_params_str : function(params){
+        var url_params = "";
+
+        if (params){
+            for (var key in params){
+                if(params[key])
+                    url_params += "&" + key + "=" + params[key];
+            }
+        }
+        return url_params;
+    },
+    // *** private methods *** //
     make_page_btn_html : function(id, text, status){
         var html = '<li class="page-item{disabled1}{current1}"{current2}><a class="page-link" href="#" id="'+id+'"{disabled2}>'+text+'</a></li>'
         if (status == 'disabled'){
@@ -43,17 +55,6 @@ var common_pagination = {
         }
         html = html.replace(/{disabled1}|{disabled2}|{current1}|{current2}/g, '');
         return html;
-    },
-    make_get_params_str : function(params){
-        var url_params = "";
-
-        if (params){
-            for (var key in params){
-                if(params[key])
-                    url_params += "&" + key + "=" + params[key];
-            }
-        }
-        return url_params;
     },
     make_page_range : function(current, total, max_shown){
         var beginning = 0;  // 0 means page 1

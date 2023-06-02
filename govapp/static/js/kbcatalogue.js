@@ -2,6 +2,7 @@ var kbcatalogue = {
     var: {
          "catalogue_data_url": "/api/catalogue/entries/",
          "catalogue_layer_symbology_url": "/api/catalogue/layers/symbologies/",
+         "catalogue_layer_attribute_url": "/api/catalogue/layers/attributes/",
          catalogue_status: {
             1: "New Draft",
             2: "Locked",
@@ -62,6 +63,16 @@ var kbcatalogue = {
             console.log("New Catalogue Attribute");
             $('#NewCatalogueAttributeModal').modal('show');
         });
+        $( "#new-catalogue-attribute-order" ).on('input',function(){
+            // console.log('test:'+$(this).val());
+            $(this).val($(this).val().replace(/\D/g, ""));
+        });
+        // $( "#create-catalogue-attribute-btn" ).click(function(){
+        //     console.log("Create New Catalogue Attribute");
+        //     kbcatalogue.create_new_catalogue_attribute();
+        // })
+        kbcatalogue_attribute.init();
+        kbcatalogue_attribute.get_catalogue_attribute();
     },
     change_catalogue_status: function(status) {        
         var status_url = "lock";
@@ -288,4 +299,71 @@ var kbcatalogue = {
             },
         });    
     },
+    // create_new_catalogue_attribute: function(){
+    //     let popup_error = $('#new-catalogue-attribute-popup-error');
+    //     let popup_success = $('#new-catalogue-attribute-popup-success');
+
+    //     popup_error.html("");
+    //     popup_error.hide();
+    //     popup_success.html("");
+    //     popup_success.hide();
+    //     let show_message = function(target, message){
+    //         target.html(message);
+    //         target.show();
+    //     }
+
+    //     let name = $('#new-catalogue-attribute-name').val();
+    //     let type = $('#new-catalogue-attribute-type').val();
+    //     let order = $('#new-catalogue-attribute-order').val();
+    //     if(!name || name.length == 0){
+    //         show_message(popup_error, "Please enter a new catalogue attribute name.");
+    //         return false;
+    //     }
+    //     if(!type || type.length == 0){
+    //         show_message(popup_error, "Please select a type.");
+    //         return false;
+    //     }
+    //     if(!order || order.length == 0){
+    //         show_message(popup_error, "Please enter a new catalogue attribute order.");
+    //         return false;
+    //     }
+    //     if(isNaN(order)){
+    //         show_message(popup_error, "Please enter a valid new catalogue attribute order. (must be positive number)");
+    //         return false;
+    //     }
+
+    //     $('#new-catalogue-attribute-name').attr('disabled','disabled');
+    //     $('#new-catalogue-attribute-type').attr('disabled','disabled');
+    //     $('#new-catalogue-attribute-order').attr('disabled','disabled');
+
+    //     var catalogue_entry_id = $('#catalogue_entry_id').val();
+    //     var post_data = {"name": name, "type": type, "order": +order, "catalogue_entry":catalogue_entry_id};
+    //     var csrf_token = $("#csrfmiddlewaretoken").val();
+        
+
+    //     $.ajax({
+    //         url: kbcatalogue.var.catalogue_layer_attribute_url,
+    //         //method: 'POST',
+    //         type: 'POST',
+    //         //dataType: 'json',
+    //         headers: {'X-CSRFToken' : csrf_token},
+    //         data: JSON.stringify(post_data),
+    //         contentType: 'application/json',
+    //         success: function (response) {
+
+    //             // if (save_status == 'save-and-exit') {
+    //             //     window.location = '/publish/';
+    //             // } else {
+    //             //    window.location = "/publish/"+publish_id;
+    //             // }
+
+    //             location.reload();
+    //         },
+    //         error: function (error) {
+    //              alert("ERROR Saving.");
+
+        
+    //         },
+    //     });
+    // }
 }
