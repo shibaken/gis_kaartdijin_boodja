@@ -5,6 +5,7 @@ var common_pagination = {
     },
     init : function(entry_count, params, get_page, limit, navi){
         limit = +limit;
+        this.var.current_page = 0;
         let total = Math.ceil(entry_count / limit);
         let range = this.make_page_range(this.var.current_page, total, this.var.max_showon_pages);
         let beginning = range.beginning;

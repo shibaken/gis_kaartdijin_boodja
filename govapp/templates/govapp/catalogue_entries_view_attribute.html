@@ -1,169 +1,137 @@
-{% include "govapp/catalogue_entries_view_attribute_new.html" %}
+{% include "govapp/catalogue_entries_view_attribute_modal.html" %}
+{% include "govapp/catalogue_entries_view_attribute_delete.html" %}
 
-<div class="pt-2" id="dashboard-table-container" >
- 
-          <div class="card" >
-                <div class="card-header fw-bold h4" style="padding:30px;">
-                      <div class="row">
-                      <div class="col-6">
-                            Attribute Table Definition                        
-                      </div>
-                      <div class="col-6 text-end">
-                            <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
-                      </div>
-                </div>         
-          </div>
-          <div class="card-body collapse show" id="#box1-card-body">
-                <div class="col-12 bg-light p-3">
-                      <B>Filters</B>
-                      <div class='row'>
-                            <div class='col-12'>
-                                  <div class='row'>
-                                        <div class='col-3'>
-                                            <select type="text" class="form-control" id="catalogue-status" >
-                                                <option value="">All</option>
-                                                <option value="text">Text</option>
-                                                <option value="integer">Integer</option>
-                                                <option value="whole">Whole</option>                                                
-                                          </select>
-                                        </div>
-                                        <div class='col-3'>
-                                            &nbsp;
-                                        </div>
-                                        <div class='col-3'>
-                                            &nbsp;
-                                        </div>
-                                        <div class='col-3'>                                                
-                                            <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-filter-btn'>Filter</button>
-                                            &nbsp;
-                                        </div>
-                                  </div>
-                            </div>
-                            
-                            </div>
-                    
-                      
-                </div>                  
-                <div class='col-12 pt-2 pb-2 '>
-                      <BR>
-                </div>
+<div class="pt-2" id="dashboard-table-container">
 
-                <div class='col-12 pt-4'>
-                    <div class='row'>
-                          <div class='col-6'>
-                                &nbsp;
-                          </div>
-                          <div class='col-6 text-end'>
-                                <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-attribute-new-btn'>New Attribute Column</button>
-                          </div>
-                    </div>
-              </div>      
-              
+      <div class="card">
+            <div class="card-header fw-bold h4" style="padding:30px;">
+                  <div class="row">
+                        <div class="col-6">
+                              Attribute Table Definition
+                        </div>
+                        <div class="col-6 text-end">
+                              <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body"
+                                    onclick=""></i>
+                        </div>
+                  </div>
+            </div>
+            <div class="card-body collapse show" id="#box1-card-body">
+                  <div class='col-12 pt-4'>
+                        <div class='row'>
+                              <div class='col-6'>
+                                    &nbsp;
+                              </div>
+                              <div class='col-6 text-end'>
+                                    <button class="btn btn-primary btn-sm" aria-current="page"
+                                          id='catalogue-attribute-new-btn'>New Attribute Column</button>
+                              </div>
+                        </div>
+                  </div>
 
-                <div class='col-12 pt-2 pb-2 '>
-                      <div class='row'>
-                            <div class='col-6'>
-                                  <div class="row">
-                                        <div class="col-sm-12 col-md-6">
-                                                    &nbsp;
-                                        </div>
-                                  </div>
-                            </div>
-                            <div class='col-6 text-end'>
-                                  <div class="row">
-                                        <div class='col-12 text-end'>
-                                              <form class="row ">
-                                                    <div class="col-1 text-end">
-                                                          &nbsp;
-                                                          
-                                                    </div>
-                                                    <div class="col-1 text-end">
-                                                          &nbsp;
-                                                    </div>
-                                                    <div class="col-10 text-end">  
-                                                          <button class="btn btn-secondary btn-sm" aria-current="page" href="#">Excel</button>    
-                                                          <button class="btn btn-secondary btn-sm" aria-current="page" href="#">CSV</button>
-                                                    </div>
-                                              </form>
-                                        </div>
-                                  </div>
-                            </div>                                    
+                  <div class='col-12 pt-2 pb-2 '>
+                        <div class='row'>
+                              <div class='col-6'>
+                                    <div class="row">
+                                          <div class="col-sm-12 col-md-6">
+                                                &nbsp;
+                                          </div>
+                                    </div>
+                              </div>
+                              <div class='col-6 text-end'>
+                                    <div class="row">
+                                          <div class='col-12 text-end'>
+                                                <form class="row ">
+                                                      <div class="col-1 text-end">
+                                                            &nbsp;
+                                                      </div>
+                                                      <div class="col-1 text-end">
+                                                            &nbsp;
+                                                      </div>
+                                                      <div class="col-10 text-end">
+                                                            <button class="btn btn-secondary btn-sm" aria-current="page"
+                                                                  href="#">Excel</button>
+                                                            <button class="btn btn-secondary btn-sm" aria-current="page"
+                                                                  href="#">CSV</button>
+                                                      </div>
+                                                </form>
+                                          </div>
+                                    </div>
+                              </div>
+                        </div>
+                  </div>
 
-                      </div>
-                </div>  
+                  <div class='col-12 pt-2 pb-2 '>
+                        <div class='row'>
+                              <div class='col-6'>
+                                    <div class="row">
+                                          <div class="col-sm-12 col-md-6">
+                                                <div class="dataTables_length" id="bookings-table_length">
+                                                      <label>Show
+                                                            <select name="bookings-table_length"
+                                                                  aria-controls="bookings-table"
+                                                                  class="form-select form-select-sm"
+                                                                  id="catalogue-attribute-limit">
+                                                                  <option value="5">5</option>
+                                                                  <option value="10" selected>10</option>
+                                                                  <option value="25">25</option>
+                                                                  <option value="50">50</option>
+                                                                  <option value="100">100</option>
+                                                            </select> entries
+                                                      </label>
+                                                </div>
+                                          </div>
+                                    </div>
+                              </div>
+                              <div class='col-6 text-end'>
+                                    <div class="row">
+                                          <div class="col-sm-12 col-md-12 text-end">
+                                                <div class="dataTables_length" id="bookings-table_length">
+                                                      <label>Order By
+                                                            <select name="bookings-table_length"
+                                                                  aria-controls="bookings-table"
+                                                                  class="form-select form-select-sm"
+                                                                  id="catalogue-attribute-order-by">
+                                                                  <option value="id">ID</option>
+                                                                  <option value="name">Name</option>
+                                                                  <option value="type">Type</option>
+                                                                  <option value="order">Order</option>
+                                                            </select>
+                                                      </label>
+                                                </div>
+                                          </div>
+                                    </div>
+                              </div>
+                        </div>
+                  </div>
 
+                  <div id='publish-table'>
+                        <table id="example" class="table" style="width:100%">
+                              <thead class='table-dark'>
+                                    <tr>
+                                          <th>Id</th>
+                                          <th>Name</th>
+                                          <th>Type</th>
+                                          <th>Order</th>
+                                          <th>Action</th>
+                                    </tr>
+                              </thead>
+                              <tbody id='catalogue-attribute-tbody'>
+                                    <tr>
+                                          <td colspan="7" class='text-center'>No Results</td>
+                                    </tr>
+                              </tbody>
+                        </table>
+                        <nav aria-label="Page navigation example" id='catalogue-attribute-pagination'>
+                              <ul class="pagination justify-content-end" id='paging_navi'>
+                                    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                              </ul>
+                        </nav>
+                  </div>
 
-
-
-
-
-
-                <div class='col-12 pt-2 pb-2 '>
-                      <div class='row'>
-                            <div class='col-6'>
-                                  <div class="row">
-                                        <div class="col-sm-12 col-md-6">
-                                              <div class="dataTables_length" id="bookings-table_length">
-                                                    <label>Show 
-                                                          <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="catalogue-attribute-limit">
-                                                                <option value="5">5</option>
-                                                                <option value="10" selected>10</option>
-                                                                <option value="25">25</option>
-                                                                <option value="50">50</option>
-                                                                <option value="100">100</option>
-                                                          </select> entries
-                                                    </label>
-                                              </div>
-                                        </div>
-                                  </div>
-                            </div>
-                            <div class='col-6 text-end'>
-                                  <div class="row">
-                                        <div class="col-sm-12 col-md-12 text-end">
-                                              <div class="dataTables_length" id="bookings-table_length">
-                                                    <label>Order By 
-                                                          <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="catalogue-attribute-order-by">
-                                                                <option value="id">ID</option>
-                                                                <option value="name">Name</option>
-                                                                <option value="type">Type</option>
-                                                                <option value="order">Order</option>
-                                                          </select> 
-                                                    </label>
-                                              </div>
-                                        </div>
-                                  </div>
-                            </div>                                    
-                      </div>
-                </div>     
-                <div id='publish-table'>
-                      <table id="example" class="table" style="width:100%">
-                            <thead class='table-dark'>
-                            <tr>
-                                  <th>Number</th>
-                                  <th>Name</th>
-                                  <th>Type</th>
-                                  <th>Order</th>
-                                  <th>Action</th>                                  
-                            </tr>
-                            </thead>
-                            <tbody id='catalogue-attribute-tbody'>
-                            <tr>
-                                  <td colspan="7" class='text-center'>No Results</td>
-                            </tr>
-                            </tbody>
-                      </table>   
-                      <nav aria-label="Page navigation example" id='catalogue-attribute-pagination'>
-                            <ul class="pagination justify-content-end" id='paging_navi'>
-                              <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                              <li class="page-item"><a class="page-link" href="#">1</a></li>
-                              <li class="page-item"><a class="page-link" href="#">2</a></li>
-                              <li class="page-item"><a class="page-link" href="#">3</a></li>
-                              <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                            </ul>
-                      </nav>                               
-                </div>           
-                
-          </div>
-    </div>
-
+            </div>
+      </div>
 </div>
