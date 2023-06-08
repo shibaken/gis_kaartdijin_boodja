@@ -240,6 +240,12 @@ class LayerAttributeViewSet(
     search_fields = ["name", "type", "catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
+    # to pass the pk to serializer
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if context['request'].method == 'PUT':
+            context['pk'] = self.kwargs['pk']
+        return context
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Metadata"])
 class LayerMetadataViewSet(

@@ -24,61 +24,59 @@ var kbcatalogue_attribute = {
         $( "#catalogue-attribute-submit-btn" ).text("Create");
         $( "#catalogue-attribute-modal-label" ).text("New Catalogue Attribute");
         
-        $( "#catalogue-attribute-name" ).val("");
-        $( "#catalogue-attribute-type" ).val("");
-        $( "#catalogue-attribute-order" ).val("");
+        this.set_input_fields_value();
+        this.change_input_fields_disability(false);
 
+        $( "#catalogue-attribute-submit-btn" ).off('click');
         $( "#catalogue-attribute-submit-btn" ).click(function(){
             console.log("Create New Catalogue Attribute");
             kbcatalogue_attribute.save_catalogue_attribute();
         });
+        
+        $('#catalogue-attribute-popup-error').html("");
+        $('#catalogue-attribute-popup-error').hide();
     },
     set_update_att_modal: function(att){
         $( "#catalogue-attribute-submit-btn" ).text("Update");
         $( "#catalogue-attribute-modal-label" ).text("Update Catalogue Attribute");
 
-        $( "#catalogue-attribute-name" ).val(att.name);
-        $( "#catalogue-attribute-type" ).val(att.type);
-        $( "#catalogue-attribute-order" ).val(att.order);
+        this.set_input_fields_value({name:att.name, type:att.type, order:att.order});
+        this.change_input_fields_disability(false);
 
+        $( "#catalogue-attribute-submit-btn" ).off('click');
         $( "#catalogue-attribute-submit-btn" ).click(function(){
             console.log("Update Catalogue Attribute");
             kbcatalogue_attribute.update_catalogue_attribute(att.id);
         });
+
+        $('#catalogue-attribute-popup-error').html("");
+        $('#catalogue-attribute-popup-error').hide();
     },
     preprocess_catalogue_attribute: function(){
-        let popup_error = $('#catalogue-attribute-popup-error');
-
-        popup_error.html("");
-        popup_error.hide();
-        let show_message = function(target, message){
-            target.html(message);
-            target.show();
-        }
+        $('#catalogue-attribute-popup-error').html("");
+        $('#catalogue-attribute-popup-error').hide();
 
         let name = $('#catalogue-attribute-name').val();
         let type = $('#catalogue-attribute-type').val();
         let order = +$('#catalogue-attribute-order').val();
         if(!name || name.length == 0){
-            show_message(popup_error, "Please enter a new catalogue attribute name.");
+            this.show_error_popup("Please enter a new catalogue attribute name.");
             return false;
         }
         if(!type || type.length == 0){
-            show_message(popup_error, "Please select a type.");
+            this.show_error_popup("Please select a type.");
             return false;
         }
         if(!order || order.length == 0){
-            show_message(popup_error, "Please enter a new catalogue attribute order.");
+            this.show_error_popup("Please enter a new catalogue attribute order.");
             return false;
         }
         if(isNaN(order) || order < 0){
-            show_message(popup_error, "Please enter a valid new catalogue attribute order. (must be positive number)");
+            this.show_error_popup("Please enter a valid new catalogue attribute order. (must be positive number)");
             return false;
         }
 
-        $('#catalogue-attribute-name').attr('disabled','disabled');
-        $('#catalogue-attribute-type').attr('disabled','disabled');
-        $('#catalogue-attribute-order').attr('disabled','disabled');
+        this.change_input_fields_disability(true);
 
         return {"name": name, "type": type, "order": +order};
     },
@@ -98,10 +96,12 @@ var kbcatalogue_attribute = {
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                location.reload();
+                $('#catalogue-attribute-modal').modal('hide');
+                kbcatalogue_attribute.get_catalogue_attribute();
             },
             error: function (error) {
-                alert("ERROR occured while creating.");
+                kbcatalogue_attribute.show_error_popup("Failed to create a new catalogue attribute. :"+error.responseText);
+                kbcatalogue_attribute.change_input_fields_disability(false);
             },
         });
     },
@@ -120,10 +120,12 @@ var kbcatalogue_attribute = {
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                location.reload();
+                $('#catalogue-attribute-modal').modal('hide');
+                kbcatalogue_attribute.get_catalogue_attribute();
             },
             error: function (error) {
-                 alert("ERROR occured while updating.");
+                kbcatalogue_attribute.show_error_popup("Failed to update a catalogue attribute. :"+error.responseText);
+                kbcatalogue_attribute.change_input_fields_disability(false);
             },
         });
     },
@@ -172,6 +174,7 @@ var kbcatalogue_attribute = {
                             };
                             delete_event_handlers[btn_delete_id] = function(){
                                 $('#deleted_att').html('Id: '+att.id+'</br>Name: '+att.name+'</br>Type: '+att.type+'</br>Order: '+att.order);
+                                $('#btn-delete-confirm').off('click');
                                 $('#btn-delete-confirm').click(function(){
                                     kbcatalogue_attribute.delete_attribute(att.id);
                                 });
@@ -225,4 +228,18 @@ var kbcatalogue_attribute = {
             },
         });
     },
+    show_error_popup: function(msg){
+        $('#catalogue-attribute-popup-error').html(msg);
+        $('#catalogue-attribute-popup-error').show();
+    },
+    change_input_fields_disability: function(flag){
+        $('#catalogue-attribute-name').prop('disabled', flag);
+        $('#catalogue-attribute-type').prop('disabled', flag);
+        $('#catalogue-attribute-order').prop('disabled', flag);
+    },
+    set_input_fields_value: function(val){
+        $('#catalogue-attribute-name').val(val ? val.name : "");
+        $('#catalogue-attribute-type').val(val ? val.type : "");
+        $('#catalogue-attribute-order').val(val ? val.order : "");
+    } 
 }
