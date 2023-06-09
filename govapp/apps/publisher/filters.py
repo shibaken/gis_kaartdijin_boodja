@@ -42,7 +42,7 @@ class PublishEntryFilter(filters.FilterSet):
     class Meta:
         """Publish Entry Filter Metadata."""
         model = models.publish_entries.PublishEntry
-        fields = {"id": ["exact"], "assigned_to": ["exact"], "status": ["exact"], "catalogue_entry__name": ['icontains'], "description": ['icontains'] }
+        fields = {"id": ["exact", "in"], "assigned_to": ["exact"], "status": ["exact"], "catalogue_entry__name": ["icontains", "contains"], "description": ["icontains", "contains"]  }
         #fields = {"name": ['contains'] }
 
 
