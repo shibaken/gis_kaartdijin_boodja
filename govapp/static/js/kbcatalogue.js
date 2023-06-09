@@ -58,10 +58,12 @@ var kbcatalogue = {
             console.log("Assign To");
             kbcatalogue.set_assigned_to();
         });         
-        $( "#catalogue-attribute-new-btn" ).click(function() {
-            console.log("New Catalogue Attribute");
-            $('#NewCatalogueAttributeModal').modal('show');
-        });
+        // $( "#create-catalogue-attribute-btn" ).click(function(){
+        //     console.log("Create New Catalogue Attribute");
+        //     kbcatalogue.create_new_catalogue_attribute();
+        // })
+        kbcatalogue_attribute.init();
+        kbcatalogue_attribute.get_catalogue_attribute();
     },
     change_catalogue_status: function(status) {        
         var status_url = "lock";

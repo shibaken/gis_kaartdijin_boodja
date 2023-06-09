@@ -29,6 +29,7 @@ class CustodianFilter(filters.FilterSet):
 
 class LayerAttributeFilter(filters.FilterSet):
     """Layer Attribute Filter."""
+    order_by = filters.OrderingFilter(fields=("id", "name", "type", "order"))
     class Meta:
         """Layer Attribute Filter Metadata."""
         model = models.layer_attributes.LayerAttribute
