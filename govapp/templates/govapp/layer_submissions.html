@@ -25,18 +25,11 @@
                               <B>Filters</B>
                               <div class='row'>
                                     <div class='col-12'>
+                                         
                                           <div class='row'>
                                                 <div class='col-3'>
-                                                      <label for="publish-name" class="form-label">Name</label>
-                                                      <input type="text" class="form-control" id="catalogue-name" >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="publish-custodian" class="form-label">Custodian</label>
-                                                      <input type="text" class="form-control" id="catalogue-custodian" placeholder="not working" >
-                                                </div>
-                                                <div class='col-3'>
                                                       <label for="publish-status" class="form-label">Status</label>
-                                                      <select type="text" class="form-control" id="catalogue-status" >
+                                                      <select type="text" class="form-control" id="layer-submission-status" >
                                                             <option value="">All</option>
                                                             <option value="1">New Draft</option>
                                                             <option value="2">Locked</option>
@@ -44,7 +37,16 @@
                                                             <option value="4">Draft</option>
                                                             <option value="4"></option>
                                                       </select>
+                                                </div>                                                                                          
+                                                <div class='col-3'>
+                                                      <label for="publish-name" class="form-label">Submitted From</label>
+                                                      <input type="text" class="form-control" id="layer-submission-submitted-from" placeholder="not working">
                                                 </div>
+                                                <div class='col-3'>
+                                                      <label for="publish-custodian" class="form-label">Submitted To</label>
+                                                      <input type="text" class="form-control" id="layer-submission-submitted-to" placeholder="not working" >
+                                                </div>
+
                                                 <div class='col-3'>                                                
                                                       &nbsp;
                                                 </div>
@@ -53,46 +55,22 @@
                                     <div class='col-12'>
                                           <div class='row'>
                                                 <div class='col-3'>
-                                                      <label for="publish-lastupdatedfrom" class="form-label">Last Updated From</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedfrom"  placeholder="not working"  >
-
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="publish-lastupdatedto" class="form-label">Last Updated To</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedto" placeholder="not working"  >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="publish-assignedto" class="form-label">Assigned To</label>
-                                                      <input type="text" class="form-control" id="catalogue-assignedto" placeholder="not working" >
+                                                      &nbsp;
                                                 </div>
                                                 <div class='col-3'>
                                                       &nbsp;
                                                 </div>
+                                                <div class='col-3'>
+                                                      &nbsp;
+                                                      
+                                                </div>
+                                                <div class='col-3 p-4'>
+                                                      <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-filter-btn'>Filter</button>
+                                                      &nbsp;
+                                                </div>
                                           </div>
-                                    </div>
-                              </div>
-
-                              <div class='col-12'>
-                                    <div class='row'>
-                                          <div class='col-3'>
-                                                <label for="e1" class="form-label">Description</label>
-                                                <input type="text" class="form-control" id="catalogue-description" >
-
-                                          </div>
-                                          <div class='col-3'>
-                                                <label for="publish-number" class="form-label">Number</label>
-                                                <input type="text" class="form-control" id="catalogue-number" >
-                                          </div>
-                                          <div class='col-3'>
-                                                &nbsp;
-                                                
-                                          </div>
-                                          <div class='col-3 p-4'>
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-filter-btn'>Filter</button>
-                                                &nbsp;
-                                          </div>
-                                    </div>
-                              </div>                        
+                                    </div>    
+                              </div>                  
                         </div>                  
                         <div class='col-12 pt-2 pb-2 '>
                               <BR>
@@ -130,12 +108,6 @@
 
                               </div>
                         </div>  
-
-
-
-
-
-
 
                         <div class='col-12 pt-2 pb-2 '>
                               <div class='row'>
@@ -175,7 +147,7 @@
                                     </div>                                    
                               </div>
                         </div>     
-                        <div id='publish-table'>
+                        <div id='layersubmission-table'>
                               <table id="example" class="table" style="width:100%">
                                     <thead class='table-dark'>
                                     <tr>
@@ -188,7 +160,7 @@
                                           <th>Action</th>
                                     </tr>
                                     </thead>
-                                    <tbody id='publish-tbody'>
+                                    <tbody id='layersubmission-tbody'>
                                     <tr>
                                           <td colspan="7" class='text-center'>No Results</td>
                                     </tr>
@@ -210,7 +182,7 @@
 
       </div>
       <script>
-                    
+            kblayersubmission.init_dashboard();      
       </script>
 {% else %}
       <div class="container" id="dashboard-table-container">

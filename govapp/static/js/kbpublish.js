@@ -565,7 +565,7 @@ var kbpublish = {
     },
     get_publish: function(params_str) {
         params = {
-            name__icontains:        $('#publish-name').val(),
+            catalogue_entry__name__icontains:        $('#publish-name').val(),
             status:                 $('#publish-status').val(),
             description__icontains: $('#publish-description').val(),
             id:                     $('#publish-number').val().replace("PE", ""),

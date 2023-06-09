@@ -196,6 +196,7 @@ var kbcatalogue = {
             order_by:               $('#catalogue-order-by').val()
         }
 
+
         if (!params_str){
             params_str = common_pagination.make_get_params_str(params);
         }

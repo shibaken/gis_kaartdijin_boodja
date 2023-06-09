@@ -44,7 +44,7 @@ class CatalogueEntryViewSet(
     queryset = models.catalogue_entries.CatalogueEntry.objects.all()
     serializer_class = serializers.catalogue_entries.CatalogueEntrySerializer
     filterset_class = filters.CatalogueEntryFilter
-    search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]
+    search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]    
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
