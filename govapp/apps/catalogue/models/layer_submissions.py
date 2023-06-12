@@ -34,7 +34,7 @@ class LayerSubmission(mixins.RevisionedMixin):
     description = models.TextField(blank=True)
     file = models.URLField()
     is_active = models.BooleanField()
-    status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED.name)
+    status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)
     created_at = models.DateTimeField()
     submitted_at = models.DateTimeField(auto_now_add=True)
     hash = models.TextField()  # noqa: A003
