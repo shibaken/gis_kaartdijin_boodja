@@ -21,6 +21,12 @@ class LayerSubmissionStatus(models.IntegerChoices):
     ACCEPTED = 2
     DECLINED = 3
 
+    def find_enum_by_value(value):
+        for name, member in LayerSubmissionStatus.__members__.items():
+            if member.value == value:
+                return member
+        raise ValueError('No enum member found with value: {}'.format(value))
+
 
 @reversion.register()
 class LayerSubmission(mixins.RevisionedMixin):
@@ -28,7 +34,7 @@ class LayerSubmission(mixins.RevisionedMixin):
     description = models.TextField(blank=True)
     file = models.URLField()
     is_active = models.BooleanField()
-    status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED)
+    status = models.IntegerField(choices=LayerSubmissionStatus.choices, default=LayerSubmissionStatus.SUBMITTED.name)
     created_at = models.DateTimeField()
     submitted_at = models.DateTimeField(auto_now_add=True)
     hash = models.TextField()  # noqa: A003
@@ -61,6 +67,18 @@ class LayerSubmission(mixins.RevisionedMixin):
         """
         # Retrieve and Return
         return self.catalogue_entry.name
+    
+    @property
+    def status_name(self) -> str:
+        """
+        Provides the Status name to this model.
+
+        Returns:
+            str: Name of the Status 
+        """
+        # Retrieve String and Return
+        status = LayerSubmissionStatus.find_enum_by_value(self.status)
+        return status.name
 
     def is_declined(self) -> bool:
         """Determines whether the Layer Submission is declined.

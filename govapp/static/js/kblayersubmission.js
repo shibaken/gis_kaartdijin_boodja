@@ -21,13 +21,14 @@ var kblayersubmission = {
     get_layer_submissions: function(params_str) {
         params = {
             status:        $('#layer-submission-status').val(),
+            limit:         $('#layer-submission-limit').val(),
+            order_by:      $('#layer-submission-order-by').val(),
         }
 
         if (!params_str){
             params_str = common_pagination.make_get_params_str(params);
         }
 
-        //order_by=&limit=10" 
         $.ajax({
             url: kblayersubmission.var.layersubmission_data_url+"?"+params_str,
             method: 'GET',
@@ -60,28 +61,36 @@ var kblayersubmission = {
 
                             }
 
+                            const date = new Date(response.results[i].submitted_at);
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const hours = String(date.getHours()).padStart(2, '0');
+                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                            const seconds = String(date.getSeconds()).padStart(2, '0');
+                            
+                            const formattedDate = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
                             button_json = '{"id": "'+response.results[i].id+'"}'
 
+                            // Number, Name, Submitted Date, Time, Catalogue, Status, Action
                             html+= "<tr>";
                             html+= " <td>LM"+response.results[i].id+"</td>";
                             html+= " <td>"+response.results[i].name+"</td>";
-                            html+= " <td>NONE</td>";
-                            html+= " <td>"+kbpublish.var.publish_status[response.results[i].status]+"</td>";
-                            html+= " <td>"+response.results[i].updated_at+"</td>";
-                            html+= " <td>"+assigned_to_friendly+"</td>";
+                            html+= " <td>"+formattedDate+"</td>";
+                            html+= " <td>CE"+response.results[i].catalogue_entry+"</td>";
+                            html+= " <td>"+response.results[i].status_name+"</td>";
                             html+= " <td class='text-end'>";
                             html+="  <a class='btn btn-primary btn-sm' href='/layer-submission/"+response.results[i].id+"'>View</a>";
-                            html+="  <button class='btn btn-primary btn-sm'>History</button>";
                             html+="  </td>";
                             html+= "<tr>";
                         }
-                                           
+
                         $('#layersubmission-tbody').html(html);
                         $('.layersubmission-table-button').hide();
 
                         // navigation bar
-                        common_pagination.init(response.count, params, kbpublish.get_publish, +params.limit, $('#paging_navi'));
+                        common_pagination.init(response.count, params, kblayersubmission.get_layer_submissions, +params.limit, $('#paging_navi'));
 
                     } else {
                         $('#layersubmission-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
