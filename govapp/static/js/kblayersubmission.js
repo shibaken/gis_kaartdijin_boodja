@@ -5,20 +5,21 @@ var kblayersubmission = {
     },
     init_dashboard: function() { 
         $( "#layer-submission-filter-btn" ).click(function() {
-            console.log("Reload Catalogue Table");
             kblayersubmission.get_layer_submissions();
         });
         $( "#layer-submission-limit" ).change(function() {
-            console.log("Reload Catalogue");
             kblayersubmission.get_layer_submissions();
         });
         $( "#layer-submission-order-by" ).change(function() {
-            console.log("Reload Catalogue");
+            kblayersubmission.get_layer_submissions();
+        });
+        $( "#layer-submission-status" ).change(function() {
             kblayersubmission.get_layer_submissions();
         });
         kblayersubmission.get_layer_submissions();
     },    
     get_layer_submissions: function(params_str) {
+        console.log("Reload layer submission page.");
         params = {
             status:        $('#layer-submission-status').val(),
             limit:         $('#layer-submission-limit').val(),
