@@ -6,6 +6,7 @@ import logging
 import pathlib
 import shutil
 import os
+import uuid
 
 # Third-Party
 from django import conf
@@ -138,13 +139,8 @@ class Absorber:
             description=metadata.description,
         )
 
-        # Convert to Geojson
-        geojson = to_geojson(
-            filepath=archive,
-            layer=catalogue_entry.metadata.name,
-            catalogue_name=catalogue_entry.name,
-            export_method=None
-        ).read_text()
+        # Convert to a Geojson text
+        geojson_path = self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
         models.layer_submissions.LayerSubmission.objects.create(
@@ -154,7 +150,7 @@ class Absorber:
             created_at=metadata.created_at,
             hash=attributes_hash,
             catalogue_entry=catalogue_entry,
-            geojson=geojson
+            geojson=geojson_path
         )
 
         # Create Layer Metadata
@@ -213,12 +209,7 @@ class Absorber:
         attributes_hash = utils.attributes_hash(attributes)
         
         # Convert to a Geojson text
-        geojson = to_geojson(
-            filepath=pathlib.Path(archive),
-            layer=catalogue_entry.metadata.name,
-            catalogue_name=catalogue_entry.name,
-            export_method=None
-        ).read_text()
+        geojson_path = self.convert_to_geojson(archive, catalogue_entry)
 
         # Create New Layer Submission
         layer_submission = models.layer_submissions.LayerSubmission.objects.create(
@@ -228,7 +219,7 @@ class Absorber:
             created_at=metadata.created_at,
             hash=attributes_hash,
             catalogue_entry=catalogue_entry,
-            geojson=geojson
+            geojson=geojson_path
         )    
             
         # Attempt to "Activate" this Layer Submission
@@ -252,3 +243,32 @@ class Absorber:
             directory_notifications.catalogue_entry_update_failure(catalogue_entry)
         # Return
         return success
+
+    def convert_to_geojson(self, filepath: str, catalogue_entry: models.catalogue_entries.CatalogueEntry) -> pathlib.Path:
+        # Convert to a Geojson file
+        path_from = to_geojson(
+            filepath=pathlib.Path(filepath),
+            layer=catalogue_entry.metadata.name,
+            catalogue_name=catalogue_entry.name,
+            export_method=None
+        )
+        return self.move_file_to_storage_with_uniquename(path_from)
+
+    def move_file_to_storage_with_uniquename(self, path_from:pathlib.Path):
+        # Create a new folder named date(ddmmyyyy) in the data storage when it dosen't exist
+        date_str = datetime.date.today().strftime("%d%m%Y")
+        data_storage_path = pathlib.Path(self.storage.data_storage_path).joinpath(date_str)
+        if not data_storage_path.exists():
+            data_storage_path.mkdir(parents=True)
+        
+        # Change the file name with uuid and join with the data storage path
+        filename_to = f"{path_from.stem}_{str(uuid.uuid4())}{path_from.suffix}"
+        path_to = data_storage_path.joinpath(filename_to)
+
+        # Move the file into a folder named date(ddmmyyyy) in the data storage
+        if self.storage.move_to_storage(path_from, path_to):
+            return path_to
+        
+        # Raise Exception when it failed for some reasons
+        raise Exception(f"failed to move file from {path_from} to {path_to}")
+
