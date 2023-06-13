@@ -43,6 +43,7 @@ class LayerSubmission(mixins.RevisionedMixin):
         related_name="layers",
         on_delete=models.CASCADE,
     )
+    geojson = models.TextField(null=True, blank=True)
 
     class Meta:
         """Layer Submission Model Metadata."""

@@ -14,6 +14,7 @@ from django.db import transaction
 # Local
 from govapp.common import local_storage
 from govapp.gis import readers
+from govapp.gis.conversions import to_geojson
 from govapp.apps.catalogue import models
 from govapp.apps.catalogue import directory_notifications
 from govapp.apps.catalogue import utils
@@ -137,6 +138,14 @@ class Absorber:
             description=metadata.description,
         )
 
+        # Convert to Geojson
+        geojson = to_geojson(
+            filepath=archive,
+            layer=catalogue_entry.metadata.name,
+            catalogue_name=catalogue_entry.name,
+            export_method=None
+        ).read_text()
+
         # Create Layer Submission
         models.layer_submissions.LayerSubmission.objects.create(
             description=metadata.description,
@@ -145,6 +154,7 @@ class Absorber:
             created_at=metadata.created_at,
             hash=attributes_hash,
             catalogue_entry=catalogue_entry,
+            geojson=geojson
         )
 
         # Create Layer Metadata
@@ -184,7 +194,7 @@ class Absorber:
         symbology: readers.types.Symbology,
         archive: str,
     ) -> bool:
-        """Creates a new catalogue entry with the supplied values.
+        """Update a existing catalogue entry with the supplied values.
 
         Args:
             catalogue_entry (CatalogueEntry): Catalogue entry to update.
@@ -202,6 +212,14 @@ class Absorber:
         # Calculate Layer Submission Attributes Hash
         attributes_hash = utils.attributes_hash(attributes)
         
+        # Convert to a Geojson text
+        geojson = to_geojson(
+            filepath=pathlib.Path(archive),
+            layer=catalogue_entry.metadata.name,
+            catalogue_name=catalogue_entry.name,
+            export_method=None
+        ).read_text()
+
         # Create New Layer Submission
         layer_submission = models.layer_submissions.LayerSubmission.objects.create(
             description=metadata.description,
@@ -210,6 +228,7 @@ class Absorber:
             created_at=metadata.created_at,
             hash=attributes_hash,
             catalogue_entry=catalogue_entry,
+            geojson=geojson
         )    
             
         # Attempt to "Activate" this Layer Submission

@@ -69,6 +69,8 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     geojson = gis.conversions.to_geojson(
         filepath=filepath,
         layer=entry.metadata.name,
+        catalogue_name=entry.name,
+        export_method=None
     )
 
     # Send Webhook Posts
