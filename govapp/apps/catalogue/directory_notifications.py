@@ -80,7 +80,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     )
 
     # Delete local temporary copy of file if we can
-    shutil.rmtree(filepath.parent, ignore_errors=True)
+    # shutil.rmtree(filepath.parent, ignore_errors=True)
 
 
 def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") -> None:

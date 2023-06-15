@@ -102,7 +102,7 @@ class LayerSubmission(mixins.RevisionedMixin):
         self.status = LayerSubmissionStatus.DECLINED
         self.save()
 
-    def activate(self) -> None:
+    def activate(self, raise_err=True) -> None:
         """Updates the Layer Submission's Catalogue Entry with this layer."""
         # Check the created date?
         # TODO
@@ -115,7 +115,13 @@ class LayerSubmission(mixins.RevisionedMixin):
         # Also check that Catalogue Entry is not declined
         if self.hash == attributes_hash and not self.catalogue_entry.is_declined():
             # Retrieve Catalogue Entry's Current Active Layer
-            current_active_layer = self.catalogue_entry.active_layer
+            current_active_layer = None
+            try:
+                current_active_layer = self.catalogue_entry.active_layer
+            except AssertionError as err:
+                # If there was no active layer, this one should be active if needed.
+                if raise_err:
+                    raise err
 
             # Determine behaviour based on current status
             if self.catalogue_entry.is_new():
@@ -123,7 +129,8 @@ class LayerSubmission(mixins.RevisionedMixin):
                 # Set the new incoming layer submission to SUBMITTED
                 # Set the old active layer to DECLINED
                 self.status = LayerSubmissionStatus.SUBMITTED
-                current_active_layer.status = LayerSubmissionStatus.DECLINED
+                if current_active_layer is not None:
+                    current_active_layer.status = LayerSubmissionStatus.DECLINED
 
             else:
                 # Set the new incoming layer submission to ACCEPTED
@@ -132,8 +139,9 @@ class LayerSubmission(mixins.RevisionedMixin):
             # Update!
             # Update Current Active Layer to Inactive
             # Update New Active Layer to Active
-            current_active_layer.is_active = False
-            current_active_layer.save()
+            if current_active_layer is not None:
+                current_active_layer.is_active = False
+                current_active_layer.save()
             self.is_active = True
             self.save()
 

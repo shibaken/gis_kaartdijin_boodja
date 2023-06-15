@@ -68,16 +68,25 @@ class Absorber:
         # # Construct Reader
         reader = readers.reader.FileReader(pathlib_storage_path)
 
+        result = {'total':sum(1 for _ in reader.layers()), 'success':[], 'fail':[]}
         # Loop through layers
         for layer in reader.layers():
             # Log
             log.info(f"Absorbing layer '{layer.name}' from '{storage_path}'")
+            try:
+                # Absorb layer
+                self.absorb_layer(pathlib_storage_path, layer, storage_path)
+                result['success'].append(layer.name)
+            except Exception as exc:
+                result['fail'].append(f"layer:{layer.name}, exception:{exc}")
+                # Log and continue
+                log.error(f"Error absorbing layer:'{layer.name}': file:'{filepath.name}'", exc_info=exc)
+            log.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
+        log.info(f"End of absorbing layers from '{storage_path}' :  fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
+        log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
 
-            # Absorb layer
-            self.absorb_layer(pathlib_storage_path, layer, storage_path)
-
-        # # Delete local temporary copy of file if we can
-        # shutil.rmtree(filepath.parent, ignore_errors=True)
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(storage_directory, ignore_errors=True)
 
     def absorb_layer(self, filepath: pathlib.Path, layer: readers.base.LayerReader, archive: str) -> None:
         """Absorbs a layer into the system.
@@ -221,9 +230,9 @@ class Absorber:
             catalogue_entry=catalogue_entry,
             geojson=geojson_path
         )    
-            
+        
         # Attempt to "Activate" this Layer Submission
-        layer_submission.activate()
+        layer_submission.activate(False)
         
         # Check Success
         success = not layer_submission.is_declined()
@@ -255,18 +264,18 @@ class Absorber:
         return self.move_file_to_storage_with_uniquename(path_from)
 
     def move_file_to_storage_with_uniquename(self, path_from:pathlib.Path):
-        # Create a new folder named date(ddmmyyyy) in the data storage when it dosen't exist
-        date_str = datetime.date.today().strftime("%d%m%Y")
-        data_storage_path = pathlib.Path(self.storage.data_storage_path).joinpath(date_str)
-        if not data_storage_path.exists():
-            data_storage_path.mkdir(parents=True)
+        # Create a new folder hierarchically named to today's date(./yyyy/mm/dd) in the data storage when it dosen't exist
+        # date_str = datetime.date.today().strftime("%d%m%Y")
+        data_storage_path = f"{self.storage.get_data_storage_path()}/geojson/{datetime.date.today().year}/{str(datetime.date.today().month).zfill(2)}/{datetime.date.today().day}"
+        if not os.path.exists(data_storage_path):
+            os.makedirs(data_storage_path)
         
         # Change the file name with uuid and join with the data storage path
         filename_to = f"{path_from.stem}_{str(uuid.uuid4())}{path_from.suffix}"
-        path_to = data_storage_path.joinpath(filename_to)
+        path_to = f"{data_storage_path}/{filename_to}"
 
         # Move the file into a folder named date(ddmmyyyy) in the data storage
-        if self.storage.move_to_storage(path_from, path_to):
+        if self.storage.move_to_storage(str(path_from), path_to):
             return path_to
         
         # Raise Exception when it failed for some reasons
