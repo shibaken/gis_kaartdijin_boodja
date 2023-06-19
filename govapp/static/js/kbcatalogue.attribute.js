@@ -163,8 +163,10 @@ var kbcatalogue_attribute = {
                             html+= " <td>"+att.order+"</td>";
                             // html+= " <td class='text-end'>";                        
                             html+="  <td>";
-                            html+="   <button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button>";
-                            html+="   <button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>";
+                            if(has_edit_access){
+                                html+="   <button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button>";
+                                html+="   <button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>";
+                            }
                             html+="  </td>";
                             html+= "<tr>";
 
