@@ -1,6 +1,7 @@
 var kbcatalogue_attribute = { 
     var: { 
          catalogue_attribute_url: "/api/catalogue/layers/attributes/",
+         catalogue_attribute_type_url: "/api/catalogue/layers/attribute/type",
     },
     init: function() {
         $( "#catalogue-attribute-limit" ).change(function() {
@@ -18,6 +19,24 @@ var kbcatalogue_attribute = {
         });
         $( "#catalogue-attribute-order" ).on('input',function(){
             $(this).val($(this).val().replace(/\D/g, ""));
+        });
+
+        // catalogue-attribute-type
+        $.ajax({
+            url: kbcatalogue_attribute.var.catalogue_attribute_type_url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: function (response) {
+                var html = "";
+                for (let i in response){
+                    html += '<option value="'+response[i].key+'">'+response[i].name+'</option>';
+                }
+                $('#catalogue-attribute-type').html(html);
+            },
+            error: function (error) {
+                $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>Fail to get attribute types<td></tr>");
+                console.log(error)
+            },
         });
     },
     init_create_att_modal: function(){
