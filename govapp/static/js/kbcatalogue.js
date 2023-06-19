@@ -10,7 +10,6 @@ var kbcatalogue = {
             5: "Pending"
         },
     },
-    pagination: kbcatalogue_pagination,
     attribute: kbcatalogue_attribute,
     init_dashboard: function() { 
         $( "#catalogue-filter-btn" ).click(function() {
