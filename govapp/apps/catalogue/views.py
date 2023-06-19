@@ -247,6 +247,20 @@ class LayerAttributeViewSet(
             context['pk'] = self.kwargs['pk']
         return context
 
+
+@drf_utils.extend_schema(tags=["Catalogue - Layer Attribute Types"])
+class LayerAttributeTypeViewSet(
+    viewsets.mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):      
+    """Layer Attribute Type View Set."""
+    queryset = models.layer_attribute_types.LayerAttributeType.objects.all()
+    serializer_class = serializers.layer_attribute_types.LayerAttributeTypeSerializer
+    filter_backends = []
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    pagination_class = None
+
+    
 @drf_utils.extend_schema(tags=["Catalogue - Layer Metadata"])
 class LayerMetadataViewSet(
     mixins.ChoicesMixin,

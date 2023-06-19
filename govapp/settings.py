@@ -120,7 +120,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    BASE_DIR / "govapp/static"  # Look for static files in the frontend
+    BASE_DIR / "govapp/static",  # Look for static files in the frontend
+    BASE_DIR / "govapp/frontend/node_modules"  # node modules that are collected and used in the frontend
 ]
 
 # Default primary key field type

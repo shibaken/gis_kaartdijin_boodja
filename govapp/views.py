@@ -15,6 +15,7 @@ from govapp.apps.catalogue.models import custodians as custodians_models
 from govapp.apps.publisher.models import workspaces as publish_workspaces_models
 from govapp.apps.catalogue.models import layer_symbology as catalogue_layer_symbology_models
 from govapp.apps.catalogue.models import layer_metadata as catalogue_layer_metadata_models
+from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
 from govapp.apps.accounts import utils
 
 # Typing
@@ -327,12 +328,118 @@ class LayerSubmission(base.TemplateView):
         Returns:
             http.HttpResponse: The rendered template response.
         """
+
         # Construct Context
         context: dict[str, Any] = {}
         context['tab'] = 'layer_submission'
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)    
+    
+
+class LayerSubmissionView(base.TemplateView):
+    """Layer Submissions view."""
+
+    # Template name
+    template_name = "govapp/layer_submissions_view.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the SubmissionsView view.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        pk = self.kwargs['pk']
+        layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.get(id=pk)
+
+        # Construct Context
+        context: dict[str, Any] = {}
+        context['tab'] = self.kwargs['tab']
+        context['layer_submission_obj'] = layer_submission
+
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)   
+    
+    # def get_layer_file(request: http.HttpRequest, pk:int):
+    #     allow_access = False
+    #     #if request.user.is_superuser:
+    #     file_record = Record.objects.get(id=file_id)
+    #     app_id = file_record.file_group_ref_id 
+    #     app_group = file_record.file_group
+
+    #     if (file_record.file_group > 0 and file_record.file_group < 12) or (file_record.file_group == 2003):
+    #         app = Application.objects.get(id=app_id)
+    #         if app.id == file_record.file_group_ref_id:
+    #             flow = Flow()
+    #             workflowtype = flow.getWorkFlowTypeFromApp(app)
+    #             flow.get(workflowtype)
+
+    #         flowcontext = {}
+    #         if app.assignee:
+    #             flowcontext['application_assignee_id']=app.assignee.id
+    #         if app.submitted_by:
+    #             flowcontext['application_submitter_id'] = app.submitted_by.id
+
+    #         #flowcontext['application_owner'] = app.
+    #         if app.applicant:
+    #             if app.applicant.id == request.user.id:
+    #                flowcontext['application_owner'] = True
+    #         if request.user.is_authenticated:
+    #             if Delegate.objects.filter(email_user=request.user).count() > 0:
+    #                  flowcontext['application_owner'] = True
+
+
+    #         flowcontext = flow.getAccessRights(request, flowcontext, app.routeid, workflowtype)
+    #         if flowcontext['allow_access_attachments'] == "True":
+    #             allow_access = True
+    #         if allow_access is False:
+    #             if request.user.is_authenticated:
+    #                 refcount = Referral.objects.filter(application=app,referee=request.user).exclude(status=5).count()
+    #                 if refcount > 0:
+    #                    allow_access = True
+    #                    ref = Referral.objects.filter(application=app,referee=request.user).exclude(status=5)[0]                  
+    #                #for i in ref.records.all():
+    #                #    if int(file_id) == i.id:
+    #                #       allow_access = True
+
+    #     if file_record.file_group == 2005:
+    #         app = Approval.objects.get(id=app_id)
+    #         if app.applicant:
+    #             if app.applicant.id == request.user.id or request.user.is_staff is True:
+    #                 allow_access = True
+        
+    #     if file_record.file_group == 2007:
+    #         app = Approval.objects.get(id=app_id)
+    #         if app.applicant:
+    #             if request.user.is_staff is True:
+    #                 allow_access = True
+
+    #     if file_record.file_group == 2006:
+    #         app = Compliance.objects.get(id=app_id)
+    #         if app.applicant:
+    #             if app.applicant.id == request.user.id or request.user.is_staff is True:
+    #                 allow_access = True
+    
+    #     if allow_access == True:
+    #         file_record = Record.objects.get(id=file_id)
+    #         file_name_path = file_record.upload.path
+    #         if os.path.isfile(file_name_path) is True:
+    #             the_file = open(file_name_path, 'rb')
+    #             the_data = the_file.read()
+    #             the_file.close()
+    #             if extension == 'msg': 
+    #                 return HttpResponse(the_data, content_type="application/vnd.ms-outlook")
+    #             if extension == 'eml':
+    #                 return HttpResponse(the_data, content_type="application/vnd.ms-outlook")
+    #             return HttpResponse(the_data, content_type=mimetypes.types_map['.'+str(extension)])
+    #     else:
+    #         return HttpResponse("Error loading attachment", content_type="plain/html")
+    #     return
     
 
 class LayerSubscriptions(base.TemplateView):

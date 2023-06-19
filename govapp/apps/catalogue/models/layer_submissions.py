@@ -80,6 +80,17 @@ class LayerSubmission(mixins.RevisionedMixin):
         # Retrieve String and Return
         status = LayerSubmissionStatus.find_enum_by_value(self.status)
         return status.name
+    
+    @property
+    def submit_datetime(self, format="%d-%m-%Y %H:%M:%S") -> str:
+        """
+        Provides the Formatted datetime string to this model.
+
+        Returns:
+            str: Formatted datetime string of the submitted_at 
+        """
+        # Retrieve String and Return
+        return self.submitted_at.strftime(format)
 
     def is_declined(self) -> bool:
         """Determines whether the Layer Submission is declined.

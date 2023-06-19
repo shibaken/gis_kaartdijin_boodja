@@ -82,7 +82,7 @@ var kblayersubmission = {
                             html+= " <td>CE"+response.results[i].catalogue_entry+"</td>";
                             html+= " <td>"+response.results[i].status_name+"</td>";
                             html+= " <td class='text-end'>";
-                            html+="  <a class='btn btn-primary btn-sm' href='/layer-submission/"+response.results[i].id+"'>View</a>";
+                            html+="  <a class='btn btn-primary btn-sm' href='/layer/submission/"+response.results[i].id+"/details'>View</a>";
                             html+="  </td>";
                             html+= "<tr>";
                         }

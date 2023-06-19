@@ -22,8 +22,10 @@
                                     &nbsp;
                               </div>
                               <div class='col-6 text-end'>
-                                    <button class="btn btn-primary btn-sm" aria-current="page"
-                                          id='catalogue-attribute-new-btn'>New Attribute Column</button>
+                                    {% if has_edit_access is True %}
+                                          <button class="btn btn-primary btn-sm" aria-current="page"
+                                                id='catalogue-attribute-new-btn'>New Attribute Column</button>
+                                    {% endif %}
                               </div>
                         </div>
                   </div>
@@ -72,8 +74,8 @@
                                                                   class="form-select form-select-sm"
                                                                   id="catalogue-attribute-limit">
                                                                   <option value="5">5</option>
-                                                                  <option value="10" selected>10</option>
-                                                                  <option value="25">25</option>
+                                                                  <option value="10" >10</option>
+                                                                  <option value="25" selected>25</option>
                                                                   <option value="50">50</option>
                                                                   <option value="100">100</option>
                                                             </select> entries
@@ -135,3 +137,6 @@
             </div>
       </div>
 </div>
+<script>
+      var has_edit_access = "True" == "{{ has_edit_access }}";
+</script>
