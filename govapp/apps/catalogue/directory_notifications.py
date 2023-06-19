@@ -69,6 +69,8 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     geojson = gis.conversions.to_geojson(
         filepath=filepath,
         layer=entry.metadata.name,
+        catalogue_name=entry.name,
+        export_method=None
     )
 
     # Send Webhook Posts
@@ -78,7 +80,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     )
 
     # Delete local temporary copy of file if we can
-    shutil.rmtree(filepath.parent, ignore_errors=True)
+    # shutil.rmtree(filepath.parent, ignore_errors=True)
 
 
 def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") -> None:
