@@ -86,7 +86,7 @@ class Absorber:
         log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
 
         # Delete local temporary copy of file if we can
-        shutil.rmtree(storage_directory, ignore_errors=True)
+        # shutil.rmtree(storage_directory, ignore_errors=True)
 
     def absorb_layer(self, filepath: pathlib.Path, layer: readers.base.LayerReader, archive: str) -> None:
         """Absorbs a layer into the system.
