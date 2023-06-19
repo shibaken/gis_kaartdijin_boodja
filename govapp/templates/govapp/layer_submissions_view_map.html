@@ -1,0 +1,44 @@
+<!-- <style>
+    @import "node_modules/ol/ol.css";
+  </style> -->
+  <!-- <style>
+    html, body, #map-container {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif;
+      background-color: #04041b;
+    }
+  </style> -->
+  <style>
+    html, body, #map-container {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif;
+    }
+    .square {
+      padding-bottom: 50%;
+      position: relative;
+    }
+    .square-content {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+<div class="card">
+    <div class="card-header fw-bold h4" style="padding:30px;">
+        <div class="row">
+            <div class="col-6">Layer Preview</div>
+            <div class="col-6 text-end">
+                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+            </div>
+        </div>
+    </div>
+    <div class="card-body collapse show" id="box1-card-body">
+        <div class='row square'>
+            <div id="map-container" class="square-content"></div>
+        </div>
+    </div>
+</div>
