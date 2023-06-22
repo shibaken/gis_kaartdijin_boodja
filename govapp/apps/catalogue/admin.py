@@ -29,6 +29,7 @@ class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
 admin.site.register(models.catalogue_entries.CatalogueEntry, CatalogueEntryAdmin)
 admin.site.register(models.custodians.Custodian, CustodianAdmin)
 admin.site.register(models.layer_attributes.LayerAttribute, reversion.admin.VersionAdmin)
+admin.site.register(models.layer_attribute_types.LayerAttributeType, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_metadata.LayerMetadata, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_submissions.LayerSubmission, reversion.admin.VersionAdmin)
 admin.site.register(models.layer_subscriptions.LayerSubscription, reversion.admin.VersionAdmin)
