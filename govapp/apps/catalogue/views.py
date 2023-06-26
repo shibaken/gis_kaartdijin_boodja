@@ -4,12 +4,15 @@
 # Third-Party
 from django import shortcuts
 from django.contrib import auth
+from django.db import connection
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
+from datetime import timedelta
+import json
 
 # Local
 from govapp.common import mixins
@@ -18,11 +21,14 @@ from govapp.apps.catalogue import filters
 from govapp.apps.catalogue import models
 from govapp.apps.catalogue import permissions
 from govapp.apps.catalogue import serializers
+from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
 from govapp.apps.logs import mixins as logs_mixins
 from govapp.apps.logs import utils as logs_utils
 
+
 # Typing
 from typing import cast
+from typing import Any
 
 
 # Shortcuts
@@ -210,7 +216,70 @@ class CatalogueEntryViewSet(
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @decorators.action(detail=True, methods=["GET"], permission_classes=[accounts_permissions.IsAuthenticated])
+    def layer(self, request: request.Request, pk: str):
+        """ Api to provide geojson file
 
+        Args:
+            request (request.Request): request object passed by Django framework
+            pk (str): uri parameter represents id of layer submission(catalogue id?)
+
+        Returns:
+            response.Response: HTTP response with geojson data file
+        """
+        layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.filter(catalogue_entry=pk, is_active=True).first()
+        map_data = None
+        try:
+            with open(layer_submission.geojson) as file:
+                map_data = file.read()
+                map_data = json.loads(map_data)
+        except Exception as e:
+            return response.Response({"message": 'an exception occured during load a target file.', "error": str(e)}, 
+                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return response.Response(map_data, content_type='application/json', status=status.HTTP_200_OK)
+    
+    @drf_utils.extend_schema(parameters=[drf_utils.OpenApiParameter("hours_ago", type=int)])
+    @decorators.action(detail=False, methods=['GET'])
+    def recent(self, request: request.Request):
+        """ Api to provide sumary of recent catalogue entries from n hours ago
+
+        Args:
+            request (request.Request): request object passed by Django framework - must include integer value of hours_ago
+            pk (str): uri parameter represents id of layer submission(catalogue id)
+
+        Returns:
+            response.Response: HTTP response with a list of summary of recent catalogue entries
+        """
+        
+        hours_ago = self.request.query_params.get("hours_ago")
+        
+        # validation cehck
+        if not hours_ago.isdigit() or int(hours_ago) <= 0:
+            return response.Response({'error': 'Field house_ago must be a positive integer.'}, status=400)
+        
+        def get_current_db_time():
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT NOW()")
+                result = cursor.fetchone()
+                current_time = result[0]
+            return current_time
+
+        # select query using inner join and filter
+        start_date = get_current_db_time() - timedelta(hours=int(hours_ago))
+        filtered = models.layer_submissions.LayerSubmission.objects.select_related('catalogue_entry').filter(catalogue_entry__updated_at__gte=start_date, is_active=True)
+        selected = filtered.values('catalogue_entry__id', 'catalogue_entry__name', 'catalogue_entry__created_at', 'catalogue_entry__updated_at', 'id')
+        
+        # build a response data
+        response_data = [{
+                'id': entry['catalogue_entry__id'],
+                'name': entry['catalogue_entry__name'],
+                'created_at': entry['catalogue_entry__created_at'],
+                'updated_at': entry['catalogue_entry__updated_at'],
+                'active_layer': entry['id']
+            } for entry in list(selected)]
+        return response.Response(response_data, content_type='application/json', status=status.HTTP_200_OK)
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
@@ -289,6 +358,7 @@ class LayerSubmissionViewSet(
     serializer_class = serializers.layer_submissions.LayerSubmissionSerializer
     filterset_class = filters.LayerSubmissionFilter
     search_fields = ["description", "catalogue_entry__name"]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])

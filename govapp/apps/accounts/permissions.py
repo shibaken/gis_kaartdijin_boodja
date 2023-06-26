@@ -51,3 +51,24 @@ class IsInAdministratorsGroup(permissions.BasePermission):
         """
         # Return
         return utils.is_administrator(request.user)
+
+
+class IsAuthenticated(permissions.BasePermission):
+    """Permissions whether the user is authenticated."""
+
+    def has_permission(  # type: ignore
+        self,
+        request: request.Request,
+        view: viewsets.GenericViewSet,
+    ) -> bool:
+        """Checks viewset request level permissions.
+
+        Args:
+            request (request.Request): Request to check permissions.
+            view (viewsets.GenericViewSet): Viewset to check permissions.
+
+        Returns:
+            bool: Whether permission is allowed.
+        """
+        # Return
+        return request.user.is_authenticated
