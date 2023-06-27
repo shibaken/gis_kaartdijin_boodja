@@ -11,6 +11,7 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from datetime import timedelta
 import json
 
@@ -27,7 +28,7 @@ from govapp.apps.logs import utils as logs_utils
 
 
 # Typing
-from typing import cast
+from typing import Callable, cast
 from typing import Any
 
 
@@ -240,7 +241,7 @@ class CatalogueEntryViewSet(
         
         return response.Response(map_data, content_type='application/json', status=status.HTTP_200_OK)
     
-    @drf_utils.extend_schema(parameters=[drf_utils.OpenApiParameter("hours_ago", type=int)])
+    @drf_utils.extend_schema(parameters=[drf_utils.OpenApiParameter("hours_ago", type=int, required=True)])
     @decorators.action(detail=False, methods=['GET'])
     def recent(self, request: request.Request):
         """ Api to provide sumary of recent catalogue entries from n hours ago
@@ -255,19 +256,14 @@ class CatalogueEntryViewSet(
         
         hours_ago = self.request.query_params.get("hours_ago")
         
-        # validation cehck
-        if not hours_ago.isdigit() or int(hours_ago) <= 0:
-            return response.Response({'error': 'Field house_ago must be a positive integer.'}, status=400)
-        
-        def get_current_db_time():
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT NOW()")
-                result = cursor.fetchone()
-                current_time = result[0]
-            return current_time
+        # validate hours_ago
+        if hours_ago is None or len(hours_ago.strip()) == 0:
+            raise ValidationError('Field hours_ago is required.')
+        elif not hours_ago.isdigit() or int(hours_ago) <= 0:
+            return ValidationError('Field house_ago must be a positive integer.')
 
         # select query using inner join and filter
-        start_date = get_current_db_time() - timedelta(hours=int(hours_ago))
+        start_date = self.get_db_now() - timedelta(hours=int(hours_ago))
         filtered = models.layer_submissions.LayerSubmission.objects.select_related('catalogue_entry').filter(catalogue_entry__updated_at__gte=start_date, is_active=True)
         selected = filtered.values('catalogue_entry__id', 'catalogue_entry__name', 'catalogue_entry__created_at', 'catalogue_entry__updated_at', 'id')
         
@@ -280,6 +276,13 @@ class CatalogueEntryViewSet(
                 'active_layer': entry['id']
             } for entry in list(selected)]
         return response.Response(response_data, content_type='application/json', status=status.HTTP_200_OK)
+    
+    def get_db_now(self):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT NOW()")
+            result = cursor.fetchone()
+            current_time = result[0]
+        return current_time
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
