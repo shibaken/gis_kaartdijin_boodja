@@ -1,29 +1,34 @@
-// import GeoJSON from "/govapp/frontend/node_modules/ol/format/GeoJSON";
-// import Map from "/node_modules/ol/Map";
-// import VectorLayer from '/node_modules/ol/layer/Vector';
-// import VectorSource from '/node_modules/ol/source/Vector';
-// import View from '/node_modules/ol/View';
-
-// import OSM from '/frontend/node_modules/ol/source/OSM';
-// import TileLayer from '/frontend/node_modules/ol/layer/Tile';
-// import {Map, View} from '/frontend/node_modules/ol';
-// import {fromLonLat} from '/frontend/node_modules/ol/proj';
-
-import OSM from '/static/ol/source/OSM.js';
-import TileLayer from '/static/ol/layer/Tile.js';
-import Map from '/static/ol/Map.js';
-import View from '/static/ol/View.js';
-import {fromLonLat} from '/static/ol/proj.js';
-
-new Map({
+var map = new ol.Map({
   target: 'map-container',
   layers: [
-    new TileLayer({
-      source: new OSM(),
+    new ol.layer.Tile({
+      source: new ol.source.OSM(),
     }),
   ],
-  view: new View({
-    center: fromLonLat([0, 0]),
-    zoom: 2,
+  view: new ol.View({
+    center: ol.proj.fromLonLat([115.5, -24.5]),
+    zoom: 4.6,
   }),
 });
+
+var url = '/api/catalogue/entries/'+id+'/layer';
+
+var vectorSource = new ol.source.Vector({
+  loader: function(extent, resolution, projection) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.setRequestHeader("Content-Type", "application/json")
+    xhr.onload = function() {
+      if (xhr.status == 200) {
+        var data = JSON.parse(xhr.responseText)
+        delete data.crs;
+        var features = new ol.format.GeoJSON().readFeatures(data, { featureProjection: 'EPSG:3857' });
+        vectorSource.addFeatures(features);
+      }
+    };
+    xhr.send();
+  },
+});
+
+var vectorLayer = new ol.layer.Vector({ source: vectorSource });
+map.addLayer(vectorLayer);

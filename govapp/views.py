@@ -361,6 +361,7 @@ class LayerSubmissionView(base.TemplateView):
         context: dict[str, Any] = {}
         context['tab'] = self.kwargs['tab']
         context['layer_submission_obj'] = layer_submission
+        context['id'] = layer_submission.catalogue_entry.id
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)   
