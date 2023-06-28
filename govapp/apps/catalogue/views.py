@@ -236,7 +236,7 @@ class CatalogueEntryViewSet(
                 map_data = file.read()
                 map_data = json.loads(map_data)
         except Exception as e:
-            return response.Response({"message": 'an exception occured during load a target file.', "error": str(e)}, 
+            return response.Response({"error": 'an exception occured during load a target file.'}, 
                                      status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response(map_data, content_type='application/json', status=status.HTTP_200_OK)
@@ -258,9 +258,9 @@ class CatalogueEntryViewSet(
         
         # validate hours_ago
         if hours_ago is None or len(hours_ago.strip()) == 0:
-            raise ValidationError('Field hours_ago is required.')
+            return response.Response({"error": 'Field hours_ago is required.'}, status=status.HTTP_400_BAD_REQUEST)
         elif not hours_ago.isdigit() or int(hours_ago) <= 0:
-            return ValidationError('Field house_ago must be a positive integer.')
+            return response.Response({"error": 'Field house_ago must be a positive integer.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # select query using inner join and filter
         start_date = self.get_db_now() - timedelta(hours=int(hours_ago))
