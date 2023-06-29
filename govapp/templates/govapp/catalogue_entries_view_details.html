@@ -109,7 +109,7 @@
         <div class="card-body collapse show" id="box4-card-body">
             <div class="col-12 text-end">
             {% if has_edit_access is True %}
-                  <button class="btn btn-primary left" id='catalogue-entry-btn-add-notification' aria-current="page" >Add Notification</button>
+                  <button class="btn btn-primary left" id='catalogue-detail-btn-add-notification' aria-current="page" >Add Notification</button>
             {% endif %}
             </div>
             <div class='col-12 pt-2 pb-2 '>
@@ -163,8 +163,8 @@
                                     <th class="col-1">Id</th>
                                     <th class="col-2">Name</th>
                                     <th class="col-2">Type</th>
-                                    <th class="col-4">Email</th>
-                                    <th class='col-3'>Action</th>
+                                    <th class="col-5">Email</th>
+                                    <th class='col-2'>Action</th>
                               </tr>
                         </thead>
                         <tbody id='catalogue-detail-notification-tbody'>
@@ -200,3 +200,6 @@
 
     </div>
   </div>
+  <script>
+      kbcatalogue.init_catalogue_detail();
+  </script>
