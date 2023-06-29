@@ -21,6 +21,11 @@ var kbcatalogue_attribute = {
             $(this).val($(this).val().replace(/\D/g, ""));
         });
 
+        var has_edit_access = $('#has_edit_access').val();
+        if (has_edit_access == 'True') {
+            kbcatalogue_attribute.var.has_edit_access = true;
+        }
+
         // catalogue-attribute-type
         $.ajax({
             url: kbcatalogue_attribute.var.catalogue_attribute_type_url,
@@ -182,7 +187,7 @@ var kbcatalogue_attribute = {
                             html+= " <td>"+att.order+"</td>";
                             // html+= " <td class='text-end'>";                        
                             html+="  <td>";
-                            if(has_edit_access){
+                            if(kbcatalogue_attribute.var.has_edit_access){
                                 html+="   <button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button>";
                                 html+="   <button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>";
                             }
