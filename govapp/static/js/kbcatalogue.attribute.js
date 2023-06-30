@@ -165,58 +165,48 @@ var kbcatalogue_attribute = {
         }
 
         $.ajax({
-            url: kbcatalogue.attribute.var.catalogue_attribute_url+"?"+params_str,
+            url: kbcatalogue_attribute.var.catalogue_attribute_url+"?"+params_str,
             method: 'GET',
             dataType: 'json',
             contentType: 'application/json',
             success: function (response) {
-                var html = '';
-                
                 if (response != null) {
+                    $('#catalogue-attribute-tbody').empty();
                     if (response.results.length > 0) {
-                        var update_event_handlers = {};
-                        var delete_event_handlers = {};
                         for (let i = 0; i < response.results.length; i++) {
                             let att = response.results[i];
                             let btn_update_id = 'btn-update-attribute_'+i;
                             let btn_delete_id = 'btn-delete-attribute_'+i;
-                            html+= "<tr>";
-                            html+= " <td>"+att.id+"</td>";
-                            html+= " <td>"+att.name+"</td>";
-                            html+= " <td>"+att.type+"</td>";
-                            html+= " <td>"+att.order+"</td>";
-                            // html+= " <td class='text-end'>";                        
-                            html+="  <td>";
+                            let row = $("<tr>");
+                            row.append("<td>"+att.id+"</td>");
+                            row.append("<td>"+att.name+"</td>");
+                            row.append("<td>"+att.type+"</td>");
+                            row.append("<td>"+att.order+"</td>");
                             if(kbcatalogue_attribute.var.has_edit_access){
-                                html+="   <button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button>";
-                                html+="   <button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>";
+                                row.append("<td>" +
+                                            "<button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " + 
+                                            "<button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>" +
+                                            "</td");
+                            } else {
+                                row.append("<td></td>");
                             }
-                            html+="  </td>";
-                            html+= "<tr>";
+                            $('#catalogue-attribute-tbody').append(row);
 
-                            update_event_handlers[btn_update_id] = function(){
+                            $('#'+btn_update_id).click(() => {
                                 kbcatalogue_attribute.set_update_att_modal(att);
                                 $('#catalogue-attribute-modal').modal('show');
-                            };
-                            delete_event_handlers[btn_delete_id] = function(){
+                            });
+                            $('#'+btn_delete_id).click(() => {
                                 $('#deleted_att').html('Id: '+att.id+'</br>Name: '+att.name+'</br>Type: '+att.type+'</br>Order: '+att.order);
                                 $('#btn-delete-confirm').off('click');
                                 $('#btn-delete-confirm').click(function(){
                                     kbcatalogue_attribute.delete_attribute(att.id);
                                 });
                                 $('#confirm-delete-att').modal('show');
-                            };
+                            });
                         }
                                            
-                        $('#catalogue-attribute-tbody').html(html);
                         $('.publish-table-button').hide();
-
-                        for(let id in update_event_handlers){
-                            $('#'+id).click(update_event_handlers[id]);
-                        }
-                        for(let id in delete_event_handlers){
-                            $('#'+id).click(delete_event_handlers[id]);
-                        }
 
                         // navigation bar
                         common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, +params.limit, $('#paging_navi'));
