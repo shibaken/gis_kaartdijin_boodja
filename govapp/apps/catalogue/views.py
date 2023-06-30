@@ -241,29 +241,29 @@ class CatalogueEntryViewSet(
         
         return response.Response(map_data, content_type='application/json', status=status.HTTP_200_OK)
     
-    @drf_utils.extend_schema(parameters=[drf_utils.OpenApiParameter("hours_ago", type=int, required=True)])
+    @drf_utils.extend_schema(parameters=[drf_utils.OpenApiParameter("days_ago", type=int, required=True)])
     @decorators.action(detail=False, methods=['GET'])
     def recent(self, request: request.Request):
         """ Api to provide sumary of recent catalogue entries from n hours ago
 
         Args:
-            request (request.Request): request object passed by Django framework - must include integer value of hours_ago
+            request (request.Request): request object passed by Django framework - must include integer value of days_ago
             pk (str): uri parameter represents id of layer submission(catalogue id)
 
         Returns:
             response.Response: HTTP response with a list of summary of recent catalogue entries
         """
         
-        hours_ago = self.request.query_params.get("hours_ago")
+        days_ago = self.request.query_params.get("days_ago")
         
-        # validate hours_ago
-        if hours_ago is None or len(hours_ago.strip()) == 0:
-            return response.Response({"error": 'Field hours_ago is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        elif not hours_ago.isdigit() or int(hours_ago) <= 0:
+        # validate days_ago
+        if days_ago is None or len(days_ago.strip()) == 0:
+            return response.Response({"error": 'Field days_ago is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif not days_ago.isdigit() or int(days_ago) <= 0:
             return response.Response({"error": 'Field house_ago must be a positive integer.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # select query using inner join and filter
-        start_date = self.get_db_now() - timedelta(hours=int(hours_ago))
+        start_date = self.get_db_now() - timedelta(days=int(days_ago))
         filtered = models.layer_submissions.LayerSubmission.objects.select_related('catalogue_entry').filter(catalogue_entry__updated_at__gte=start_date, is_active=True)
         selected = filtered.values('catalogue_entry__id', 'catalogue_entry__name', 'catalogue_entry__created_at', 'catalogue_entry__updated_at', 'id')
         
@@ -428,6 +428,7 @@ class EmailNotificationViewSet(
         
         # a list filterd by catalogue_id
         filtered = self.queryset.filter(catalogue_entry=catalogue_id)
+        filtered = self.filter_queryset(filtered)
         # apply pagination and make a paginated response
         paginator = self.pagination_class()
         paginated_queryset = paginator.paginate_queryset(filtered, request)
