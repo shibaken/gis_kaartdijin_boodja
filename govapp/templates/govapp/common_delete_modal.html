@@ -1,16 +1,16 @@
-<div class="modal fade " id="confirm-delete-att" tabindex="-1" aria-labelledby="NewCatalogueAttributeModal"
+<div class="modal fade " id="confirm-delete-att" tabindex="-1" aria-labelledby="DeleteModal"
       aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
       <div class="modal-dialog">
             <div class="modal-content">
                   <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Confirm Delete</h5>
+                        <h5 class="modal-title" id="exampleModalLabel">Confirmation of Delete</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                        <div class="alert alert-danger" role="alert" id='catalogue-attribute-popup-error'
+                        <div class="alert alert-danger" role="alert" id='delete-popup-error'
                               style='display:none'>
                         </div>
-                        <div class="alert alert-success" role="alert" id='catalogue-attribute-popup-success'
+                        <div class="alert alert-success" role="alert" id='delete-popup-success'
                               style='display:none'>
                         </div>
                   </div>
@@ -21,7 +21,7 @@
                                     <div class="modal-body">
                                           <p>You are about to delete one track, this procedure is irreversible.</p>
                                           <p>Do you want to proceed?</p>
-                                          <p id="deleted_att"></p>
+                                          <p id="delete_target"></p>
                                     </div>
 
                                     <div class="modal-footer">
