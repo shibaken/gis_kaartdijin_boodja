@@ -201,7 +201,7 @@ var kbcatalogue_attribute = {
                                 $('#btn-delete-confirm').click(function(){
                                     kbcatalogue_attribute.delete_attribute(att.id);
                                 });
-                                $('#confirm-delete-att').modal('show');
+                                $('#confirmation-delete-modal').modal('show');
                             });
                         }
                                            
@@ -233,7 +233,7 @@ var kbcatalogue_attribute = {
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             type: 'DELETE',
             success: function (response) {
-                $('#confirm-delete-att').modal('hide');
+                $('#confirmation-delete-modal').modal('hide');
                 kbcatalogue_attribute.get_catalogue_attribute();
             },
             error: function (error) {

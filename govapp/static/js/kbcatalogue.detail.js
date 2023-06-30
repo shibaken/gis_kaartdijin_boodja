@@ -124,14 +124,16 @@ var kbcatalogue_detail = {
                                 "<input class='form-check-input' type='checkbox' role='switch' "+(noti.active ? "checked" : "")+" disabled>"+
                                 "</div></td>");
                     if(kbcatalogue_detail.var.has_edit_access){
-                        row.append("<td class='d-flex justify-content-end'>" +
-                                    " <button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " +
+                        row.append("<td>" +
+                                    "<button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " +
+                                    "<button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>" +
                                 "</td>");
                     } else {
                         row.append("<td></td>");
                     }
                     $('#catalogue-detail-notification-tbody').append(row);
                     $('#'+btn_update_id).click(()=> kbcatalogue_detail.show_update_email_notification_modal(noti))
+                    $('#'+btn_delete_id).click(()=> kbcatalogue_detail.show_delete_email_notification_modal(noti))
                 }
                 common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, +params.limit, $('#notification-paging-navi'));
             },
@@ -250,5 +252,30 @@ var kbcatalogue_detail = {
                 console.log('Error occured.'+ error);
             },
         });
-    }
+    },
+
+    show_delete_email_notification_modal: function(target){
+        $('#delete_target').html('Id: '+target.id+'</br>Name: '+target.name+'</br>Type: '+target.type+'</br>Email: '+target.email+'</br>Active: '+target.active);
+        $('#btn-delete-confirm').off('click');
+        $('#btn-delete-confirm').click(() => kbcatalogue_detail.delete_email_notification(target.id));
+        $('#confirmation-delete-modal').modal('show');
+    },
+
+    delete_email_notification: function(noti_id){
+        $.ajax({
+            url: kbcatalogue_detail.var.catalogue_email_notification+noti_id+"/",
+            method: 'DELETE',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: function (response) {
+                $('#confirmation-delete-modal').modal('hide');
+                kbcatalogue_detail.get_email_notification();
+            },
+            error: function (error) {
+                alert('Error occured.');
+                console.log('Error occured.'+ error);
+            },
+        });
+    },
+
 }
