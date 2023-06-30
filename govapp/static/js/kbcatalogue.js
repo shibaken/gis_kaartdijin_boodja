@@ -13,15 +13,14 @@ var kbcatalogue = {
     
     init_dashboard: function() { 
         $( "#catalogue-filter-btn" ).click(function() {
-            console.log("Reload Catalogue Table");
             kbcatalogue.get_catalogue();
         });
         $( "#catalogue-limit" ).change(function() {
-            console.log("Reload Catalogue");
+            common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
         });
         $( "#catalogue-order-by" ).change(function() {
-            console.log("Reload Catalogue");
+            common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
         });
         kbcatalogue.get_catalogue();
@@ -199,7 +198,6 @@ var kbcatalogue = {
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
 
-                        // navigation bar
                         common_pagination.init(response.count, params, kbcatalogue.get_catalogue, +params.limit, $('#paging_navi'));
 
                     } else {

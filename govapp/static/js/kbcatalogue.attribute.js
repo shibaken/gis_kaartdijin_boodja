@@ -5,15 +5,14 @@ var kbcatalogue_attribute = {
     },
     init_catalogue_attribute: function() {
         $( "#catalogue-attribute-limit" ).change(function() {
-            console.log("Reload Catalogue Attribute");
+            common_pagination.var.current_page=0;
             kbcatalogue_attribute.get_catalogue_attribute();
         });
         $( "#catalogue-attribute-order-by" ).change(function() {
-            console.log("Reload Catalogue Attribute");
+            common_pagination.var.current_page=0;
             kbcatalogue_attribute.get_catalogue_attribute();
         });
         $( "#catalogue-attribute-new-btn" ).click(function() {
-            console.log("New Catalogue Attribute");
             kbcatalogue_attribute.init_create_att_modal();
             $('#catalogue-attribute-modal').modal('show');
         });
@@ -208,7 +207,6 @@ var kbcatalogue_attribute = {
                                            
                         $('.publish-table-button').hide();
 
-                        // navigation bar
                         common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, +params.limit, $('#paging_navi'));
 
                     } else {

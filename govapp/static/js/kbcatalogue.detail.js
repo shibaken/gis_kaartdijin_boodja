@@ -7,25 +7,27 @@ var kbcatalogue_detail = {
     init_catalogue_detail: async function(){
         $( "#catalogue-entry-btn-save" ).click(function() {
             console.log("Save Publish Table");
-            this.save_catalogue('save');
+            kbcatalogue_detail.save_catalogue('save');
         });
 
         $( "#catalogue-entry-btn-save-exit" ).click(function() {
             console.log("Save Publish Table");
-            this.save_catalogue('save-and-exit');
+            kbcatalogue_detail.save_catalogue('save-and-exit');
         });      
 
         $( "#catalogue-detail-btn-add-notification" ).click(function() {
             console.log("New Catalogue Email Notification");
-            this.show_add_email_notification_modal();
+            kbcatalogue_detail.show_add_email_notification_modal();
         });
 
         $('#catalogue-detail-notification-order-by').change(function(){
-            this.get_email_notification();
+            common_pagination.var.current_page=0;
+            kbcatalogue_detail.get_email_notification();
         });
 
         $('#catalogue-detail-notification-limit').change(function(){
-            this.get_email_notification();
+            common_pagination.var.current_page=0;
+            kbcatalogue_detail.get_email_notification();
         });
 
         var has_edit_access = $('#has_edit_access').val();
@@ -34,7 +36,7 @@ var kbcatalogue_detail = {
         }
         
         let call = () => new Promise((resolve, reject)=> $.ajax({
-            url: this.var.catalogue_email_notification_type,
+            url: kbcatalogue_detail.var.catalogue_email_notification_type,
             type: 'GET',
             contentType: 'application/json',
             success: (response) => {resolve(response);},
@@ -69,7 +71,7 @@ var kbcatalogue_detail = {
         var pagetab = $('#pagetab').val();
 
         $.ajax({
-            url: this.var.catalogue_data_url+catalogue_id+"/",            
+            url: kbcatalogue_detail.var.catalogue_data_url+catalogue_id+"/",            
             type: 'PUT',
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
@@ -103,7 +105,7 @@ var kbcatalogue_detail = {
         }
 
         $.ajax({
-            url: this.var.catalogue_email_notification+'?'+params_str,
+            url: kbcatalogue_detail.var.catalogue_email_notification+'?'+params_str,
             method: 'GET',
             contentType: 'application/json',
             success: function (response) {
@@ -131,8 +133,7 @@ var kbcatalogue_detail = {
                     $('#catalogue-detail-notification-tbody').append(row);
                     $('#'+btn_update_id).click(()=> kbcatalogue_detail.show_update_email_notification_modal(noti))
                 }
-                // navigation bar
-                common_pagination.init(response.count, params, this.get_email_notification, +params.limit, $('#notification-paging-navi'));
+                common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, +params.limit, $('#notification-paging-navi'));
             },
             error: function (error) {
                 alert('Error occured.');
