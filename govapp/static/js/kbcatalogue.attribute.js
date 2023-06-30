@@ -56,8 +56,8 @@ var kbcatalogue_attribute = {
             kbcatalogue_attribute.save_catalogue_attribute();
         });
         
-        $('#catalogue-attribute-popup-error').html("");
-        $('#catalogue-attribute-popup-error').hide();
+        $('#delete-popup-error').html("");
+        $('#delete-popup-error').hide();
     },
     set_update_att_modal: function(att){
         $( "#catalogue-attribute-submit-btn" ).text("Update");
@@ -72,12 +72,12 @@ var kbcatalogue_attribute = {
             kbcatalogue_attribute.update_catalogue_attribute(att.id);
         });
 
-        $('#catalogue-attribute-popup-error').html("");
-        $('#catalogue-attribute-popup-error').hide();
+        $('#delete-popup-error').html("");
+        $('#delete-popup-error').hide();
     },
     preprocess_catalogue_attribute: function(){
-        $('#catalogue-attribute-popup-error').html("");
-        $('#catalogue-attribute-popup-error').hide();
+        $('#delete-popup-error').html("");
+        $('#delete-popup-error').hide();
 
         let name = $('#catalogue-attribute-name').val();
         let type = $('#catalogue-attribute-type').val();
@@ -196,7 +196,7 @@ var kbcatalogue_attribute = {
                                 $('#catalogue-attribute-modal').modal('show');
                             });
                             $('#'+btn_delete_id).click(() => {
-                                $('#deleted_att').html('Id: '+att.id+'</br>Name: '+att.name+'</br>Type: '+att.type+'</br>Order: '+att.order);
+                                $('#delete_target').html('Id: '+att.id+'</br>Name: '+att.name+'</br>Type: '+att.type+'</br>Order: '+att.order);
                                 $('#btn-delete-confirm').off('click');
                                 $('#btn-delete-confirm').click(function(){
                                     kbcatalogue_attribute.delete_attribute(att.id);
@@ -217,8 +217,8 @@ var kbcatalogue_attribute = {
                 }      
             },
             error: function (error) {
-                $('#catalogue-attribute-popup-error').html("Error Loading catalogue attribute data");
-                $('#catalogue-attribute-popup-error').show();
+                $('#delete-popup-error').html("Error Loading catalogue attribute data");
+                $('#delete-popup-error').show();
                 $('#catalogue-attribute-tbody').html('');
 
                 console.log('Error Loading catalogue attribute data');
@@ -229,7 +229,7 @@ var kbcatalogue_attribute = {
     },
     delete_attribute: function(att_id){
         $.ajax({
-            url: kbcatalogue.attribute.var.catalogue_attribute_url+att_id,
+            url: kbcatalogue_attribute.var.catalogue_attribute_url+att_id,
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             type: 'DELETE',
             success: function (response) {
@@ -243,8 +243,8 @@ var kbcatalogue_attribute = {
         });
     },
     show_error_popup: function(msg){
-        $('#catalogue-attribute-popup-error').html(msg);
-        $('#catalogue-attribute-popup-error').show();
+        $('#delete-popup-error').html(msg);
+        $('#delete-popup-error').show();
     },
     change_input_fields_disability: function(flag){
         $('#catalogue-attribute-name').prop('disabled', flag);
