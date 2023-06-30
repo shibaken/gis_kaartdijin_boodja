@@ -7,34 +7,34 @@ var kbcatalogue_detail = {
     init_catalogue_detail: async function(){
         $( "#catalogue-entry-btn-save" ).click(function() {
             console.log("Save Publish Table");
-            kbcatalogue_detail.save_catalogue('save');
+            this.save_catalogue('save');
         });
 
         $( "#catalogue-entry-btn-save-exit" ).click(function() {
             console.log("Save Publish Table");
-            kbcatalogue_detail.save_catalogue('save-and-exit');
+            this.save_catalogue('save-and-exit');
         });      
 
         $( "#catalogue-detail-btn-add-notification" ).click(function() {
             console.log("New Catalogue Email Notification");
-            kbcatalogue_detail.show_add_email_notification_modal();
+            this.show_add_email_notification_modal();
         });
 
         $('#catalogue-detail-notification-order-by').change(function(){
-            kbcatalogue_detail.get_email_notification();
+            this.get_email_notification();
         });
 
         $('#catalogue-detail-notification-limit').change(function(){
-            kbcatalogue_detail.get_email_notification();
+            this.get_email_notification();
         });
 
         var has_edit_access = $('#has_edit_access').val();
         if (has_edit_access == 'True') {
-            kbcatalogue_detail.var.has_edit_access = true;
+            this.var.has_edit_access = true;
         }
         
         let call = () => new Promise((resolve, reject)=> $.ajax({
-            url: kbcatalogue_detail.var.catalogue_email_notification_type,
+            url: this.var.catalogue_email_notification_type,
             type: 'GET',
             contentType: 'application/json',
             success: (response) => {resolve(response);},
@@ -48,8 +48,8 @@ var kbcatalogue_detail = {
                 const type = response.results[i];
                 noti_type[type.id] = type.label;
             }
-            kbcatalogue_detail.var.catalogue_email_notification_type = noti_type;
-            kbcatalogue_detail.get_email_notification();
+            this.var.catalogue_email_notification_type = noti_type;
+            this.get_email_notification();
         } catch (error){
             alert("An error occured while getting email notification type.");
             console.error(error);
@@ -69,7 +69,7 @@ var kbcatalogue_detail = {
         var pagetab = $('#pagetab').val();
 
         $.ajax({
-            url: kbcatalogue_detail.var.catalogue_data_url+catalogue_id+"/",            
+            url: this.var.catalogue_data_url+catalogue_id+"/",            
             type: 'PUT',
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
@@ -103,7 +103,7 @@ var kbcatalogue_detail = {
         }
 
         $.ajax({
-            url: kbcatalogue_detail.var.catalogue_email_notification+'?'+params_str,
+            url: this.var.catalogue_email_notification+'?'+params_str,
             method: 'GET',
             contentType: 'application/json',
             success: function (response) {
@@ -118,10 +118,12 @@ var kbcatalogue_detail = {
                     row.append("<td>"+noti.name+"</td>");
                     row.append("<td>"+kbcatalogue_detail.var.catalogue_email_notification_type[noti.type]+"</td>");
                     row.append("<td>"+noti.email+"</td>");
+                    row.append("<td><div class='form-check form-switch'>"+
+                                "<input class='form-check-input' type='checkbox' role='switch' "+(noti.active ? "checked" : "")+" disabled>"+
+                                "</div></td>");
                     if(kbcatalogue_detail.var.has_edit_access){
-                        row.append("<td>" +
-                                    " <button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button>" +
-                                    " <button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Disable</button>" +
+                        row.append("<td class='d-flex justify-content-end'>" +
+                                    " <button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " +
                                 "</td>");
                     } else {
                         row.append("<td></td>");
@@ -130,7 +132,7 @@ var kbcatalogue_detail = {
                     $('#'+btn_update_id).click(()=> kbcatalogue_detail.show_update_email_notification_modal(noti))
                 }
                 // navigation bar
-                common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, +params.limit, $('#notification-paging-navi'));
+                common_pagination.init(response.count, params, this.get_email_notification, +params.limit, $('#notification-paging-navi'));
             },
             error: function (error) {
                 alert('Error occured.');
@@ -150,7 +152,7 @@ var kbcatalogue_detail = {
         var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         $('#catalogue-detail-notification-popup-error').hide();
         if (!emailRegex.test(email)) {
-            kbcatalogue_detail.show_error_modal("wrong email format.");
+            this.show_error_modal("wrong email format.");
             return false;
         }
         return true;
@@ -158,39 +160,40 @@ var kbcatalogue_detail = {
 
     validate_empty_input: function(key, val){
         if(!val){
-            kbcatalogue_detail.show_error_modal(key+" is required.");
+            this.show_error_modal(key+" is required.");
             return false;
         }
         return true;
     },
 
     show_add_email_notification_modal: function(){
-        kbcatalogue_detail.show_email_notification_modal(()=>kbcatalogue_detail.write_email_notification(), "Add New Email Notification");
+        this.show_email_notification_modal(()=>this.write_email_notification(), "Add New Email Notification");
     },
 
     show_update_email_notification_modal: function(prev){
-        kbcatalogue_detail.show_email_notification_modal(
-            ()=>kbcatalogue_detail.write_email_notification(prev.id), 
+        this.show_email_notification_modal(
+            ()=>this.write_email_notification(prev.id), 
             "Update Email Notification",
-            prev.name, prev.type, prev.email);
+            prev.name, prev.type, prev.email, prev.active);
     },
 
-    show_email_notification_modal: function(submit_callback, title="", name='', type='', email=''){
+    show_email_notification_modal: function(submit_callback, title="", name='', type='', email='', active='true'){
         $('#catalogue-detail-notification-modal-label').html(title);
         $('#catalogue-detail-notification-name').val(name);
-        $('#catalogue-detail-notification-type').val(type);
         $('#catalogue-detail-notification-email').val(email);
-
+        $('#catalogue-detail-notification-active').prop('checked', active);
+        
         $('#catalogue-detail-notification-type').empty();
-        for(let key in kbcatalogue_detail.var.catalogue_email_notification_type){
-            const text = kbcatalogue_detail.var.catalogue_email_notification_type[key];
+        for(let key in this.var.catalogue_email_notification_type){
+            const text = this.var.catalogue_email_notification_type[key];
             $('#catalogue-detail-notification-type').append('<option value="'+key+'">'+text+'</option>');
         }
+        $('#catalogue-detail-notification-type').val(type);
 
         $('#catalogue-detail-notification-email').off('focusout');
         $('#catalogue-detail-notification-email').focusout(function(){
             const email = $('#catalogue-detail-notification-email').val();
-            kbcatalogue_detail.validate_email(email);
+            this.validate_email(email);
         });
 
         $('#catalogue-detail-notification-submit-btn').off('click');
@@ -198,27 +201,30 @@ var kbcatalogue_detail = {
 
         $('#catalogue-detail-notification-modal').modal('show');
     },
-    
+
     write_email_notification: function(noti_id){
         // validation check
         const name = $('#catalogue-detail-notification-name').val();
-        if (!kbcatalogue_detail.validate_empty_input('name', name)) { return; }
+        if (!this.validate_empty_input('name', name)) { return; }
         
         const type = $('#catalogue-detail-notification-type').val();
-        if (!kbcatalogue_detail.validate_empty_input('type', type)) { return; }
+        if (!this.validate_empty_input('type', type)) { return; }
         
         const email = $('#catalogue-detail-notification-email').val();
-        if (!kbcatalogue_detail.validate_empty_input('email', email)) { return; }
-        if (!kbcatalogue_detail.validate_email(email)) { return; }
+        if (!this.validate_empty_input('email', email)) { return; }
+        if (!this.validate_email(email)) { return; }
+
+        const active = $('#catalogue-detail-notification-active').prop('checked');
         
         // make data body
         var email_noti_data = {
             name:name,
             type:type,
             email:email,
+            active:active,
             catalogue_entry:$('#catalogue_entry_id').val()
         };
-        var url = kbcatalogue_detail.var.catalogue_email_notification;
+        var url = this.var.catalogue_email_notification;
         var method = 'POST';
         if(noti_id){
             delete email_noti_data['catalogue_entry'];
