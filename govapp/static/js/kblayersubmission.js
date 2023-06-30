@@ -8,9 +8,11 @@ var kblayersubmission = {
             kblayersubmission.get_layer_submissions();
         });
         $( "#layer-submission-limit" ).change(function() {
+            common_pagination.var.current_page=0;
             kblayersubmission.get_layer_submissions();
         });
         $( "#layer-submission-order-by" ).change(function() {
+            common_pagination.var.current_page=0;
             kblayersubmission.get_layer_submissions();
         });
         $( "#layer-submission-status" ).change(function() {
@@ -90,7 +92,6 @@ var kblayersubmission = {
                         $('#layersubmission-tbody').html(html);
                         $('.layersubmission-table-button').hide();
 
-                        // navigation bar
                         common_pagination.init(response.count, params, kblayersubmission.get_layer_submissions, +params.limit, $('#paging_navi'));
 
                     } else {

@@ -51,7 +51,7 @@ class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
     
 class EmailNotificationAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','email')
-    list_display = ('id', 'name', 'type', 'email', 'catalogue_entry')
+    list_display = ('id', 'name', 'type', 'email', 'active', 'catalogue_entry')
     ordering = ('id',)
     
 class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
