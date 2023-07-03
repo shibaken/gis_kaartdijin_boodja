@@ -94,14 +94,14 @@ var kbcatalogue_detail = {
 
     //-- for Email Notification --//
     get_email_notification: function(params_str){
-        params = {
-            catalogue_id:   $('#catalogue_entry_id').val(),
-            limit:          $('#catalogue-detail-notification-limit').val(),
-            order_by:       $('#catalogue-detail-notification-order-by').val()
-        }
-
         if (!params_str){
-            params_str = common_pagination.make_get_params_str(params);
+            params = {
+                catalogue_id:   $('#catalogue_entry_id').val(),
+                limit:          $('#catalogue-detail-notification-limit').val(),
+                order_by:       $('#catalogue-detail-notification-order-by').val()
+            }
+
+            params_str = utils.make_query_params(params);
         }
 
         $.ajax({
@@ -115,6 +115,14 @@ var kbcatalogue_detail = {
                     const noti = response.results[i];
                     const btn_update_id = 'btn-update-email-noti-'+i;
                     const btn_delete_id = 'btn-delete-email-noti-'+i;
+
+                    common_table.add_row(table_id, noti.id, noti,name, kbcatalogue_detail.var.catalogue_email_notification_type[noti.type], noti.email,
+                                            {val:noti.active, type:'switch'}, 
+                                            {type:'button', data:{Update:{id:btn_update_id, callback:kbcatalogue_detail.show_update_email_notification_modal(noti)},
+                                                                  Delete:{id:btn_update_id, callback:kbcatalogue_detail.show_update_email_notification_modal(noti)}
+                                                                }});
+
+
                     var row = $('<tr>');
                     row.append("<td>"+noti.id+"</td>");
                     row.append("<td>"+noti.name+"</td>");
@@ -145,10 +153,10 @@ var kbcatalogue_detail = {
     },
 
     //-- for Email Notification modal --//
-    show_error_modal: function(msg){
-        $('#catalogue-detail-notification-popup-error').html(msg);
-        $('#catalogue-detail-notification-popup-error').show();
-    },
+    // show_error_modal: function(msg){
+    //     $('#catalogue-detail-notification-popup-error').html(msg);
+    //     $('#catalogue-detail-notification-popup-error').show();
+    // },
 
     validate_email: function (email) {
         if(!email) return false;
@@ -170,19 +178,26 @@ var kbcatalogue_detail = {
     },
 
     show_add_email_notification_modal: function(){
-        this.show_email_notification_modal(()=>this.write_email_notification(), "Add New Email Notification");
+        this.show_email_notification_modal(
+            submit_callback=()=>this.write_email_notification(), 
+            title="Add New Email Notification"
+            );
     },
 
     show_update_email_notification_modal: function(prev){
         this.show_email_notification_modal(
-            ()=>this.write_email_notification(prev.id), 
-            "Update Email Notification",
-            prev.name, prev.type, prev.email, prev.active);
+            submit_callback=()=>this.write_email_notification(prev.id), 
+            title="Update Email Notification",
+            target_name=prev.name, 
+            type=prev.type, 
+            email=prev.email, 
+            active=prev.active
+            );
     },
 
-    show_email_notification_modal: function(submit_callback, title="", name='', type='', email='', active='true'){
+    show_email_notification_modal: function(submit_callback, title="", target_name='', type='', email='', active='true'){
         $('#catalogue-detail-notification-modal-label').html(title);
-        $('#catalogue-detail-notification-name').val(name);
+        $('#catalogue-detail-notification-name').val(target_name);
         $('#catalogue-detail-notification-email').val(email);
         $('#catalogue-detail-notification-active').prop('checked', active);
         
@@ -205,19 +220,19 @@ var kbcatalogue_detail = {
         $('#catalogue-detail-notification-modal').modal('show');
     },
 
-    write_email_notification: function(noti_id){
+    write_email_notification: function(name_id, type_id, email_id, active_id, noti_id){
         // validation check
-        const name = $('#catalogue-detail-notification-name').val();
+        const name = $('#'+name_id).val();
         if (!this.validate_empty_input('name', name)) { return; }
         
-        const type = $('#catalogue-detail-notification-type').val();
+        const type = $('#'+type_id).val();
         if (!this.validate_empty_input('type', type)) { return; }
         
-        const email = $('#catalogue-detail-notification-email').val();
+        const email = $('#'+email_id).val();
         if (!this.validate_empty_input('email', email)) { return; }
         if (!this.validate_email(email)) { return; }
 
-        const active = $('#catalogue-detail-notification-active').prop('checked');
+        const active = $('#'+active_id).prop('checked');
         
         // make data body
         var email_noti_data = {

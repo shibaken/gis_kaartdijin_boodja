@@ -19,7 +19,7 @@ var common_pagination = {
                 common_pagination.var.current_page = page_number;
                 params.limit = limit;
                 params.offset = page_number*limit;
-                let params_str = common_pagination.make_get_params_str(params);
+                let params_str = utils.make_query_params(params);
                 get_page(params_str);
             });
         }
@@ -31,18 +31,6 @@ var common_pagination = {
         set_btn_event('#paging_btn_prev', common_pagination.var.current_page - 1);
         set_btn_event('#paging_btn_next', common_pagination.var.current_page + 1);
     },
-    make_get_params_str : function(params){
-        var url_params = "";
-
-        if (params){
-            for (var key in params){
-                if(params[key])
-                    url_params += "&" + key + "=" + params[key];
-            }
-        }
-        return url_params;
-    },
-    // *** private methods *** //
     make_page_btn_html : function(id, text, status){
         var html = '<li class="page-item{disabled1}{current1}"{current2}><a class="page-link" href="#" id="'+id+'"{disabled2}>'+text+'</a></li>'
         if (status == 'disabled'){
@@ -57,6 +45,7 @@ var common_pagination = {
         return html;
     },
     make_page_range : function(current, total, max_shown){
+        // returns the first number and the last number of navigation of pagination. 
         var beginning = 0;  // 0 means page 1
         let page_over = total > max_shown; 
         var end = page_over ? max_shown : total;

@@ -573,7 +573,7 @@ var kbpublish = {
         }
 
         if (!params_str){
-            params_str = common_pagination.make_get_params_str(params);
+            params_str = utils.make_query_params(params);
         }
 
         //order_by=&limit=10" 
