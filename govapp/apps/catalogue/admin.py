@@ -59,6 +59,9 @@ class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'type', 'url', 'catalogue_entry')
     ordering = ('id',)
 
+class LayerSubmission(reversion.admin.VersionAdmin):
+    search_fields = ('id','catalogue_entry__name','description')
+
 # Register Models
 admin.site.register(models.catalogue_entries.CatalogueEntry, CatalogueEntryAdmin)
 admin.site.register(models.custodians.Custodian, CustodianAdmin)
