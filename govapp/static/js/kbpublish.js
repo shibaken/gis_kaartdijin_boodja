@@ -52,15 +52,14 @@ var kbpublish = {
             $('#NewPublishModal').modal('show');
         });           
         $( "#create-publish-btn" ).click(function() {
-            console.log("Create Publish");           
             kbpublish.create_publish(); 
         }); 
         $( "#publish-limit" ).change(function(){
-            console.log("Reload Publish");
+            common_pagination.var.current_page=0;
             kbpublish.get_publish();
         })
         $( "#publish-order-by" ).change(function(){
-            console.log("Reload Reload Publish");
+            common_pagination.var.current_page=0;
             kbpublish.get_publish();
         })
 
@@ -637,7 +636,6 @@ var kbpublish = {
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
 
-                        // navigation bar
                         common_pagination.init(response.count, params, kbpublish.get_publish, +params.limit, $('#paging_navi'));
 
                     } else {

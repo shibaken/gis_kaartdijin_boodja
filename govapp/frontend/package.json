@@ -21,7 +21,10 @@
     "luxon": "^3.0.4",
     "pinia": "^2.0.22",
     "vue": "^3.2.37",
-    "ol": "^7.2.2"
+    "ol": "^7.2.2",
+    "colormap": "^2.3.2",
+    "kompas": "^0.0.1",
+    "ol-mapbox-style": "^9.0.0"
   },
   "devDependencies": {
     "@types/luxon": "^3.0.1",
@@ -43,6 +46,8 @@
     "vite": "^3.1.0",
     "vitest": "^0.23.4",
     "vue-router": "^4.1.5",
-    "vue-tsc": "^0.40.4"
+    "vue-tsc": "^0.40.4",
+    "eslint-config-openlayers": "^16.2.3",
+    "vite-plugin-static-copy": "^0.7.0"
   }
 }

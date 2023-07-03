@@ -1,0 +1,18 @@
+<div class="card">
+      <div class="card-header fw-bold h4" style="padding:30px;">
+            <div class="row">
+                  <div class="col-6">Details</div>
+                  <div class="col-6 text-end">
+                        <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body"onclick=""></i>
+                  </div>
+            </div>
+      </div>
+      <div class="card-body collapse show" id="box1-card-body">
+            <div class='row'>
+                  <div class='col-3'>Name</div> <div class='col-9 p-1'>{{ layer_submission_obj.name }}</div>
+                  <div class='col-3'>Submitted Datetime</div> <div class='col-9 p-1'> {{ layer_submission_obj.submit_datetime }}</div>
+                  <div class='col-3'>Link to file</div> <div class='col-9 p-1'><a href="/catalogue/entries/{{ layer_submission_obj.catalogue_entry.id }}/details/">{{ layer_submission_obj.name }}</a></div>
+                  <div class='col-3'>Catalogue entry </div> <div class='col-9 p-1'>{{ layer_submission_obj.name }} <a href="/catalogue/entries/{{ layer_submission_obj.catalogue_entry.id }}/details/">View</a></div>
+            </div>
+      </div>
+</div>

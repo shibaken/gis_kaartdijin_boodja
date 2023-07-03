@@ -29,6 +29,7 @@ class CustodianFilter(filters.FilterSet):
 
 class LayerAttributeFilter(filters.FilterSet):
     """Layer Attribute Filter."""
+    order_by = filters.OrderingFilter(fields=("id", "name", "type", "order"))
     class Meta:
         """Layer Attribute Filter Metadata."""
         model = models.layer_attributes.LayerAttribute
@@ -101,6 +102,7 @@ class LayerSymbologyFilter(filters.FilterSet):
 
 class EmailNotificationFilter(filters.FilterSet):
     """Email Notification Filter."""
+    order_by = filters.OrderingFilter(fields=("id", "name", "type", "email", "active"))
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification

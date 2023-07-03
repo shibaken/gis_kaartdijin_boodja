@@ -1,0 +1,88 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+{% if request.user.is_authenticated is True %}
+
+{% include "govapp/publish_manage_editors.html" %}
+
+<div class="container" id="dashboard-table-container">
+      <div class='row'>
+            <div class='col-6'>
+                  <h3>LM{{ layer_submission_obj.id }} - Layer Submission</h3>
+            </div>
+            <div class='col-6 text-end'>
+                  <button class='btn btn-primary btn-sm' id='catalogue-manage-editors-btn'>Manage Editors</button>
+            </div>
+      </div>
+      <div class='row'>
+            <div class='col-12'>
+                  &nbsp;
+            </div>
+      </div>
+
+      <div class='row'>
+            <div class='col-3'>
+                  <div class='col-12 border'>
+                        <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
+                              Logs
+                        </div>
+                        <div class='col-12 p-3 border-bottom'>
+                              <p><b>Communication</b><br>
+                                    <a href=''>Show</a> | <a href=''>Add Entry</a>
+                              </p>
+
+                        </div>
+                        <div class='col-12 p-3'>
+                              <p><b>Actions</b><br>
+                                    <a href=''>Show</a>
+                              </p>
+                        </div>
+                  </div>
+                  <br>
+                  <div class='col-12 border'>
+                        <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
+                              Workflow
+                        </div>
+                        <div class='col-12 p-3 border-bottom'>
+                              <b>Status</b>
+                              <br>
+                              {{ layer_submission_obj.status_name }}
+                              <br>
+                              <br>
+                        </div>
+                  </div>
+            </div>
+            <div class='col-9'>
+                  <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                              <a class="nav-link {% if tab == 'details' %}active{% endif %}" aria-current="page"
+                                    href="/layer/submission/{{ layer_submission_obj.id }}/details/">Details</a>
+                        </li>
+                        <li class="nav-item">
+                              <a class="nav-link {% if tab == 'map' %}active{% endif %}" aria-current="page"
+                                    href="/layer/submission/{{ layer_submission_obj.id }}/map/">Map</a>
+                        </li>
+                  </ul>
+
+                  <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+                  <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id"
+                        value="{{ catalogue_entry_id  }}">
+                  <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
+                  <input type="hidden" id="pagetab" name="pagetab" value="{{ tab  }}">
+                  {% if tab == "details" %}
+                  {% include "govapp/layer_submissions_view_details.html" %}
+                  {% elif tab == "map" %}
+                  {% include "govapp/layer_submissions_view_map.html" %}
+                  {% endif %}
+            </div>
+      </div>
+
+      <script>
+            kbcatalogue.init_catalogue_item();
+      </script>
+      {% else %}
+      <div class="container" id="dashboard-table-container">
+            <h3>Permission Denied. You are not authenticated.</h3>
+      </div>
+      {% endif %}
+      {% endblock %}

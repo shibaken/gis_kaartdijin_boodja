@@ -21,6 +21,12 @@ class LayerSubmissionStatus(models.IntegerChoices):
     ACCEPTED = 2
     DECLINED = 3
 
+    def find_enum_by_value(value):
+        for name, member in LayerSubmissionStatus.__members__.items():
+            if member.value == value:
+                return member
+        raise ValueError('No enum member found with value: {}'.format(value))
+
 
 @reversion.register()
 class LayerSubmission(mixins.RevisionedMixin):
@@ -37,6 +43,7 @@ class LayerSubmission(mixins.RevisionedMixin):
         related_name="layers",
         on_delete=models.CASCADE,
     )
+    geojson = models.TextField(null=True, blank=True)
 
     class Meta:
         """Layer Submission Model Metadata."""
@@ -61,6 +68,29 @@ class LayerSubmission(mixins.RevisionedMixin):
         """
         # Retrieve and Return
         return self.catalogue_entry.name
+    
+    @property
+    def status_name(self) -> str:
+        """
+        Provides the Status name to this model.
+
+        Returns:
+            str: Name of the Status 
+        """
+        # Retrieve String and Return
+        status = LayerSubmissionStatus.find_enum_by_value(self.status)
+        return status.name
+    
+    @property
+    def submit_datetime(self, format="%d-%m-%Y %H:%M:%S") -> str:
+        """
+        Provides the Formatted datetime string to this model.
+
+        Returns:
+            str: Formatted datetime string of the submitted_at 
+        """
+        # Retrieve String and Return
+        return self.submitted_at.strftime(format)
 
     def is_declined(self) -> bool:
         """Determines whether the Layer Submission is declined.
@@ -83,7 +113,7 @@ class LayerSubmission(mixins.RevisionedMixin):
         self.status = LayerSubmissionStatus.DECLINED
         self.save()
 
-    def activate(self) -> None:
+    def activate(self, raise_err=True) -> None:
         """Updates the Layer Submission's Catalogue Entry with this layer."""
         # Check the created date?
         # TODO
@@ -96,7 +126,13 @@ class LayerSubmission(mixins.RevisionedMixin):
         # Also check that Catalogue Entry is not declined
         if self.hash == attributes_hash and not self.catalogue_entry.is_declined():
             # Retrieve Catalogue Entry's Current Active Layer
-            current_active_layer = self.catalogue_entry.active_layer
+            current_active_layer = None
+            try:
+                current_active_layer = self.catalogue_entry.active_layer
+            except AssertionError as err:
+                # If there was no active layer, this one should be active if needed.
+                if raise_err:
+                    raise err
 
             # Determine behaviour based on current status
             if self.catalogue_entry.is_new():
@@ -104,7 +140,8 @@ class LayerSubmission(mixins.RevisionedMixin):
                 # Set the new incoming layer submission to SUBMITTED
                 # Set the old active layer to DECLINED
                 self.status = LayerSubmissionStatus.SUBMITTED
-                current_active_layer.status = LayerSubmissionStatus.DECLINED
+                if current_active_layer is not None:
+                    current_active_layer.status = LayerSubmissionStatus.DECLINED
 
             else:
                 # Set the new incoming layer submission to ACCEPTED
@@ -113,8 +150,9 @@ class LayerSubmission(mixins.RevisionedMixin):
             # Update!
             # Update Current Active Layer to Inactive
             # Update New Active Layer to Active
-            current_active_layer.is_active = False
-            current_active_layer.save()
+            if current_active_layer is not None:
+                current_active_layer.is_active = False
+                current_active_layer.save()
             self.is_active = True
             self.save()
 

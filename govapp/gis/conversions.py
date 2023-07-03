@@ -102,9 +102,9 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str, export_m
             str(layer),
         ]
     )
-    converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath}
+    # converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath}
     # Return
-    return converted
+    return pathlib.Path(output_filepath)
     #return output_filepath
 
 

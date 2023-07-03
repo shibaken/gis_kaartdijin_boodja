@@ -1,0 +1,32 @@
+<div class="modal fade" id="catalogue-attribute-modal" tabindex="-1" aria-labelledby="NewCatalogueAttributeModal"
+     aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
+     <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+               <div class="modal-header">
+                    <h5 class="modal-title" id="catalogue-attribute-modal-label">New Catalogue Attribute</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+
+               <div class="modal-body col-12">
+                    <div class="alert alert-danger" role="alert" id='catalogue-attribute-popup-error'
+                         style='display:none'>
+                    </div>
+
+                    <label for="" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="catalogue-attribute-name" value="" autocomplete="off">
+
+                    <label for="" class="form-label">Type</label>
+                    <select type="text" class="form-control" id="catalogue-attribute-type">
+                    </select>
+
+                    <label for="" class="form-label">Order</label>
+                    <input class="form-control" id="catalogue-attribute-order" type='number'>
+               </div>
+
+               <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id='catalogue-attribute-submit-btn'>Create</button>
+               </div>
+          </div>
+     </div>
+     </form>
+</div>
