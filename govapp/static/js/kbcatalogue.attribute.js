@@ -3,7 +3,7 @@ var kbcatalogue_attribute = {
          catalogue_attribute_url: "/api/catalogue/layers/attributes/",
          catalogue_attribute_type_url: "/api/catalogue/layers/attribute/type",
     },
-    init_catalogue_attribute: function() {
+    init_catalogue_attribute: async function() {
         $( "#catalogue-attribute-limit" ).change(function() {
             common_pagination.var.current_page=0;
             kbcatalogue_attribute.get_catalogue_attribute();
@@ -13,8 +13,7 @@ var kbcatalogue_attribute = {
             kbcatalogue_attribute.get_catalogue_attribute();
         });
         $( "#catalogue-attribute-new-btn" ).click(function() {
-            kbcatalogue_attribute.init_create_att_modal();
-            $('#catalogue-attribute-modal').modal('show');
+            kbcatalogue_attribute.show_new_attribute_modal();
         });
         $( "#catalogue-attribute-order" ).on('input',function(){
             $(this).val($(this).val().replace(/\D/g, ""));
@@ -26,140 +25,96 @@ var kbcatalogue_attribute = {
         }
 
         // catalogue-attribute-type
-        $.ajax({
+        await this.retrieve_att_types();
+        kbcatalogue_attribute.get_catalogue_attribute();
+    },
+    retrieve_att_types: async function(){
+        let call = () => new Promise((resolve, reject)=> $.ajax({
             url: kbcatalogue_attribute.var.catalogue_attribute_type_url,
             type: 'GET',
             contentType: 'application/json',
-            success: function (response) {
-                $('#catalogue-attribute-type').empty();
-                for (let i in response){
-                    $('#catalogue-attribute-type').append('<option value="'+response[i].key+'">'+response[i].name+'</option>');
-                }
-            },
-            error: function (error) {
-                $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>Fail to get attribute types<td></tr>");
-                console.log(error)
-            },
-        });
-        kbcatalogue_attribute.get_catalogue_attribute();
+            success: (response) => {resolve(response);},
+            error: (xhr, status, error) => {reject(error);},
+        }));
+
+        try{
+            const response = await call();
+            var att_type = {}
+            for(let i in response){
+                const type = response[i];
+                att_type[type.key] = type.name;
+            }
+            this.var.catalogue_attribute_type = att_type;
+        } catch (error){
+            alert("An error occured while getting catalogue attribute type.");
+            console.error(error);
+        }
     },
-    init_create_att_modal: function(){
-        $( "#catalogue-attribute-submit-btn" ).text("Create");
-        $( "#catalogue-attribute-modal-label" ).text("New Catalogue Attribute");
+    show_new_attribute_modal: function(){
+        common_entity_modal.init("New Attribute", "submit");
+        let name_id = common_entity_modal.add_field(label="Name", type="text");
+        let type_id = common_entity_modal.add_field(label="Type", type="select", value=null, option_map=this.var.catalogue_attribute_type);
+        let order_id = common_entity_modal.add_field(label="Order", type="number");
+        common_entity_modal.add_callbacks(submit_callback=()=> this.write_catalogue_attribute(name_id, type_id, order_id),
+                                            success_callback=this.get_catalogue_attribute);
+        common_entity_modal.show();
+    },
+    show_update_attribute_modal: function(att){
+        common_entity_modal.init("Update Attribute", "submit");
+        let name_id = common_entity_modal.add_field(label="Name", type="text", value=att.name);
+        let type_id = common_entity_modal.add_field(label="Type", type="select", value=att.type, option_map=this.var.catalogue_attribute_type);
+        let order_id = common_entity_modal.add_field(label="Order", type="number", value=att.order);
+        common_entity_modal.add_callbacks(submit_callback=()=> this.write_catalogue_attribute(name_id, type_id, order_id, att.id),
+                                            success_callback=this.get_catalogue_attribute);
+        common_entity_modal.show();
+    },
+    show_delete_attribute_modal: function(att){
+        common_entity_modal.init("Delete Attribute", "delete");
+        common_entity_modal.add_field(label="Name", type="text", value=att.name);
+        common_entity_modal.add_field(label="Type", type="select", value=att.type, option_map=this.var.catalogue_attribute_type);
+        common_entity_modal.add_field(label="Order", type="number", value=att.order);
+        common_entity_modal.add_callbacks(submit_callback=()=> this.delete_catalogue_attribute(att.id),
+                                            success_callback=this.get_catalogue_attribute);
+        common_entity_modal.show();
+    },
+    write_catalogue_attribute: async function(name_id, type_id, order_id, att_id) {
+        // get & validation check
+        let name = utils.validate_empty_input('name', $('#'+name_id).val());
+        let type = utils.validate_empty_input('type', $('#'+type_id).val());
+        let order = utils.validate_empty_input('order', +$('#'+order_id).val());
+        utils.validate_number('order', order);
         
-        this.set_input_fields_value();
-        this.change_input_fields_disability(false);
-
-        $( "#catalogue-attribute-submit-btn" ).off('click');
-        $( "#catalogue-attribute-submit-btn" ).click(function(){
-            console.log("Create New Catalogue Attribute");
-            kbcatalogue_attribute.save_catalogue_attribute();
-        });
+        // set request
+        let post_data = {
+            name:   name,
+            type:   type,
+            order:  order,
+            catalogue_entry: $('#catalogue_entry_id').val()
+        };
+        let csrf_token = $("#csrfmiddlewaretoken").val();
+        let url = kbcatalogue_attribute.var.catalogue_attribute_url;
+        let method = 'POST';
+        if(att_id){
+            url += att_id+'/'
+            method = 'PUT';
+        }
         
-        $('#delete-popup-error').html("");
-        $('#delete-popup-error').hide();
-    },
-    set_update_att_modal: function(att){
-        $( "#catalogue-attribute-submit-btn" ).text("Update");
-        $( "#catalogue-attribute-modal-label" ).text("Update Catalogue Attribute");
-
-        this.set_input_fields_value({name:att.name, type:att.type, order:att.order});
-        this.change_input_fields_disability(false);
-
-        $( "#catalogue-attribute-submit-btn" ).off('click');
-        $( "#catalogue-attribute-submit-btn" ).click(function(){
-            console.log("Update Catalogue Attribute");
-            kbcatalogue_attribute.update_catalogue_attribute(att.id);
-        });
-
-        $('#delete-popup-error').html("");
-        $('#delete-popup-error').hide();
-    },
-    preprocess_catalogue_attribute: function(){
-        $('#delete-popup-error').html("");
-        $('#delete-popup-error').hide();
-
-        let name = $('#catalogue-attribute-name').val();
-        let type = $('#catalogue-attribute-type').val();
-        let order = +$('#catalogue-attribute-order').val();
-        if(!name || name.length == 0){
-            this.show_error_popup("Please enter a new catalogue attribute name.");
-            return false;
-        }
-        if(!type || type.length == 0){
-            this.show_error_popup("Please select a type.");
-            return false;
-        }
-        if(!order || order.length == 0){
-            this.show_error_popup("Please enter a new catalogue attribute order.");
-            return false;
-        }
-        if(isNaN(order) || order < 0){
-            this.show_error_popup("Please enter a valid new catalogue attribute order. (must be positive number)");
-            return false;
-        }
-
-        this.change_input_fields_disability(true);
-
-        return {"name": name, "type": type, "order": +order};
-    },
-    save_catalogue_attribute: function() {
-        var post_data = this.preprocess_catalogue_attribute();
-        if(!post_data) {
-            return false;
-        }
-
-        post_data["catalogue_entry"] = $('#catalogue_entry_id').val();
-        var csrf_token = $("#csrfmiddlewaretoken").val();
-        
-        $.ajax({
-            url: kbcatalogue_attribute.var.catalogue_attribute_url,
-            type: 'POST',
+        return await $.ajax({
+            url: url,
+            type: method,
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
             contentType: 'application/json',
-            success: function (response) {
-                $('#catalogue-attribute-modal').modal('hide');
-                kbcatalogue_attribute.get_catalogue_attribute();
-            },
-            error: function (error) {
-                kbcatalogue_attribute.show_error_popup("Failed to create a new catalogue attribute. :"+error.responseText);
-                kbcatalogue_attribute.change_input_fields_disability(false);
-            },
-        });
-    },
-    update_catalogue_attribute: function(id) {
-        var post_data = this.preprocess_catalogue_attribute();
-        if(!post_data) {
-            return false;
-        }
-
-        var csrf_token = $("#csrfmiddlewaretoken").val();
-        
-        $.ajax({
-            url: kbcatalogue_attribute.var.catalogue_attribute_url+id+'/',
-            type: 'PUT',
-            headers: {'X-CSRFToken' : csrf_token},
-            data: JSON.stringify(post_data),
-            contentType: 'application/json',
-            success: function (response) {
-                $('#catalogue-attribute-modal').modal('hide');
-                kbcatalogue_attribute.get_catalogue_attribute();
-            },
-            error: function (error) {
-                kbcatalogue_attribute.show_error_popup("Failed to update a catalogue attribute. :"+error.responseText);
-                kbcatalogue_attribute.change_input_fields_disability(false);
-            },
         });
     },
     get_catalogue_attribute: function(params_str) {
-        params = {
-            catalogue_entry__in:       $('#catalogue_entry_id').val(),
-            limit:                     $('#catalogue-attribute-limit').val(),
-            order_by:                  $('#catalogue-attribute-order-by').val()
-        }
-
         if (!params_str){
+            params = {
+                catalogue_entry__in:       $('#catalogue_entry_id').val(),
+                limit:                     $('#catalogue-attribute-limit').val(),
+                order_by:                  $('#catalogue-attribute-order-by').val()
+            }
+            
             params_str = utils.make_query_params(params);
         }
 
@@ -190,19 +145,9 @@ var kbcatalogue_attribute = {
                                 row.append("<td></td>");
                             }
                             $('#catalogue-attribute-tbody').append(row);
-
-                            $('#'+btn_update_id).click(() => {
-                                kbcatalogue_attribute.set_update_att_modal(att);
-                                $('#catalogue-attribute-modal').modal('show');
-                            });
-                            $('#'+btn_delete_id).click(() => {
-                                $('#delete_target').html('Id: '+att.id+'</br>Name: '+att.name+'</br>Type: '+att.type+'</br>Order: '+att.order);
-                                $('#btn-delete-confirm').off('click');
-                                $('#btn-delete-confirm').click(function(){
-                                    kbcatalogue_attribute.delete_attribute(att.id);
-                                });
-                                $('#confirmation-delete-modal').modal('show');
-                            });
+                            
+                            $('#'+btn_update_id).click(()=> kbcatalogue_attribute.show_update_attribute_modal(att));
+                            $('#'+btn_delete_id).click(()=> kbcatalogue_attribute.show_delete_attribute_modal(att));
                         }
                                            
                         $('.publish-table-button').hide();
@@ -224,36 +169,12 @@ var kbcatalogue_attribute = {
                 console.log('Error Loading catalogue attribute data');
             },
         });    
-
-
     },
-    delete_attribute: function(att_id){
-        $.ajax({
+    delete_catalogue_attribute: async function(att_id){
+        await $.ajax({
             url: kbcatalogue_attribute.var.catalogue_attribute_url+att_id,
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             type: 'DELETE',
-            success: function (response) {
-                $('#confirmation-delete-modal').modal('hide');
-                kbcatalogue_attribute.get_catalogue_attribute();
-            },
-            error: function (error) {
-                alert("ERROR occured while deleting.");
-                console.log('ERROR occured while deleting.');
-            },
         });
     },
-    show_error_popup: function(msg){
-        $('#delete-popup-error').html(msg);
-        $('#delete-popup-error').show();
-    },
-    change_input_fields_disability: function(flag){
-        $('#catalogue-attribute-name').prop('disabled', flag);
-        $('#catalogue-attribute-type').prop('disabled', flag);
-        $('#catalogue-attribute-order').prop('disabled', flag);
-    },
-    set_input_fields_value: function(val){
-        $('#catalogue-attribute-name').val(val ? val.name : "");
-        $('#catalogue-attribute-type').val(val ? val.type : "");
-        $('#catalogue-attribute-order').val(val ? val.order : "");
-    } 
 }
