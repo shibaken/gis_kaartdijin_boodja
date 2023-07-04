@@ -109,48 +109,14 @@ var kbcatalogue_detail = {
             method: 'GET',
             contentType: 'application/json',
             success: function (response) {
-                console.log(response.results);
-                // common_table.set_rows('#catalogue-detail-notification-tbody', response.results, {key:'active', type:'switch'},
-                //                         buttons={Update:kbcatalogue_detail.show_update_email_notification_modal, 
-                //                                 Delete:kbcatalogue_detail.show_delete_email_notification_modal});
-                common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, +params.limit, $('#notification-paging-navi'));
+                // change type number to name
+                for(let i in response.results)
+                    response.results[i].type = kbcatalogue_detail.var.catalogue_email_notification_type[response.results[i].type];
 
-                $('#catalogue-detail-notification-tbody').empty();
-                for(let i in response.results){
-                    const noti = response.results[i];
-                    const btn_update_id = 'btn-update-email-noti-'+i;
-                    const btn_delete_id = 'btn-delete-email-noti-'+i;
-
-                    // common_table.add_row(table_id, 
-                    //                     [noti.id, noti,name, kbcatalogue_detail.var.catalogue_email_notification_type[noti.type], noti.email,
-                    //                     {val:noti.active, type:'switch'}, 
-                    //                     {type:'button', data:{Update:{id:btn_update_id, callback:kbcatalogue_detail.show_update_email_notification_modal(noti)},
-                    //                                             Delete:{id:btn_update_id, callback:kbcatalogue_detail.show_update_email_notification_modal(noti)}
-                    //                                         }}]);
-
-                    var row = $('<tr>');
-                    var td = $('<td>');
-                    td.text(noti.id);
-                    row.append(td);
-                    // row.append("<td>"+noti.id+"</td>");
-                    row.append("<td>"+noti.name+"</td>");
-                    row.append("<td>"+kbcatalogue_detail.var.catalogue_email_notification_type[noti.type]+"</td>");
-                    row.append("<td>"+noti.email+"</td>");
-                    row.append("<td><div class='form-check form-switch'>"+
-                                "<input class='form-check-input' type='checkbox' role='switch' "+(noti.active ? "checked" : "")+" disabled>"+
-                                "</div></td>");
-                    if(kbcatalogue_detail.var.has_edit_access){
-                        row.append("<td>" +
-                                    "<button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " +
-                                    "<button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>" +
-                                "</td>");
-                    } else {
-                        row.append("<td></td>");
-                    }
-                    $('#catalogue-detail-notification-tbody').append(row);
-                    $('#'+btn_update_id).click(()=> kbcatalogue_detail.show_update_email_notification_modal(noti));
-                    $('#'+btn_delete_id).click(()=> kbcatalogue_detail.show_delete_email_notification_modal(noti));
-                }
+                table.set_rows($('#catalogue-detail-notification-tbody'), response.results, 
+                                columns=[{id:'text'}, {name:'text'}, {type:'text'}, {email:'text'}, {active:'switch'}], 
+                                buttons={Update:(noti)=>kbcatalogue_detail.show_update_email_notification_modal(noti),
+                                        Delete:(noti)=>kbcatalogue_detail.show_delete_email_notification_modal(noti)});
                 common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, +params.limit, $('#notification-paging-navi'));
             },
             error: function (error) {

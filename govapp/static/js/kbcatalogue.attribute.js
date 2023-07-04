@@ -125,38 +125,48 @@ var kbcatalogue_attribute = {
             contentType: 'application/json',
             success: function (response) {
                 if (response != null) {
-                    $('#catalogue-attribute-tbody').empty();
-                    if (response.results.length > 0) {
-                        for (let i = 0; i < response.results.length; i++) {
-                            let att = response.results[i];
-                            let btn_update_id = 'btn-update-attribute_'+i;
-                            let btn_delete_id = 'btn-delete-attribute_'+i;
-                            let row = $("<tr>");
-                            row.append("<td>"+att.id+"</td>");
-                            row.append("<td>"+att.name+"</td>");
-                            row.append("<td>"+att.type+"</td>");
-                            row.append("<td>"+att.order+"</td>");
-                            if(kbcatalogue_attribute.var.has_edit_access){
-                                row.append("<td>" +
-                                            "<button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " + 
-                                            "<button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>" +
-                                            "</td");
-                            } else {
-                                row.append("<td></td>");
-                            }
-                            $('#catalogue-attribute-tbody').append(row);
+                    for(let i in response.results)
+                        response.results[i].type = kbcatalogue_attribute.var.catalogue_attribute_type[response.results[i].type];
+                    
+                    table.set_rows($('#catalogue-attribute-tbody'), response.results,
+                                    columns=[{id:"text"}, {name:"text"}, {type:"text"}, {order:"text"}],
+                                    buttons={Update:(att)=>kbcatalogue_attribute.show_update_attribute_modal(att),
+                                            Delete:(att)=>kbcatalogue_attribute.show_delete_attribute_modal(att)});
+
+                    common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, +params.limit, $('#paging_navi'));
+
+                    // $('#catalogue-attribute-tbody').empty();
+                    // if (response.results.length > 0) {
+                    //     for (let i = 0; i < response.results.length; i++) {
+                    //         let att = response.results[i];
+                    //         let btn_update_id = 'btn-update-attribute_'+i;
+                    //         let btn_delete_id = 'btn-delete-attribute_'+i;
+                    //         let row = $("<tr>");
+                    //         row.append("<td>"+att.id+"</td>");
+                    //         row.append("<td>"+att.name+"</td>");
+                    //         row.append("<td>"+att.type+"</td>");
+                    //         row.append("<td>"+att.order+"</td>");
+                    //         if(kbcatalogue_attribute.var.has_edit_access){
+                    //             row.append("<td>" +
+                    //                         "<button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " + 
+                    //                         "<button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>" +
+                    //                         "</td");
+                    //         } else {
+                    //             row.append("<td></td>");
+                    //         }
+                    //         $('#catalogue-attribute-tbody').append(row);
                             
-                            $('#'+btn_update_id).click(()=> kbcatalogue_attribute.show_update_attribute_modal(att));
-                            $('#'+btn_delete_id).click(()=> kbcatalogue_attribute.show_delete_attribute_modal(att));
-                        }
+                    //         $('#'+btn_update_id).click(()=> kbcatalogue_attribute.show_update_attribute_modal(att));
+                    //         $('#'+btn_delete_id).click(()=> kbcatalogue_attribute.show_delete_attribute_modal(att));
+                    //     }
                                            
-                        $('.publish-table-button').hide();
+                    //     $('.publish-table-button').hide();
 
-                        common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, +params.limit, $('#paging_navi'));
+                    //     common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, +params.limit, $('#paging_navi'));
 
-                    } else {
-                        $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
-                    }
+                    // } else {
+                    //     $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    // }
                 } else {
                       $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
                 }      
