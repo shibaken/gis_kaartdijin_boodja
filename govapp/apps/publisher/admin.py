@@ -14,7 +14,8 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     filter_horizontal = ["editors"]
-
+    list_display = ('id', 'catalogue_entry', 'status', 'published_at')
+    ordering = ('id',)
 
 # Register Models
 admin.site.register(models.publish_channels.CDDPPublishChannel, reversion.admin.VersionAdmin)
