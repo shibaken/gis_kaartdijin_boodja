@@ -28,7 +28,8 @@ var common_entity_modal = {
         //field
         let field = this.maker[type](label, value, option_map);
         contents.append(field);
-        return field.attr("id");
+        // return field.attr("id");
+        return this.get_id(field);
     },
     maker : {
         make_common_field : (label, value, type="text", element="<input>") => {
@@ -71,11 +72,24 @@ var common_entity_modal = {
             let field = common_entity_modal.maker.make_common_field(label, value, type="checkbox", element="<input>");
             field.attr("role", "switch");
             field.attr("class", "form-check-input");
-            field.prop('checked', !value ? true : value);
+            field.prop('checked', value);
 
             div.append(field);
             return div;
         },
+    },
+    get_id: function(element){
+        if(element.is('input') || element.is('select')){
+            return element.attr("id");
+        } else if(element.is('div')){
+            let children = element.children();
+            for(let i in children){
+                let res = this.get_id($(children[i]));
+                if(res)
+                    return res; 
+            }
+        }
+        return null
     },
     add_callbacks: function(submit_callback, success_callback){
         let callback_with_close = async () =>{
