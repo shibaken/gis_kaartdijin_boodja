@@ -14,6 +14,7 @@ from rest_framework import viewsets
 # Local
 from govapp.common import mixins
 from govapp.common import utils
+from govapp.apps.accounts import permissions as accounts_permissions
 from govapp.apps.logs import mixins as logs_mixins
 from govapp.apps.logs import utils as logs_utils
 from govapp.apps.publisher import filters
@@ -538,7 +539,7 @@ class EmailNotificationViewSet(
     serializer_classes = {"create": serializers.notifications.EmailNotificationCreateSerializer}
     filterset_class = filters.EmailNotificationFilter
     search_fields = ["name", "email"]
-    permission_classes = [permissions.HasPublishEntryPermissions]
+    permission_classes = [permissions.HasPublishEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
 @drf_utils.extend_schema(tags=["Publisher - Workspaces"])
