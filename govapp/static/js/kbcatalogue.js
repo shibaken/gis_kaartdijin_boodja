@@ -12,6 +12,75 @@ var kbcatalogue = {
     },
     
     init_dashboard: function() { 
+
+        $('#catalogue-lastupdatedfrom').datepicker({ dateFormat: 'yyyy-mm-dd', 
+                                                    format: 'dd/mm/yyyy',
+                                                });
+        $('#catalogue-lastupdatedto').datepicker({  dateFormat: 'yyyy-mm-dd', 
+                                                    format: 'dd/mm/yyyy',
+                                                });
+        
+        $('#catalogue-custodian').select2({
+            placeholder: 'Select an option',
+            minimumInputLength: 2,
+            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+            theme: 'bootstrap-5',
+            ajax: {
+                url: "/api/catalogue/custodians/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (params, page) {
+                   
+                    return {
+                        search: params.term,                        
+                    };
+                },    
+                  processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    var results = [];
+                    $.each(data.results, function(index, item){
+                      results.push({
+                        id: item.id,
+                        text: item.name
+                      });
+                    });
+                    return {
+                        results: results
+                    };
+                  }                  
+            },
+        });
+
+        $('#catalogue-assignedto').select2({
+            placeholder: 'Select an option',
+            minimumInputLength: 2,
+            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+            theme: 'bootstrap-5',
+            ajax: {
+                url: "/api/accounts/users/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (params, page) {
+                    return {
+                        q: params.term,                        
+                    };
+                },          
+                  processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    var results = [];
+                    $.each(data.results, function(index, item){
+                      results.push({
+                        id: item.id,
+                        text: item.first_name+' '+item.last_name
+                      });
+                    });
+                    return {
+                        results: results
+                    };
+                  }                  
+            },
+        });
+
         $( "#catalogue-filter-btn" ).click(function() {
             kbcatalogue.get_catalogue();
         });
