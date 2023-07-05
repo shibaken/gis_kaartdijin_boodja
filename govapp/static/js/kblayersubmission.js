@@ -4,6 +4,15 @@ var kblayersubmission = {
          "layersubmission_symbology_url": "/api/catalogue/layers/submissions/",
     },
     init_dashboard: function() { 
+
+        $('#layer-submission-submitted-from').datepicker({ dateFormat: 'yyyy-mm-dd', 
+            format: 'dd/mm/yyyy',
+        });
+        $('#layer-submission-submitted-to').datepicker({  dateFormat: 'yyyy-mm-dd', 
+                format: 'dd/mm/yyyy',
+        });
+
+
         $( "#layer-submission-filter-btn" ).click(function() {
             kblayersubmission.get_layer_submissions();
         });
