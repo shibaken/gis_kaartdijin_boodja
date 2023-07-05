@@ -31,6 +31,8 @@ var kbpublish = {
             publish_cddp_frequency: {
                 1: "OnChange"
             },
+            catalogue_entry_list: null,
+            catalogue_entry_map: {},
     },
     pagination: kbpublish_pagination,
     init_dashboard: function() {    
@@ -110,21 +112,14 @@ var kbpublish = {
             kbpublish.get_publish();
         });
         $( "#publish-new-btn" ).click(function() {
-            console.log("New Publish");
-            $('#new-publish-popup-error').html("");
-            $('#new-publish-popup-error').hide();
-            $('#new-publish-popup-success').html("");
-            $('#new-publish-popup-success').hide();
-
-            $('#new-publish-name').val("");
-            $('#new-catalogue-entry').val("");
-            $('#new-publish-description').val("");
-            
-            $('#NewPublishModal').modal('show');
+            common_entity_modal.init("New Publish", "submit");
+            let name_id = common_entity_modal.add_field(label="Name", type="text");
+            let catalogue_entry_id = common_entity_modal.add_field(label="Catalogue Entry", type="select", value=null, option_map=kbpublish.var.catalogue_entry_map);
+            let description_id = common_entity_modal.add_field(label="Description", type="text");
+            common_entity_modal.add_callbacks(submit_callback=()=> kbpublish.create_publish(name_id, catalogue_entry_id, description_id),
+                                                success_callback=kbpublish.get_publish);
+            common_entity_modal.show();
         });           
-        $( "#create-publish-btn" ).click(function() {
-            kbpublish.create_publish(); 
-        }); 
         $( "#publish-limit" ).change(function(){
             common_pagination.var.current_page=0;
             kbpublish.get_publish();
@@ -134,8 +129,11 @@ var kbpublish = {
             kbpublish.get_publish();
         })
 
-      
-
+        this.var.catalogue_entry_list = JSON.parse($('#catalogue_entry_list').data('list').replaceAll("'", '"'));
+        for(let i in this.var.catalogue_entry_list){
+            let entry = this.var.catalogue_entry_list[i];
+            this.var.catalogue_entry_map[entry.id] = entry.name;
+        }
         kbpublish.get_publish();
     },
     init_publish_item: function() {    
@@ -522,85 +520,33 @@ var kbpublish = {
 
 
     },    
-    create_publish: function() {
-        var publishname = $('#new-publish-name').val();
-        var publishcatalogueentry_id = $('#new-catalogue-entry').val();
-        var publishdescription = $('#new-publish-description').val();
-        var post_data = {"name": publishname, "description": publishdescription, "catalogue_entry": publishcatalogueentry_id};
+    create_publish: async function(name_id, catalogue_entry_id, description_id){
+        // get & validation check
+        const name = utils.validate_empty_input('name', $('#'+name_id).val());
+        const catalogue_entry = utils.validate_empty_input('catalogue_entry', $('#'+catalogue_entry_id).val());
+        const description = utils.validate_empty_input('description', $('#'+description_id).val());
+        
+        // make data body
+        var publish_data = {
+            name:name,
+            catalogue_entry:catalogue_entry,
+            description:description,
+        };
+
+        // set request
+        var url = this.var.publish_save_url;
+        var method = 'POST';
         var csrf_token = $("#csrfmiddlewaretoken").val();
-       
-        $('#new-publish-popup-error').html("");
-        $('#new-publish-popup-error').hide();
-        $('#new-publish-popup-success').html("");
-        $('#new-publish-popup-success').hide();
-        
-        if (publishname.length < 1) {
-            $('#new-publish-popup-error').html("Please enter a publish name.");
-            $('#new-publish-popup-error').show();
-            return false;
-        }
 
-        if (publishdescription.length < 10) {
-            $('#new-publish-popup-error').html("Please enter a valid publish description. (min 10 characters)");
-            $('#new-publish-popup-error').show();
-            return false;
-        }
-
-        if (publishcatalogueentry_id.length < 1) {
-            $('#new-publish-popup-error').html("Please select a catalogue entry.");
-            $('#new-publish-popup-error').show();
-            return false;
-        }
-
-       
-        $('#new-publish-name').attr('disabled','disabled');
-        $('#new-catalogue-entry').attr('disabled','disabled');
-        $('#new-publish-description').attr('disabled','disabled');
-
-        
-
-        $.ajax({
-            url: kbpublish.var.publish_save_url,        
-            type: 'POST',
-            headers: {'X-CSRFToken' : csrf_token},
-            data: JSON.stringify(post_data),
+        // call POST API
+        return await $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
             contentType: 'application/json',
-            success: function (response) {
-                var html = '';
-                console.log(response);
-                
-                if (response != null) {
-
-                    $('#new-publish-popup-success').html("Successfully created publish entry");
-                    $('#new-publish-popup-success').show();
-
-                    setTimeout("window.location = '/publish/"+response.id+"';", 2000); 
-                    
-                    
-                } else {                
-                    $('#new-publish-popup-error').html("Error no response ID.");
-                    $('#new-publish-popup-error').show();       
-                    
-                    $('#new-publish-name').removeAttr('disabled');
-                    $('#new-catalogue-entry').removeAttr('disabled');
-                    $('#new-publish-description').removeAttr('disabled');                    
-                }
-
-       
-            },
-            error: function (error) {
-
-                $('#new-publish-popup-error').html("Error create to publish.");
-                $('#new-publish-popup-error').show();        
-
-                $('#new-publish-name').removeAttr('disabled');
-                $('#new-catalogue-entry').removeAttr('disabled');
-                $('#new-publish-description').removeAttr('disabled');
-               
-            },
+            headers: {'X-CSRFToken' : csrf_token},
+            data: JSON.stringify(publish_data),
         });
-
-
     },
     save_publish: function(save_status) {        
         var publish_id = $('#publish_id').val();
@@ -646,7 +592,7 @@ var kbpublish = {
         }
 
         if (!params_str){
-            params_str = common_pagination.make_get_params_str(params);
+            params_str = utils.make_query_params(params);
         }
 
         //order_by=&limit=10" 
@@ -1007,8 +953,84 @@ var kbpublish = {
             },
         });
     },
+// create_publish: function() {
+    //     var publishname = $('#new-publish-name').val();
+    //     var publishcatalogueentry_id = $('#new-catalogue-entry').val();
+    //     var publishdescription = $('#new-publish-description').val();
+    //     var post_data = {"name": publishname, "description": publishdescription, "catalogue_entry": publishcatalogueentry_id};
+    //     var csrf_token = $("#csrfmiddlewaretoken").val();
+       
+    //     $('#new-publish-popup-error').html("");
+    //     $('#new-publish-popup-error').hide();
+    //     $('#new-publish-popup-success').html("");
+    //     $('#new-publish-popup-success').hide();
+        
+    //     if (publishname.length < 1) {
+    //         $('#new-publish-popup-error').html("Please enter a publish name.");
+    //         $('#new-publish-popup-error').show();
+    //         return false;
+    //     }
+
+    //     if (publishdescription.length < 10) {
+    //         $('#new-publish-popup-error').html("Please enter a valid publish description. (min 10 characters)");
+    //         $('#new-publish-popup-error').show();
+    //         return false;
+    //     }
+
+    //     if (publishcatalogueentry_id.length < 1) {
+    //         $('#new-publish-popup-error').html("Please select a catalogue entry.");
+    //         $('#new-publish-popup-error').show();
+    //         return false;
+    //     }
+
+       
+    //     $('#new-publish-name').attr('disabled','disabled');
+    //     $('#new-catalogue-entry').attr('disabled','disabled');
+    //     $('#new-publish-description').attr('disabled','disabled');
+
+        
+
+    //     $.ajax({
+    //         url: kbpublish.var.publish_save_url,        
+    //         type: 'POST',
+    //         headers: {'X-CSRFToken' : csrf_token},
+    //         data: JSON.stringify(post_data),
+    //         contentType: 'application/json',
+    //         success: function (response) {
+    //             var html = '';
+    //             console.log(response);
+                
+    //             if (response != null) {
+
+    //                 $('#new-publish-popup-success').html("Successfully created publish entry");
+    //                 $('#new-publish-popup-success').show();
+
+    //                 setTimeout("window.location = '/publish/"+response.id+"';", 2000); 
+                    
+                    
+    //             } else {                
+    //                 $('#new-publish-popup-error').html("Error no response ID.");
+    //                 $('#new-publish-popup-error').show();       
+                    
+    //                 $('#new-publish-name').removeAttr('disabled');
+    //                 $('#new-catalogue-entry').removeAttr('disabled');
+    //                 $('#new-publish-description').removeAttr('disabled');                    
+    //             }
+
+       
+    //         },
+    //         error: function (error) {
+
+    //             $('#new-publish-popup-error').html("Error create to publish.");
+    //             $('#new-publish-popup-error').show();        
+
+    //             $('#new-publish-name').removeAttr('disabled');
+    //             $('#new-catalogue-entry').removeAttr('disabled');
+    //             $('#new-publish-description').removeAttr('disabled');
+               
+    //         },
+    //     });
 
 
-    
-
+    // },
 }

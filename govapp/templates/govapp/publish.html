@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if request.user.is_authenticated is True %}
-      {% include "govapp/publish_new.html" %}
+      {% include "govapp/common_entity_modal.html" %}
 
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
 
@@ -232,6 +232,9 @@
             </div>
 
       </div>
+      
+      <div id="catalogue_entry_list" data-list="{{ catalogue_entry_list }}"></div>
+
       <script>
             kbpublish.init_dashboard();
             $(document).ready(function () {
