@@ -138,17 +138,17 @@ var kbcatalogue = {
     },
 
     get_catalogue: function(params_str) {
-        params = {
-            name__icontains:        $('#catalogue-name').val(),
-            status:                 $('#catalogue-status').val(),
-            description__icontains: $('#catalogue-description').val(),
-            id:                     $('#catalogue-number').val().replace("PE", ""),
-            limit:                  $('#catalogue-limit').val(),
-            order_by:               $('#catalogue-order-by').val()
-        }
-
         if (!params_str){
-            params_str = common_pagination.make_get_params_str(params);
+            params = {
+                name__icontains:        $('#catalogue-name').val(),
+                status:                 $('#catalogue-status').val(),
+                description__icontains: $('#catalogue-description').val(),
+                id:                     $('#catalogue-number').val().replace("PE", ""),
+                limit:                  $('#catalogue-limit').val(),
+                order_by:               $('#catalogue-order-by').val()
+            }
+
+            params_str = utils.make_query_params(params);
         }
 
         $.ajax({
