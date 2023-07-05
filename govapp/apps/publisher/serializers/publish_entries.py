@@ -15,6 +15,7 @@ class PublishEntrySerializer(serializers.ModelSerializer):
     last_name = serializers.ReadOnlyField(source='assigned_to.last_name')
     email = serializers.ReadOnlyField(source='assigned_to.email',)
     name = serializers.ReadOnlyField(source='catalogue_entry.name',)
+    custodian_name = serializers.ReadOnlyField(source='catalogue_entry.custodian.name',)
 
     class Meta:
         """Publish Entry Model Serializer Metadata."""
@@ -34,7 +35,8 @@ class PublishEntrySerializer(serializers.ModelSerializer):
             "geoserver_channel",
             "first_name",
             "last_name",
-            "email"
+            "email",
+            "custodian_name"
         )
 
     def get_email(self, obj):
