@@ -69,6 +69,7 @@ var common_entity_modal = {
             let div = $('<div>');
             div.attr("class", "form-check form-switch");
 
+            value = value != null ? value : true;
             let field = common_entity_modal.maker.make_common_field(label, value, type="checkbox", element="<input>");
             field.attr("role", "switch");
             field.attr("class", "form-check-input");
@@ -92,23 +93,30 @@ var common_entity_modal = {
         return null
     },
     add_callbacks: function(submit_callback, success_callback){
-        let callback_with_close = async () =>{
-            try{
-                response = await submit_callback();
-                success_callback();
-                common_entity_modal.hide();
-            } catch(error){
-                if('status' in error && error.status == 400){
-                    let error_obj = JSON.parse(error.responseText);
-                    let msg;
-                    for(let key in error_obj)
-                        msg = error_obj[key];
-                    common_entity_modal.show_error_modal(msg);
-                }
-                else
-                    common_entity_modal.show_error_modal(error.message);
+        let error_handler = (error)=>{
+            if('status' in error && error.status == 400){
+                let error_obj = JSON.parse(error.responseText);
+                let msg;
+                for(let key in error_obj)
+                    msg = error_obj[key];
+                common_entity_modal.show_error_modal(msg);
             }
-        }
+            else
+                common_entity_modal.show_error_modal(error.message);
+        };
+        
+        let callback_with_close = () =>{
+            try{
+                submit_callback(
+                    (response)=>{   //success_callback
+                            success_callback();
+                            common_entity_modal.hide();
+                        },
+                        error_handler); //error callback
+                }catch(error){
+                    error_handler(error);
+                }
+        };
         $('#common-entity-modal-submit-btn').off('click');
         $('#common-entity-modal-delete-btn').off('click');
         if(this.var.type == 'submit'){

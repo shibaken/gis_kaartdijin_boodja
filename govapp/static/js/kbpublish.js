@@ -116,7 +116,8 @@ var kbpublish = {
             let name_id = common_entity_modal.add_field(label="Name", type="text");
             let catalogue_entry_id = common_entity_modal.add_field(label="Catalogue Entry", type="select", value=null, option_map=kbpublish.var.catalogue_entry_map);
             let description_id = common_entity_modal.add_field(label="Description", type="text");
-            common_entity_modal.add_callbacks(submit_callback=()=> kbpublish.create_publish(name_id, catalogue_entry_id, description_id),
+            common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                                kbpublish.create_publish(success_callback, error_callback, name_id, catalogue_entry_id, description_id),
                                                 success_callback=kbpublish.get_publish);
             common_entity_modal.show();
         });           
@@ -520,7 +521,7 @@ var kbpublish = {
 
 
     },    
-    create_publish: async function(name_id, catalogue_entry_id, description_id){
+    create_publish: function(success_callback, error_callback, name_id, catalogue_entry_id, description_id){
         // get & validation check
         const name = utils.validate_empty_input('name', $('#'+name_id).val());
         const catalogue_entry = utils.validate_empty_input('catalogue_entry', $('#'+catalogue_entry_id).val());
@@ -539,13 +540,15 @@ var kbpublish = {
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
         // call POST API
-        return await $.ajax({
+        $.ajax({
             url: url,
             method: method,
             dataType: 'json',
             contentType: 'application/json',
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(publish_data),
+            success: success_callback,
+            error: error_callback,
         });
     },
     save_publish: function(save_status) {        
