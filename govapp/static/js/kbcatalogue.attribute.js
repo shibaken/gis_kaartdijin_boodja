@@ -3,7 +3,7 @@ var kbcatalogue_attribute = {
          catalogue_attribute_url: "/api/catalogue/layers/attributes/",
          catalogue_attribute_type_url: "/api/catalogue/layers/attribute/type",
     },
-    init_catalogue_attribute: async function() {
+    init_catalogue_attribute: function() {
         $( "#catalogue-attribute-limit" ).change(function() {
             common_pagination.var.current_page=0;
             kbcatalogue_attribute.get_catalogue_attribute();
@@ -25,37 +25,35 @@ var kbcatalogue_attribute = {
         }
 
         // catalogue-attribute-type
-        await this.retrieve_att_types();
-        kbcatalogue_attribute.get_catalogue_attribute();
+        this.retrieve_att_types(this.get_catalogue_attribute);
     },
-    retrieve_att_types: async function(){
-        let call = () => new Promise((resolve, reject)=> $.ajax({
+    retrieve_att_types: function(post_callback){
+        $.ajax({
             url: kbcatalogue_attribute.var.catalogue_attribute_type_url,
             type: 'GET',
             contentType: 'application/json',
-            success: (response) => {resolve(response);},
-            error: (xhr, status, error) => {reject(error);},
-        }));
-
-        try{
-            const response = await call();
-            var att_type = {}
-            for(let i in response){
-                const type = response[i];
-                att_type[type.key] = type.name;
-            }
-            this.var.catalogue_attribute_type = att_type;
-        } catch (error){
-            alert("An error occured while getting catalogue attribute type.");
-            console.error(error);
-        }
+            success: (response) => {
+                var att_type = {}
+                for(let i in response){
+                    const type = response[i];
+                    att_type[type.key] = type.name;
+                }
+                kbcatalogue_attribute.var.catalogue_attribute_type = att_type;
+                post_callback();
+            },
+            error: (error)=> {
+                alert("An error occured while getting catalogue attribute type.");
+                console.error(error);
+            },
+        });
     },
     show_new_attribute_modal: function(){
         common_entity_modal.init("New Attribute", "submit");
         let name_id = common_entity_modal.add_field(label="Name", type="text");
         let type_id = common_entity_modal.add_field(label="Type", type="select", value=null, option_map=this.var.catalogue_attribute_type);
         let order_id = common_entity_modal.add_field(label="Order", type="number");
-        common_entity_modal.add_callbacks(submit_callback=()=> this.write_catalogue_attribute(name_id, type_id, order_id),
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_catalogue_attribute(success_callback, error_callback, name_id, type_id, order_id),
                                             success_callback=this.get_catalogue_attribute);
         common_entity_modal.show();
     },
@@ -64,7 +62,8 @@ var kbcatalogue_attribute = {
         let name_id = common_entity_modal.add_field(label="Name", type="text", value=att.name);
         let type_id = common_entity_modal.add_field(label="Type", type="select", value=att.type, option_map=this.var.catalogue_attribute_type);
         let order_id = common_entity_modal.add_field(label="Order", type="number", value=att.order);
-        common_entity_modal.add_callbacks(submit_callback=()=> this.write_catalogue_attribute(name_id, type_id, order_id, att.id),
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_catalogue_attribute(success_callback, error_callback, name_id, type_id, order_id, att.id),
                                             success_callback=this.get_catalogue_attribute);
         common_entity_modal.show();
     },
@@ -73,11 +72,12 @@ var kbcatalogue_attribute = {
         common_entity_modal.add_field(label="Name", type="text", value=att.name);
         common_entity_modal.add_field(label="Type", type="select", value=att.type, option_map=this.var.catalogue_attribute_type);
         common_entity_modal.add_field(label="Order", type="number", value=att.order);
-        common_entity_modal.add_callbacks(submit_callback=()=> this.delete_catalogue_attribute(att.id),
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.delete_catalogue_attribute(success_callback, error_callback, att.id),
                                             success_callback=this.get_catalogue_attribute);
         common_entity_modal.show();
     },
-    write_catalogue_attribute: async function(name_id, type_id, order_id, att_id) {
+    write_catalogue_attribute: function(success_callback, error_callback, name_id, type_id, order_id, att_id) {
         // get & validation check
         let name = utils.validate_empty_input('name', $('#'+name_id).val());
         let type = utils.validate_empty_input('type', $('#'+type_id).val());
@@ -99,12 +99,14 @@ var kbcatalogue_attribute = {
             method = 'PUT';
         }
         
-        return await $.ajax({
+        $.ajax({
             url: url,
             type: method,
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
             contentType: 'application/json',
+            success: success_callback,
+            error: error_callback
         });
     },
     get_catalogue_attribute: function(params_str) {
@@ -180,11 +182,13 @@ var kbcatalogue_attribute = {
             },
         });    
     },
-    delete_catalogue_attribute: async function(att_id){
-        await $.ajax({
+    delete_catalogue_attribute: function(success_callback, error_callback, att_id){
+        $.ajax({
             url: kbcatalogue_attribute.var.catalogue_attribute_url+att_id,
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             type: 'DELETE',
+            success: success_callback,
+            error: error_callback
         });
     },
 }
