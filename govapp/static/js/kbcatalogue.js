@@ -232,19 +232,19 @@ var kbcatalogue = {
                     if (response.results.length > 0) {
                         for (let i = 0; i < response.results.length; i++) {
                             assigned_to_friendly = "";
-                            if (response.results[i].first_name != null) {
+                            if (response.results[i].assigned_to_first_name != null) {
 
-                                assigned_to_friendly = response.results[i].first_name;
+                                assigned_to_friendly = response.results[i].assigned_to_first_name;
 
-                                if (response.results[i].last_name != null) {
-                                    assigned_to_friendly += " "+response.results[i].last_name;
+                                if (response.results[i].assigned_to_last_name != null) {
+                                    assigned_to_friendly += " "+response.results[i].assigned_to_last_name;
                                 }
 
                             } 
                             
                             if (assigned_to_friendly.replace(" ","").length == 0) {
-                                if (response.results[i].email != null) {
-                                    assigned_to_friendly = response.results[i].email;
+                                if (response.results[i].assigned_to_email != null) {
+                                    assigned_to_friendly = response.results[i].assigned_to_email;
                                 }
                             }
 
@@ -253,7 +253,14 @@ var kbcatalogue = {
                             html+= "<tr>";
                             html+= " <td>CE"+response.results[i].id+"</td>";
                             html+= " <td>"+response.results[i].name+"</td>";
-                            html+= " <td>NONE</td>";
+                            
+                            html+= " <td>";
+                            if (response.results[i].custodian_name != null) { 
+                                html+= response.results[i].custodian_name;
+                            } else {
+                                html+= "";
+                            }
+                            html+= "</td>";
                             html+= " <td>"+kbcatalogue.var.catalogue_status[response.results[i].status]+"</td>";
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";
