@@ -6,6 +6,7 @@
             {% include "govapp/publish_manage_editors.html" %}
             {% include "govapp/publish_view_new_geoserver.html" %}
             {% include "govapp/publish_view_new_cddp.html" %}
+            {% include "govapp/common_entity_modal.html" %}
 
             <div class="container" id="dashboard-table-container">
                   <div class='row'>
@@ -336,7 +337,84 @@
                                     </div>         
                               </div>
                               <div class="card-body collapse show" id="box4-card-body">
-                                    Work in Progress
+                                    <div class="col-12 text-end">
+                                    {% if has_edit_access is True %}
+                                          <button class="btn btn-primary left" id='publish-btn-add-notification' aria-current="page" >Add Notification</button>
+                                    {% endif %}
+                                    </div>
+                                    <div class='col-12 pt-2 pb-2 '>
+                                          <div class='row'>
+                                                <div class='col-6'>
+                                                      <div class="row">
+                                                            <div class="col-sm-12 col-md-6">
+                                                                  <div class="dataTables_length" id="bookings-table_length">
+                                                                        <label>Show
+                                                                              <select name="bookings-table_length"
+                                                                                    aria-controls="bookings-table"
+                                                                                    class="form-select form-select-sm"
+                                                                                    id="publish-notification-limit">
+                                                                                    <option value="5">5</option>
+                                                                                    <option value="10" >10</option>
+                                                                                    <option value="25" selected>25</option>
+                                                                                    <option value="50">50</option>
+                                                                                    <option value="100">100</option>
+                                                                              </select> entries
+                                                                        </label>
+                                                                  </div>
+                                                            </div>
+                                                      </div>
+                                                </div>
+                                                <div class='col-6 text-end'>
+                                                      <div class="row">
+                                                            <div class="col-sm-12 col-md-12 text-end">
+                                                                  <div class="dataTables_length" id="bookings-table_length">
+                                                                        <label>Order By
+                                                                              <select name="bookings-table_length"
+                                                                                    aria-controls="bookings-table"
+                                                                                    class="form-select form-select-sm"
+                                                                                    id="publish-notification-order-by">
+                                                                                    <option value="id">ID</option>
+                                                                                    <option value="name">Name</option>
+                                                                                    <option value="type">Type</option>
+                                                                                    <option value="email">Email</option>
+                                                                                    <option value="active">Active</option>
+                                                                              </select>
+                                                                        </label>
+                                                                  </div>
+                                                            </div>
+                                                      </div>
+                                                </div>
+                                          </div>
+                                    </div>
+
+                                    <div id='publish-table'>
+                                          <table id="example" class="table" style="width:100%">
+                                                <thead class='table-dark'>
+                                                      <tr>
+                                                            <th class="col-1">Id</th>
+                                                            <th class="col-2">Name</th>
+                                                            <th class="col-2">Type</th>
+                                                            <th class="col-4">Email</th>
+                                                            <th class="col-1">Active</th>
+                                                            <th class='col-2'>Action</th>
+                                                      </tr>
+                                                </thead>
+                                                <tbody id='publish-notification-tbody'>
+                                                      <tr>
+                                                            <td colspan="7" class='text-center'>No Results</td>
+                                                      </tr>
+                                                </tbody>
+                                          </table>
+                                          <nav aria-label="Page navigation example" id='publish-notification-pagination'>
+                                                <ul class="pagination justify-content-end" id='notification-paging-navi'>
+                                                      <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                                </ul>
+                                          </nav>
+                                    </div>
                               </div>
                         </div>
                         <div class='col-12 pt-2'>
@@ -355,6 +433,8 @@
                         </div>
                   </div>
             </div>
+            
+            <input type="hidden" id="publish-entry-id" name="publish_entry_id" value="{{ publish_id }}">
 
             <script>
                   kbpublish.init_publish_item();

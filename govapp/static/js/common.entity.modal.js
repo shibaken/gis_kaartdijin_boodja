@@ -94,7 +94,7 @@ var common_entity_modal = {
     },
     add_callbacks: function(submit_callback, success_callback){
         let error_handler = (error)=>{
-            if('status' in error && error.status == 400){
+            if('status' in error){
                 let error_obj = JSON.parse(error.responseText);
                 let msg;
                 for(let key in error_obj)

@@ -13,7 +13,7 @@ class EmailNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         """Email Notification Model Serializer Metadata."""
         model = models.notifications.EmailNotification
-        fields = ("id", "name", "type", "email", "publish_entry")
+        fields = ("id", "name", "type", "email", "active", "publish_entry")
         read_only_fields = ("id", "publish_entry")
 
 
