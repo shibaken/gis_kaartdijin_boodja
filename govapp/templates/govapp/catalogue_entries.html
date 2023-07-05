@@ -28,15 +28,16 @@
                                     <div class='col-12'>
                                           <div class='row'>
                                                 <div class='col-3'>
-                                                      <label for="publish-name" class="form-label">Name</label>
+                                                      <label for="catalogue-name" class="form-label">Name</label>
                                                       <input type="text" class="form-control" id="catalogue-name" >
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-custodian" class="form-label">Custodian</label>
-                                                      <input type="text" class="form-control" id="catalogue-custodian" placeholder="not working" >
+                                                      <label for="catalogue-custodian" class="form-label">Custodian</label>
+                                                      <select type="text" class="form-select" id="catalogue-custodian" >
+                                                      </select>
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-status" class="form-label">Status</label>
+                                                      <label for="catalogue-status" class="form-label">Status</label>
                                                       <select type="text" class="form-control" id="catalogue-status" >
                                                             <option value="">All</option>
                                                             <option value="1">New Draft</option>
@@ -54,17 +55,19 @@
                                     <div class='col-12'>
                                           <div class='row'>
                                                 <div class='col-3'>
-                                                      <label for="publish-lastupdatedfrom" class="form-label">Last Updated From</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedfrom"  placeholder="not working"  >
+                                                      <label for="catalogue-lastupdatedfrom" class="form-label">Last Updated From</label>
+                                                      <input type="text" class="form-control" id="catalogue-lastupdatedfrom"  placeholder="Select Date"  >
 
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-lastupdatedto" class="form-label">Last Updated To</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedto" placeholder="not working"  >
+                                                      <label for="catalogue-lastupdatedto" class="form-label">Last Updated To</label>
+                                                      <input type="text" class="form-control" id="catalogue-lastupdatedto" placeholder="Select Date"  >
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-assignedto" class="form-label">Assigned To</label>
-                                                      <input type="text" class="form-control" id="catalogue-assignedto" placeholder="not working" >
+                                                      <label for="catalogue-assignedto" class="form-label">Assigned To</label>
+                                                      
+                                                      <select type="text" class="form-select" id="catalogue-assignedto" >
+                                                      </select>
                                                 </div>
                                                 <div class='col-3'>
                                                       &nbsp;
@@ -130,12 +133,6 @@
                                     </div>                                    
                               </div>
                         </div>  
-
-
-
-
-
-
 
                         <div class='col-12 pt-2 pb-2 '>
                               <div class='row'>
