@@ -186,7 +186,7 @@ class PublishEntryViewSet(
             published_at = None
             if gpc.published_at:
                 published_at = gpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')
-            geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_name": gpc.workspace.name,"published_at": published_at})
+            geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_id": gpc.workspace.id, "workspace_name": gpc.workspace.name,"published_at": published_at})
 
         # Return Response
         return response.Response(geoserver_list, status=status.HTTP_200_OK)
