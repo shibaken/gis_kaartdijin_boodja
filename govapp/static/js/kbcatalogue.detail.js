@@ -20,16 +20,15 @@ var kbcatalogue_detail = {
             kbcatalogue_detail.show_add_email_notification_modal();
         });
 
-        $('#catalogue-detail-notification-order-by').change(this.refresh_email_notification);
-
-        $('#catalogue-detail-notification-limit').change(this.refresh_email_notification);
+        $('#catalogue-detail-notification-order-by').change(()=>table.refresh(this.get_email_notification));
+        $('#catalogue-detail-notification-limit').change(()=>table.refresh(this.get_email_notification));
 
         var has_edit_access = $('#has_edit_access').val();
         if (has_edit_access == 'True') {
             this.var.has_edit_access = true;
         }
         
-        this.retrieve_noti_types(this.refresh_email_notification);
+        this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
     retrieve_noti_types: function(post_callback){
         $.ajax({
@@ -84,10 +83,6 @@ var kbcatalogue_detail = {
     },
 
     //-- for Email Notification --//
-    refresh_email_notification: function(){
-        common_pagination.var.current_page = 0;
-        kbcatalogue_detail.get_email_notification();
-    },
     get_email_notification: function(params_str){
         if (!params_str){
             params = {
@@ -105,18 +100,20 @@ var kbcatalogue_detail = {
             contentType: 'application/json',
             success: function (response) {
                 // change type number to name
-                for(let i in response.results){
-                    response.results[i].type = kbcatalogue_detail.var.catalogue_email_notification_type[response.results[i].type];
-                }
                 let buttons = {};
                 if(kbcatalogue_detail.var.has_edit_access){
                     buttons={Update:(noti)=>kbcatalogue_detail.show_update_email_notification_modal(noti),
-                            Delete:(noti)=>kbcatalogue_detail.show_delete_email_notification_modal(noti)};
+                        Delete:(noti)=>kbcatalogue_detail.show_delete_email_notification_modal(noti)};
                 }
+
+                for(let i in response.results){
+                    response.results[i].type_str = kbcatalogue_detail.var.catalogue_email_notification_type[response.results[i].type];
+                }
+
                 table.set_rows($('#catalogue-detail-notification-tbody'), response.results, 
-                                columns=[{id:'text'}, {name:'text'}, {type:'text'}, {email:'text'}, {active:'switch'}], 
+                                columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
                                 buttons=buttons);
-                common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, +params.limit, $('#notification-paging-navi'));
+                common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, $('#notification-paging-navi'));
             },
             error: function (error) {
                 alert('Error occured.');
@@ -134,7 +131,7 @@ var kbcatalogue_detail = {
         let active_id = common_entity_modal.add_field(label="Active", type="switch");
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id),
-                                            success_callback=this.refresh_email_notification);
+                                            success_callback=()=>table.refresh(this.get_email_notification));
         common_entity_modal.show();
     },
 
@@ -146,7 +143,7 @@ var kbcatalogue_detail = {
         let active_id = common_entity_modal.add_field(label="Active", type="switch", value=prev.active);
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id, prev.id),
-                                            success_callback=this.refresh_email_notification);
+                                            success_callback=()=>table.refresh(this.get_email_notification));
         common_entity_modal.show();
     },
     write_email_notification: function(success_callback, error_callback, name_id, type_id, email_id, active_id, noti_id){
@@ -194,7 +191,7 @@ var kbcatalogue_detail = {
         common_entity_modal.add_field(label="Active", type="switch", value=target.active);
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.delete_email_notification(success_callback, error_callback, target.id),
-                                            success_callback=this.refresh_email_notification);
+                                            success_callback=()=>table.refresh(this.get_email_notification));
         common_entity_modal.show();
     },
 

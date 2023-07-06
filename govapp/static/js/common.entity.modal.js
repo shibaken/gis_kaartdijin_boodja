@@ -62,6 +62,7 @@ var common_entity_modal = {
             let field = common_entity_modal.maker.make_common_field(label, value, type="text", element="<select>");
             for(let key in option_map)
                 field.append('<option value="'+key+'">'+option_map[key]+'</option>');
+            field.val(value);
             return field;
 
         },

@@ -3,8 +3,8 @@ var common_pagination = {
         max_showon_pages : 9,
         current_page : 0
     },
-    init : function(entry_count, params, get_page, limit, navi){
-        limit = +limit;
+    init : function(entry_count, params, get_page, navi){
+        let limit = +params.limit;
         let total = Math.ceil(entry_count / limit);
         let range = this.make_page_range(this.var.current_page, total, this.var.max_showon_pages);
         let beginning = range.beginning;

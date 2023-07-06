@@ -212,13 +212,12 @@ var kbpublish = {
             kbpublish.show_add_email_notification_modal();
         })
 
-        $('#publish-notification-order-by').change(this.refresh_email_notification);
-
-        $('#publish-notification-limit').change(this.refresh_email_notification);
+        $('#publish-notification-order-by').change(()=>table.refresh(this.get_email_notification));
+        $('#publish-notification-limit').change(()=>table.refresh(this.get_email_notification));
 
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
-        this.retrieve_noti_types(this.refresh_email_notification);
+        this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
     retrieve_noti_types: function(post_callback){
         $.ajax({
@@ -688,7 +687,7 @@ var kbpublish = {
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
 
-                        common_pagination.init(response.count, params, kbpublish.get_publish, +params.limit, $('#paging_navi'));
+                        common_pagination.init(response.count, params, kbpublish.get_publish, $('#paging_navi'));
 
                     } else {
                         $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
@@ -954,6 +953,7 @@ var kbpublish = {
                             html+= "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
+                                html+= "<button class='btn btn-primary btn-sm publish-cddp-update' data-json='"+button_json+"' >Update</button> ";
                                 html+= "<button class='btn btn-danger btn-sm publish-cddp-delete' data-json='"+button_json+"' >Delete</button>";
                             }
                             html+= "</td>";
@@ -965,6 +965,9 @@ var kbpublish = {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_cddp(btndata.id);                                                        
+                            });
+                            $( ".publish-cddp-update" ).click(function() {
+                                kbpublish.show_update_cddp_modal(responsejson[i]);
                             });
                         }
                     } else {
@@ -986,6 +989,57 @@ var kbpublish = {
             },
         });
     },
+    show_update_cddp_modal: function(prev){
+        common_entity_modal.init("Update Cddp Notification", "submit");
+        let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name);
+        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.format, option_map=kbpublish.var.publish_cddp_format);
+        let mode_id = common_entity_modal.add_field(label="Spatial Mode", type="select", value=prev.mode, option_map=kbpublish.var.publish_cddp_mode);
+        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_cddp_frequency);
+        let path_id = common_entity_modal.add_field(label="Path", type="text", value=prev.path);
+
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_cddp(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, prev.id),
+                                            success_callback=this.get_publish_cddp);
+        common_entity_modal.show();
+    },
+    write_cddp: function(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, cddp_id){
+        // get & validation check
+        const name = utils.validate_empty_input('name', $('#'+name_id).val());
+        const format = utils.validate_empty_input('format', $('#'+format_id).val());
+        const mode = utils.validate_empty_input('mode', $('#'+mode_id).val());
+        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
+        const path = utils.validate_empty_input('path', $('#'+path_id).val());
+        
+        // make data body
+        var cddp_data = {
+            name:name,
+            format:format,
+            mode:mode,
+            frequency:frequency,
+            path:path,
+            publish_entry:$('#publish-entry-id')
+        };
+        var url = this.var.publish_save_cddp_url;
+        var method = 'POST';
+        if(cddp_id){
+            delete cddp_data['publish_entry'];
+            url += cddp_id+'/';
+            method = 'PUT';
+        }
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(cddp_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+
     show_add_email_notification_modal: function(){
         common_entity_modal.init("Add New Email Notification", "submit");
         let name_id = common_entity_modal.add_field(label="Name", type="text");
@@ -994,7 +1048,7 @@ var kbpublish = {
         let active_id = common_entity_modal.add_field(label="Active", type="switch");
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id),
-                                            success_callback=this.refresh_email_notification);
+                                            success_callback=()=>table.refresh(this.get_email_notification));
         common_entity_modal.show();
     },
     show_update_email_notification_modal: function(prev){
@@ -1005,7 +1059,7 @@ var kbpublish = {
         let active_id = common_entity_modal.add_field(label="Active", type="switch", value=prev.active);
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id, prev.id),
-                                            success_callback=this.refresh_email_notification);
+                                            success_callback=()=>table.refresh(this.get_email_notification));
         common_entity_modal.show();
     },
     write_email_notification: function(success_callback, error_callback, name_id, type_id, email_id, active_id, noti_id){
@@ -1053,7 +1107,7 @@ var kbpublish = {
         common_entity_modal.add_field(label="Active", type="switch", value=target.active);
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.delete_email_notification(success_callback, error_callback, target.id),
-                                            success_callback=this.refresh_email_notification);
+                                            success_callback=()=>table.refresh(this.get_email_notification));
         common_entity_modal.show();
     },
 
@@ -1066,11 +1120,6 @@ var kbpublish = {
             success: success_callback, 
             error: error_callback
         });
-    },
-
-    refresh_email_notification: function(){
-        common_pagination.var.current_page = 0;
-        kbpublish.get_email_notification();
     },
     get_email_notification: function(params_str) {
         if (!params_str){
@@ -1090,18 +1139,20 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                 // change type number to name
-                for(let i in response.results){
-                    response.results[i].type = kbpublish.var.publish_email_notification_type[response.results[i].type];
-                }
                 let buttons={};
+                for(let i in response.results){
+                    response.results[i].type_str = kbpublish.var.publish_email_notification_type[response.results[i].type];
+                }
+
                 if(kbpublish.var.has_edit_access){
                     buttons = {Update:(noti)=>kbpublish.show_update_email_notification_modal(noti),
-                                Delete:(noti)=>kbpublish.show_delete_email_notification_modal(noti)};
+                               Delete:(noti)=>kbpublish.show_delete_email_notification_modal(noti)};
                 }
+
                 table.set_rows($('#publish-notification-tbody'), response.results, 
-                                columns=[{id:'text'}, {name:'text'}, {type:'text'}, {email:'text'}, {active:'switch'}], 
+                                columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
                                 buttons=buttons);
-                common_pagination.init(response.count, params, kbpublish.get_email_notification, +params.limit, $('#notification-paging-navi'));
+                common_pagination.init(response.count, params, kbpublish.get_email_notification, $('#notification-paging-navi'));
             },
             error: function (error) {
                 alert('Error occured.');

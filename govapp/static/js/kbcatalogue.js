@@ -267,7 +267,7 @@ var kbcatalogue = {
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
 
-                        common_pagination.init(response.count, params, kbcatalogue.get_catalogue, +params.limit, $('#paging_navi'));
+                        common_pagination.init(response.count, params, kbcatalogue.get_catalogue, $('#paging_navi'));
 
                     } else {
                         $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
