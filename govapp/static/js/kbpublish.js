@@ -674,7 +674,15 @@ var kbpublish = {
                             html+= "<tr>";
                             html+= " <td>PE"+response.results[i].id+"</td>";
                             html+= " <td>"+response.results[i].name+"</td>";
-                            html+= " <td>NONE</td>";
+
+
+                            html+= " <td>";
+                            if (response.results[i].custodian_name != null) { 
+                                html+= response.results[i].custodian_name;
+                            } else {
+                                html+= "";
+                            }
+                            html+= "</td>";                            
                             html+= " <td>"+kbpublish.var.publish_status[response.results[i].status]+"</td>";
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";

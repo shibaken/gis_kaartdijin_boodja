@@ -183,8 +183,8 @@ class PublishEntryViewSet(
         geoserver_publish_channel = models.publish_channels.GeoServerPublishChannel.objects.filter(publish_entry=publish_entry)
         geoserver_list = []
         for gpc in geoserver_publish_channel:
-            published_at = None;
-            if published_at:
+            published_at = None
+            if gpc.published_at:
                 published_at = gpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')
             geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_name": gpc.workspace.name,"published_at": published_at})
 
@@ -209,10 +209,9 @@ class PublishEntryViewSet(
         cddp_publish_channel = models.publish_channels.CDDPPublishChannel.objects.filter(publish_entry=publish_entry)
         cddp_list = []
         for cpc in cddp_publish_channel:
-            print (cpc)
-
             published_at = None
-            if published_at:
+            
+            if cpc.published_at:
                  published_at = cpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')                 
             cddp_list.append({"id": cpc.id, "name":cpc.name, "format": cpc.format, "path": cpc.path, "mode": cpc.mode, "frequency": cpc.frequency, "published_at": published_at})
 
