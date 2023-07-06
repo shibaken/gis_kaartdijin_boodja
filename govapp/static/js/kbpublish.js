@@ -19,6 +19,8 @@ var kbpublish = {
             publish_geoserver_frequency: {
                 1: "OnChange"
             },
+            publish_workspace_list: [],
+            publish_workspace_map: {},
             has_edit_access: false,
             publish_cddp_format: {
                 1: "Geopackage",
@@ -214,6 +216,12 @@ var kbpublish = {
 
         $('#publish-notification-order-by').change(()=>table.refresh(this.get_email_notification));
         $('#publish-notification-limit').change(()=>table.refresh(this.get_email_notification));
+
+        this.var.publish_workspace_list = JSON.parse($('#publish_workspace_list').data('list').replaceAll("'", '"'));
+        for(let i in this.var.publish_workspace_list){
+            let entry = this.var.publish_workspace_list[i];
+            this.var.publish_workspace_map[entry.id] = entry.name;
+        }
 
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
@@ -888,6 +896,7 @@ var kbpublish = {
                             html+= "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
+                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='"+button_json+"' >Update</button> ";
                                 html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"' >Delete</button>";
                             }
                             html+= "</td>";
@@ -899,6 +908,9 @@ var kbpublish = {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
+                            });
+                            $( ".publish-geoserver-update" ).click(function() {
+                                kbpublish.show_update_geoserver_modal(responsejson[i]);
                             });
                         }
                     } else {
@@ -920,6 +932,54 @@ var kbpublish = {
             },
         });
     },
+    show_update_geoserver_modal: function(prev){
+        common_entity_modal.init("Update Geoserver Notification", "submit");
+        common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
+        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.format, option_map=kbpublish.var.publish_geoserver_format);
+        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
+        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_name, option_map=kbpublish.var.publish_workspace_map);
+        
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_cddp(success_callback, error_callback, format_id, frequency_id, workspace_id, prev.id),
+                                            success_callback=this.get_publish_geoservers);
+        common_entity_modal.show();
+    },
+    write_geoserver: function(success_callback, error_callback, format_id, frequency_id, workspace_id, geoserver_id){
+        // get & validation check
+        const format = utils.validate_empty_input('format', $('#'+format_id).val());
+        const mode = utils.validate_empty_input('mode', $('#'+mode_id).val());
+        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
+        const workspace = utils.validate_empty_input('workspace', $('#'+workspace_id).val());
+        
+        // make data body
+        var geoserver_data = {
+            format:format,
+            mode:mode,
+            frequency:frequency,
+            workspace:workspace,
+            publish_entry:$('#publish-entry-id')
+        };
+        var url = this.var.publish_save_geoserver_url;
+        var method = 'POST';
+        if(geoserver_id){
+            delete geoserver_data['publish_entry'];
+            url += geoserver_id+'/';
+            method = 'PUT';
+        }
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(geoserver_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+
     get_publish_cddp: function() {
         var publish_id = $('#publish_id').val();
         $.ajax({
