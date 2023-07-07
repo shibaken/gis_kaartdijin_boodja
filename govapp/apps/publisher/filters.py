@@ -42,12 +42,17 @@ class PublishEntryFilter(filters.FilterSet):
     class Meta:
         """Publish Entry Filter Metadata."""
         model = models.publish_entries.PublishEntry
-        fields = {"id": ["exact", "in"], "assigned_to": ["exact"], "status": ["exact"], "catalogue_entry__name": ["icontains", "contains"], "description": ["icontains", "contains"]  }
+        fields = {"id": ["exact", "in"], "assigned_to": ["exact"], "status": ["exact"], 
+                  "catalogue_entry__name": ["icontains", "contains"], 
+                  "description": ["icontains", "contains"], 
+                  "catalogue_entry__custodian__name": ["icontains", "contains"]  }
         #fields = {"name": ['contains'] }
 
 
 class EmailNotificationFilter(filters.FilterSet):
     """Email Notification Filter."""
+    order_by = filters.OrderingFilter(fields=("id", "name", "type", "email", "active"))
+    
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification

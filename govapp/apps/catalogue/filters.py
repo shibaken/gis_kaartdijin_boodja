@@ -70,7 +70,7 @@ class LayerSubmissionFilter(filters.FilterSet):
     class Meta:
         """Layer Submission Filter Metadata."""
         model = models.layer_submissions.LayerSubmission
-        fields = ("status", "submitted", "is_active")
+        fields = {"status": ["exact"], "catalogue_entry__name":["icontains", "contains"]}
 
 
 class LayerSubscriptionFilter(filters.FilterSet):
