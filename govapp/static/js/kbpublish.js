@@ -118,11 +118,11 @@ var kbpublish = {
         });
         $( "#publish-new-btn" ).click(function() {
             common_entity_modal.init("New Publish", "submit");
-            let name_id = common_entity_modal.add_field(label="Name", type="text");
+            // let name_id = common_entity_modal.add_field(label="Name", type="text");
             let catalogue_entry_id = common_entity_modal.add_field(label="Catalogue Entry", type="select", value=null, option_map=kbpublish.var.catalogue_entry_map);
             let description_id = common_entity_modal.add_field(label="Description", type="text");
             common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                                kbpublish.create_publish(success_callback, error_callback, name_id, catalogue_entry_id, description_id),
+                                                kbpublish.create_publish(success_callback, error_callback, catalogue_entry_id, description_id),
                                                 success_callback=kbpublish.get_publish);
             common_entity_modal.show();
         });           
@@ -559,16 +559,16 @@ var kbpublish = {
 
 
     },    
-    create_publish: function(success_callback, error_callback, name_id, publish_entry_id, description_id){
+    create_publish: function(success_callback, error_callback, catalogue_entry_id, description_id){
         // get & validation check
-        const name = utils.validate_empty_input('name', $('#'+name_id).val());
-        const publish_entry = utils.validate_empty_input('publish_entry', $('#'+publish_entry_id).val());
+        // const name = utils.validate_empty_input('name', $('#'+name_id).val());
+        const catalogue_entry = utils.validate_empty_input('catalogue_entry', $('#'+catalogue_entry_id).val());
         const description = utils.validate_empty_input('description', $('#'+description_id).val());
         
         // make data body
         var publish_data = {
-            name:name,
-            publish_entry:publish_entry,
+            // name:name,
+            catalogue_entry:catalogue_entry,
             description:description,
         };
 
