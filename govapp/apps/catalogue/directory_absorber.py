@@ -68,7 +68,7 @@ class Absorber:
         # # Construct Reader
         reader = readers.reader.FileReader(pathlib_storage_path)
 
-        result = {'total':sum(1 for _ in reader.layers()), 'success':[], 'fail':[]}
+        result = {'total':reader.layer_count(), 'success':[], 'fail':[]}
         # Loop through layers
         for layer in reader.layers():
             # Log

@@ -2,6 +2,7 @@
 
 
 # Third-Party
+from datetime import datetime
 from django import shortcuts
 from django.contrib import auth
 from drf_spectacular import utils as drf_utils
@@ -51,6 +52,24 @@ class PublishEntryViewSet(
     search_fields = ["description", "catalogue_entry__name"]
     permission_classes = [permissions.IsPublishEntryPermissions]
 
+    def list(self, request, *args, **kwargs):
+        """Api to return a list of publish entry
+            Convert date format of updated_at to %d %b %Y %H:%M %p
+
+        Args:
+            request (_type_): request object passed by Django framework
+
+        Returns:
+            response.Response: a full list of publish entry
+        """
+        response = super().list(request, *args, **kwargs)
+        for result in response.data.get('results'):
+            if result.get('updated_at'):
+                date_obj = datetime.strptime(result.get('updated_at'), "%Y-%m-%dT%H:%M:%S.%f%z")
+                result['updated_at'] = str(date_obj.astimezone().strftime('%d %b %Y %H:%M %p'))                 
+                 
+        return response
+    
     @drf_utils.extend_schema(
         parameters=[drf_utils.OpenApiParameter("symbology_only", type=bool)],
         request=None,
@@ -186,7 +205,7 @@ class PublishEntryViewSet(
             published_at = None
             if gpc.published_at:
                 published_at = gpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')
-            geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_name": gpc.workspace.name,"published_at": published_at})
+            geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_id": gpc.workspace.id, "workspace_name": gpc.workspace.name,"published_at": published_at})
 
         # Return Response
         return response.Response(geoserver_list, status=status.HTTP_200_OK)
@@ -213,7 +232,7 @@ class PublishEntryViewSet(
             
             if cpc.published_at:
                  published_at = cpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')                 
-            cddp_list.append({"id": cpc.id, "format": cpc.format, "path": cpc.path, "mode": cpc.mode, "frequency": cpc.frequency, "published_at": published_at})
+            cddp_list.append({"id": cpc.id, "name":cpc.name, "format": cpc.format, "path": cpc.path, "mode": cpc.mode, "frequency": cpc.frequency, "published_at": published_at})
 
         # Return Response
         return response.Response(cddp_list, status=status.HTTP_200_OK)

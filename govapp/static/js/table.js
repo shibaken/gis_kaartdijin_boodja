@@ -51,5 +51,9 @@ var table={
             td.append(" ")
         }
         return td;
+    },
+    refresh: function(draw_table_callback){
+        common_pagination.var.current_page = 0;
+        draw_table_callback();
     }
 }

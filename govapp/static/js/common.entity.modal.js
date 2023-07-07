@@ -19,58 +19,60 @@ var common_entity_modal = {
         // remove all previous fields
         $('#common-entity-modal-content').empty();
     },
-    add_field: function(label, type="text", value=null, option_map={}){
+    add_field: function(label, type="text", value=null, option_map={}, disabled=false){
         let contents = $('#common-entity-modal-content');
         
         //label
         contents.append($('<label>').text(label));
         
         //field
-        let field = this.maker[type](label, value, option_map);
+        disabled = common_entity_modal.var.type == "delete" ? true : disabled;
+        let field = this.maker[type](label, value, disabled, option_map);
         contents.append(field);
         // return field.attr("id");
         return this.get_id(field);
     },
     maker : {
-        make_common_field : (label, value, type="text", element="<input>") => {
+        make_common_field : (label, value, disabled, type="text", element="<input>") => {
             let field = $(element);
             field.attr("type", type);
             field.attr("class", "form-control");
             field.attr("id", "common-entity-modal-"+label.replace(' ', '-').toLowerCase());
             if(value != null) 
                 field.val(value);
-            if (common_entity_modal.var.type == "delete") 
+            if (disabled) 
                 field.prop("disabled", true);
             return field;
         },
-        text : (label, value) => {
+        text : (label, value, disabled) => {
             value = value ? value : "";
-            return common_entity_modal.maker.make_common_field(label, value=value);
+            return common_entity_modal.maker.make_common_field(label, value, disabled);
         },
-        number : (label, value) => {
+        number : (label, value, disabled) => {
             value = value ? value : "";
-            let field = common_entity_modal.maker.make_common_field(label, value=value, type="number");
+            let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="number");
             field.on('input',function(){
                 $(this).val($(this).val().replace(/\D/g, ""));
             });
             return field;
         },
-        email : (label, value) => {
-            return common_entity_modal.maker.make_common_field(label, value=value, type="email");
+        email : (label, value, disabled) => {
+            return common_entity_modal.maker.make_common_field(label, value=value, disabled, type="email");
         },
-        select : (label, value, option_map) => {
-            let field = common_entity_modal.maker.make_common_field(label, value, type="text", element="<select>");
+        select : (label, value, disabled, option_map) => {
+            let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="text", element="<select>");
             for(let key in option_map)
                 field.append('<option value="'+key+'">'+option_map[key]+'</option>');
+            field.val(value);
             return field;
 
         },
-        switch : (label, value) => {
+        switch : (label, value, disabled) => {
             let div = $('<div>');
             div.attr("class", "form-check form-switch");
 
             value = value != null ? value : true;
-            let field = common_entity_modal.maker.make_common_field(label, value, type="checkbox", element="<input>");
+            let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="checkbox", element="<input>");
             field.attr("role", "switch");
             field.attr("class", "form-check-input");
             field.prop('checked', value);

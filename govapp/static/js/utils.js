@@ -30,5 +30,21 @@ var utils={
             throw new Error(msg);
         }
         return val;
-    }
+    },
+   convert_date_format: function(date_str, format, hh, mm, ss){
+        if(!date_str) return null;
+        // make a moment object by original format
+        let original_format = format.toUpperCase()+'-hh:mm:ss';
+        const original_datetime = moment(date_str, original_format);
+        // convert original to target fromat(default:ISO)
+        let target_format = 'YYYY-MM-DDThh:mm:ss';  //ISO
+        let converted_str = original_datetime.format(target_format);
+        // set time
+        let date = new Date(converted_str);
+        date.setHours(hh);
+        date.setMinutes(mm);
+        date.setSeconds(ss);
+
+        return date.toISOString();
+    },
 }

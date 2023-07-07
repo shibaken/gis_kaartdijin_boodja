@@ -305,7 +305,7 @@
                                                                   <th>Spatial Mode</th>
                                                                   <th>Frequency Type</th>
                                                                   <th>Path</th>
-                                                                  <th>Frequency Date/time</th>                                      
+                                                                  <th>Publish Date/time</th>                                      
                                                                   <th>Action</th>
                                                             </tr>
                                                             </thead>
@@ -434,7 +434,9 @@
                   </div>
             </div>
             
+            <input type="hidden" id="catalogue-name-id" name="catalogue_name" value="{{ publish_entry_obj.catalogue_entry.name }}">
             <input type="hidden" id="publish-entry-id" name="publish_entry_id" value="{{ publish_id }}">
+            <div id="publish_workspace_list" data-list="{{ publish_workspace_list }}"></div>
 
             <script>
                   kbpublish.init_publish_item();

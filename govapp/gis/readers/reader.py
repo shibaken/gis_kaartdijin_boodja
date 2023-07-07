@@ -71,3 +71,9 @@ class FileReader:
 
             # Yield
             yield reader
+            
+    def layer_count(self) -> int:
+        return utils.raise_if_none(
+            value=self.datasource.GetLayerCount(),
+            message=f"Could not determine number of layers in file '{self.file}'",
+        )
