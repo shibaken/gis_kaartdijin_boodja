@@ -623,30 +623,14 @@ var kbpublish = {
 
     },
     get_publish: function(params_str) {
-        let convert_date_format=(date_str, hh, mm, ss)=>{
-            if(!date_str) return null;
-            // make a moment object by original format
-            let original_format = this.var.publish_date_format.toUpperCase()+'-hh:mm:ss';
-            const original_datetime = moment(date_str, original_format);
-            // convert original to target fromat(default:ISO)
-            let target_format = 'YYYY-MM-DDThh:mm:ss';  //ISO
-            let converted_str = original_datetime.format(target_format);
-            // set time
-            let date = new Date(converted_str);
-            date.setHours(hh);
-            date.setMinutes(mm);
-            date.setSeconds(ss);
-
-            return date.toISOString();
-        };
         params = {
             catalogue_entry__name__icontains:        $('#publish-name').val(),
             status:                 $('#publish-status').val(),
             description__icontains: $('#publish-description').val(),
             catalogue_entry__custodian__name__icontains: $('#publish-custodian').val(),
             assigned_to:            $('#publish-assignedto').val(),
-            updated_after:          convert_date_format($('#publish-lastupdatedfrom').val(), hh="00", mm="00", ss="00"),
-            updated_before:         convert_date_format($('#publish-lastupdatedto').val(), hh="23", mm="59", ss="59"),
+            updated_after:          utils.convert_date_format($('#publish-lastupdatedfrom').val(), kbpublish.var.publish_date_format, hh="00", mm="00", ss="00"),
+            updated_before:         utils.convert_date_format($('#publish-lastupdatedto').val(), kbpublish.var.publish_date_format, hh="23", mm="59", ss="59"),
             id:                     $('#publish-number').val().replace("PE", ""),
             limit:                  $('#publish-limit').val(),
             order_by:               $('#publish-order-by').val()

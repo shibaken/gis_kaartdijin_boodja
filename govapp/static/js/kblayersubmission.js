@@ -2,14 +2,15 @@ var kblayersubmission = {
     var: {
          "layersubmission_data_url": "/api/catalogue/layers/submissions/",
          "layersubmission_symbology_url": "/api/catalogue/layers/submissions/",
+         layersubmission_date_format: "dd/mm/yyyy"
     },
     init_dashboard: function() { 
 
-        $('#layer-submission-submitted-from').datepicker({ dateFormat: 'yyyy-mm-dd', 
-            format: 'dd/mm/yyyy',
+        $('#layer-submission-submitted-from').datepicker({ dateFormat: this.var.layersubmission_date_format, 
+            format: this.var.layersubmission_date_format,
         });
-        $('#layer-submission-submitted-to').datepicker({  dateFormat: 'yyyy-mm-dd', 
-                format: 'dd/mm/yyyy',
+        $('#layer-submission-submitted-to').datepicker({  dateFormat: this.var.layersubmission_date_format, 
+                format: this.var.layersubmission_date_format,
         });
 
 
@@ -27,14 +28,18 @@ var kblayersubmission = {
         $( "#layer-submission-status" ).change(function() {
             kblayersubmission.get_layer_submissions();
         });
+
         kblayersubmission.get_layer_submissions();
     },    
     get_layer_submissions: function(params_str) {
         console.log("Reload layer submission page.");
         params = {
-            status:        $('#layer-submission-status').val(),
-            limit:         $('#layer-submission-limit').val(),
-            order_by:      $('#layer-submission-order-by').val(),
+            status:                 $('#layer-submission-status').val(),
+            limit:                  $('#layer-submission-limit').val(),
+            order_by:               $('#layer-submission-order-by').val(),
+            submitted_after:        utils.convert_date_format($('#layer-submission-submitted-from').val(), kblayersubmission.var.layersubmission_date_format, hh="00", mm="00", ss="00"),
+            submitted_before:       utils.convert_date_format($('#layer-submission-submitted-to').val(), kblayersubmission.var.layersubmission_date_format,hh="23", mm="59", ss="59"),
+            catalogue_entry__name__icontains:  $('#layer-submission-name').val(),
         }
 
         if (!params_str){

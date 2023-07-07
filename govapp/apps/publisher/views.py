@@ -2,6 +2,7 @@
 
 
 # Third-Party
+from datetime import datetime
 from django import shortcuts
 from django.contrib import auth
 from drf_spectacular import utils as drf_utils
@@ -51,6 +52,24 @@ class PublishEntryViewSet(
     search_fields = ["description", "catalogue_entry__name"]
     permission_classes = [permissions.IsPublishEntryPermissions]
 
+    def list(self, request, *args, **kwargs):
+        """Api to return a list of publish entry
+            Convert date format of updated_at to %d %b %Y %H:%M %p
+
+        Args:
+            request (_type_): request object passed by Django framework
+
+        Returns:
+            response.Response: a full list of publish entry
+        """
+        response = super().list(request, *args, **kwargs)
+        for result in response.data.get('results'):
+            if result.get('updated_at'):
+                date_obj = datetime.strptime(result.get('updated_at'), "%Y-%m-%dT%H:%M:%S.%f%z")
+                result['updated_at'] = str(date_obj.astimezone().strftime('%d %b %Y %H:%M %p'))                 
+                 
+        return response
+    
     @drf_utils.extend_schema(
         parameters=[drf_utils.OpenApiParameter("symbology_only", type=bool)],
         request=None,
