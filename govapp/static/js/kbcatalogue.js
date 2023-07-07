@@ -23,6 +23,7 @@ var kbcatalogue = {
         $('#catalogue-custodian').select2({
             placeholder: 'Select an option',
             minimumInputLength: 2,
+            allowClear: true,
             width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
             theme: 'bootstrap-5',
             ajax: {
@@ -54,6 +55,7 @@ var kbcatalogue = {
         $('#catalogue-assignedto').select2({
             placeholder: 'Select an option',
             minimumInputLength: 2,
+            allowClear: true,
             width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
             theme: 'bootstrap-5',
             ajax: {
