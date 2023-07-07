@@ -6,6 +6,8 @@ var kbpublish = {
             publish_save_geoserver_url: "/api/publish/channels/geoserver/",
             publish_data_cddp_url: "/api/publish/channels/cddp/",                       
             publish_save_cddp_url: "/api/publish/channels/cddp/",
+            publish_email_notification_url: "/api/publish/notifications/emails/",
+            publish_email_notification_type_url: "/api/publish/notifications/emails/type/",
             publish_status: {
                 1: "Locked",
                 2: "Unlocked"
@@ -17,6 +19,8 @@ var kbpublish = {
             publish_geoserver_frequency: {
                 1: "OnChange"
             },
+            publish_workspace_list: [],
+            publish_workspace_map: {},
             has_edit_access: false,
             publish_cddp_format: {
                 1: "Geopackage",
@@ -33,6 +37,7 @@ var kbpublish = {
             },
             catalogue_entry_list: null,
             catalogue_entry_map: {},
+            publish_date_format: "dd/mm/yyyy"
     },
     pagination: kbpublish_pagination,
     init_dashboard: function() {    
@@ -101,11 +106,11 @@ var kbpublish = {
         });
 
 
-        $('#publish-lastupdatedfrom').datepicker({ dateFormat: 'yyyy-mm-dd', 
-            format: 'dd/mm/yyyy',
+        $('#publish-lastupdatedfrom').datepicker({ dateFormat: this.var.publish_date_format, 
+            format: this.var.publish_date_format,
         });
-        $('#publish-lastupdatedto').datepicker({  dateFormat: 'yyyy-mm-dd', 
-                format: 'dd/mm/yyyy',
+        $('#publish-lastupdatedto').datepicker({  dateFormat: this.var.publish_date_format, 
+                format: this.var.publish_date_format,
         });
 
 
@@ -115,11 +120,11 @@ var kbpublish = {
         });
         $( "#publish-new-btn" ).click(function() {
             common_entity_modal.init("New Publish", "submit");
-            let name_id = common_entity_modal.add_field(label="Name", type="text");
+            // let name_id = common_entity_modal.add_field(label="Name", type="text");
             let catalogue_entry_id = common_entity_modal.add_field(label="Catalogue Entry", type="select", value=null, option_map=kbpublish.var.catalogue_entry_map);
             let description_id = common_entity_modal.add_field(label="Description", type="text");
             common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                                kbpublish.create_publish(success_callback, error_callback, name_id, catalogue_entry_id, description_id),
+                                                kbpublish.create_publish(success_callback, error_callback, catalogue_entry_id, description_id),
                                                 success_callback=kbpublish.get_publish);
             common_entity_modal.show();
         });           
@@ -203,14 +208,47 @@ var kbpublish = {
             kbpublish.create_publish_cddp();
         });
         
-
         var has_edit_access = $('#has_edit_access').val();
         if (has_edit_access == 'True') {
             kbpublish.var.has_edit_access = true;
         }
 
+        $('#publish-btn-add-notification').click(function(){
+            kbpublish.show_add_email_notification_modal();
+        })
+
+        $('#publish-notification-order-by').change(()=>table.refresh(this.get_email_notification));
+        $('#publish-notification-limit').change(()=>table.refresh(this.get_email_notification));
+
+        this.var.publish_workspace_list = JSON.parse($('#publish_workspace_list').data('list').replaceAll("'", '"'));
+        for(let i in this.var.publish_workspace_list){
+            let entry = this.var.publish_workspace_list[i];
+            this.var.publish_workspace_map[entry.id] = entry.name;
+        }
+
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
+        this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
+    },
+    retrieve_noti_types: function(post_callback){
+        $.ajax({
+            url: kbpublish.var.publish_email_notification_type_url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: (response) => {
+                var noti_type = {}
+                for(let i in response.results){
+                    const type = response.results[i];
+                    noti_type[type.id] = type.label;
+                }
+                kbpublish.var.publish_email_notification_type = noti_type;
+                post_callback();
+            },
+            error: (error)=> {
+                alert("An error occured while getting email notification type.");
+                console.error(error);
+            },
+        });
     },
     search_accounts_for_editor: function() { 
         
@@ -523,15 +561,15 @@ var kbpublish = {
 
 
     },    
-    create_publish: function(success_callback, error_callback, name_id, catalogue_entry_id, description_id){
+    create_publish: function(success_callback, error_callback, catalogue_entry_id, description_id){
         // get & validation check
-        const name = utils.validate_empty_input('name', $('#'+name_id).val());
+        // const name = utils.validate_empty_input('name', $('#'+name_id).val());
         const catalogue_entry = utils.validate_empty_input('catalogue_entry', $('#'+catalogue_entry_id).val());
         const description = utils.validate_empty_input('description', $('#'+description_id).val());
         
         // make data body
         var publish_data = {
-            name:name,
+            // name:name,
             catalogue_entry:catalogue_entry,
             description:description,
         };
@@ -591,6 +629,10 @@ var kbpublish = {
             catalogue_entry__name__icontains:        $('#publish-name').val(),
             status:                 $('#publish-status').val(),
             description__icontains: $('#publish-description').val(),
+            catalogue_entry__custodian__name__icontains: $('#publish-custodian').val(),
+            assigned_to:            $('#publish-assignedto').val(),
+            updated_after:          utils.convert_date_format($('#publish-lastupdatedfrom').val(), kbpublish.var.publish_date_format, hh="00", mm="00", ss="00"),
+            updated_before:         utils.convert_date_format($('#publish-lastupdatedto').val(), kbpublish.var.publish_date_format, hh="23", mm="59", ss="59"),
             id:                     $('#publish-number').val().replace("PE", ""),
             limit:                  $('#publish-limit').val(),
             order_by:               $('#publish-order-by').val()
@@ -668,7 +710,7 @@ var kbpublish = {
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
 
-                        common_pagination.init(response.count, params, kbpublish.get_publish, +params.limit, $('#paging_navi'));
+                        common_pagination.init(response.count, params, kbpublish.get_publish, $('#paging_navi'));
 
                     } else {
                         $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
@@ -869,6 +911,7 @@ var kbpublish = {
                             html+= "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
+                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='"+button_json+"' >Update</button> ";
                                 html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"' >Delete</button>";
                             }
                             html+= "</td>";
@@ -880,6 +923,9 @@ var kbpublish = {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
+                            });
+                            $( ".publish-geoserver-update" ).click(function() {
+                                kbpublish.show_update_geoserver_modal(responsejson[i]);
                             });
                         }
                     } else {
@@ -901,6 +947,52 @@ var kbpublish = {
             },
         });
     },
+    show_update_geoserver_modal: function(prev){
+        common_entity_modal.init("Update Geoserver Notification", "submit");
+        common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
+        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
+        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
+        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
+        
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_geoserver(success_callback, error_callback, format_id, frequency_id, workspace_id, prev.id),
+                                            success_callback=this.get_publish_geoservers);
+        common_entity_modal.show();
+    },
+    write_geoserver: function(success_callback, error_callback, format_id, frequency_id, workspace_id, geoserver_id){
+        // get & validation check
+        const mode = utils.validate_empty_input('format', $('#'+format_id).val());
+        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
+        const workspace = utils.validate_empty_input('workspace', $('#'+workspace_id).val());
+        
+        // make data body
+        var geoserver_data = {
+            mode:mode,
+            frequency:frequency,
+            workspace:workspace,
+            publish_entry:$('#publish-entry-id')
+        };
+        var url = this.var.publish_save_geoserver_url;
+        var method = 'POST';
+        if(geoserver_id){
+            delete geoserver_data['publish_entry'];
+            url += geoserver_id+'/';
+            method = 'PUT';
+        }
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(geoserver_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+
     get_publish_cddp: function() {
         var publish_id = $('#publish_id').val();
         $.ajax({
@@ -934,6 +1026,7 @@ var kbpublish = {
                             html+= "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
+                                html+= "<button class='btn btn-primary btn-sm publish-cddp-update' data-json='"+button_json+"' >Update</button> ";
                                 html+= "<button class='btn btn-danger btn-sm publish-cddp-delete' data-json='"+button_json+"' >Delete</button>";
                             }
                             html+= "</td>";
@@ -945,6 +1038,9 @@ var kbpublish = {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_cddp(btndata.id);                                                        
+                            });
+                            $( ".publish-cddp-update" ).click(function() {
+                                kbpublish.show_update_cddp_modal(responsejson[i]);
                             });
                         }
                     } else {
@@ -966,6 +1062,177 @@ var kbpublish = {
             },
         });
     },
+    show_update_cddp_modal: function(prev){
+        common_entity_modal.init("Update Cddp Notification", "submit");
+        let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name);
+        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.format, option_map=kbpublish.var.publish_cddp_format);
+        let mode_id = common_entity_modal.add_field(label="Spatial Mode", type="select", value=prev.mode, option_map=kbpublish.var.publish_cddp_mode);
+        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_cddp_frequency);
+        let path_id = common_entity_modal.add_field(label="Path", type="text", value=prev.path);
+
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_cddp(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, prev.id),
+                                            success_callback=this.get_publish_cddp);
+        common_entity_modal.show();
+    },
+    write_cddp: function(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, cddp_id){
+        // get & validation check
+        const name = utils.validate_empty_input('name', $('#'+name_id).val());
+        const format = utils.validate_empty_input('format', $('#'+format_id).val());
+        const mode = utils.validate_empty_input('mode', $('#'+mode_id).val());
+        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
+        const path = utils.validate_empty_input('path', $('#'+path_id).val());
+        
+        // make data body
+        var cddp_data = {
+            name:name,
+            format:format,
+            mode:mode,
+            frequency:frequency,
+            path:path,
+            publish_entry:$('#publish-entry-id')
+        };
+        var url = this.var.publish_save_cddp_url;
+        var method = 'POST';
+        if(cddp_id){
+            delete cddp_data['publish_entry'];
+            url += cddp_id+'/';
+            method = 'PUT';
+        }
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(cddp_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+
+    show_add_email_notification_modal: function(){
+        common_entity_modal.init("Add New Email Notification", "submit");
+        let name_id = common_entity_modal.add_field(label="Name", type="text");
+        let type_id = common_entity_modal.add_field(label="Type", type="select", value=null, option_map=this.var.publish_email_notification_type);
+        let email_id = common_entity_modal.add_field(label="Email", type="email");
+        let active_id = common_entity_modal.add_field(label="Active", type="switch");
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id),
+                                            success_callback=()=>table.refresh(this.get_email_notification));
+        common_entity_modal.show();
+    },
+    show_update_email_notification_modal: function(prev){
+        common_entity_modal.init("Update Email Notification", "submit");
+        let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name);
+        let type_id = common_entity_modal.add_field(label="Type", type="select", value=prev.type, option_map=this.var.publish_email_notification_type);
+        let email_id = common_entity_modal.add_field(label="Email", type="email", value=prev.email);
+        let active_id = common_entity_modal.add_field(label="Active", type="switch", value=prev.active);
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id, prev.id),
+                                            success_callback=()=>table.refresh(this.get_email_notification));
+        common_entity_modal.show();
+    },
+    write_email_notification: function(success_callback, error_callback, name_id, type_id, email_id, active_id, noti_id){
+        // get & validation check
+        const name = utils.validate_empty_input('name', $('#'+name_id).val());
+        const type = utils.validate_empty_input('type', $('#'+type_id).val());
+        const email = utils.validate_empty_input('email', $('#'+email_id).val());
+        utils.validate_email(email);
+        const active = $('#'+active_id).prop('checked');
+        
+        // make data body
+        var email_noti_data = {
+            name:name,
+            type:type,
+            email:email,
+            active:active,
+            publish_entry:$('#publish-entry-id').val()
+        };
+        var url = this.var.publish_email_notification_url;
+        var method = 'POST';
+        if(noti_id){
+            delete email_noti_data['publish_entry'];
+            url += noti_id+'/';
+            method = 'PUT';
+        }
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(email_noti_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+
+    show_delete_email_notification_modal: function(target){
+        common_entity_modal.init("Delte Email Notification", "delete");
+        common_entity_modal.add_field(label="Name", type="text", value=target.name);
+        common_entity_modal.add_field(label="Type", type="select", value=target.type, option_map=this.var.publish_email_notification_type);
+        common_entity_modal.add_field(label="Email", type="email", value=target.email);
+        common_entity_modal.add_field(label="Active", type="switch", value=target.active);
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.delete_email_notification(success_callback, error_callback, target.id),
+                                            success_callback=()=>table.refresh(this.get_email_notification));
+        common_entity_modal.show();
+    },
+
+    delete_email_notification: function(success_callback, error_callback, noti_id){
+        $.ajax({
+            url: kbpublish.var.publish_email_notification_url+noti_id+"/",
+            method: 'DELETE',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: success_callback, 
+            error: error_callback
+        });
+    },
+    get_email_notification: function(params_str) {
+        if (!params_str){
+            params = {
+                publish_id:     $('#publish-entry_id').val(),
+                limit:          $('#publish-notification-limit').val(),
+                order_by:       $('#publish-notification-order-by').val()
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+
+        $.ajax({
+            url: kbpublish.var.publish_email_notification_url+"?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                // change type number to name
+                let buttons={};
+                for(let i in response.results){
+                    response.results[i].type_str = kbpublish.var.publish_email_notification_type[response.results[i].type];
+                }
+
+                if(kbpublish.var.has_edit_access){
+                    buttons = {Update:(noti)=>kbpublish.show_update_email_notification_modal(noti),
+                               Delete:(noti)=>kbpublish.show_delete_email_notification_modal(noti)};
+                }
+
+                table.set_rows($('#publish-notification-tbody'), response.results, 
+                                columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
+                                buttons=buttons);
+                common_pagination.init(response.count, params, kbpublish.get_email_notification, $('#notification-paging-navi'));
+            },
+            error: function (error) {
+                alert('Error occured.');
+                console.log('Error occured.'+ error);
+            },
+        });
+    }
 // create_publish: function() {
     //     var publishname = $('#new-publish-name').val();
     //     var publishcatalogueentry_id = $('#new-catalogue-entry').val();

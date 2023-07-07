@@ -45,10 +45,25 @@
                                                       <label for="layer-submission-submitted-to" class="form-label">Submitted To</label>
                                                       <input type="text" class="form-control" id="layer-submission-submitted-to" placeholder="Select Date"  >
                                                 </div>
+                                          </div>
+                                          <div class='row'>
+                                                <div class='col-3'>
+                                                      <label for="layer-submission-name" class="form-label">Name</label>
+                                                      <input type="text" class="form-control" id="layer-submission-name">
+                                                </div>
 
                                                 <div class='col-3'>                                                
                                                       &nbsp;
                                                 </div>
+
+                                                <div class='col-3'>                                                
+                                                      &nbsp;
+                                                </div>
+
+                                                <div class='col-3 p-4'>
+                                                <button class="btn btn-primary btn-sm" aria-current="page" id='layer-submission-filter-btn'>Filter</button>
+                                                &nbsp;
+                                          </div>
                                           </div>
                                     </div>
                                     <div class='col-12'>
@@ -135,10 +150,8 @@
                                                                   <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="layer-submission-order-by">
                                                                         <option value="id">ID</option>
                                                                         <option value="name">Name</option>
+                                                                        <option value="submitted_at">Submitted date</option>                                                                        
                                                                         <option value="status">Status</option>
-                                                                        <option value="updated_at">Last Updated</option>                                                                        
-                                                                        <option value="assigned_to">Assigned To</option>
-                                                                        <option value="custodian">Custodian</option>
                                                                   </select> 
                                                             </label>
                                                       </div>

@@ -24,6 +24,7 @@ class EmailNotification(mixins.RevisionedMixin):
     name = models.TextField()
     type = models.IntegerField(choices=EmailNotificationType.choices)  # noqa: A003
     email = models.TextField()
+    active = models.BooleanField(default=True)
     publish_entry = models.ForeignKey(
         publish_entries.PublishEntry,
         related_name="email_notifications",
