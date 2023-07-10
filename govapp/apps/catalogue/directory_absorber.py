@@ -149,7 +149,7 @@ class Absorber:
         )
 
         # Convert to a Geojson text
-        geojson_path = self.convert_to_geojson(archive, catalogue_entry, metadata)
+        geojson_path = self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
         models.layer_submissions.LayerSubmission.objects.create(
@@ -256,12 +256,11 @@ class Absorber:
     def convert_to_geojson(
         self, 
         filepath: str, 
-        catalogue_entry: models.catalogue_entries.CatalogueEntry, 
-        metadata: readers.types.Metadata) -> pathlib.Path:
+        catalogue_entry: models.catalogue_entries.CatalogueEntry) -> pathlib.Path:
         # Convert to a Geojson file
         path_from = to_geojson(
             filepath=pathlib.Path(filepath),
-            layer=metadata.name,
+            layer=catalogue_entry.name,
             catalogue_name=catalogue_entry.name,
             export_method=None
         )
