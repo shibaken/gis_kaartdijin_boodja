@@ -56,7 +56,7 @@ class EmailNotificationFilter(filters.FilterSet):
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
-        fields = {"id": ["in"]}
+        fields = {"id": ["in"], "publish_entry":["exact"]}
 
 
 class WorkspaceFilter(filters.FilterSet):
