@@ -86,7 +86,7 @@ var kbcatalogue_detail = {
     get_email_notification: function(params_str){
         if (!params_str){
             params = {
-                catalogue_id:   $('#catalogue_entry_id').val(),
+                catalogue_entry:$('#catalogue_entry_id').val(),
                 limit:          $('#catalogue-detail-notification-limit').val(),
                 order_by:       $('#catalogue-detail-notification-order-by').val()
             }

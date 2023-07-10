@@ -10,6 +10,14 @@ from govapp.apps.catalogue import models
 
 class EmailNotificationSerializer(serializers.ModelSerializer):
     """Email Notification Model Serializer."""
+    
+    def validate_email(self, email):
+         pk = self.context.get('pk')
+         catalogue_entry = models.notifications.EmailNotification.objects.get(id=pk).catalogue_entry
+         if models.notifications.EmailNotification.objects.filter(catalogue_entry=catalogue_entry, email=email).exclude(id=pk).exists():
+             raise serializers.ValidationError("Email '{}' is already taken.".format(email))
+         return email
+     
     class Meta:
         """Email Notification Model Serializer Metadata."""
         model = models.notifications.EmailNotification
@@ -28,6 +36,13 @@ class WebhookNotificationSerializer(serializers.ModelSerializer):
 
 class EmailNotificationCreateSerializer(serializers.ModelSerializer):
     """Email Notification Model Create Serializer."""
+    
+    def validate_email(self, email):
+        catalogue_entry = self.initial_data.get('catalogue_entry')
+        if models.notifications.EmailNotification.objects.filter(catalogue_entry=catalogue_entry, email=email).exists():
+            raise serializers.ValidationError("Email '{}' is already taken.".format(email))
+        return email
+     
     class Meta:
         """Email Notification Model Create Serializer Metadata."""
         model = EmailNotificationSerializer.Meta.model

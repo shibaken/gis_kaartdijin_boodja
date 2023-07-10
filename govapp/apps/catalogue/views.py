@@ -408,34 +408,13 @@ class EmailNotificationViewSet(
     search_fields = ["name", "email"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
     
-    @drf_utils.extend_schema(parameters=[drf_utils.OpenApiParameter("catalogue_id", type=int, required=False)])
-    # @decorators.action(detail=False, methods=['GET'])
-    def list(self, request, *args, **kwargs):
-        """Api to return a list of email notification
-
-        Args:
-            request (_type_): request object passed by Django framework - includes optional integer value of catalogue_id
-
-        Returns:
-            response.Response: a full list of email notification if catalogue_id wasn't come in. 
-                                a list of of email notification belongs to catalogue_id if it's come in
-        """
-        catalogue_id = self.request.query_params.get("catalogue_id")
-        
-        # a full list
-        if not catalogue_id:
-            return super().list(request, *args, **kwargs)
-        
-        # a list filterd by catalogue_id
-        filtered = self.queryset.filter(catalogue_entry=catalogue_id)
-        filtered = self.filter_queryset(filtered)
-        # apply pagination and make a paginated response
-        paginator = self.pagination_class()
-        paginated_queryset = paginator.paginate_queryset(filtered, request)
-        serializer = self.serializer_class(paginated_queryset, many=True)
-        
-        return paginator.get_paginated_response(serializer.data)
-
+    # to pass the pk to serializer
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if context['request'].method == 'PUT':
+            context['pk'] = self.kwargs['pk']
+        return context
+    
 
 @drf_utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
 class WebhookNotificationViewSet(

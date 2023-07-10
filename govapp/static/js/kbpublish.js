@@ -1195,9 +1195,9 @@ var kbpublish = {
     get_email_notification: function(params_str) {
         if (!params_str){
             params = {
-                publish_id:     $('#publish-entry_id').val(),
+                publish_entry:  $('#publish_id').val(),
                 limit:          $('#publish-notification-limit').val(),
-                order_by:       $('#publish-notification-order-by').val()
+                order_by:       $('#publish-notification-order-by').val(),
             }
 
             params_str = utils.make_query_params(params);

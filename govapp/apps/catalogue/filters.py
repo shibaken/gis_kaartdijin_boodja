@@ -106,7 +106,7 @@ class EmailNotificationFilter(filters.FilterSet):
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
-        fields = {"id": ["in"]}
+        fields = {"id": ["in"], "catalogue_entry":["exact"]}
 
 
 class WebhookNotificationFilter(filters.FilterSet):

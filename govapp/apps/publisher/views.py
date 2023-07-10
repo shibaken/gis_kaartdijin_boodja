@@ -558,6 +558,13 @@ class EmailNotificationViewSet(
     filterset_class = filters.EmailNotificationFilter
     search_fields = ["name", "email"]
     permission_classes = [permissions.HasPublishEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    
+    # to pass the pk to serializer
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if context['request'].method == 'PUT':
+            context['pk'] = self.kwargs['pk']
+        return context
 
 
 @drf_utils.extend_schema(tags=["Publisher - Workspaces"])
