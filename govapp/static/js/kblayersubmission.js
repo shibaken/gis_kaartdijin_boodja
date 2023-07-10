@@ -106,12 +106,10 @@ var kblayersubmission = {
                         $('#layersubmission-tbody').html(html);
                         $('.layersubmission-table-button').hide();
 
-                        common_pagination.init(response.count, params, kblayersubmission.get_layer_submissions, $('#paging_navi'));
-
                     } else {
                         $('#layersubmission-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
-
                     }
+                    common_pagination.init(response.count, params, kblayersubmission.get_layer_submissions, $('#paging_navi'));
                 } else {
                       $('#layersubmission-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
                 }               

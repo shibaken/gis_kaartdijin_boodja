@@ -99,18 +99,23 @@ var kbcatalogue_detail = {
             method: 'GET',
             contentType: 'application/json',
             success: function (response) {
-                // change type number to name
+                if(!response){
+                    $('#catalogue-detail-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    return;
+                }
+
                 let buttons = {};
                 if(kbcatalogue_detail.var.has_edit_access){
                     buttons={Update:(noti)=>kbcatalogue_detail.show_update_email_notification_modal(noti),
                         Delete:(noti)=>kbcatalogue_detail.show_delete_email_notification_modal(noti)};
                 }
-
+                    
+                // change type number to name
                 for(let i in response.results){
                     response.results[i].type_str = kbcatalogue_detail.var.catalogue_email_notification_type[response.results[i].type];
                 }
 
-                table.set_rows($('#catalogue-detail-notification-tbody'), response.results, 
+                table.set_tbody($('#catalogue-detail-notification-tbody'), response.results, 
                                 columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
                                 buttons=buttons);
                 common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, $('#notification-paging-navi'));
