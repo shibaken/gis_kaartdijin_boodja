@@ -9,6 +9,7 @@ var kbcatalogue = {
             4: "Draft",
             5: "Pending"
         },
+        catalogue_date_format: "dd/mm/yyyy"
     },
     
     init_dashboard: function() { 
@@ -214,6 +215,10 @@ var kbcatalogue = {
                 name__icontains:        $('#catalogue-name').val(),
                 status:                 $('#catalogue-status').val(),
                 description__icontains: $('#catalogue-description').val(),
+                custodian:              +$('#catalogue-custodian').val(),
+                assigned_to:            +$('#catalogue-assignedto').val(),
+                updated_after:          utils.convert_date_format($('#catalogue-lastupdatedfrom').val(), kbcatalogue.var.catalogue_date_format, hh="00", mm="00", ss="00"),
+                updated_before:         utils.convert_date_format($('#catalogue-lastupdatedto').val(), kbcatalogue.var.catalogue_date_format, hh="23", mm="59", ss="59"),
                 id:                     $('#catalogue-number').val().replace("PE", ""),
                 limit:                  $('#catalogue-limit').val(),
                 order_by:               $('#catalogue-order-by').val()
