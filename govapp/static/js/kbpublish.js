@@ -710,12 +710,10 @@ var kbpublish = {
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
 
-                        common_pagination.init(response.count, params, kbpublish.get_publish, $('#paging_navi'));
-
                     } else {
                         $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
-
                     }
+                    common_pagination.init(response.count, params, kbpublish.get_publish, $('#paging_navi'));
                 } else {
                       $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
                 }
@@ -1211,6 +1209,10 @@ var kbpublish = {
             dataType: 'json',
             contentType: 'application/json',
             success: function (response) {
+                if(!response){
+                    $('#publish-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    return;
+                }
                 // change type number to name
                 let buttons={};
                 for(let i in response.results){
@@ -1222,7 +1224,7 @@ var kbpublish = {
                                Delete:(noti)=>kbpublish.show_delete_email_notification_modal(noti)};
                 }
 
-                table.set_rows($('#publish-notification-tbody'), response.results, 
+                table.set_tbody($('#publish-notification-tbody'), response.results, 
                                 columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
                                 buttons=buttons);
                 common_pagination.init(response.count, params, kbpublish.get_email_notification, $('#notification-paging-navi'));

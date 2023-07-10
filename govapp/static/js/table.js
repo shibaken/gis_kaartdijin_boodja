@@ -3,14 +3,46 @@ var table={
                 //                         buttons={Update:kbcatalogue_detail.show_update_email_notification_modal, 
                 //                                 Delete:kbcatalogue_detail.show_delete_email_notification_modal});
 
-    set_rows: function (table, list, columns, buttons=null){
-        table.empty();
+                // <div id='publish-table'>
+                //         <table id="example" class="table" style="width:100%">
+                //               <thead class='table-dark'>
+                //                     <tr>
+                //                           <th class="col-2">Id</th>
+                //                           <th class="col-4">Name</th>
+                //                           <th class="col-2">Type</th>
+                //                           <th class="col-2">Order</th>
+                //                           <th class="col-2">Action</th>
+                //                     </tr>
+                //               </thead>
+                //               <tbody id='catalogue-attribute-tbody'></tbody>
+    set_table: function (div, table_id, columns){
+        let table = $('<table>');
+        table.attr('id', table_id);
+        table.attr('class', 'table');
+        table.attr('style', 'width:100%');
+
+        let thrad = $('<thead>');
+        thrad.attr('class', 'table-dark');
+
+        let tr = $('<tr>');
+
+        for(key in columns){
+            let th = $('<th>');
+            th.attr('class', 'col-'+columns[key]);
+            th.text(key);
+            tr.append(th);
+        }
+        
+    },
+    set_tbody: function (tbody, list, columns, buttons=null){
+        tbody.empty();
 
         for(let i in list){
             let row = this.make_row(list[i], columns);
-            if(buttons)
-                row.append(this.make_button_cell(buttons, table.attr("id")+'-row-'+i, list[i]));
-            table.append(row);
+            if(buttons){
+                row.append(this.make_button_cell(buttons, tbody.attr("id")+'-row-'+i, list[i]));
+            }
+            tbody.append(row);
         }
     },
 
