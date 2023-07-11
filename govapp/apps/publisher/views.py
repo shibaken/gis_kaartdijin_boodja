@@ -66,7 +66,7 @@ class PublishEntryViewSet(
         for result in response.data.get('results'):
             if result.get('updated_at'):
                 date_obj = datetime.strptime(result.get('updated_at'), "%Y-%m-%dT%H:%M:%S.%f%z")
-                result['updated_at'] = str(date_obj.astimezone().strftime('%d %b %Y %H:%M %p'))                 
+                result['updated_at'] = str(date_obj.astimezone().strftime('%d %b %Y %H:%M %p'))
                  
         return response
     

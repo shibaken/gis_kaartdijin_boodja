@@ -3,36 +3,18 @@ var table={
                 //                         buttons={Update:kbcatalogue_detail.show_update_email_notification_modal, 
                 //                                 Delete:kbcatalogue_detail.show_delete_email_notification_modal});
 
-                // <div id='publish-table'>
-                //         <table id="example" class="table" style="width:100%">
-                //               <thead class='table-dark'>
-                //                     <tr>
-                //                           <th class="col-2">Id</th>
-                //                           <th class="col-4">Name</th>
-                //                           <th class="col-2">Type</th>
-                //                           <th class="col-2">Order</th>
-                //                           <th class="col-2">Action</th>
-                //                     </tr>
-                //               </thead>
-                //               <tbody id='catalogue-attribute-tbody'></tbody>
-    set_table: function (div, table_id, columns){
-        let table = $('<table>');
-        table.attr('id', table_id);
-        table.attr('class', 'table');
-        table.attr('style', 'width:100%');
-
-        let thrad = $('<thead>');
-        thrad.attr('class', 'table-dark');
+    // columns e.g. {Name:2, Email:4}
+    set_thead: function (thead, columns){
+        thead.empty();
 
         let tr = $('<tr>');
-
         for(key in columns){
             let th = $('<th>');
             th.attr('class', 'col-'+columns[key]);
             th.text(key);
             tr.append(th);
         }
-        
+        thead.append(tr);
     },
     set_tbody: function (tbody, list, columns, buttons=null){
         tbody.empty();
@@ -44,6 +26,9 @@ var table={
             }
             tbody.append(row);
         }
+    },
+    message_tbody: function(tbody, message){
+        tbody.html("<tr><td colspan='7' class='text-center'>"+message+"<td></tr>");
     },
 
     // ('#catalogue-detail-notification-tbody', response.results, {active:'switch'},

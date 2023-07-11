@@ -2,6 +2,7 @@ var kbcatalogue_detail = {
     var: {
         catalogue_email_notification:"/api/catalogue/notifications/emails/",
         catalogue_email_notification_type_url:"/api/catalogue/notifications/emails/type",
+        catalogue_table_date_format: "DD MMM YYYY HH:mm:ss",
     },
 
     init_catalogue_detail: function(){
@@ -28,6 +29,8 @@ var kbcatalogue_detail = {
             this.var.has_edit_access = true;
         }
         
+        $("#log_actions_show").click(kbcatalogue_detail.show_action_log);
+
         this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
     retrieve_noti_types: function(post_callback){
@@ -210,4 +213,52 @@ var kbcatalogue_detail = {
             error: error_callback
         });
     },
+    show_action_log: function(){
+        common_entity_modal.init("Action_log", "info");
+        common_entity_modal.talbe_on();
+        let thead = common_entity_modal.get_thead();
+        table.set_thead(thead, {Who:3, What:5, When:4});
+        common_entity_modal.get_limit().change(()=>kbcatalogue_detail.get_action_log());
+        common_entity_modal.get_search().keyup((event)=>{
+            if (event.which === 13 || event.keyCode === 13){
+                event.preventDefault();
+                kbcatalogue_detail.get_action_log()
+            }
+        });
+        common_entity_modal.show();
+
+        kbcatalogue_detail.get_action_log();
+    },
+    get_action_log: function(params_str){
+        if(!params_str){
+            params = {
+                limit:  common_entity_modal.get_limit().val(),
+                search: common_entity_modal.get_search().val(),
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+    
+        var catalogue_entry_id = $('#catalogue_entry_id').val();
+        $.ajax({
+            url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/logs/actions/?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                if(!response || !response.results){
+                    table.message_tbody("No results found");
+                    return;
+                }
+                for(let i in response.results){
+                    response.results[i]['when'] = utils.convert_datetime_format(response.results[i].when, kbcatalogue_detail.var.catalogue_table_date_format); 
+                }
+                table.set_tbody(common_entity_modal.get_tbody(), response.results, [{username:"text"}, {what:'text'}, {when:'text'}]);
+                common_pagination.init(response.count, params, kbcatalogue_detail.get_action_log, common_entity_modal.get_page_navi());
+            },
+            error: function (error){
+                common_entity_modal.show_error_modal(error);
+            }
+        });
+    }
 }

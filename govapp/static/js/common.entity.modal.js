@@ -3,6 +3,7 @@ var common_entity_modal = {
         type: "submit",
     },
     init: function(title, type="submit"){
+        $('#common-entity-modal-table').hide();
         $('#common-entity-modal-error').hide();
         $('#common-entity-modal-label').text(title);
         if(type=="submit"){
@@ -13,6 +14,10 @@ var common_entity_modal = {
             $('#common-entity-modal-submit-btn').hide();
             $('#common-entity-modal-cancel-btn').show();
             $('#common-entity-modal-delete-btn').show();
+        } else if(type="info"){
+            $('#common-entity-modal-submit-btn').hide();
+            $('#common-entity-modal-cancel-btn').hide();
+            $('#common-entity-modal-delete-btn').hide();
         }
         this.var.type = type;
 
@@ -29,8 +34,10 @@ var common_entity_modal = {
         disabled = common_entity_modal.var.type == "delete" ? true: disabled;
         let field = this.maker[type](label, value, disabled, option_map);
         contents.append(field);
-        // return field.attr("id");
-        return this.get_id(field);
+        return this.get_id(field, type);
+    },
+    talbe_on: function(){
+        $('#common-entity-modal-table').show();
     },
     maker: {
         make_common_field: (label, value, disabled, type="text", element="<input>") => {
@@ -80,12 +87,33 @@ var common_entity_modal = {
             div.append(field);
             return div;
         },
-        table: (label, value) => {
-            
+        // option_map = {label:{width:int, type:str}} e.g) {Name:{width:2, type:'text'}}
+        // table: (label, value, disabled, option_map) => {
+        //     let div = $('<div>');
+        //     column_thead = {};
+        //     for(let key in option_map){
+        //         column_thead[key] = option_map[key][width];
+        //     }
+        //     let tbody = table.set_table(div, label+"-table", column_thead);
+
+        //     column_tbody = {};
+        //     for(let key in option_map){
+        //         column_tbody[key] = option_map[key][type];
+        //     }
+        //     table.set_tbody(tbody, value, column_tbody);
+        //     if (disabled){ 
+        //         div.prop("disabled", true);
+        //     }
+        //     return div
+        // },
+        empty: () => {
+            let div = $('<div>');
+            div.attr('id', 'modal-table');
+            return div;
         }
     },
-    get_id: function(element){
-        if(element.is('input') || element.is('select')){
+    get_id: function(element, type){
+        if(element.is('input') || element.is('select') || type == 'empty'){
             return element.attr("id");
         } else if(element.is('div')){
             let children = element.children();
@@ -140,5 +168,20 @@ var common_entity_modal = {
     },
     hide: function(){
         $('#common-entity-modal').modal('hide');
+    },
+    get_thead: function(){
+        return $('#modal-table-thead');
+    },
+    get_tbody: function(){
+        return $('#modal-table-tbody');
+    },
+    get_limit: function(){
+        return $('#modal-table-limit');
+    },
+    get_search: function(){
+        return $('#modal-table-search');
+    },
+    get_page_navi: function(){
+        return $('#modal-table-page-navi');
     },
 }
