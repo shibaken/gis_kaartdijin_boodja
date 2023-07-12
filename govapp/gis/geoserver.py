@@ -78,6 +78,44 @@ class GeoServer:
         # Check Response
         response.raise_for_status()
 
+    def upload_tif(
+        self,
+        workspace: str,
+        layer: str,
+        filepath: pathlib.Path,
+    ) -> None:
+        """Uploads a Geopackage file to the GeoServer.
+
+        Args:
+            workspace (str): Workspace to upload files to.
+            layer (str): Name of the layer to upload GeoPackage for.
+            filepath (pathlib.Path): Path to the Geopackage file to upload.
+        """
+        # Log
+        log.info(f"Uploading Geopackage '{filepath}' to GeoServer")
+
+        # Construct URL
+        url = "{0}/rest/workspaces/{1}/datastores/{2}/file.tif".format(
+            self.service_url,
+            workspace,
+            layer,
+        )
+
+        # Perform Request
+        response = httpx.put(
+            url=url,
+            content=filepath.read_bytes(),
+            params={"filename": filepath.name, "update": "overwrite"},
+            auth=(self.username, self.password),
+        )
+
+        # Log
+        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+        # Check Response
+        response.raise_for_status()
+
+
     def upload_style(
         self,
         workspace: str,
