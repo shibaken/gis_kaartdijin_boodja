@@ -262,10 +262,10 @@ var kblayersubmission = {
         let cc_id = common_entity_modal.add_field(label="Cc", type="text");
         let from_id = common_entity_modal.add_field(label="From", type="text");
         let subject_id = common_entity_modal.add_field(label="Subject", type="text");
-        let text_id = common_entity_modal.add_field(label="Text", type="text");
+        let text_id = common_entity_modal.add_field(label="Text", type="text_area");
 
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-        kblayersubmission.create_communication_log(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id));
+                        kblayersubmission.create_communication_log(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id));
         common_entity_modal.show();
     },
     create_communication_log: function(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id){

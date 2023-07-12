@@ -9,35 +9,18 @@ var kbcatalogue_detail = {
     },
 
     init_catalogue_detail: function(){
-        $( "#catalogue-entry-btn-save" ).click(function() {
-            console.log("Save Publish Table");
-            kbcatalogue_detail.save_catalogue('save');
-        });
+        $( "#catalogue-entry-btn-save" ).click(() => kbcatalogue_detail.save_catalogue('save'));
+        $( "#catalogue-entry-btn-save-exit" ).click(() => kbcatalogue_detail.save_catalogue('save-and-exit'));      
+        $( "#catalogue-detail-btn-add-notification" ).click(kbcatalogue_detail.show_add_email_notification_modal);
+        $( "#catalogue-detail-notification-order-by" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
+        $( "#catalogue-detail-notification-limit" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
+        $( "#log_actions_show" ).click(kbcatalogue_detail.show_action_log);
+        $( "#log_communication_show" ).click(kbcatalogue_detail.show_communication_log);
+        $( "#log_communication_add" ).click(kbcatalogue_detail.add_communication_log);
 
-        $( "#catalogue-entry-btn-save-exit" ).click(function() {
-            console.log("Save Publish Table");
-            kbcatalogue_detail.save_catalogue('save-and-exit');
-        });      
-
-        $( "#catalogue-detail-btn-add-notification" ).click(function() {
-            console.log("New Catalogue Email Notification");
-            kbcatalogue_detail.show_add_email_notification_modal();
-        });
-
-        $('#catalogue-detail-notification-order-by').change(()=>table.refresh(this.get_email_notification));
-        $('#catalogue-detail-notification-limit').change(()=>table.refresh(this.get_email_notification));
-
-        var has_edit_access = $('#has_edit_access').val();
-        if (has_edit_access == 'True') {
-            this.var.has_edit_access = true;
-        }
-        
-        $("#log_actions_show").click(kbcatalogue_detail.show_action_log);
-        $("#log_communication_show").click(kbcatalogue_detail.show_communication_log);
-        $("#log_communication_add").click(kbcatalogue_detail.add_communication_log);
-
-        this.retrieve_communication_types();
-        this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
+        kbcatalogue_detail.var.has_edit_access = $('#has_edit_access').val() == 'True';
+        kbcatalogue_detail.retrieve_communication_types();
+        kbcatalogue_detail.retrieve_noti_types(()=>table.refresh(kbcatalogue_detail.get_email_notification));
     },
     retrieve_noti_types: function(post_callback){
         $.ajax({
@@ -50,7 +33,7 @@ var kbcatalogue_detail = {
                     const type = response.results[i];
                     noti_type[type.id] = type.label;
                 }
-                this.var.catalogue_email_notification_type = noti_type;
+                kbcatalogue_detail.var.catalogue_email_notification_type = noti_type;
                 post_callback();
             },
             error: (error)=> {
@@ -74,7 +57,7 @@ var kbcatalogue_detail = {
                     const type = response.results[i];
                     communication_type[type.id] = type.label;
                 }
-                this.var.communication_type = communication_type;
+                kbcatalogue_detail.var.communication_type = communication_type;
             },
             error: (error)=> {
                 alert("An error occured while getting retrieve communication types.");
@@ -163,24 +146,24 @@ var kbcatalogue_detail = {
     show_add_email_notification_modal: function(){
         common_entity_modal.init("Add New Email Notification", "submit");
         let name_id = common_entity_modal.add_field(label="Name", type="text");
-        let type_id = common_entity_modal.add_field(label="Type", type="select", value=null, option_map=this.var.catalogue_email_notification_type);
+        let type_id = common_entity_modal.add_field(label="Type", type="select", value=null, option_map=kbcatalogue_detail.var.catalogue_email_notification_type);
         let email_id = common_entity_modal.add_field(label="Email", type="email");
         let active_id = common_entity_modal.add_field(label="Active", type="switch");
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id),
-                                            success_callback=()=>table.refresh(this.get_email_notification));
+                                            kbcatalogue_detail.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id),
+                                            success_callback=()=>table.refresh(kbcatalogue_detail.get_email_notification));
         common_entity_modal.show();
     },
 
     show_update_email_notification_modal: function(prev){
         common_entity_modal.init("Update Email Notification", "submit");
         let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name);
-        let type_id = common_entity_modal.add_field(label="Type", type="select", value=prev.type, option_map=this.var.catalogue_email_notification_type);
+        let type_id = common_entity_modal.add_field(label="Type", type="select", value=prev.type, option_map=kbcatalogue_detail.var.catalogue_email_notification_type);
         let email_id = common_entity_modal.add_field(label="Email", type="email", value=prev.email);
         let active_id = common_entity_modal.add_field(label="Active", type="switch", value=prev.active);
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id, prev.id),
-                                            success_callback=()=>table.refresh(this.get_email_notification));
+                                            kbcatalogue_detail.write_email_notification(success_callback, error_callback, name_id, type_id, email_id, active_id, prev.id),
+                                            success_callback=()=>table.refresh(kbcatalogue_detail.get_email_notification));
         common_entity_modal.show();
     },
     write_email_notification: function(success_callback, error_callback, name_id, type_id, email_id, active_id, noti_id){
@@ -199,7 +182,7 @@ var kbcatalogue_detail = {
             active:active,
             catalogue_entry:$('#catalogue_entry_id').val()
         };
-        var url = this.var.catalogue_email_notification;
+        var url = kbcatalogue_detail.var.catalogue_email_notification;
         var method = 'POST';
         if(noti_id){
             delete email_noti_data['catalogue_entry'];
@@ -223,12 +206,12 @@ var kbcatalogue_detail = {
     show_delete_email_notification_modal: function(target){
         common_entity_modal.init("Delte Email Notification", "delete");
         common_entity_modal.add_field(label="Name", type="text", value=target.name);
-        common_entity_modal.add_field(label="Type", type="select", value=target.type, option_map=this.var.catalogue_email_notification_type);
+        common_entity_modal.add_field(label="Type", type="select", value=target.type, option_map=kbcatalogue_detail.var.catalogue_email_notification_type);
         common_entity_modal.add_field(label="Email", type="email", value=target.email);
         common_entity_modal.add_field(label="Active", type="switch", value=target.active);
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.delete_email_notification(success_callback, error_callback, target.id),
-                                            success_callback=()=>table.refresh(this.get_email_notification));
+                                            kbcatalogue_detail.delete_email_notification(success_callback, error_callback, target.id),
+                                            success_callback=()=>table.refresh(kbcatalogue_detail.get_email_notification));
         common_entity_modal.show();
     },
 
@@ -346,7 +329,7 @@ var kbcatalogue_detail = {
         let cc_id = common_entity_modal.add_field(label="Cc", type="text");
         let from_id = common_entity_modal.add_field(label="From", type="text");
         let subject_id = common_entity_modal.add_field(label="Subject", type="text");
-        let text_id = common_entity_modal.add_field(label="Text", type="text");
+        let text_id = common_entity_modal.add_field(label="Text", type="text_area");
 
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                             kbcatalogue_detail.create_communication_log(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id));
