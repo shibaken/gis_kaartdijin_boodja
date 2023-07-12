@@ -35,16 +35,40 @@ var utils={
         if(!date_str) return null;
         // make a moment object by original format
         let original_format = format.toUpperCase()+'-hh:mm:ss';
-        const original_datetime = moment(date_str, original_format);
-        // convert original to target fromat(default:ISO)
-        let target_format = 'YYYY-MM-DDThh:mm:ss';  //ISO
-        let converted_str = original_datetime.format(target_format);
-        // set time
+        let target_format = 'YYYY-MM-DDThh:mm:ss';
+        let converted_str = this.convert_datetime_format(date_str, target_format, original_format);
         let date = new Date(converted_str);
         date.setHours(hh);
         date.setMinutes(mm);
         date.setSeconds(ss);
-
         return date.toISOString();
     },
+    convert_datetime_format: function(datetime_str, target_format, original_format){
+        if(!datetime_str) return null;
+        let original_datetime;
+        if(original_format){
+            // make a moment object by original format
+            original_format = original_format.toUpperCase();
+            original_datetime = moment(datetime_str, original_format);
+        }else{
+            original_datetime = moment(datetime_str);
+        }
+        
+        return original_datetime.format(target_format);
+    },
+    call_get_api: function(url, success_callback, error_callback){
+        $.ajax({
+            url: url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: (response) => {
+                if(!response){
+                    error_callback();
+                    return;
+                }
+                success_callback();
+            },
+            error: error_callback,
+        });
+    }
 }

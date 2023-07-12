@@ -52,6 +52,16 @@ class CommunicationsLogEntry(models.Model):
         """
         # Generate String and Return
         return f"{self.content_type.name} - {self.content_object}"
+    
+    @property
+    def username(self) -> str:
+        """Provides a string of user's name that combined first and last name.
+
+        Returns:
+            str: A string of combined first and last name.
+        """
+        # Generate String and Return
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
 class CommunicationsLogDocument(models.Model):
@@ -104,3 +114,14 @@ class ActionsLogEntry(models.Model):
         """
         # Generate String and Return
         return f"{self.content_object}"
+    
+    @property
+    def username(self) -> str:
+        """Provides a string of user's name that combined first and last name.
+
+        Returns:
+            str: A string of combined first and last name.
+        """
+        # Generate String and Return
+        return f"{self.who.first_name} {self.who.last_name}"
+        

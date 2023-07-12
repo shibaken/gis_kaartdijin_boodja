@@ -9,7 +9,8 @@ var kbcatalogue = {
             4: "Draft",
             5: "Pending"
         },
-        catalogue_date_format: "dd/mm/yyyy"
+        catalogue_date_format: "dd/mm/yyyy",
+        catalogue_table_date_format: "DD MMM YYYY HH:mm:ss",
     },
     
     init_dashboard: function() { 

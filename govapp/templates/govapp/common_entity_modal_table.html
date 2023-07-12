@@ -1,0 +1,30 @@
+<div class='col-12 pt-2 pb-2 '>
+      <div class='row'>
+            <div class='col-6'>
+                  <label>Show
+                        <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="modal-table-limit">
+                              <option value="5">5</option>
+                              <option value="10" selected>10</option>
+                              <option value="25">25</option>
+                              <option value="50">50</option>
+                              <option value="100">100</option>
+                        </select> entries
+                  </label>
+            </div>
+            <div class='col-6'>
+                  <div class="dataTables_length">
+                        <label>Search: </label>
+                        <input type="text" class="form-control" id="modal-table-search">
+                  </div>
+            </div>             
+      </div>
+</div>
+
+<table class="table" id="modal-table" style="width:100%">
+      <thead class='table-dark' id="modal-table-thead"></thead>
+      <tbody id='modal-table-tbody'></tbody>
+</table>   
+<nav aria-label="Page navigation">
+      <ul class="pagination justify-content-end" id="modal-table-page-navi">
+      </ul>
+</nav>
