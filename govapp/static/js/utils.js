@@ -55,5 +55,20 @@ var utils={
         }
         
         return original_datetime.format(target_format);
+    },
+    call_get_api: function(url, success_callback, error_callback){
+        $.ajax({
+            url: url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: (response) => {
+                if(!response){
+                    error_callback();
+                    return;
+                }
+                success_callback();
+            },
+            error: error_callback,
+        });
     }
 }

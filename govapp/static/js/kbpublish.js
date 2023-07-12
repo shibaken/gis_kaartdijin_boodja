@@ -8,6 +8,7 @@ var kbpublish = {
             publish_save_cddp_url: "/api/publish/channels/cddp/",
             publish_email_notification_url: "/api/publish/notifications/emails/",
             publish_email_notification_type_url: "/api/publish/notifications/emails/type/",
+            log_communication_type_url:"/api/logs/communications/type/",
             publish_status: {
                 1: "Locked",
                 2: "Unlocked"
@@ -37,7 +38,10 @@ var kbpublish = {
             },
             catalogue_entry_list: null,
             catalogue_entry_map: {},
-            publish_date_format: "dd/mm/yyyy"
+            publish_date_format: "dd/mm/yyyy",
+            publish_table_date_format: "DD MMM YYYY HH:mm:ss",
+            publish_email_notification_type:null,    // will be filled during initiation
+            communication_type:null,    // will be filled during initiation
     },
     pagination: kbpublish_pagination,
     init_dashboard: function() {    
@@ -142,6 +146,9 @@ var kbpublish = {
             let entry = this.var.catalogue_entry_list[i];
             this.var.catalogue_entry_map[entry.id] = entry.name;
         }
+
+
+
         kbpublish.get_publish();
     },
     init_publish_item: function() {    
@@ -226,8 +233,14 @@ var kbpublish = {
             this.var.publish_workspace_map[entry.id] = entry.name;
         }
 
+        $("#log_actions_show").click(kbpublish.show_action_log);
+        $("#log_communication_show").click(kbpublish.show_communication_log);
+        $("#log_communication_add").click(kbpublish.add_communication_log);
+        
+
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
+        kbpublish.retrieve_communication_types();
         this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
     retrieve_noti_types: function(post_callback){
@@ -246,6 +259,29 @@ var kbpublish = {
             },
             error: (error)=> {
                 alert("An error occured while getting email notification type.");
+                console.error(error);
+            },
+        });
+    },
+    retrieve_communication_types: function(){
+        $.ajax({
+            url: kbpublish.var.log_communication_type_url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: (response) => {
+                if(!response){
+                    alert("An error occured while getting retrieve communication types.");
+                    return;    
+                }
+                var communication_type = {};
+                for(let i in response.results){
+                    const type = response.results[i];
+                    communication_type[type.id] = type.label;
+                }
+                kbpublish.var.communication_type = communication_type;
+            },
+            error: (error)=> {
+                alert("An error occured while getting retrieve communication types.");
                 console.error(error);
             },
         });
@@ -1234,85 +1270,150 @@ var kbpublish = {
                 console.log('Error occured.'+ error);
             },
         });
-    }
-// create_publish: function() {
-    //     var publishname = $('#new-publish-name').val();
-    //     var publishcatalogueentry_id = $('#new-catalogue-entry').val();
-    //     var publishdescription = $('#new-publish-description').val();
-    //     var post_data = {"name": publishname, "description": publishdescription, "catalogue_entry": publishcatalogueentry_id};
-    //     var csrf_token = $("#csrfmiddlewaretoken").val();
-       
-    //     $('#new-publish-popup-error').html("");
-    //     $('#new-publish-popup-error').hide();
-    //     $('#new-publish-popup-success').html("");
-    //     $('#new-publish-popup-success').hide();
+    },
+    show_action_log: function(){
+        common_entity_modal.init("Action log", "info");
+        common_entity_modal.init_talbe();
+        let thead = common_entity_modal.get_thead();
+        table.set_thead(thead, {Who:3, What:5, When:4});
+        common_entity_modal.get_limit().change(()=>kbpublish.get_action_log());
+        common_entity_modal.get_search().keyup((event)=>{
+            if (event.which === 13 || event.keyCode === 13){
+                event.preventDefault();
+                kbpublish.get_action_log()
+            }
+        });
+        common_entity_modal.show();
+
+        kbpublish.get_action_log();
+    },
+    get_action_log: function(params_str){
+        if(!params_str){
+            params = {
+                limit:  common_entity_modal.get_limit().val(),
+                search: common_entity_modal.get_search().val(),
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+    
+        var catalogue_entry_id = $('#publish-entry-id').val();
+        $.ajax({
+            url: kbpublish.var.publish_data_url+catalogue_entry_id+"/logs/actions/?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                if(!response || !response.results){
+                    table.message_tbody("No results found");
+                    return;
+                }
+                for(let i in response.results){
+                    response.results[i]['when'] = utils.convert_datetime_format(response.results[i].when, kbpublish.var.publish_table_date_format); 
+                }
+                table.set_tbody(common_entity_modal.get_tbody(), response.results, [{username:"text"}, {what:'text'}, {when:'text'}]);
+                common_pagination.init(response.count, params, kbpublish.get_action_log, common_entity_modal.get_page_navi());
+            },
+            error: function (error){
+                common_entity_modal.show_error_modal(error);
+            }
+        });
+    },
+    show_communication_log: function(){
+        common_entity_modal.init("Communication log", "info");
+        common_entity_modal.init_talbe();
+        let thead = common_entity_modal.get_thead();
+        table.set_thead(thead, {User:2, To:2, Cc:2, From:2, Subject:2, Text:2});
+        common_entity_modal.get_limit().change(()=>kbpublish.get_communication_log());
+        common_entity_modal.get_search().keyup((event)=>{
+            if (event.which === 13 || event.keyCode === 13){
+                event.preventDefault();
+                kbpublish.get_communication_log()
+            }
+        });
+        common_entity_modal.show();
+
+        kbpublish.get_communication_log();
+    },
+    get_communication_log: function(params_str){
+        if(!params_str){
+            params = {
+                limit:  common_entity_modal.get_limit().val(),
+                search: common_entity_modal.get_search().val(),
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+    
+        var publish_entry_id = $('#publish-entry-id').val();
+        $.ajax({
+            url: kbpublish.var.publish_data_url+publish_entry_id+"/logs/communications/?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                if(!response || !response.results){
+                    table.message_tbody("No results found");
+                    return;
+                }
+                for(let i in response.results){
+                    response.results[i]['created_at'] = utils.convert_datetime_format(response.results[i].created_at, kbpublish.var.publish_table_date_format); 
+                }
+                table.set_tbody(common_entity_modal.get_tbody(), response.results, 
+                                [{username:"text"}, {to:'text'}, {cc:'text'}, {from:'text'}, {subject:'text'}, {text:'text'}]);
+                common_pagination.init(response.count, params, kbpublish.get_action_log, common_entity_modal.get_page_navi());
+            },
+            error: function (error){
+                common_entity_modal.show_error_modal(error);
+            }
+        });
+    },
+    add_communication_log: function(){
+        common_entity_modal.init("Add New Communication log", "submit");
+        let type_id = common_entity_modal.add_field(label="Communication Type", type="select", value=null, option_map=kbpublish.var.communication_type);
+        let to_id = common_entity_modal.add_field(label="To", type="text");
+        let cc_id = common_entity_modal.add_field(label="Cc", type="text");
+        let from_id = common_entity_modal.add_field(label="From", type="text");
+        let subject_id = common_entity_modal.add_field(label="Subject", type="text");
+        let text_id = common_entity_modal.add_field(label="Text", type="text");
+
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                            kbpublish.create_communication_log(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id));
+        common_entity_modal.show();
+    },
+    create_communication_log: function(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id){
+        // get & validation check
+        const type = utils.validate_empty_input('type', $('#'+type_id).val());
+        const to = utils.validate_empty_input('to', $('#'+to_id).val());
+        const cc = utils.validate_empty_input('cc', $('#'+cc_id).val());
+        const from = utils.validate_empty_input('from', $('#'+from_id).val());
+        const subject = utils.validate_empty_input('subject', $('#'+subject_id).val());
+        const text = utils.validate_empty_input('text', $('#'+text_id).val());
         
-    //     if (publishname.length < 1) {
-    //         $('#new-publish-popup-error').html("Please enter a publish name.");
-    //         $('#new-publish-popup-error').show();
-    //         return false;
-    //     }
-
-    //     if (publishdescription.length < 10) {
-    //         $('#new-publish-popup-error').html("Please enter a valid publish description. (min 10 characters)");
-    //         $('#new-publish-popup-error').show();
-    //         return false;
-    //     }
-
-    //     if (publishcatalogueentry_id.length < 1) {
-    //         $('#new-publish-popup-error').html("Please select a catalogue entry.");
-    //         $('#new-publish-popup-error').show();
-    //         return false;
-    //     }
-
-       
-    //     $('#new-publish-name').attr('disabled','disabled');
-    //     $('#new-catalogue-entry').attr('disabled','disabled');
-    //     $('#new-publish-description').attr('disabled','disabled');
-
+        // make data body
+        var communication_log_data = {
+            type:type,
+            to:to,
+            cc:cc,
+            from:from,
+            subject:subject,
+            text:text,
+            user:$('#current-user').val(),
+        };
         
+        var url = kbpublish.var.publish_data_url+$('#publish-entry-id').val()+"/logs/communications/";
+        var method = 'POST';
 
-    //     $.ajax({
-    //         url: kbpublish.var.publish_save_url,        
-    //         type: 'POST',
-    //         headers: {'X-CSRFToken' : csrf_token},
-    //         data: JSON.stringify(post_data),
-    //         contentType: 'application/json',
-    //         success: function (response) {
-    //             var html = '';
-    //             console.log(response);
-                
-    //             if (response != null) {
-
-    //                 $('#new-publish-popup-success').html("Successfully created publish entry");
-    //                 $('#new-publish-popup-success').show();
-
-    //                 setTimeout("window.location = '/publish/"+response.id+"';", 2000); 
-                    
-                    
-    //             } else {                
-    //                 $('#new-publish-popup-error').html("Error no response ID.");
-    //                 $('#new-publish-popup-error').show();       
-                    
-    //                 $('#new-publish-name').removeAttr('disabled');
-    //                 $('#new-catalogue-entry').removeAttr('disabled');
-    //                 $('#new-publish-description').removeAttr('disabled');                    
-    //             }
-
-       
-    //         },
-    //         error: function (error) {
-
-    //             $('#new-publish-popup-error').html("Error create to publish.");
-    //             $('#new-publish-popup-error').show();        
-
-    //             $('#new-publish-name').removeAttr('disabled');
-    //             $('#new-catalogue-entry').removeAttr('disabled');
-    //             $('#new-publish-description').removeAttr('disabled');
-               
-    //         },
-    //     });
-
-
-    // },
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(communication_log_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
 }

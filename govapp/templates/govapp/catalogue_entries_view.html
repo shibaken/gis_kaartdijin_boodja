@@ -28,7 +28,7 @@
                                     </div>
                                     <div class='col-12 p-3 border-bottom'>
                                           <p><b>Communication</b><br>
-                                          <a href=''>Show</a> | <a href=''>Add Entry</a></p>
+                                          <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
 
                                     </div>
                                     <div class='col-12 p-3'>
@@ -110,6 +110,7 @@
                               <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id" value="{{ catalogue_entry_id  }}">
                               <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
                               <input type="hidden" id="pagetab" name="pagetab" value="{{ tab  }}">
+                              <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
                               {% if tab == "details" %}
                                     {% include "govapp/catalogue_entries_view_details.html" %}
                               {% elif tab == "attribute" %}

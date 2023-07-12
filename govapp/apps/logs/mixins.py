@@ -90,8 +90,8 @@ class CommunicationsLogMixin:
         return self.get_paginated_response(data=serializer.data)
 
     @drf_utils.extend_schema(
-        request=serializers.CommunicationsLogEntrySerializer,
-        responses=serializers.CommunicationsLogEntrySerializer,
+        request=serializers.CommunicationsLogCreateEntrySerializer,
+        responses=serializers.CommunicationsLogCreateEntrySerializer,
     )
     @communications_logs_list.mapping.post
     def communications_logs_create(self, request: request.Request, pk: str) -> response.Response:
@@ -111,7 +111,7 @@ class CommunicationsLogMixin:
         model: db_models.Model = self.get_object()
 
         # Create Serializer with Request Data
-        serializer = serializers.CommunicationsLogEntrySerializer(
+        serializer = serializers.CommunicationsLogCreateEntrySerializer(
             data=request.data,
             context=self.get_serializer_context(),
         )

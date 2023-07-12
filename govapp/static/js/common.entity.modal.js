@@ -36,7 +36,12 @@ var common_entity_modal = {
         contents.append(field);
         return this.get_id(field, type);
     },
-    talbe_on: function(){
+    init_talbe: function(){
+        $('#modal-table thead').empty();
+        $('#modal-table tbody').empty();
+        this.get_limit().off('change');
+        this.get_limit().val("10");
+        this.get_search().val("");
         $('#common-entity-modal-table').show();
     },
     maker: {
@@ -142,7 +147,9 @@ var common_entity_modal = {
             try{
                 submit_callback(
                     (response)=>{   //success_callback
-                            success_callback();
+                            if(success_callback){
+                                success_callback();
+                            }
                             common_entity_modal.hide();
                         },
                         error_handler); //error callback
