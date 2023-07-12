@@ -129,7 +129,7 @@ var kbpublish = {
             let description_id = common_entity_modal.add_field(label="Description", type="text");
             common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                                 kbpublish.create_publish(success_callback, error_callback, catalogue_entry_id, description_id),
-                                                success_callback=kbpublish.get_publish);
+                                                success_callback=(response)=>{location.href = '/publish/'+response.id;});
             common_entity_modal.show();
         });           
         $( "#publish-limit" ).change(function(){
