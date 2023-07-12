@@ -121,6 +121,10 @@ var kbcatalogue_attribute = {
             contentType: 'application/json',
             success: function (response) {
                 if (response != null) {
+                    if(!response){
+                        $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        return;
+                    }
 
                     let buttons = {};
                     if(kbcatalogue_attribute.var.has_edit_access){
@@ -132,7 +136,7 @@ var kbcatalogue_attribute = {
                         response.results[i].type_str = kbcatalogue_attribute.var.catalogue_attribute_type[response.results[i].type];
                     }
 
-                    table.set_rows($('#catalogue-attribute-tbody'), response.results,
+                    table.set_tbody($('#catalogue-attribute-tbody'), response.results,
                                     columns=[{id:"text"}, {name:"text"}, {type_str:"text"}, {order:"text"}],
                                     buttons=buttons);
 

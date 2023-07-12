@@ -16,7 +16,9 @@ class CatalogueEntryFilter(filters.FilterSet):
     class Meta:
         """Catalogue Entry Filter Metadata."""
         model = models.catalogue_entries.CatalogueEntry
-        fields = {"id": ["in", "exact"], "assigned_to": ["exact"], "custodian": ["exact"], "status": ["in", "exact"], "name": ["icontains", "contains"], "description": ["icontains", "contains"]}
+        fields = {"id": ["in", "exact"], "assigned_to": ["exact"], "custodian": ["exact"], 
+                  "status": ["in", "exact"], "name": ["icontains", "contains"], 
+                  "description": ["icontains", "contains"]}
 
 
 class CustodianFilter(filters.FilterSet):
@@ -106,7 +108,7 @@ class EmailNotificationFilter(filters.FilterSet):
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
-        fields = {"id": ["in"]}
+        fields = {"id": ["in"], "catalogue_entry":["exact"]}
 
 
 class WebhookNotificationFilter(filters.FilterSet):

@@ -2,6 +2,10 @@ var kbcatalogue_detail = {
     var: {
         catalogue_email_notification:"/api/catalogue/notifications/emails/",
         catalogue_email_notification_type_url:"/api/catalogue/notifications/emails/type",
+        log_communication_type_url:"/api/logs/communications/type/",
+        catalogue_table_date_format: "DD MMM YYYY HH:mm:ss",
+        catalogue_email_notification_type:null,    // will be filled during initiation
+        communication_type:null,    // will be filled during initiation
     },
 
     init_catalogue_detail: function(){
@@ -28,6 +32,11 @@ var kbcatalogue_detail = {
             this.var.has_edit_access = true;
         }
         
+        $("#log_actions_show").click(kbcatalogue_detail.show_action_log);
+        $("#log_communication_show").click(kbcatalogue_detail.show_communication_log);
+        $("#log_communication_add").click(kbcatalogue_detail.add_communication_log);
+
+        this.retrieve_communication_types();
         this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
     retrieve_noti_types: function(post_callback){
@@ -46,6 +55,29 @@ var kbcatalogue_detail = {
             },
             error: (error)=> {
                 alert("An error occured while getting email notification type.");
+                console.error(error);
+            },
+        });
+    },
+    retrieve_communication_types: function(){
+        $.ajax({
+            url: kbcatalogue_detail.var.log_communication_type_url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: (response) => {
+                if(!response){
+                    alert("An error occured while getting retrieve communication types.");
+                    return;    
+                }
+                var communication_type = {};
+                for(let i in response.results){
+                    const type = response.results[i];
+                    communication_type[type.id] = type.label;
+                }
+                this.var.communication_type = communication_type;
+            },
+            error: (error)=> {
+                alert("An error occured while getting retrieve communication types.");
                 console.error(error);
             },
         });
@@ -86,7 +118,7 @@ var kbcatalogue_detail = {
     get_email_notification: function(params_str){
         if (!params_str){
             params = {
-                catalogue_id:   $('#catalogue_entry_id').val(),
+                catalogue_entry:$('#catalogue_entry_id').val(),
                 limit:          $('#catalogue-detail-notification-limit').val(),
                 order_by:       $('#catalogue-detail-notification-order-by').val()
             }
@@ -99,18 +131,23 @@ var kbcatalogue_detail = {
             method: 'GET',
             contentType: 'application/json',
             success: function (response) {
-                // change type number to name
+                if(!response){
+                    $('#catalogue-detail-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    return;
+                }
+
                 let buttons = {};
                 if(kbcatalogue_detail.var.has_edit_access){
                     buttons={Update:(noti)=>kbcatalogue_detail.show_update_email_notification_modal(noti),
                         Delete:(noti)=>kbcatalogue_detail.show_delete_email_notification_modal(noti)};
                 }
-
+                    
+                // change type number to name
                 for(let i in response.results){
                     response.results[i].type_str = kbcatalogue_detail.var.catalogue_email_notification_type[response.results[i].type];
                 }
 
-                table.set_rows($('#catalogue-detail-notification-tbody'), response.results, 
+                table.set_tbody($('#catalogue-detail-notification-tbody'), response.results, 
                                 columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
                                 buttons=buttons);
                 common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, $('#notification-paging-navi'));
@@ -202,6 +239,150 @@ var kbcatalogue_detail = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: success_callback, 
+            error: error_callback
+        });
+    },
+    show_action_log: function(){
+        common_entity_modal.init("Action log", "info");
+        common_entity_modal.init_talbe();
+        let thead = common_entity_modal.get_thead();
+        table.set_thead(thead, {Who:3, What:5, When:4});
+        common_entity_modal.get_limit().change(()=>kbcatalogue_detail.get_action_log());
+        common_entity_modal.get_search().keyup((event)=>{
+            if (event.which === 13 || event.keyCode === 13){
+                event.preventDefault();
+                kbcatalogue_detail.get_action_log()
+            }
+        });
+        common_entity_modal.show();
+
+        kbcatalogue_detail.get_action_log();
+    },
+    get_action_log: function(params_str){
+        if(!params_str){
+            params = {
+                limit:  common_entity_modal.get_limit().val(),
+                search: common_entity_modal.get_search().val(),
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+    
+        var catalogue_entry_id = $('#catalogue_entry_id').val();
+        $.ajax({
+            url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/logs/actions/?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                if(!response || !response.results){
+                    table.message_tbody("No results found");
+                    return;
+                }
+                for(let i in response.results){
+                    response.results[i]['when'] = utils.convert_datetime_format(response.results[i].when, kbcatalogue_detail.var.catalogue_table_date_format); 
+                }
+                table.set_tbody(common_entity_modal.get_tbody(), response.results, [{username:"text"}, {what:'text'}, {when:'text'}]);
+                common_pagination.init(response.count, params, kbcatalogue_detail.get_action_log, common_entity_modal.get_page_navi());
+            },
+            error: function (error){
+                common_entity_modal.show_error_modal(error);
+            }
+        });
+    },
+    show_communication_log: function(){
+        common_entity_modal.init("Communication log", "info");
+        common_entity_modal.init_talbe();
+        let thead = common_entity_modal.get_thead();
+        table.set_thead(thead, {User:2, To:2, Cc:2, From:2, Subject:2, Text:2});
+        common_entity_modal.get_limit().change(()=>kbcatalogue_detail.get_communication_log());
+        common_entity_modal.get_search().keyup((event)=>{
+            if (event.which === 13 || event.keyCode === 13){
+                event.preventDefault();
+                kbcatalogue_detail.get_communication_log()
+            }
+        });
+        common_entity_modal.show();
+
+        kbcatalogue_detail.get_communication_log();
+    },
+    get_communication_log: function(params_str){
+        if(!params_str){
+            params = {
+                limit:  common_entity_modal.get_limit().val(),
+                search: common_entity_modal.get_search().val(),
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+    
+        var catalogue_entry_id = $('#catalogue_entry_id').val();
+        $.ajax({
+            url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/logs/communications/?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                if(!response || !response.results){
+                    table.message_tbody("No results found");
+                    return;
+                }
+                for(let i in response.results){
+                    response.results[i]['created_at'] = utils.convert_datetime_format(response.results[i].created_at, kbcatalogue_detail.var.catalogue_table_date_format); 
+                }
+                table.set_tbody(common_entity_modal.get_tbody(), response.results, 
+                                [{username:"text"}, {to:'text'}, {cc:'text'}, {from:'text'}, {subject:'text'}, {text:'text'}]);
+                common_pagination.init(response.count, params, kbcatalogue_detail.get_action_log, common_entity_modal.get_page_navi());
+            },
+            error: function (error){
+                common_entity_modal.show_error_modal(error);
+            }
+        });
+    },
+    add_communication_log: function(){
+        common_entity_modal.init("Add New Communication log", "submit");
+        let type_id = common_entity_modal.add_field(label="Communication Type", type="select", value=null, option_map=kbcatalogue_detail.var.communication_type);
+        let to_id = common_entity_modal.add_field(label="To", type="text");
+        let cc_id = common_entity_modal.add_field(label="Cc", type="text");
+        let from_id = common_entity_modal.add_field(label="From", type="text");
+        let subject_id = common_entity_modal.add_field(label="Subject", type="text");
+        let text_id = common_entity_modal.add_field(label="Text", type="text");
+
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                            kbcatalogue_detail.create_communication_log(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id));
+        common_entity_modal.show();
+    },
+    create_communication_log: function(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id){
+        // get & validation check
+        const type = utils.validate_empty_input('type', $('#'+type_id).val());
+        const to = utils.validate_empty_input('to', $('#'+to_id).val());
+        const cc = utils.validate_empty_input('cc', $('#'+cc_id).val());
+        const from = utils.validate_empty_input('from', $('#'+from_id).val());
+        const subject = utils.validate_empty_input('subject', $('#'+subject_id).val());
+        const text = utils.validate_empty_input('text', $('#'+text_id).val());
+        
+        // make data body
+        var communication_log_data = {
+            type:type,
+            to:to,
+            cc:cc,
+            from:from,
+            subject:subject,
+            text:text,
+            user:$('#current-user').val(),
+        };
+        var url = kbcatalogue.var.catalogue_data_url+$('#catalogue_entry_id').val()+"/logs/communications/";
+        var method = 'POST';
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(communication_log_data),
+            success: success_callback,
             error: error_callback
         });
     },

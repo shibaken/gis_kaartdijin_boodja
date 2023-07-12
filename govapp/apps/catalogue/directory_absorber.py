@@ -253,11 +253,14 @@ class Absorber:
         # Return
         return success
 
-    def convert_to_geojson(self, filepath: str, catalogue_entry: models.catalogue_entries.CatalogueEntry) -> pathlib.Path:
+    def convert_to_geojson(
+        self, 
+        filepath: str, 
+        catalogue_entry: models.catalogue_entries.CatalogueEntry) -> pathlib.Path:
         # Convert to a Geojson file
         path_from = to_geojson(
             filepath=pathlib.Path(filepath),
-            layer=catalogue_entry.metadata.name,
+            layer=catalogue_entry.name,
             catalogue_name=catalogue_entry.name,
             export_method=None
         )

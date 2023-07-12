@@ -45,7 +45,7 @@ class PublishEntryFilter(filters.FilterSet):
         fields = {"id": ["exact", "in"], "assigned_to": ["exact"], "status": ["exact"], 
                   "catalogue_entry__name": ["icontains", "contains"], 
                   "description": ["icontains", "contains"], 
-                  "catalogue_entry__custodian__name": ["icontains", "contains"]  }
+                  "catalogue_entry__custodian": ["exact"]  }
         #fields = {"name": ['contains'] }
 
 
@@ -56,7 +56,7 @@ class EmailNotificationFilter(filters.FilterSet):
     class Meta:
         """Email Notification Filter Metadata."""
         model = models.notifications.EmailNotification
-        fields = {"id": ["in"]}
+        fields = {"id": ["in"], "publish_entry":["exact"]}
 
 
 class WorkspaceFilter(filters.FilterSet):

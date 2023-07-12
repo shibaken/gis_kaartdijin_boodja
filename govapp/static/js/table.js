@@ -3,15 +3,32 @@ var table={
                 //                         buttons={Update:kbcatalogue_detail.show_update_email_notification_modal, 
                 //                                 Delete:kbcatalogue_detail.show_delete_email_notification_modal});
 
-    set_rows: function (table, list, columns, buttons=null){
-        table.empty();
+    // columns e.g. {Name:2, Email:4}
+    set_thead: function (thead, columns){
+        thead.empty();
+
+        let tr = $('<tr>');
+        for(key in columns){
+            let th = $('<th>');
+            th.attr('class', 'col-'+columns[key]);
+            th.text(key);
+            tr.append(th);
+        }
+        thead.append(tr);
+    },
+    set_tbody: function (tbody, list, columns, buttons=null){
+        tbody.empty();
 
         for(let i in list){
             let row = this.make_row(list[i], columns);
-            if(buttons)
-                row.append(this.make_button_cell(buttons, table.attr("id")+'-row-'+i, list[i]));
-            table.append(row);
+            if(buttons){
+                row.append(this.make_button_cell(buttons, tbody.attr("id")+'-row-'+i, list[i]));
+            }
+            tbody.append(row);
         }
+    },
+    message_tbody: function(tbody, message){
+        tbody.html("<tr><td colspan='7' class='text-center'>"+message+"<td></tr>");
     },
 
     // ('#catalogue-detail-notification-tbody', response.results, {active:'switch'},

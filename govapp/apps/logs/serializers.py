@@ -29,6 +29,7 @@ class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
     """Communications Log Entry Model Serializer."""
     documents = CommunicationsLogDocumentSerializer(many=True, read_only=True)
     vars()["from"] = serializers.CharField(source="fromm")  # Work-around to use reserved keywords in serializer
+    # username = serializers.CharField(source="user.username")
 
     class Meta:
         """Communications Log Entry Model Serializer Metadata."""
@@ -43,14 +44,34 @@ class CommunicationsLogEntrySerializer(serializers.ModelSerializer):
             "subject",
             "text",
             "documents",
-            "user",
+            "username"
         )
         read_only_fields = (
             "created_at",
             "documents",
-            "user",
+            "username",
         )
 
+class CommunicationsLogCreateEntrySerializer(serializers.ModelSerializer):
+    """Communications Log Entry Model Serializer."""
+    documents = CommunicationsLogDocumentSerializer(many=True, read_only=True)
+    vars()["from"] = serializers.CharField(source="fromm")  # Work-around to use reserved keywords in serializer
+
+    class Meta:
+        """Communications Log Entry Model Serializer Metadata."""
+        model = CommunicationsLogEntrySerializer.Meta.model
+        fields = (
+            "id",
+            "created_at",
+            "type",
+            "to",
+            "cc",
+            "from",
+            "subject",
+            "text",
+            "documents",
+            "user",
+        )
 
 class ActionsLogEntrySerializer(serializers.ModelSerializer):
     """Actions Log Entry Model Serializer."""
@@ -59,7 +80,7 @@ class ActionsLogEntrySerializer(serializers.ModelSerializer):
         model = models.ActionsLogEntry
         fields = (
             "id",
-            "who",
+            "username",
             "when",
             "what",
         )

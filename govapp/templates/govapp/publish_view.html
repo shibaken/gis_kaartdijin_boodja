@@ -31,12 +31,12 @@
                                     </div>
                                     <div class='col-12 p-3 border-bottom'>
                                           <p><b>Communication</b><br>
-                                          <a href=''>Show</a> | <a href=''>Add Entry</a></p>
+                                          <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
 
                                     </div>
                                     <div class='col-12 p-3'>
                                           <p><b>Actions</b><br>
-                                          <a href=''>Show</a></p>
+                                          <a href='#' id="log_actions_show">Show</a></p>
 
                                     </div>
 
@@ -437,6 +437,7 @@
             <input type="hidden" id="catalogue-name-id" name="catalogue_name" value="{{ publish_entry_obj.catalogue_entry.name }}">
             <input type="hidden" id="publish-entry-id" name="publish_entry_id" value="{{ publish_id }}">
             <div id="publish_workspace_list" data-list="{{ publish_workspace_list }}"></div>
+            <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
 
             <script>
                   kbpublish.init_publish_item();

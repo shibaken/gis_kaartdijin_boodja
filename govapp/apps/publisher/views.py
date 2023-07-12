@@ -66,7 +66,7 @@ class PublishEntryViewSet(
         for result in response.data.get('results'):
             if result.get('updated_at'):
                 date_obj = datetime.strptime(result.get('updated_at'), "%Y-%m-%dT%H:%M:%S.%f%z")
-                result['updated_at'] = str(date_obj.astimezone().strftime('%d %b %Y %H:%M %p'))                 
+                result['updated_at'] = str(date_obj.astimezone().strftime('%d %b %Y %H:%M %p'))
                  
         return response
     
@@ -558,6 +558,13 @@ class EmailNotificationViewSet(
     filterset_class = filters.EmailNotificationFilter
     search_fields = ["name", "email"]
     permission_classes = [permissions.HasPublishEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    
+    # to pass the pk to serializer
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if context['request'].method == 'PUT':
+            context['pk'] = self.kwargs['pk']
+        return context
 
 
 @drf_utils.extend_schema(tags=["Publisher - Workspaces"])
