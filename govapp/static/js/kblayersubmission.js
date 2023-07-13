@@ -38,7 +38,7 @@ var kblayersubmission = {
         $("#log_actions_show").click(kblayersubmission.show_action_log);
         $("#log_communication_show").click(kblayersubmission.show_communication_log);
         $("#log_communication_add").click(kblayersubmission.add_communication_log);
-        $("#file_download").click(kblayersubmission.download_geojson);
+        $("#file_download").click(kblayersubmission.download_file);
 
         kblayersubmission.retrieve_communication_types();
     },
@@ -303,10 +303,10 @@ var kblayersubmission = {
             error: error_callback
         });
     },
-    download_geojson: function(){
+    download_file: function(){
         
         $.ajax({
-            url: kblayersubmission.var.layersubmission_data_url+$('#layer_submission_obj_id').val()+'/geojson',
+            url: kblayersubmission.var.layersubmission_data_url+$('#layer_submission_obj_id').val()+'/file',
             method: 'GET',
             xhrFields: {
                 responseType: 'blob'

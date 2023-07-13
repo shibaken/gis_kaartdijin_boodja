@@ -364,9 +364,9 @@ class LayerSubmissionViewSet(
     search_fields = ["description", "catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
-    @decorators.action(detail=True, methods=["GET"], url_path="geojson", permission_classes=[accounts_permissions.IsAuthenticated])
-    def download_geojson_file(self, request: request.Request, pk: str):
-        file_path = self.queryset.get(id=pk).geojson
+    @decorators.action(detail=True, methods=["GET"], url_path="file", permission_classes=[accounts_permissions.IsAuthenticated])
+    def download_file(self, request: request.Request, pk: str):
+        file_path = self.queryset.get(id=pk).file
 
         if file_path == None or os.path.exists(file_path) == False:
             return response.Response({"message":"The target file does not exist."}, 
