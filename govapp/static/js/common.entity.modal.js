@@ -65,7 +65,7 @@ var common_entity_modal = {
         },
         text_area: (label, value, disabled) => {
             let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="text", element="<textarea>");
-            field.attr("row", 4);
+            field.attr("row", 10);
             return field;
             // <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
         },
