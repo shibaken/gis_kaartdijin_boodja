@@ -70,6 +70,7 @@
                         value="{{ id  }}">
                   <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
                   <input type="hidden" id="pagetab" name="pagetab" value="{{ tab  }}">
+                  <input type="hidden" id="layer_submission_obj_id" name="layer_submission_obj_id" value="{{ layer_submission_obj.id }}">
                   {% if tab == "details" %}
                   {% include "govapp/layer_submissions_view_details.html" %}
                   {% elif tab == "map" %}

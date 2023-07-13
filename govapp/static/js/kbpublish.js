@@ -738,7 +738,7 @@ var kbpublish = {
                                 html+= " <button class='btn btn-danger btn-sm publish-table-button' id='publish-external-error-"+response.results[i].id+"' type='button' disabled><i class='bi bi-x-lg'></i></button>&nbsp;";
                             }
                             html+="  <a class='btn btn-primary btn-sm' href='/publish/"+response.results[i].id+"'>View</a>";
-                            html+="  <button class='btn btn-primary btn-sm'>History</button>";
+                            html+="  <button class='btn btn-secondary btn-sm'>History</button>";
                             html+="  </td>";
                             html+= "<tr>";
                         }
