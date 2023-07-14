@@ -183,8 +183,8 @@ var common_entity_modal = {
         console.log(error);
     },
     show: function(){
-        this.hide_all_modal();
-        $('#common-entity-modal').modal('show');
+        common_entity_modal.hide_all_modal('entity');
+        common_entity_modal.show_modal($('#common-entity-modal'));
     },
     get_thead: function(){
         return $('#modal-table-thead');
@@ -210,16 +210,20 @@ var common_entity_modal = {
         $('#common-entity-modal-delete-btn').prop("disabled", disabled);
     },
     show_alert: function (content, title){
-        this.hide_all_modal();
+        common_entity_modal.hide_all_modal('alert');
         if(title){
             $('#common-alert-modal-label').text(title);
         }
         $('#common-alert-modal-content').text(content);
-        $('#common-alert-modal').modal('show');
+        common_entity_modal.show_modal($('#common-alert-modal'));
     },
     show_progress: function (){
-        this.hide_all_modal();
-        $('#common-progress-modal').modal('show');
+        common_entity_modal.hide_all_modal('progress');
+        common_entity_modal.show_modal($('#common-progress-modal'));
+    },
+    show_modal: function (modal){
+        modal.off('shown.bs.modal');
+        modal.modal('show');
     },
     hide: function(){
         common_entity_modal.hide_modal($('#common-entity-modal'));
@@ -234,9 +238,15 @@ var common_entity_modal = {
         modal.on('shown.bs.modal', ()=>modal.modal('hide'));
         modal.modal('hide');
     },
-    hide_all_modal: function (){
-        this.hide();
-        this.hide_alert();
-        this.hide_progress();
+    hide_all_modal: function (current){
+        if(current != 'entity'){
+            common_entity_modal.hide();
+        }
+        if(current != 'alert'){
+            common_entity_modal.hide_alert();
+        }
+        if(current != 'progress'){
+            common_entity_modal.hide_progress();
+        }
     }
 }
