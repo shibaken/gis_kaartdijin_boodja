@@ -304,7 +304,7 @@ var kblayersubmission = {
         });
     },
     download_file: function(){
-        
+        common_entity_modal.show_progress();
         $.ajax({
             url: kblayersubmission.var.layersubmission_data_url+$('#layer_submission_obj_id').val()+'/file',
             method: 'GET',
@@ -321,8 +321,10 @@ var kblayersubmission = {
                 a[0].click();
                 window.URL.revokeObjectURL(url);
                 a.remove();
+                common_entity_modal.hide_progress();
             },
             error: function(xhr, status, error) {
+                common_entity_modal.show_alert("The target file does not exists.");
                 console.error(error);
             }
         });

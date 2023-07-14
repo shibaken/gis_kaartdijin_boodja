@@ -66,6 +66,7 @@ var common_entity_modal = {
         text_area: (label, value, disabled) => {
             let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="text", element="<textarea>");
             field.attr("row", 10);
+            field.height('200px');
             return field;
             // <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
         },
@@ -182,10 +183,8 @@ var common_entity_modal = {
         console.log(error);
     },
     show: function(){
+        this.hide_all_modal();
         $('#common-entity-modal').modal('show');
-    },
-    hide: function(){
-        $('#common-entity-modal').modal('hide');
     },
     get_thead: function(){
         return $('#modal-table-thead');
@@ -210,4 +209,34 @@ var common_entity_modal = {
         $('#common-entity-modal-cancel-btn').prop("disabled", disabled);
         $('#common-entity-modal-delete-btn').prop("disabled", disabled);
     },
+    show_alert: function (content, title){
+        this.hide_all_modal();
+        if(title){
+            $('#common-alert-modal-label').text(title);
+        }
+        $('#common-alert-modal-content').text(content);
+        $('#common-alert-modal').modal('show');
+    },
+    show_progress: function (){
+        this.hide_all_modal();
+        $('#common-progress-modal').modal('show');
+    },
+    hide: function(){
+        common_entity_modal.hide_modal($('#common-entity-modal'));
+    },
+    hide_alert: function(){
+        common_entity_modal.hide_modal($('#common-alert-modal'));
+    },
+    hide_progress: function (){
+        common_entity_modal.hide_modal($('#common-progress-modal'));
+    },
+    hide_modal: function(modal){
+        modal.on('shown.bs.modal', ()=>modal.modal('hide'));
+        modal.modal('hide');
+    },
+    hide_all_modal: function (){
+        this.hide();
+        this.hide_alert();
+        this.hide_progress();
+    }
 }

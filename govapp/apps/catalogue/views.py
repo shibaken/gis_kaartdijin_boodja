@@ -5,6 +5,7 @@
 from django import shortcuts
 from django.contrib import auth
 from django.db import connection
+from django.http import HttpResponse
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -374,9 +375,9 @@ class LayerSubmissionViewSet(
                                      status=status.HTTP_404_NOT_FOUND)
             
         with open(file_path, 'rb') as fh:
-            res = response.Response(fh.read(), 
-                                    content_type='application/octet-stream', 
-                                    status=status.HTTP_200_OK)
+            res = HttpResponse(fh.read(), 
+                                content_type='application/octet-stream', 
+                                status=status.HTTP_200_OK)
             res['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
             res['Filename'] = os.path.basename(file_path)
             return res
