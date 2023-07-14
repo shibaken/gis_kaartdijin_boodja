@@ -63,6 +63,10 @@ var common_entity_modal = {
             value = value ? value: "";
             return common_entity_modal.maker.make_common_field(label, value, disabled);
         },
+        password: (label, value, disabled) => {
+            value = value ? value: "";
+            return common_entity_modal.maker.make_common_field(label, value, disabled, type="password");
+        },
         text_area: (label, value, disabled) => {
             let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="text", element="<textarea>");
             field.attr("row", 10);

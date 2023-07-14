@@ -3,6 +3,7 @@
 {% block content %}
 
 {% if request.user.is_authenticated is True %}
+      {% include "govapp/common_entity_modal.html" %}
       
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
 
@@ -29,15 +30,15 @@
                                           <div class='row'>
                                                 <div class='col-3'>
                                                       <label for="publish-name" class="form-label">Name</label>
-                                                      <input type="text" class="form-control" id="catalogue-name" >
+                                                      <input type="text" class="form-control" id="subscription-name" >
                                                 </div>
                                                 <div class='col-3'>
                                                       <label for="publish-custodian" class="form-label">Custodian</label>
-                                                      <input type="text" class="form-control" id="catalogue-custodian" placeholder="not working" >
+                                                      <input type="text" class="form-control" id="subscription-custodian" placeholder="not working" >
                                                 </div>
                                                 <div class='col-3'>
                                                       <label for="publish-status" class="form-label">Status</label>
-                                                      <select type="text" class="form-control" id="catalogue-status" >
+                                                      <select type="text" class="form-control" id="subscription-status" >
                                                             <option value="">All</option>
                                                             <option value="1">New Draft</option>
                                                             <option value="2">Locked</option>
@@ -54,17 +55,17 @@
                                     <div class='col-12'>
                                           <div class='row'>
                                                 <div class='col-3'>
-                                                      <label for="publish-lastupdatedfrom" class="form-label">Last Updated From</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedfrom"  placeholder="not working"  >
+                                                      <label for="subscription-subscribed-from" class="form-label">Subscribed From</label>
+                                                      <input type="text" class="form-control" id="subscription-subscribed-from"  placeholder="not working"  >
 
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-lastupdatedto" class="form-label">Last Updated To</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedto" placeholder="not working"  >
+                                                      <label for="subscription-subscribed-to" class="form-label">Subscribed To</label>
+                                                      <input type="text" class="form-control" id="subscription-subscribed-to" placeholder="not working"  >
                                                 </div>
                                                 <div class='col-3'>
                                                       <label for="publish-assignedto" class="form-label">Assigned To</label>
-                                                      <input type="text" class="form-control" id="catalogue-assignedto" placeholder="not working" >
+                                                      <input type="text" class="form-control" id="subscription-assignedto" placeholder="not working" >
                                                 </div>
                                                 <div class='col-3'>
                                                       &nbsp;
@@ -77,27 +78,34 @@
                                     <div class='row'>
                                           <div class='col-3'>
                                                 <label for="e1" class="form-label">Description</label>
-                                                <input type="text" class="form-control" id="catalogue-description" >
+                                                <input type="text" class="form-control" id="subscription-description" >
 
                                           </div>
                                           <div class='col-3'>
                                                 <label for="publish-number" class="form-label">Number</label>
-                                                <input type="text" class="form-control" id="catalogue-number" >
+                                                <input type="text" class="form-control" id="subscription-number" >
                                           </div>
                                           <div class='col-3'>
                                                 &nbsp;
                                                 
                                           </div>
                                           <div class='col-3 p-4'>
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-filter-btn'>Filter</button>
+                                                <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-filter-btn'>Filter</button>
                                                 &nbsp;
                                           </div>
                                     </div>
                               </div>                        
                         </div>                  
-                        <div class='col-12 pt-2 pb-2 '>
-                              <BR>
-                        </div>
+                        <div class='col-12 pt-4'>
+                              <div class='row'>
+                                    <div class='col-6'>
+                                          &nbsp;
+                                    </div>
+                                    <div class='col-6 text-end'>
+                                          <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>New Subscription</button>
+                                    </div>
+                              </div>
+                        </div>      
 
 
                         <div class='col-12 pt-2 pb-2 '>
@@ -145,7 +153,7 @@
                                                 <div class="col-sm-12 col-md-6">
                                                       <div class="dataTables_length" id="bookings-table_length">
                                                             <label>Show 
-                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm">
+                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="subscription-limit">
                                                                         <option value="10">10</option>
                                                                         <option value="25" selected>25</option>
                                                                         <option value="50">50</option>
@@ -161,7 +169,7 @@
                                                 <div class="col-sm-12 col-md-12 text-end">
                                                       <div class="dataTables_length" id="bookings-table_length">
                                                             <label>Order By 
-                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm">
+                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm"  id="subscription-order-by">
                                                                         <option value="id">ID</option>
                                                                         <option value="name">Name</option>
                                                                         <option value="status">Status</option>
@@ -176,7 +184,7 @@
                                     </div>                                    
                               </div>
                         </div>     
-                        <div id='publish-table'>
+                        <div id='subscription-table'>
                               <table id="example" class="table" style="width:100%">
                                     <thead class='table-dark'>
                                     <tr>
@@ -189,14 +197,14 @@
                                           <th>Action</th>
                                     </tr>
                                     </thead>
-                                    <tbody id='publish-tbody'>
+                                    <tbody id='subscription-tbody'>
                                     <tr>
                                           <td colspan="7" class='text-center'>No Results</td>
                                     </tr>
                                     </tbody>
                               </table>   
                               <nav aria-label="Page navigation example">
-                                    <ul class="pagination justify-content-end">
+                                    <ul class="pagination justify-content-end" id='subscription-navi'>
                                       <li class="page-item"><a class="page-link" href="#">Previous</a></li>
                                       <li class="page-item"><a class="page-link" href="#">1</a></li>
                                       <li class="page-item"><a class="page-link" href="#">2</a></li>
@@ -211,7 +219,7 @@
 
       </div>
       <script>
-
+            kblayersubscription.init_dashboard();
       </script>
 {% else %}
       <div class="container" id="dashboard-table-container">
