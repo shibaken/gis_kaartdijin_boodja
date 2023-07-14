@@ -40,6 +40,11 @@ class CatalogueEntryStatus(models.IntegerChoices):
     DECLINED = 3
     DRAFT = 4
     PENDING = 5
+    
+class CatalogueEntryType(models.IntegerChoices):
+    """Enumeration for a Catalogue Entry Status."""
+    SPECIAL_FILE = 1
+    SUBSCRIPTION = 2
 
 
 @reversion.register(
@@ -58,6 +63,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     name = models.TextField()
     description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
+    type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPECIAL_FILE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     editors = models.ManyToManyField(
