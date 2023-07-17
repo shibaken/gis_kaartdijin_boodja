@@ -66,11 +66,6 @@ class CatalogueEntry(mixins.RevisionedMixin):
     type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPECIAL_FILE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    editors = models.ManyToManyField(
-        UserModel,
-        blank=True,
-        limit_choices_to=accounts_utils.limit_to_catalogue_editors,  # type: ignore[arg-type]
-    )
     custodian = models.ForeignKey(
         custodians.Custodian,
         default=None,

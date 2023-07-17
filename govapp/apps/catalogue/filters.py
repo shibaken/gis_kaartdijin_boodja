@@ -117,3 +117,11 @@ class WebhookNotificationFilter(filters.FilterSet):
         """Webhook Notification Filter Metadata."""
         model = models.notifications.WebhookNotification
         fields = {"id": ["in"]}
+
+
+class CataloguePermissionFilter(filters.FilterSet):
+    """Catalogue Permission Filter."""
+    class Meta:
+        """Webhook Notification Filter Metadata."""
+        model = models.permission.CatalogueEntryPermission
+        fields = {"catalogue_entry": ["exact"]}

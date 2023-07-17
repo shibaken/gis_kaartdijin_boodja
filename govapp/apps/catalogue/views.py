@@ -285,6 +285,7 @@ class CatalogueEntryViewSet(
             result = cursor.fetchone()
             current_time = result[0]
         return current_time
+    
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
@@ -453,3 +454,19 @@ class WebhookNotificationViewSet(
     filterset_class = filters.WebhookNotificationFilter
     search_fields = ["name", "url"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    
+@drf_utils.extend_schema(tags=["Catalogue - Permissions"])
+class CataloguePermissionViewSet(
+    mixins.MultipleSerializersMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):      
+    """Layer Attribute Type View Set."""
+    queryset = models.permission.CatalogueEntryPermission.objects.all()
+    serializer_class = serializers.permission.CataloguePermissionSerializer
+    serializer_classes = {"create": serializers.permission.CataloguePermissionCreateSerializer}
+    filterset_class = filters.CataloguePermissionFilter
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    pagination_class = None
