@@ -3,7 +3,7 @@
 {% block content %}
       {% if request.user.is_authenticated is True %}
 
-            {% include "govapp/publish_manage_editors.html" %}
+            {% include "govapp/manage_editors_modal.html" %}
             {% include "govapp/publish_view_new_geoserver.html" %}
             {% include "govapp/publish_view_new_cddp.html" %}
             {% include "govapp/common_entity_modal.html" %}

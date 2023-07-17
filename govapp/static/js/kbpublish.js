@@ -240,7 +240,7 @@ var kbpublish = {
         $("#log_communication_add").click(kbpublish.add_communication_log);
         
 
-        $('#publish-editors-search').select2({
+        $('#manage-editors-search').select2({
             placeholder: 'Select an option',
             minimumInputLength: 2,
             allowClear: true,
@@ -272,8 +272,8 @@ var kbpublish = {
             },
         });
 
-        $('#publish-editors-add-btn').click(function(e){
-            kbpublish.add_publish_editor($('#publish-editors-search').val());
+        $('#manage-editors-add-btn').click(function(e){
+            kbpublish.add_publish_editor($('#manage-editors-search').val());
         });
 
         kbpublish.get_publish_geoservers();
@@ -939,12 +939,12 @@ var kbpublish = {
                             html+= " <td>"+response[i].first_name+"</td>";
                             html+= " <td>"+response[i].last_name+"</td>";                        
                             html+= " <td>"+response[i].email+"</td>";                                                    
-                            html+= " <td class='text-end'><button class='btn btn-danger btn-sm publish-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
+                            html+= " <td class='text-end'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
                             html+= "<tr>";
                         }
                                                                    
-                        $('#publish-editors-tbody').html(html);
-                        $( ".publish-editors-delete" ).click(function() {
+                        $('#manage-editors-tbody').html(html);
+                        $( ".manage-editors-delete" ).click(function() {
                             console.log($(this).attr('data-json'));
                             var btndata_json = $(this).attr('data-json');
                             var btndata = JSON.parse(btndata_json);
@@ -953,21 +953,21 @@ var kbpublish = {
                             
                         });                         
                     } else {
-                        $('#publish-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
 
                     }
                 } else {
-                      $('#publish-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
                 }
 
        
             },
             error: function (error) {
-                $('#save-publish-popup-error').html("Error Loading publish data");
-                $('#save-publish-popup-error').show();
-                $('#save-publish-tbody').html('');
+                $('#manage-popup-error').html("Error Loading manage data");
+                $('#manage-popup-error').show();
+                $('#manage-editors-tbody').html('');
 
-                console.log('Error Loading publish data');
+                console.log('Error Loading manage data');
             },
         });
     },
