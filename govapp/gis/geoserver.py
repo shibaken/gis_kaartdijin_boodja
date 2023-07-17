@@ -11,7 +11,7 @@ import httpx
 
 # Typing
 from typing import Any, Optional
-
+from django.template.loader import render_to_string
 
 # Logging
 log = logging.getLogger(__name__)
@@ -92,10 +92,10 @@ class GeoServer:
             filepath (pathlib.Path): Path to the Geopackage file to upload.
         """
         # Log
-        log.info(f"Uploading Geopackage '{filepath}' to GeoServer")
+        log.info(f"Uploading GeoTiff '{filepath}' to GeoServer")
 
         # Construct URL
-        url = "{0}/rest/workspaces/{1}/datastores/{2}/file.tif".format(
+        url = "{0}/rest/workspaces/{1}/coveragestores/{2}/file.geotiff".format(
             self.service_url,
             workspace,
             layer,
@@ -114,6 +114,190 @@ class GeoServer:
 
         # Check Response
         response.raise_for_status()
+
+
+    def upload_store_wms(
+        self,
+        workspace,
+        store_name,
+        context
+    ) -> None:
+        """Uploads a Geopackage file to the GeoServer.
+
+        Args:
+            workspace (str): Workspace to upload files to.
+            layer (str): Name of the layer to upload GeoPackage for.
+            filepath (pathlib.Path): Path to the Geopackage file to upload.
+        """
+        # Log
+        log.info(f"Uploading WMS Store to GeoServer")
+        
+        xml_data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
+
+        store_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}".format(
+            self.service_url,
+            workspace,
+            store_name
+        )
+        # Check if Store Exists
+        response = httpx.get(
+            url=store_get_url,
+            auth=(self.username, self.password),
+            headers={"content-type": "application/json","Accept": "application/json"}
+        )
+
+        # Construct URL
+        url = "{0}/rest/workspaces/{1}/wmsstores".format(
+            self.service_url,
+            workspace
+        )
+
+        if response.status_code == 404: 
+            # Perform Request
+            response = httpx.post(
+                url=url,
+                auth=(self.username, self.password),
+                data=xml_data,
+                headers={"content-type": "application/json","Accept": "application/json"}
+            )
+        else:          
+            # Perform Request
+            response = httpx.put(
+                url=store_get_url,
+                auth=(self.username, self.password),
+                data=xml_data,
+                headers={"content-type": "application/json","Accept": "application/json"}
+            )
+
+        
+        # Log
+        log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")
+        
+        # Check Response
+        response.raise_for_status()
+
+
+    def upload_store_postgis(
+        self,
+        workspace,
+        store_name,
+        context
+    ) -> None:
+        """Uploads a Geopackage file to the GeoServer.
+
+        Args:
+            workspace (str): Workspace to upload files to.
+            layer (str): Name of the layer to upload GeoPackage for.
+            filepath (pathlib.Path): Path to the Geopackage file to upload.
+        """
+        # Log
+        log.info(f"Uploading POSTGIS Store to GeoServer")
+        
+        json_data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
+
+        store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+            self.service_url,
+            workspace,
+            store_name
+        )
+        # Check if Store Exists
+        response = httpx.get(
+            url=store_get_url,
+            auth=(self.username, self.password),
+            headers={"content-type": "application/json","Accept": "application/json"}
+        )
+
+        # Construct URL
+        url = "{0}/rest/workspaces/{1}/datastores".format(
+            self.service_url,
+            workspace
+        )
+
+        if response.status_code == 404: 
+            # Perform Request
+            response = httpx.post(
+                url=url,
+                auth=(self.username, self.password),
+                data=json_data,
+                headers={"content-type": "application/json","Accept": "application/json"}
+            )
+        else:  
+            pass        
+            #Perform Request
+            response = httpx.put(
+                url=store_get_url,
+                auth=(self.username, self.password),
+                data=json_data,
+                headers={"content-type": "application/json","Accept": "application/json"}
+            )
+
+        
+        # Log
+        log.info(f"GeoServer POSTGIS response: '{response.status_code}: {response.text}'")
+        
+        # Check Response
+        response.raise_for_status()     
+
+
+
+    def upload_store_wfs(
+        self,
+        workspace,
+        store_name,
+        context
+    ) -> None:
+        """Uploads a Geopackage file to the GeoServer.
+
+        Args:
+            workspace (str): Workspace to upload files to.
+            layer (str): Name of the layer to upload GeoPackage for.
+            filepath (pathlib.Path): Path to the Geopackage file to upload.
+        """
+        # Log
+        log.info(f"Uploading WFS Store to GeoServer")
+        
+        json_data = render_to_string('govapp/geoserver/wfs/wfs_store.json', context)
+
+        store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+            self.service_url,
+            workspace,
+            store_name
+        )
+        #Check if Store Exists
+        response = httpx.get(
+            url=store_get_url,
+            auth=(self.username, self.password),
+            headers={"content-type": "application/json","Accept": "application/json"}
+        )
+        # Construct URL
+        url = "{0}/rest/workspaces/{1}/datastores".format(
+            self.service_url,
+            workspace
+        )
+
+        if response.status_code == 404: 
+            # Perform Request
+            response = httpx.post(
+                url=url,
+                auth=(self.username, self.password),
+                data=json_data,
+                headers={"content-type": "application/json","Accept": "application/json"}
+            )
+        else:  
+            pass        
+            #Perform Request
+            response = httpx.put(
+                url=store_get_url,
+                auth=(self.username, self.password),
+                data=json_data,
+                headers={"content-type": "application/json","Accept": "application/json"}
+            )
+        
+        # Log
+        log.info(f"GeoServer WFS response: '{response.status_code}: {response.text}'")
+        
+        # Check Response
+        response.raise_for_status()    
 
 
     def upload_style(
