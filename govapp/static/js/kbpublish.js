@@ -148,6 +148,8 @@ var kbpublish = {
         }
 
 
+        
+
 
         kbpublish.get_publish();
     },
@@ -238,6 +240,42 @@ var kbpublish = {
         $("#log_communication_add").click(kbpublish.add_communication_log);
         
 
+        $('#publish-editors-search').select2({
+            placeholder: 'Select an option',
+            minimumInputLength: 2,
+            allowClear: true,
+            dropdownParent: $('#ManageEditorsModal'),
+            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+            theme: 'bootstrap-5',
+            ajax: {
+                url: "/api/accounts/users/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (params, page) {
+                    return {
+                        q: params.term,                        
+                    };
+                },          
+                  processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    var results = [];
+                    $.each(data.results, function(index, item){
+                      results.push({
+                        id: item.id,
+                        text: item.first_name+' '+item.last_name
+                      });
+                    });
+                    return {
+                        results: results
+                    };
+                  }                  
+            },
+        });
+
+        $('#publish-editors-add-btn').click(function(e){
+            kbpublish.add_publish_editor($('#publish-editors-search').val());
+        });
+
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
         kbpublish.retrieve_communication_types();
@@ -302,18 +340,20 @@ var kbpublish = {
             success: function (response) {
                 var html = '';
                 console.log(response);
-                alert(response);
-                if (response != null) {
-                    if (response.length > 0) {
+                // alert(response);
+                // if (response != null) {
+                //     if (response.length > 0) {
                                            
         
-                    } else {
+                //     } else {
         
 
-                    }
-                } else {
+                //     }
+                // } else {
         
-                }
+                // }
+
+                kbpublish.get_publish_editors();
 
        
             },
@@ -325,6 +365,24 @@ var kbpublish = {
         });
 
 
+    },
+    add_publish_editor: function(user_id) {        
+        var publish_id = $('#publish_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        $.ajax({
+            url: kbpublish.var.publish_save_url+publish_id+"/editors/add/"+user_id+"/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                console.log(response);
+                kbpublish.get_publish_editors();
+            },
+            error: function (error) {
+                 alert("ERROR");
+            },
+        });
     },
     delete_publish_geoserver: function(geoserver_publish_id) {        
         var publish_id = $('#publish_id').val();
