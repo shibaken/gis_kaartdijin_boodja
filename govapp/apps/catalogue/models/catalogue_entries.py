@@ -133,7 +133,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
         """
         from govapp.apps.catalogue.models.permission import CatalogueEntryPermission
         permissions = CatalogueEntryPermission.objects.select_related('user').filter(catalogue_entry=self)
-        return UserModel.objects.filter(id__in=(p.user for p in permissions))
+        return UserModel.objects.filter(id__in=(p.user.id for p in permissions))
         # return [p.user for p in permissions]
 
     @classmethod
