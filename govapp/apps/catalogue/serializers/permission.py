@@ -27,3 +27,9 @@ class CataloguePermissionCreateSerializer(serializers.ModelSerializer):
         """Catalogue Permission Create Model Serializer Metadata."""
         model = CataloguePermissionSerializer.Meta.model
         fields = ('user', 'catalogue_entry')
+        
+    def validate_user(self, user):
+         catalogue_entry = self.initial_data.get('catalogue_entry')
+         if models.permission.CatalogueEntryPermission.objects.filter(catalogue_entry=catalogue_entry, user=user).exists():
+             raise serializers.ValidationError("Value '{}' of 'user' is already taken.".format(f"{user.first_name} {user.last_name}"))
+         return user

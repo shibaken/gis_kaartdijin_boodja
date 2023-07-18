@@ -445,7 +445,7 @@ var kbcatalogue = {
                 kbcatalogue.get_catalogue_editors();
             },
             error: function (error) {
-                $('#manage-popup-error').text(error.responseText);
+                $('#manage-popup-error').text(JSON.parse(error.responseText).user[0]);
                 $('#manage-popup-error').show();
             },
         });
