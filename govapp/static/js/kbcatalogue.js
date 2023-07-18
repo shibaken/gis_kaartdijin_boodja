@@ -123,14 +123,8 @@ var kbcatalogue = {
             kbcatalogue.set_assigned_to();
         });
 
-        $( "#catalogue-manage-editors-btn" ).click(function(){
-            kbcatalogue.get_catalogue_editors();
-            $('#manage-popup-error').hide();
-            $('#ManageEditorsModal').modal('show');
-        });
-
-        $('#manage-editors-search').select2({
-            placeholder: 'Select an option',
+        let select2_setting = {
+            placeholder: "User's name",
             minimumInputLength: 2,
             allowClear: true,
             dropdownParent: $('#ManageEditorsModal'),
@@ -159,6 +153,15 @@ var kbcatalogue = {
                     };
                   }                  
             },
+        };
+
+        $( "#catalogue-manage-editors-btn" ).click(function(){
+            kbcatalogue.get_catalogue_editors();
+            $('#manage-editors-search').select2('destroy');
+            $('#manage-editors-search').val("");
+            $('#manage-editors-search').select2(select2_setting);
+            $('#manage-popup-error').hide();
+            $('#ManageEditorsModal').modal('show');
         });
 
         $('#manage-editors-add-btn').click(function(e){
