@@ -4,6 +4,7 @@
 # Third-Party
 from django.contrib import admin
 import reversion.admin
+from django.contrib import auth
 
 # Local
 from govapp.apps.catalogue import models
@@ -11,13 +12,19 @@ from govapp.apps.catalogue import models
 # class CatalogueModelAdmin(reversion.admin.VersionAdmin):
 #     ordering = ('id', 'name')
     
+    
+class CatalogueEntryPermissionInline(admin.TabularInline):
+    model = models.permission.CatalogueEntryPermission
+
 class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for Catalogue Entries."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
-    filter_horizontal = ["editors"]
+    # filter_horizontal = ["editors"]
     list_display = ('id', 'name', 'status', 'created_at', 'updated_at')
     ordering = ('id',)
+    inlines = [CatalogueEntryPermissionInline]
+    
 
 class CustodianAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','contact_name','contact_email','contact_phone')
@@ -52,6 +59,7 @@ class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
 class EmailNotificationAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','email')
     list_display = ('id', 'name', 'type', 'email', 'active', 'catalogue_entry')
+    raw_id_fields = ('catalogue_entry',)
     ordering = ('id',)
     
 class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
@@ -61,6 +69,12 @@ class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
 
 class LayerSubmission(reversion.admin.VersionAdmin):
     search_fields = ('id','catalogue_entry__name','description')
+    
+    
+class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'user', 'catalogue_entry')
+    # inlines = [CatalogueEntryInline]
+    
 
 # Register Models
 admin.site.register(models.catalogue_entries.CatalogueEntry, CatalogueEntryAdmin)
@@ -73,3 +87,4 @@ admin.site.register(models.layer_subscriptions.LayerSubscription, LayerSubscript
 admin.site.register(models.layer_symbology.LayerSymbology, LayerSymbologyAdmin)
 admin.site.register(models.notifications.EmailNotification, EmailNotificationAdmin)
 admin.site.register(models.notifications.WebhookNotification, WebhookNotificationAdmin)
+admin.site.register(models.permission.CatalogueEntryPermission, CatalogueEntryPermissionAdmin)

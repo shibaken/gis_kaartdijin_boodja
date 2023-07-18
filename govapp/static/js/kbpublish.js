@@ -148,6 +148,8 @@ var kbpublish = {
         }
 
 
+        
+
 
         kbpublish.get_publish();
     },
@@ -238,6 +240,42 @@ var kbpublish = {
         $("#log_communication_add").click(kbpublish.add_communication_log);
         
 
+        $('#manage-editors-search').select2({
+            placeholder: 'Select an option',
+            minimumInputLength: 2,
+            allowClear: true,
+            dropdownParent: $('#ManageEditorsModal'),
+            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+            theme: 'bootstrap-5',
+            ajax: {
+                url: "/api/accounts/users/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (params, page) {
+                    return {
+                        q: params.term,                        
+                    };
+                },          
+                  processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    var results = [];
+                    $.each(data.results, function(index, item){
+                      results.push({
+                        id: item.id,
+                        text: item.first_name+' '+item.last_name
+                      });
+                    });
+                    return {
+                        results: results
+                    };
+                  }                  
+            },
+        });
+
+        $('#manage-editors-add-btn').click(function(e){
+            kbpublish.add_publish_editor($('#manage-editors-search').val());
+        });
+
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
         kbpublish.retrieve_communication_types();
@@ -302,18 +340,20 @@ var kbpublish = {
             success: function (response) {
                 var html = '';
                 console.log(response);
-                alert(response);
-                if (response != null) {
-                    if (response.length > 0) {
+                // alert(response);
+                // if (response != null) {
+                //     if (response.length > 0) {
                                            
         
-                    } else {
+                //     } else {
         
 
-                    }
-                } else {
+                //     }
+                // } else {
         
-                }
+                // }
+
+                kbpublish.get_publish_editors();
 
        
             },
@@ -325,6 +365,24 @@ var kbpublish = {
         });
 
 
+    },
+    add_publish_editor: function(user_id) {        
+        var publish_id = $('#publish_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        $.ajax({
+            url: kbpublish.var.publish_save_url+publish_id+"/editors/add/"+user_id+"/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                console.log(response);
+                kbpublish.get_publish_editors();
+            },
+            error: function (error) {
+                 alert("ERROR");
+            },
+        });
     },
     delete_publish_geoserver: function(geoserver_publish_id) {        
         var publish_id = $('#publish_id').val();
@@ -738,7 +796,7 @@ var kbpublish = {
                                 html+= " <button class='btn btn-danger btn-sm publish-table-button' id='publish-external-error-"+response.results[i].id+"' type='button' disabled><i class='bi bi-x-lg'></i></button>&nbsp;";
                             }
                             html+="  <a class='btn btn-primary btn-sm' href='/publish/"+response.results[i].id+"'>View</a>";
-                            html+="  <button class='btn btn-primary btn-sm'>History</button>";
+                            html+="  <button class='btn btn-secondary btn-sm'>History</button>";
                             html+="  </td>";
                             html+= "<tr>";
                         }
@@ -881,12 +939,12 @@ var kbpublish = {
                             html+= " <td>"+response[i].first_name+"</td>";
                             html+= " <td>"+response[i].last_name+"</td>";                        
                             html+= " <td>"+response[i].email+"</td>";                                                    
-                            html+= " <td class='text-end'><button class='btn btn-danger btn-sm publish-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
+                            html+= " <td class='text-end'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
                             html+= "<tr>";
                         }
                                                                    
-                        $('#publish-editors-tbody').html(html);
-                        $( ".publish-editors-delete" ).click(function() {
+                        $('#manage-editors-tbody').html(html);
+                        $( ".manage-editors-delete" ).click(function() {
                             console.log($(this).attr('data-json'));
                             var btndata_json = $(this).attr('data-json');
                             var btndata = JSON.parse(btndata_json);
@@ -895,21 +953,21 @@ var kbpublish = {
                             
                         });                         
                     } else {
-                        $('#publish-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
 
                     }
                 } else {
-                      $('#publish-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
                 }
 
        
             },
             error: function (error) {
-                $('#save-publish-popup-error').html("Error Loading publish data");
-                $('#save-publish-popup-error').show();
-                $('#save-publish-tbody').html('');
+                $('#manage-popup-error').html("Error Loading manage data");
+                $('#manage-popup-error').show();
+                $('#manage-editors-tbody').html('');
 
-                console.log('Error Loading publish data');
+                console.log('Error Loading manage data');
             },
         });
     },

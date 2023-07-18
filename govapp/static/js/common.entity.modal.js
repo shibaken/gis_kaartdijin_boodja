@@ -63,9 +63,14 @@ var common_entity_modal = {
             value = value ? value: "";
             return common_entity_modal.maker.make_common_field(label, value, disabled);
         },
+        password: (label, value, disabled) => {
+            value = value ? value: "";
+            return common_entity_modal.maker.make_common_field(label, value, disabled, type="password");
+        },
         text_area: (label, value, disabled) => {
             let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="text", element="<textarea>");
-            field.attr("row", 4);
+            field.attr("row", 10);
+            field.height('200px');
             return field;
             // <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
         },
@@ -182,10 +187,8 @@ var common_entity_modal = {
         console.log(error);
     },
     show: function(){
-        $('#common-entity-modal').modal('show');
-    },
-    hide: function(){
-        $('#common-entity-modal').modal('hide');
+        common_entity_modal.hide_all_modal('entity');
+        common_entity_modal.show_modal($('#common-entity-modal'));
     },
     get_thead: function(){
         return $('#modal-table-thead');
@@ -210,4 +213,44 @@ var common_entity_modal = {
         $('#common-entity-modal-cancel-btn').prop("disabled", disabled);
         $('#common-entity-modal-delete-btn').prop("disabled", disabled);
     },
+    show_alert: function (content, title){
+        common_entity_modal.hide_all_modal('alert');
+        if(title){
+            $('#common-alert-modal-label').text(title);
+        }
+        $('#common-alert-modal-content').text(content);
+        common_entity_modal.show_modal($('#common-alert-modal'));
+    },
+    show_progress: function (){
+        common_entity_modal.hide_all_modal('progress');
+        common_entity_modal.show_modal($('#common-progress-modal'));
+    },
+    show_modal: function (modal){
+        modal.off('shown.bs.modal');
+        modal.modal('show');
+    },
+    hide: function(){
+        common_entity_modal.hide_modal($('#common-entity-modal'));
+    },
+    hide_alert: function(){
+        common_entity_modal.hide_modal($('#common-alert-modal'));
+    },
+    hide_progress: function (){
+        common_entity_modal.hide_modal($('#common-progress-modal'));
+    },
+    hide_modal: function(modal){
+        modal.on('shown.bs.modal', ()=>modal.modal('hide'));
+        modal.modal('hide');
+    },
+    hide_all_modal: function (current){
+        if(current != 'entity'){
+            common_entity_modal.hide();
+        }
+        if(current != 'alert'){
+            common_entity_modal.hide_alert();
+        }
+        if(current != 'progress'){
+            common_entity_modal.hide_progress();
+        }
+    }
 }

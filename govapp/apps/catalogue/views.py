@@ -5,6 +5,7 @@
 from django import shortcuts
 from django.contrib import auth
 from django.db import connection
+from django.http import HttpResponse
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -14,6 +15,7 @@ from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 from datetime import timedelta
 import json
+import os
 
 # Local
 from govapp.common import mixins
@@ -283,6 +285,7 @@ class CatalogueEntryViewSet(
             result = cursor.fetchone()
             current_time = result[0]
         return current_time
+    
 
 @drf_utils.extend_schema(tags=["Catalogue - Custodians"])
 class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
@@ -363,6 +366,23 @@ class LayerSubmissionViewSet(
     search_fields = ["description", "catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
+    @decorators.action(detail=True, methods=["GET"], url_path="file", permission_classes=[accounts_permissions.IsAuthenticated])
+    def download_file(self, request: request.Request, pk: str):
+        file_path = self.queryset.get(id=pk).file
+
+        if file_path == None or os.path.exists(file_path) == False:
+            return response.Response({"message":"The target file does not exist."}, 
+                                     content_type='application/json', 
+                                     status=status.HTTP_404_NOT_FOUND)
+            
+        with open(file_path, 'rb') as fh:
+            res = HttpResponse(fh.read(), 
+                                content_type='application/octet-stream', 
+                                status=status.HTTP_200_OK)
+            res['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
+            res['Filename'] = os.path.basename(file_path)
+            return res
+        
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
 class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
@@ -434,3 +454,19 @@ class WebhookNotificationViewSet(
     filterset_class = filters.WebhookNotificationFilter
     search_fields = ["name", "url"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    
+@drf_utils.extend_schema(tags=["Catalogue - Permissions"])
+class CataloguePermissionViewSet(
+    mixins.MultipleSerializersMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):      
+    """Layer Attribute Type View Set."""
+    queryset = models.permission.CatalogueEntryPermission.objects.all()
+    serializer_class = serializers.permission.CataloguePermissionSerializer
+    serializer_classes = {"create": serializers.permission.CataloguePermissionCreateSerializer}
+    filterset_class = filters.CataloguePermissionFilter
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    pagination_class = None

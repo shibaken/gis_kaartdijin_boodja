@@ -38,6 +38,7 @@ var kblayersubmission = {
         $("#log_actions_show").click(kblayersubmission.show_action_log);
         $("#log_communication_show").click(kblayersubmission.show_communication_log);
         $("#log_communication_add").click(kblayersubmission.add_communication_log);
+        $("#file_download").click(kblayersubmission.download_file);
 
         kblayersubmission.retrieve_communication_types();
     },
@@ -302,4 +303,30 @@ var kblayersubmission = {
             error: error_callback
         });
     },
+    download_file: function(){
+        common_entity_modal.show_progress();
+        $.ajax({
+            url: kblayersubmission.var.layersubmission_data_url+$('#layer_submission_obj_id').val()+'/file',
+            method: 'GET',
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function(data, textStatus, jqXHR) {
+                var a = $('<a></a>');
+                var url = window.URL.createObjectURL(data);
+    
+                a.attr('href', url);
+                a.attr('download', jqXHR.getResponseHeader('Filename'));
+                $('body').append(a);
+                a[0].click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+                common_entity_modal.hide_progress();
+            },
+            error: function(xhr, status, error) {
+                common_entity_modal.show_alert("The target file does not exists.");
+                console.error(error);
+            }
+        });
+    }
 }
