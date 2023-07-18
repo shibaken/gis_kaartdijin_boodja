@@ -1,0 +1,16 @@
+{
+    "wmsStore" : {
+        "name":	"{{name|escape}}",
+        "description":	"{{description|escape}}", 
+        "type": "WMS",
+        "enabled":	{{ enabled }},    
+        "capabilitiesURL":	"{{capability_url|escape}}",
+        "user":	"{{username|escape}}",
+        "password" :	"{{password|escape}}",    
+        "maxConnections":	"{{geoserver_setting.max_connections}}",    
+        "readTimeout":	"{{geoserver_setting.read_timeout}}",
+        "connectTimeout": "{{geoserver_setting.connect_timeout}}",
+        "metadata": {},
+        "workspace": {},
+    }
+}

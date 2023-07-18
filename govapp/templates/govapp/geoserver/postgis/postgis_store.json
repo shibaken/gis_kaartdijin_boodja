@@ -1,0 +1,35 @@
+{
+    "dataStore": {
+      "name": "{{name|escape}}",
+      "description":	"{{description|escape}}", 
+      "enabled":	{% if enabled %}{{ enabled }}{% else %}True{% endif %},   
+      "type": "PostGIS",
+      "connectionParameters": {
+        "entry": [
+          {"@key":"host","$":"{{ database.host }}"},
+          {"@key":"port","$":"{{ database.port }}"},
+          {"@key":"database","$":"{{ database.database }}"},
+          {"@key":"schema","$":"{{ database.schema }}"},
+          {"@key":"user","$":"{{ database.username }}"},
+          {"@key":"passwd","$":"{{ database.password }}"},
+          {"@key":"dbtype","$":"postgis"},
+          {"@key":"fetch size","$":"{% if database.fetch_size %}{{ database.fetch_size|escape }}{% else %}1000{% endif %}"},
+          {"@key":"encode functions","$":"false"},
+          {"@key":"Expose primary keys","$":"false"},
+          {"@key":"validate connections","$":"false"},
+          {"@key":"Support on the fly geometry simplification","$":"false"},
+          {"@key":"Connection timeout","$":"{% if database.connection_timeout %}{{ database.connection_timeout|escape }}{% else %}20{% endif %}"},
+          {"@key":"create database","$":"false"},
+          {"@key":"preparedStatements","$":"false"},
+          {"@key":"Batch insert size","$":"{% if database.batch_insert_size %}{{ database.batch_insert_size|escape }}{% else %}1{% endif %}"},
+          {"@key":"min connections","$":"{% if database.min_connections %}{{ database.min_connections|escape }}{% else %}1{% endif %}"},
+          {"@key":"Loose bbox","$":"{% if database.loose_bbox %}{{ database.loose_bbox|escape }}{% else %}true{% endif %}"},
+          {"@key":"max connections","$":"{% if database.max_connections %}{{ database.max_connections|escape }}{% else %}10{% endif %}"},
+          {"@key":"Test while idle","$":"{% if database.test_while_idle %}{{ database.test_while_idle|escape }}{% else %}false{% endif %}"},
+          {"@key":"Estimated extends","$":"{% if database.estimated_extends %}{{ database.estimated_extends|escape }}{% else %}true{% endif %}"},
+          {"@key":"SSL mode","$":"{% if database.ssl_mode %}{{ database.ssl_mode|escape }}{% else %}DISABLE{% endif %}"}
+                        
+        ]
+      }
+    }
+  }
