@@ -157,13 +157,13 @@ var kbcatalogue = {
 
         $( "#catalogue-manage-editors-btn" ).click(function(){
             kbcatalogue.get_catalogue_editors();
-            $('#manage-editors-search').select2('destroy');
-            $('#manage-editors-search').val("");
-            $('#manage-editors-search').select2(select2_setting);
+            $('#manage-editors-search').val("").trigger('change');
             $('#manage-popup-error').hide();
             $('#ManageEditorsModal').modal('show');
         });
-
+        
+        $('#manage-editors-search').select2(select2_setting);
+        
         $('#manage-editors-add-btn').click(function(e){
             kbcatalogue.add_catalogue_editor($('#manage-editors-search').val());
         });
