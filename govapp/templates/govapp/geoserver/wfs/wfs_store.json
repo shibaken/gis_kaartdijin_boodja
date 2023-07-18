@@ -1,0 +1,32 @@
+{
+    "dataStore": {
+      "name": "{{name|escape}}",
+      "description":	"{{description|escape}}", 
+      "enabled":	{% if enabled %}{{ enabled }}{% else %}True{% endif %},   
+      "type": "Web Feature Server (NG)",
+      "connectionParameters": {
+        "entry": [
+            {"@key":"WFSDataStoreFactory:GET_CAPABILITIES_URL","$":"{{capability_url|escape}}"},
+            {"@key":"WFSDataStoreFactory:TRY_GZIP","$":"true"},         
+            {"@key":"WFSDataStoreFactory:GML_COMPATIBLE_TYPENAMES","$":"false"},
+            {"@key":"WFSDataStoreFactory:LENIENT","$":"false"},
+            {"@key":"usedefaultsrs","$":"false"},
+            {"@key":"WFSDataStoreFactory:AXIS_ORDER","$":"Compliant"},
+            {"@key":"WFSDataStoreFactory:PROTOCOL","$":"false"},
+            {"@key":"WFSDataStoreFactory:USERNAME","$":"{{username|escape}}"},
+            {"@key":"WFSDataStoreFactory:GML_COMPLIANCE_LEVEL","$":"0"},
+            {"@key":"WFSDataStoreFactory:PASSWORD","$":"{{password|escape}}"},
+            {"@key":"WFSDataStoreFactory:MAX_CONNECTION_POOL_SIZE","$":"6"},
+            {"@key":"WFSDataStoreFactory:MAXFEATURES","$":"0"},
+            {"@key":"WFSDataStoreFactory:FILTER_COMPLIANCE","$":"0"},
+            {"@key":"WFSDataStoreFactory:TIMEOUT","$":"3000"},
+            {"@key":"namespace","$":"private-geoserver"},
+            {"@key":"WFSDataStoreFactory:BUFFER_SIZE","$":"10"},
+            {"@key":"WFSDataStoreFactory:WFS_STRATEGY","$":"auto"},
+            {"@key":"WFSDataStoreFactory:AXIS_ORDER_FILTER","$":"Compliant"},
+            {"@key":"WFSDataStoreFactory:USE_HTTP_CONNECTION_POOLING","$":"true"},
+            {"@key":"WFSDataStoreFactory:ENCODING","$":"UTF-8"}
+        ]
+      }
+  }
+}
