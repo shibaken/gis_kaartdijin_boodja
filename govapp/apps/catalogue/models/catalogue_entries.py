@@ -123,6 +123,18 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
         # Return
         return active_layer
+    
+    @property
+    def editors(self) -> "auth_models.User":
+        """Retrieves permissioned users of current catalogue entry
+
+        Returns:
+            [auth_models.User] : a list of users
+        """
+        from govapp.apps.catalogue.models.permission import CatalogueEntryPermission
+        permissions = CatalogueEntryPermission.objects.select_related('user').filter(catalogue_entry=self)
+        return UserModel.objects.filter(id__in=(p.user for p in permissions))
+        # return [p.user for p in permissions]
 
     @classmethod
     def from_request(cls, request: request.Request) -> Optional["CatalogueEntry"]:
