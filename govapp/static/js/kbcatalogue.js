@@ -1,6 +1,7 @@
 var kbcatalogue = { 
     var: {
          catalogue_data_url: "/api/catalogue/entries/",
+         catalogue_permission_url: "/api/catalogue/permission/",
          catalogue_layer_symbology_url: "/api/catalogue/layers/symbologies/",
          catalogue_status: {
             1: "New Draft",
@@ -120,6 +121,51 @@ var kbcatalogue = {
         $( "#catalogue-assigned-to-btn" ).click(function() {
             console.log("Assign To");
             kbcatalogue.set_assigned_to();
+        });
+
+        let select2_setting = {
+            placeholder: "User's name",
+            minimumInputLength: 2,
+            allowClear: true,
+            dropdownParent: $('#ManageEditorsModal'),
+            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+            theme: 'bootstrap-5',
+            ajax: {
+                url: "/api/accounts/users/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (params, page) {
+                    return {
+                        q: params.term,                        
+                    };
+                },          
+                  processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    var results = [];
+                    $.each(data.results, function(index, item){
+                      results.push({
+                        id: item.id,
+                        text: item.first_name+' '+item.last_name
+                      });
+                    });
+                    return {
+                        results: results
+                    };
+                  }                  
+            },
+        };
+
+        $( "#catalogue-manage-editors-btn" ).click(function(){
+            kbcatalogue.get_catalogue_editors();
+            $('#manage-editors-search').select2('destroy');
+            $('#manage-editors-search').val("");
+            $('#manage-editors-search').select2(select2_setting);
+            $('#manage-popup-error').hide();
+            $('#ManageEditorsModal').modal('show');
+        });
+
+        $('#manage-editors-add-btn').click(function(e){
+            kbcatalogue.add_catalogue_editor($('#manage-editors-search').val());
         });
     },
 
@@ -274,7 +320,7 @@ var kbcatalogue = {
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             html+= " <td class='text-end'>";                        
                             html+="  <a class='btn btn-primary btn-sm' href='/catalogue/entries/"+response.results[i].id+"/details/'>View</a>";
-                            html+="  <button class='btn btn-primary btn-sm'>History</button>";
+                            html+="  <button class='btn btn-secondary  btn-sm'>History</button>";
                             html+="  </td>";
                             html+= "<tr>";
                         }
@@ -316,5 +362,95 @@ var kbcatalogue = {
                 console.log('Error Loading publish data');
             },
         });    
+    },
+    get_catalogue_editors: function(){
+        var catalogue_id = $('#catalogue_entry_id').val();
+        $.ajax({
+            url: kbcatalogue.var.catalogue_permission_url+"?catalogue_entry="+catalogue_id,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                var html = '';
+                
+                if (response != null) {
+                    if (response.length > 0) {
+                        for (let i = 0; i < response.length; i++) {
+                            button_json = '{"id": "'+response[i].id+'"}'
+
+                            html+= "<tr>";
+                            html+= " <td>"+response[i].id+"</td>";
+                            html+= " <td>"+response[i].first_name+"</td>";
+                            html+= " <td>"+response[i].last_name+"</td>";                        
+                            html+= " <td>"+response[i].email+"</td>";                                                    
+                            html+= " <td class='text-end'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
+                            html+= "<tr>";
+                        }
+                                                                   
+                        $('#manage-editors-tbody').html(html);
+                        $( ".manage-editors-delete" ).click(function() {
+                            console.log($(this).attr('data-json'));
+                            var btndata_json = $(this).attr('data-json');
+                            var btndata = JSON.parse(btndata_json);
+                            kbcatalogue.delete_catalogue_editors(btndata.id);
+                        });                         
+                    } else {
+                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    }
+                } else {
+                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                }
+
+       
+            },
+            error: function (error) {
+                $('#manage-popup-error').text(error.responseText);
+                $('#manage-popup-error').show();
+                $('#manage-editors-tbody').html('');
+
+                console.log('Error Loading manage data');
+            },
+        });
+    },
+    delete_catalogue_editors: function(permission_id) {        
+        // var catalogue_id = $('#catalogue_entry_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        $.ajax({
+            url: kbcatalogue.var.catalogue_permission_url+permission_id+"/",
+            type: 'DELETE',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                console.log(response);
+                kbcatalogue.get_catalogue_editors();
+            },
+            error: function (error) {
+                $('#manage-popup-error').text(error.responseText);
+                $('#manage-popup-error').show();
+            },
+        });
+
+
+    },
+    add_catalogue_editor: function(user_id) {        
+        var catalogue_id = $('#catalogue_entry_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        $.ajax({
+            url: kbcatalogue.var.catalogue_permission_url,
+            type: 'POST',
+            data: JSON.stringify({'user':user_id, 'catalogue_entry':catalogue_id}),
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                console.log(response);
+                kbcatalogue.get_catalogue_editors();
+            },
+            error: function (error) {
+                $('#manage-popup-error').text(JSON.parse(error.responseText).user[0]);
+                $('#manage-popup-error').show();
+            },
+        });
     },
 }
