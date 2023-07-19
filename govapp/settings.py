@@ -14,6 +14,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 import pathlib
 import platform
+import json 
 
 # Third-Party
 import decouple
@@ -36,7 +37,12 @@ PROJECT_VERSION = "v1"
 # SECURITY WARNING: don't allow all hosts in production!
 SECRET_KEY = decouple.config("SECRET_KEY")
 DEBUG = decouple.config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = decouple.config("ALLOWED_HOSTS", default=["*"] if DEBUG else [])
+ALLOWED_HOSTS=[]
+if DEBUG is True:
+    ALLOWED_HOSTS=["*"]
+else:
+    ALLOWED_HOSTS_STRING = decouple.config("ALLOWED_HOSTS", default='["*"]' if DEBUG else [])
+    ALLOWED_HOSTS = json.loads(ALLOWED_HOSTS_STRING)
 
 # Application definition
 INSTALLED_APPS = [
