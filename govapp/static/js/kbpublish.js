@@ -296,8 +296,8 @@ var kbpublish = {
                 post_callback();
             },
             error: (error)=> {
-                alert("An error occured while getting email notification type.");
-                console.error(error);
+                common_entity_modal.show_alert("An error occured while getting email notification type.");
+                // console.error(error);
             },
         });
     },
@@ -308,7 +308,7 @@ var kbpublish = {
             contentType: 'application/json',
             success: (response) => {
                 if(!response){
-                    alert("An error occured while getting retrieve communication types.");
+                    common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
                     return;    
                 }
                 var communication_type = {};
@@ -319,8 +319,8 @@ var kbpublish = {
                 kbpublish.var.communication_type = communication_type;
             },
             error: (error)=> {
-                alert("An error occured while getting retrieve communication types.");
-                console.error(error);
+                common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
+                // console.error(error);
             },
         });
     },
@@ -338,29 +338,11 @@ var kbpublish = {
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {
-                var html = '';
-                console.log(response);
-                // alert(response);
-                // if (response != null) {
-                //     if (response.length > 0) {
-                                           
-        
-                //     } else {
-        
-
-                //     }
-                // } else {
-        
-                // }
-
+                // console.log(response);
                 kbpublish.get_publish_editors();
-
-       
             },
             error: function (error) {
-                 alert("ERROR");
-
-        
+                common_entity_modal.show_alert("ERROR");
             },
         });
 
@@ -376,11 +358,11 @@ var kbpublish = {
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {
-                console.log(response);
+                // console.log(response);
                 kbpublish.get_publish_editors();
             },
             error: function (error) {
-                 alert("ERROR");
+                 common_entity_modal.show_alert("ERROR");
             },
         });
     },
@@ -394,21 +376,12 @@ var kbpublish = {
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response, status_code) {
-                var html = '';
-               
                 kbpublish.get_publish_geoservers();                    
-                
-
-       
             },
             error: function (error) {
-                 alert("ERROR");
-
-        
+                 common_entity_modal.show_alert("ERROR");
             },
         });
-
-
     },
     delete_publish_cddp: function(cddp_publish_id) {        
         var publish_id = $('#publish_id').val();
@@ -423,13 +396,9 @@ var kbpublish = {
                 kbpublish.get_publish_cddp();                    
             },
             error: function (error) {
-                 alert("ERROR");
-
-        
+                common_entity_modal.show_alert("ERROR");
             },
         });
-
-
     },
     set_assigned_to: function() { 
         var publishassignedto = $('#publish-assigned-to').val();
@@ -443,16 +412,10 @@ var kbpublish = {
                 headers: {'X-CSRFToken' : csrf_token},
                 contentType: 'application/json',
                 success: function (response) {
-                    var html = '';
-                    
                     window.location = "/publish/"+publish_id;
-                    
-                    
-    
-           
                 },
                 error: function (error) {
-                     alert("ERROR Setting assigned person.");
+                    common_entity_modal.show_alert("ERROR Setting assigned person.");
     
             
                 },
@@ -460,7 +423,7 @@ var kbpublish = {
     
             
         } else {
-            alert('Please select an assigned to person first.')
+            common_entity_modal.show_alert("Please select an assigned to person first.");
 
         }
 
@@ -486,7 +449,7 @@ var kbpublish = {
        
             },
             error: function (error) {
-                 alert("ERROR Changing Status");
+                common_entity_modal.show_alert("ERROR Changing Status");
 
         
             },
@@ -710,7 +673,7 @@ var kbpublish = {
                 }
             },
             error: function (error) {
-                 alert("ERROR Saving.");
+                common_entity_modal.show_alert("ERROR Saving.");
 
         
             },
@@ -1324,8 +1287,8 @@ var kbpublish = {
                 common_pagination.init(response.count, params, kbpublish.get_email_notification, $('#notification-paging-navi'));
             },
             error: function (error) {
-                alert('Error occured.');
-                console.log('Error occured.'+ error);
+                common_entity_modal.show_alert("Error occured.");
+                // console.log('Error occured.'+ error);
             },
         });
     },

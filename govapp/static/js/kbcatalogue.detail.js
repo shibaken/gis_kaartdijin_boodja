@@ -37,8 +37,8 @@ var kbcatalogue_detail = {
                 post_callback();
             },
             error: (error)=> {
-                alert("An error occured while getting email notification type.");
-                console.error(error);
+                common_entity_modal.show_alert("An error occured while getting email notification type.");
+                // console.error(error);
             },
         });
     },
@@ -49,7 +49,7 @@ var kbcatalogue_detail = {
             contentType: 'application/json',
             success: (response) => {
                 if(!response){
-                    alert("An error occured while getting retrieve communication types.");
+                    common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
                     return;    
                 }
                 var communication_type = {};
@@ -60,8 +60,8 @@ var kbcatalogue_detail = {
                 kbcatalogue_detail.var.communication_type = communication_type;
             },
             error: (error)=> {
-                alert("An error occured while getting retrieve communication types.");
-                console.error(error);
+                common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
+                // console.error(error);
             },
         });
     },
@@ -76,7 +76,7 @@ var kbcatalogue_detail = {
         var pagetab = $('#pagetab').val();
 
         $.ajax({
-            url: kbcatalogue_detail.var.catalogue_data_url+catalogue_id+"/",            
+            url: kbcatalogue.var.catalogue_data_url+catalogue_id+"/",            
             type: 'PUT',
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
@@ -90,9 +90,7 @@ var kbcatalogue_detail = {
                 }
             },
             error: function (error) {
-                 alert("ERROR Saving.");
-
-        
+                common_entity_modal.show_alert("ERROR Saving.");
             },
         });
     },
@@ -136,8 +134,8 @@ var kbcatalogue_detail = {
                 common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, $('#notification-paging-navi'));
             },
             error: function (error) {
-                alert('Error occured.');
-                console.log('Error occured.'+ error);
+                common_entity_modal.show_alert("Error occured.");
+                // console.log('Error occured.'+ error);
             },
         });
     },

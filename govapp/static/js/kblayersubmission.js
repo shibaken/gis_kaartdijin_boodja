@@ -49,7 +49,7 @@ var kblayersubmission = {
             contentType: 'application/json',
             success: (response) => {
                 if(!response){
-                    alert("An error occured while getting retrieve communication types.");
+                    common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
                     return;    
                 }
                 var communication_type = {};
@@ -60,8 +60,8 @@ var kblayersubmission = {
                 this.var.communication_type = communication_type;
             },
             error: (error)=> {
-                alert("An error occured while getting retrieve communication types.");
-                console.error(error);
+                common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
+                // console.error(error);
             },
         });
     },
