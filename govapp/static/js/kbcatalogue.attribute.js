@@ -36,8 +36,8 @@ var kbcatalogue_attribute = {
                 post_callback();
             },
             error: (error)=> {
-                alert("An error occured while getting catalogue attribute type.");
-                console.error(error);
+                common_entity_modal.show_alert("An error occured while getting catalogue attribute type.");
+                // console.error(error);
             },
         });
     },

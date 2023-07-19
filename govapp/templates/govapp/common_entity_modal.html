@@ -25,26 +25,30 @@
      </form>
 </div>
 
-<div class="modal fade" id="common-alert-modal" tabindex="-1" aria-labelledby="CommonEntityModal"
-     aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
-     <div class="modal-dialog modal-l">
+<div class="modal fade" id="common-alert-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
+     <div class="modal-dialog">
           <div class="modal-content">
-               <div class="modal-header bg-danger">
-                    <h5 class="modal-title text-white" id="common-alert-modal-label">Error Occurred</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-               </div>
-
-               <div class="modal-body col-12">
-                    <div class="alert alert-danger" role="alert" id='common-alert-modal-error' style='display:none'> </div>
-                    <div id='common-alert-modal-content'></div>
-               </div>
-
-               <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="common-alert-modal-cancel-btn">Close</button>
+               <div class="modal-body">
+                    <div class="alert alert-danger" role="alert" id='popup-error' style='display:none'></div>
+                    <div class='col-12'>
+                         <center>
+                              <i class="bi bi-x-circle-fill text-center" style='color: red; font-size: 100px;'></i>
+                              <h2 id='common-alert-modal-label'>Error Message</h2>
+                              <div id='common-alert-modal-label'>There was error processing your request.</div>
+                              <br>
+                              <button type="button" class="btn btn-primary" id='group-close-modal' data-bs-dismiss="modal">Close</button>
+                              <div class="spinner-border text-primary" role="status" style='display:none' id='peakgroup_progress_loader_create'>
+                                   <span class="visually-hidden">Loading...</span>
+                              </div>
+                              <br>
+                              <br>
+                         </center>
+                    </div>
                </div>
           </div>
      </div>
 </div>
+
 
 <div class="modal fade" id="common-progress-modal" tabindex="-1" aria-labelledby="CommonEntityModal"
      aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">

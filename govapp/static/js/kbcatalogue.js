@@ -190,9 +190,7 @@ var kbcatalogue = {
                 window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
             },
             error: function (error) {
-                 alert("ERROR Changing Status");
-
-        
+                common_entity_modal.show_alert("ERROR Changing Status");
             },
         });
     },
@@ -216,13 +214,11 @@ var kbcatalogue = {
            
                 },
                 error: function (error) {
-                     alert("ERROR Setting assigned person.");
-    
-            
+                     common_entity_modal.show_alert("ERROR Setting assigned person.");
                 },
             });            
         } else {
-            alert('Please select an assigned to person first.')
+            common_entity_modal.show_alert("Please select an assigned to person first.");
         }
     },
 
@@ -251,7 +247,7 @@ var kbcatalogue = {
                 }
             },
             error: function (error) {
-                 alert("ERROR Saving.");
+                common_entity_modal.show_alert("ERROR Saving."); 
             },
         });
     },
