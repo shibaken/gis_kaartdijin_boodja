@@ -5,6 +5,7 @@
 from django import shortcuts
 from django.contrib import auth
 from django.db import connection
+from django.db import transaction
 from django.http import HttpResponse
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
@@ -22,6 +23,7 @@ from govapp.common import mixins
 from govapp.apps.accounts import permissions as accounts_permissions
 from govapp.apps.catalogue import filters
 from govapp.apps.catalogue import models
+from govapp.apps.publisher import models as publish_models
 from govapp.apps.catalogue import permissions
 from govapp.apps.catalogue import serializers
 from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
@@ -385,13 +387,75 @@ class LayerSubmissionViewSet(
         
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
-class LayerSubscriptionViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
+class LayerSubscriptionViewSet(mixins.ChoicesMixin, 
+                               mixins.MultipleSerializersMixin,
+                               viewsets.mixins.CreateModelMixin,
+                               viewsets.mixins.DestroyModelMixin,
+                               viewsets.mixins.RetrieveModelMixin,
+                               viewsets.mixins.ListModelMixin,
+                               viewsets.mixins.UpdateModelMixin,
+                               viewsets.GenericViewSet): 
+                            #    viewsets.ReadOnlyModelViewSet):
     """Layer Subscription View Set."""
     queryset = models.layer_subscriptions.LayerSubscription.objects.all()
     serializer_class = serializers.layer_subscriptions.LayerSubscriptionSerializer
+    serializer_classes = {"create":serializers.layer_subscriptions.LayerSubscriptionCreateSerializer}
     filterset_class = filters.LayerSubscriptionFilter
     search_fields = ["catalogue_entry__name"]
 
+    @transaction.atomic()
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = serializers.layer_subscriptions.LayerSubscriptionCreateSerializer(data=data)
+        if not serializer.is_valid():
+            errors = serializer.errors
+            return response.Response({'error_msg':errors}, 
+                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        
+        for key in data:
+            if key in ['type', 'workspace', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
+                data[key] = int(data.get(key))
+            elif key == 'enabled' and data.get(key) is not None:
+                data[key] = True if data.get(key) == 'true' else False
+        # check duplicated catalogue entry name
+        if models.catalogue_entries.CatalogueEntry.objects.filter(name=data['name']).exists():
+            return response.Response({'error_msg':f"catalogue entry name '{data['name']}' has been already taken."}, 
+                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)     
+        
+        # check type
+        type = {type.value:type for type in models.layer_subscriptions.LayerSubscriptionType}.get(data.get('type'))
+        if type is None:
+            return response.Response({'error_msg':f"type '{data.get('type')}' is invalid."}, 
+                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST) 
+        # check workspace
+        workspace = publish_models.workspaces.Workspace.objects.get(id=data.get('workspace'))
+        if workspace is None:
+            return response.Response({'error_msg':f"workspace '{data.get('workspace')}' does not exist."}, 
+                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        
+        # create catalogue entry first
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
+            name=data.get('name'),
+            description=data.get('description'),
+            type= models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION
+        )
+        
+        # create layer subscription
+        models.layer_subscriptions.LayerSubscription.objects.create(
+            type=type,
+            workspace=workspace,
+            enabled=data.get('enabled'),
+            url=data.get('url'),
+            username=data.get('username'),
+            userpassword=data.get('userpassword'),
+            connection_timeout=data.get('connection_timeout'),
+            max_connections=data.get('max_connections'),
+            read_timeout=data.get('read_timeout'),
+            catalogue_entry=catalogue_entry
+        )
+        
+        return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)
+                
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(

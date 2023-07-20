@@ -18,7 +18,7 @@ class CatalogueEntryFilter(filters.FilterSet):
         model = models.catalogue_entries.CatalogueEntry
         fields = {"id": ["in", "exact"], "assigned_to": ["exact"], "custodian": ["exact"], 
                   "status": ["in", "exact"], "name": ["icontains", "contains"], 
-                  "description": ["icontains", "contains"]}
+                  "description": ["icontains", "contains"], "type": ["exact"]}
 
 
 class CustodianFilter(filters.FilterSet):
@@ -77,21 +77,24 @@ class LayerSubmissionFilter(filters.FilterSet):
 
 class LayerSubscriptionFilter(filters.FilterSet):
     """Layer Subscription Filter."""
-    subscribed = filters.IsoDateTimeFromToRangeFilter(field_name="subscribed_at")
+    updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
     order_by = filters.OrderingFilter(
         fields=(
             "id",
             ("catalogue_entry__name", "name"),  # Proxy through the Catalogue Entry name to sort by
+            ("catalogue_entry__description", "description"),
+            "workspace",
+            "type",
             "url",
-            "status",
-            "subscribed_at",
+            "enabled",
+            "updated_at",
         )
     )
 
     class Meta:
         """Layer Subscription Filter Metadata."""
         model = models.layer_subscriptions.LayerSubscription
-        fields = ("status", "subscribed")
+        fields = ("enabled", "updated_at")
 
 
 class LayerSymbologyFilter(filters.FilterSet):

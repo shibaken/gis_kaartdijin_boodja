@@ -61,6 +61,7 @@ var table={
     make_button_cell: function(buttons, id_prefix, data){
         // e.g. : buttons={Update:callback(data)}
         let td = $('<td>');
+        td.attr("class", "text-end");
         for(let key in buttons){
             let button = $('<button>').attr("class", "btn btn-primary btn-sm").attr("id", id_prefix+"-"+key.toLowerCase()).text(key);
             button.click(()=>buttons[key](data));
