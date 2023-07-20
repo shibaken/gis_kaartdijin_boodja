@@ -38,16 +38,17 @@ var kblayersubscription = {
     get_layer_subscription: function(param_str){
         if(!param_str){
             params = {
-                status:                 $('#layer-submission-status').val(),
-                limit:                  $('#subscription-limit').val(),
-                order_by:               $('#subscription-order-by').val(),
+                limit:      $('#subscription-limit').val(),
+                order_by:   $('#subscription-order-by').val(),
+                
                 catalogue_entry__name__icontains:  $('#subscription-name').val(),
-                //custodian
-                //status
-                updated_after:        utils.convert_date_format($('#subscription-updated-from').val(), kblayersubscription.var.layersubscription_date_format, hh="00", mm="00", ss="00"),
-                updated_before:       utils.convert_date_format($('#subscription-updated-to').val(), kblayersubscription.var.layersubscription_date_format,hh="23", mm="59", ss="59"),
-                //assigned_to
-                //description
+                workspace:  $('#subscription-workspace').val(),
+                enabled:    $('#subscription-enabled').val(),
+                updated_after:  utils.convert_date_format($('#subscription-updated-from').val(), kblayersubscription.var.layersubscription_date_format, hh="00", mm="00", ss="00"),
+                updated_before: utils.convert_date_format($('#subscription-updated-to').val(), kblayersubscription.var.layersubscription_date_format,hh="23", mm="59", ss="59"),
+                type:       $('#subscription-type').val(),
+                catalogue_entry__description__icontains:  $('#subscription-description').val(),
+                id:         $('#subscription-number').val(),
                 //number(id)
             }
             
@@ -67,7 +68,7 @@ var kblayersubscription = {
                 for(let i in response.results){
                     response.results[i]['created_at'] = utils.convert_datetime_format(response.results[i].created_at, kblayersubscription.var.subscription_table_date_format);
                     response.results[i]['type_str'] = kblayersubscription.var.subscription_type_map[+response.results[i].type];
-                    response.results[i]['workspace_str'] = kblayersubscription.var.workspace_map[+response.results[i].type];
+                    response.results[i]['workspace_str'] = kblayersubscription.var.workspace_map[+response.results[i].workspace];
                 }
                 table.set_tbody($('#subscription-tbody'), response.results, 
                                 [{id:"text"}, {name:'text'}, {description:'text'}, {workspace_str:'text'}, 
@@ -108,7 +109,7 @@ var kblayersubscription = {
                     });
                     $('#layer-subscription-workspace').append(option);
                 }
-                if(callback()){
+                if(callback){
                     callback();
                 }
             },
@@ -162,7 +163,7 @@ var kblayersubscription = {
         // const catalogue = utils.validate_empty_input('catalogue', $('#'+catalogue_id).val());
         const name = utils.validate_empty_input('name', $('#'+name_id).val());
         const description = utils.validate_empty_input('description', $('#'+description_id).val());
-        const enabled = utils.validate_empty_input('enabled', $('#'+enabled_id).val());
+        const enabled = $('#'+enabled_id).prop('checked');
         // const auto_disable = utils.validate_empty_input('auto_disable', $('#'+auto_disable_id).val());
         const capabilities_url = utils.validate_empty_input('capabilities_url', $('#'+capabilities_url_id).val());
         const username = utils.validate_empty_input('user_name', $('#'+user_name_id).val());
