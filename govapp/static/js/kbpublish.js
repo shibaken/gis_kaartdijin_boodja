@@ -141,10 +141,17 @@ var kbpublish = {
             kbpublish.get_publish();
         })
 
-        this.var.catalogue_entry_list = JSON.parse($('#catalogue_entry_list').data('list').replaceAll("'", '"'));
-        for(let i in this.var.catalogue_entry_list){
-            let entry = this.var.catalogue_entry_list[i];
-            this.var.catalogue_entry_map[entry.id] = entry.name;
+        const catalogue_entry_list = $('#catalogue_entry_list').data('list');
+        if(catalogue_entry_list && typeof catalogue_entry_list == 'string' && catalogue_entry_list.length > 0){
+            this.var.catalogue_entry_list = JSON.parse(catalogue_entry_list.replaceAll("'", '"'));
+        } else if(catalogue_entry_list instanceof Array){
+            this.var.catalogue_entry_list = catalogue_entry_list;
+        }
+        if(this.var.catalogue_entry_list){
+            for(let i in this.var.catalogue_entry_list){
+                let entry = this.var.catalogue_entry_list[i];
+                this.var.catalogue_entry_map[entry.id] = entry.name;
+            }
         }
 
 
@@ -229,10 +236,17 @@ var kbpublish = {
         $('#publish-notification-order-by').change(()=>table.refresh(this.get_email_notification));
         $('#publish-notification-limit').change(()=>table.refresh(this.get_email_notification));
 
-        this.var.publish_workspace_list = JSON.parse($('#publish_workspace_list').data('list').replaceAll("'", '"'));
-        for(let i in this.var.publish_workspace_list){
-            let entry = this.var.publish_workspace_list[i];
-            this.var.publish_workspace_map[entry.id] = entry.name;
+        const publish_workspace_list = $('#publish_workspace_list').data('list');
+        if(!publish_workspace_list && typeof publish_workspace_list == 'string' && publish_workspace_list.length > 0){
+            this.var.publish_workspace_list = JSON.parse(publish_workspace_list.replaceAll("'", '"'));
+        } else if(publish_workspace_list instanceof Array){
+            this.var.publish_workspace_list = publish_workspace_list
+        }
+        if(this.var.publish_workspace_list){
+            for(let i in this.var.publish_workspace_list){
+                let entry = this.var.publish_workspace_list[i];
+                this.var.publish_workspace_map[entry.id] = entry.name;
+            }
         }
 
         $("#log_actions_show").click(kbpublish.show_action_log);
