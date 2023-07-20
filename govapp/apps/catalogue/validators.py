@@ -38,6 +38,10 @@ def validate_sld(value: str) -> None:
         ValidationError: Raised if the value is deemed invalid.
     """
     # Validate SLD with GeoServer
+
+    # NOTE validation not working correctly with geoserver, disabling until resolved.
+    # 
+    return    
     result = gis.geoserver.geoserver().validate_style(value)
 
     # Check
