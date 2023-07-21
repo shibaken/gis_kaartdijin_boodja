@@ -33,6 +33,10 @@ var kblayersubscription = {
             kblayersubscription.show_new_subsctiption_modal();
         });
 
+        utils.enter_keyup($('#subscription-name'), kblayersubscription.get_layer_subscription);
+        utils.enter_keyup($('#subscription-description'), kblayersubscription.get_layer_subscription);
+        utils.enter_keyup($('#subscription-number'), kblayersubscription.get_layer_subscription);
+
         kblayersubscription.get_workspace(kblayersubscription.get_layer_subscription);
     },
     get_layer_subscription: function(param_str){
