@@ -101,6 +101,11 @@ var kbcatalogue = {
             common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
         });
+
+        utils.enter_keyup($('#catalogue-name'), kbcatalogue.get_catalogue);
+        utils.enter_keyup($('#catalogue-description'), kbcatalogue.get_catalogue);
+        utils.enter_keyup($('#catalogue-number'), kbcatalogue.get_catalogue);
+        
         kbcatalogue.get_catalogue();
     },
 
