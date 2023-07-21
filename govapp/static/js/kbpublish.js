@@ -154,9 +154,9 @@ var kbpublish = {
             }
         }
 
-
-        
-
+        utils.enter_keyup($('#publish-name'), kbpublish.get_publish);
+        utils.enter_keyup($('#publish-description'), kbpublish.get_publish);
+        utils.enter_keyup($('#publish-number'), kbpublish.get_publish);
 
         kbpublish.get_publish();
     },
