@@ -13,5 +13,16 @@ class LayerSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
         model = models.layer_subscriptions.LayerSubscription
-        fields = ("id", "name", "url", "frequency", "status", "subscribed_at", "catalogue_entry")
-        read_only_fields = ("id", "name", "url", "frequency", "status", "subscribed_at", "catalogue_entry")
+        fields = ("id", "name", "description", "type", "enabled", 
+                  "url", "username", "connection_timeout", "max_connections", 
+                  "read_timeout", "created_at", "updated_at", "workspace")
+        read_only_fields = fields
+        
+class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
+    """Layer Subscription Model Serializer."""
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = LayerSubscriptionSerializer.Meta.model
+        fields = ("name", "description", "type", "enabled", 
+                  "url", "username", "connection_timeout", "max_connections", 
+                  "read_timeout", "created_at", "updated_at", "workspace")

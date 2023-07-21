@@ -88,8 +88,12 @@
                                                 <input type="text" class="form-control" id="catalogue-number" >
                                           </div>
                                           <div class='col-3'>
-                                                &nbsp;
-                                                
+                                                <label for="catalogue-type" class="form-label">Type</label>
+                                                <select type="text" class="form-control" id="catalogue-type" >
+                                                      <option value="">All</option>
+                                                      <option value="1">Special File</option>
+                                                      <option value="2">Subscription</option>
+                                                </select>
                                           </div>
                                           <div class='col-3 p-4'>
                                                 <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-filter-btn'>Filter</button>
@@ -181,9 +185,10 @@
                                           <th>Name</th>
                                           <th>Custodian</th>
                                           <th>Status</th>
+                                          <th>Type</th>
                                           <th>Last Updated</th>
                                           <th>Assigned To</th>
-                                          <th>Action</th>
+                                          <th class="text-center">Action</th>
                                     </tr>
                                     </thead>
                                     <tbody id='publish-tbody'>

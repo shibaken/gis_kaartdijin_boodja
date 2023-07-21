@@ -15,7 +15,7 @@
                         <div class="card-header fw-bold h4" style="padding:30px;">
                               <div class="row">
                               <div class="col-6">
-                                    Later Subscriptions
+                                    Layer Subscriptions
                               </div>
                               <div class="col-6 text-end">
                                     <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
@@ -29,22 +29,23 @@
                                     <div class='col-12'>
                                           <div class='row'>
                                                 <div class='col-3'>
-                                                      <label for="publish-name" class="form-label">Name</label>
+                                                      <label for="layer-subscription-name" class="form-label">Name</label>
                                                       <input type="text" class="form-control" id="subscription-name" >
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-custodian" class="form-label">Custodian</label>
-                                                      <input type="text" class="form-control" id="subscription-custodian" placeholder="not working" >
+                                                      <label for="subscription-workspace" class="form-label">Workspace</label>
+                                                      <select type="text" class="form-control" id="subscription-workspace" >
+                                                            <option value="">All</option>
+                                                            <option value="1">Private</option>
+                                                            <option value="2">Public</option>
+                                                      </select>
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-status" class="form-label">Status</label>
-                                                      <select type="text" class="form-control" id="subscription-status" >
+                                                      <label for="subscription-enabled" class="form-label">Enabled</label>
+                                                      <select type="text" class="form-control" id="subscription-enabled" >
                                                             <option value="">All</option>
-                                                            <option value="1">New Draft</option>
-                                                            <option value="2">Locked</option>
-                                                            <option value="3">Declined</option>
-                                                            <option value="4">Draft</option>
-                                                            <option value="4"></option>
+                                                            <option value="true">True</option>
+                                                            <option value="false">False</option>
                                                       </select>
                                                 </div>
                                                 <div class='col-3'>                                                
@@ -55,18 +56,26 @@
                                     <div class='col-12'>
                                           <div class='row'>
                                                 <div class='col-3'>
-                                                      <label for="subscription-subscribed-from" class="form-label">Subscribed From</label>
-                                                      <input type="text" class="form-control" id="subscription-subscribed-from"  placeholder="not working"  >
+                                                      <label for="subscription-updated-from" class="form-label">Updated From</label>
+                                                      <input type="text" class="form-control" id="subscription-updated-from"  placeholder="not working"  >
 
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="subscription-subscribed-to" class="form-label">Subscribed To</label>
-                                                      <input type="text" class="form-control" id="subscription-subscribed-to" placeholder="not working"  >
+                                                      <label for="subscription-updated-to" class="form-label">Updated To</label>
+                                                      <input type="text" class="form-control" id="subscription-updated-to" placeholder="not working"  >
                                                 </div>
                                                 <div class='col-3'>
-                                                      <label for="publish-assignedto" class="form-label">Assigned To</label>
-                                                      <input type="text" class="form-control" id="subscription-assignedto" placeholder="not working" >
+                                                      <label for="subscription-type" class="form-label">Type</label>
+                                                      <select type="text" class="form-control" id="subscription-type" >
+                                                            <option value="">All</option>
+                                                            <option value="1">WMS</option>
+                                                            <option value="2">WFS</option>
+                                                      </select>
                                                 </div>
+                                                {% comment %} <div class='col-3'>
+                                                      <label for="layer-subscription-assignedto" class="form-label">Assigned To</label>
+                                                      <input type="text" class="form-control" id="subscription-assignedto" placeholder="not working" >
+                                                </div> {% endcomment %}
                                                 <div class='col-3'>
                                                       &nbsp;
                                                 </div>
@@ -77,12 +86,12 @@
                               <div class='col-12'>
                                     <div class='row'>
                                           <div class='col-3'>
-                                                <label for="e1" class="form-label">Description</label>
+                                                <label for="subscription-description" class="form-label">Description</label>
                                                 <input type="text" class="form-control" id="subscription-description" >
 
                                           </div>
                                           <div class='col-3'>
-                                                <label for="publish-number" class="form-label">Number</label>
+                                                <label for="layer-subscription-number" class="form-label">Number</label>
                                                 <input type="text" class="form-control" id="subscription-number" >
                                           </div>
                                           <div class='col-3'>
@@ -172,10 +181,12 @@
                                                                   <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm"  id="subscription-order-by">
                                                                         <option value="id">ID</option>
                                                                         <option value="name">Name</option>
-                                                                        <option value="status">Status</option>
-                                                                        <option value="updated_at">Last Updated</option>                                                                        
-                                                                        <option value="assigned_to">Assigned To</option>
-                                                                        <option value="custodian">Custodian</option>
+                                                                        <option value="description">Description</option>
+                                                                        <option value="workspace">Workspace</option>                                                                        
+                                                                        <option value="type">Type</option>
+                                                                        <option value="enabled">Enabled</option>
+                                                                        <option value="url">URL</option>
+                                                                        <option value="updated_at">Updated at</option>
                                                                   </select> 
                                                             </label>
                                                       </div>
@@ -190,11 +201,12 @@
                                     <tr>
                                           <th>Number</th>
                                           <th>Name</th>
-                                          <th>Custodian</th>
-                                          <th>Status</th>
-                                          <th>Last Updated</th>
-                                          <th>Assigned To</th>
-                                          <th>Action</th>
+                                          <th>Description</th>
+                                          <th>Workspace</th>
+                                          <th>Type</th>
+                                          <th>Enabled</th>
+                                          <th>Updated_at</th>
+                                          <th class="text-center">Action</th>
                                     </tr>
                                     </thead>
                                     <tbody id='subscription-tbody'>

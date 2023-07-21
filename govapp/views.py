@@ -119,6 +119,7 @@ class PublishPage(base.TemplateView):
 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
+        # context['catalogue_entry_list'] = []
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)

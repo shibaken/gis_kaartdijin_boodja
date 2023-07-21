@@ -118,8 +118,9 @@ class CatalogueEntry(mixins.RevisionedMixin):
         # Retrieve Active Layer
         active_layer = self.layers.filter(is_active=True).last()
 
-        # Check
-        assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101
+        # Check only when the type is CatalogueEntryType.SPECIAL_FILE
+        if CatalogueEntryType.SPECIAL_FILE == self.type:
+            assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101
 
         # Return
         return active_layer

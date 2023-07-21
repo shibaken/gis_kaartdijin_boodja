@@ -2,6 +2,7 @@ var common_entity_modal = {
     var: {
         type: "submit",
         fields: [],
+        field_map: {},
     },
     init: function(title, type="submit"){
         $('#common-entity-modal-table').hide();
@@ -26,18 +27,21 @@ var common_entity_modal = {
         $('#common-entity-modal-content').empty();
         common_entity_modal.set_all_disabled(false);
     },
-    add_field: function(label, type="text", value=null, option_map={}, disabled=false){
+    add_field: function(label_str, type="text", value=null, option_map={}, disabled=false){
         let contents = $('#common-entity-modal-content');
         
         //label
-        contents.append($('<label>').text(label));
+        const label = $('<label>').text(label_str);
+        contents.append(label);
         
         //field
         disabled = common_entity_modal.var.type == "delete" ? true: disabled;
-        let field = this.maker[type](label, value, disabled, option_map);
+        let field = this.maker[type](label_str, value, disabled, option_map);
         contents.append(field);
         common_entity_modal.var.fields.push(field);
-        return this.get_id(field, type);
+        const id = this.get_id(field, type);
+        common_entity_modal.var.field_map[id] = {field:field, label:label};
+        return id;
     },
     init_talbe: function(){
         $('#modal-table thead').empty();
@@ -52,7 +56,7 @@ var common_entity_modal = {
             let field = $(element);
             field.attr("type", type);
             field.attr("class", "form-control");
-            field.attr("id", "common-entity-modal-"+label.replace(' ', '-').toLowerCase());
+            field.attr("id", "common-entity-modal-"+label.replace(/[^a-zA-Z0-1]/g, ' ').replaceAll(' ', '-').toLowerCase());
             if(value != null) 
                 field.val(value);
             if (disabled) 
@@ -69,8 +73,7 @@ var common_entity_modal = {
         },
         text_area: (label, value, disabled) => {
             let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="text", element="<textarea>");
-            field.attr("row", 10);
-            field.height('200px');
+            field.height('150px');
             return field;
             // <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
         },
@@ -132,7 +135,7 @@ var common_entity_modal = {
         }
     },
     get_id: function(element, type){
-        if(element.is('input') || element.is('select') || type == 'empty'){
+        if(!element.is('div') || (element.is('div') && type == 'empty')){
             return element.attr("id");
         } else if(element.is('div')){
             let children = element.children();
@@ -151,7 +154,7 @@ var common_entity_modal = {
                 let error_obj = JSON.parse(error.responseText);
                 let msg;
                 for(let key in error_obj)
-                    msg = error_obj[key];
+                    msg = JSON.stringify(error_obj[key]);
                 common_entity_modal.show_error_modal(msg);
             }
             else
@@ -252,5 +255,13 @@ var common_entity_modal = {
         if(current != 'progress'){
             common_entity_modal.hide_progress();
         }
+    },
+    hide_entity: function (id){
+        common_entity_modal.var.field_map[id].field.hide();
+        common_entity_modal.var.field_map[id].label.hide();
+    },
+    show_entity: function (id){
+        common_entity_modal.var.field_map[id].field.show();
+        common_entity_modal.var.field_map[id].label.show();
     }
 }
