@@ -18,12 +18,14 @@ def variables(request: http.HttpRequest) -> dict[str, Any]:
     Returns:
         dict[str, Any]: Context for the templates.
     """
-    # Construct and return context
+    # Construct and return context  
     return {
         "template_group": "kaartdijinboodja",
         "template_title": "",
         "app_build_url": conf.settings.DEV_APP_BUILD_URL,
         "GIT_COMMIT_HASH": conf.settings.GIT_COMMIT_HASH,
         "DJANGO_SETTINGS": conf.settings,
-        "settings": conf.settings
+        "settings": conf.settings,
+        "is_django_admin": request.user.groups.filter(name="Django Admin").exists(),
+        "is_admin": request.user.groups.filter(name="Administrators").exists(),
     }

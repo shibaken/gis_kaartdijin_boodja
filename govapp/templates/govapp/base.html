@@ -40,6 +40,19 @@
 {% block menu_items_left_brand %}
 {%endblock %}
 
+{% block menu_dropdown %}
+    {% if request.user.is_superuser or is_django_admin %}
+        {% include 'webtemplate_dbca/includes/staff_menu.html' %}
+    {% endif %}
+    {% block menu_extra_dropdown_staff_top %}
+        {% if request.user.is_superuser or is_admin %}
+            {% include 'webtemplate_dbca/includes/staff_menu_extras.html' %}
+        {% endif %}
+    {% endblock %}
+
+    <li><a class="dropdown-item" href="{% url 'logout' %}?next=/">Logout</a></li>
+{% endblock %}
+
 
 {% block menu_items2_right %}
 {% if request.user.is_authenticated %}
