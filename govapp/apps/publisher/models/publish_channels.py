@@ -163,17 +163,22 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
-        file_names = os.listdir(publish_directory['uncompressed_filepath'])
+        geodb_dir = ""
+        if self.format == 3:
+            file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
+            if len(file_names_geodb) == 1:
+                geodb_dir = file_names_geodb[0]
+
+        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)))
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
-
             if self.format == 3:
                 if os.path.isdir(new_output_path): 
                     shutil.rmtree(new_output_path)
             else:
                 if os.path.isfile(new_output_path):                    
                         os.remove(new_output_path)   
-            shutil.move(os.path.join(publish_directory['uncompressed_filepath'], file_name), output_path)
+            shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)), file_name), output_path)
             
         # # Push to Azure
         # azure.azure_output().put(
@@ -383,5 +388,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             name=self.publish_entry.catalogue_entry.symbology.name,
         )
 
+        ## HERE 
+        
         # Delete local temporary copy of file if we can
         #shutil.rmtree(filepath.parent, ignore_errors=True)
