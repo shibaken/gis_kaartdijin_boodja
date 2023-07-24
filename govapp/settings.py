@@ -37,11 +37,11 @@ PROJECT_VERSION = "v1"
 # SECURITY WARNING: don't allow all hosts in production!
 SECRET_KEY = decouple.config("SECRET_KEY")
 DEBUG = decouple.config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS=[]
+ALLOWED_HOSTS=[""]
 if DEBUG is True:
     ALLOWED_HOSTS=["*"]
-else:
-    ALLOWED_HOSTS_STRING = decouple.config("ALLOWED_HOSTS", default='["*"]' if DEBUG else [])
+else: 
+    ALLOWED_HOSTS_STRING = decouple.config("ALLOWED_HOSTS", default='[""]')
     ALLOWED_HOSTS = json.loads(ALLOWED_HOSTS_STRING)
 
 # Application definition
