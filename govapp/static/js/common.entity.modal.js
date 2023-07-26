@@ -263,5 +263,11 @@ var common_entity_modal = {
     show_entity: function (id){
         common_entity_modal.var.field_map[id].field.show();
         common_entity_modal.var.field_map[id].label.show();
+    },
+    change_label: function (id, label){
+        common_entity_modal.var.field_map[id].label.text(label);
+    },
+    get_label: function (id){
+        return common_entity_modal.var.field_map[id].label.text();
     }
 }

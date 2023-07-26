@@ -412,11 +412,11 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin,
             return response.Response({'error_msg':errors}, 
                                       content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
         
+        # convert data types
         for key in data:
             if key in ['type', 'workspace', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
                 data[key] = int(data.get(key))
-            elif key == 'enabled' and data.get(key) is not None:
-                data[key] = True if data.get(key) == 'true' else False
+                
         # check duplicated catalogue entry name
         if models.catalogue_entries.CatalogueEntry.objects.filter(name=data['name']).exists():
             return response.Response({'error_msg':f"catalogue entry name '{data['name']}' has been already taken."}, 
@@ -446,11 +446,17 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin,
             workspace=workspace,
             enabled=data.get('enabled'),
             url=data.get('url'),
+            host=data.get('host'),
+            port=data.get('port'),
+            database=data.get('database'),
             username=data.get('username'),
             userpassword=data.get('userpassword'),
             connection_timeout=data.get('connection_timeout'),
             max_connections=data.get('max_connections'),
+            min_connections=data.get('min_connections'),
             read_timeout=data.get('read_timeout'),
+            schema=data.get('schema'),
+            fetch_size=data.get('fetch_size'),
             catalogue_entry=catalogue_entry
         )
         
