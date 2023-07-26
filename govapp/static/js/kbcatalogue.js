@@ -101,6 +101,11 @@ var kbcatalogue = {
             common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
         });
+
+        utils.enter_keyup($('#catalogue-name'), kbcatalogue.get_catalogue);
+        utils.enter_keyup($('#catalogue-description'), kbcatalogue.get_catalogue);
+        utils.enter_keyup($('#catalogue-number'), kbcatalogue.get_catalogue);
+        
         kbcatalogue.get_catalogue();
     },
 
@@ -162,6 +167,13 @@ var kbcatalogue = {
         $( "#catalogue-manage-editors-btn" ).click(function(){
             kbcatalogue.get_catalogue_editors();
             $('#manage-editors-search').val("").trigger('change');
+            $('#manage-popup-error').hide();
+            $('#ManageEditorsModal').modal('show');
+        });
+
+        $( '#catalogue-show-permission-btn' ).click(function(){
+            kbcatalogue.get_catalogue_editors(false);
+            $('#manage-editors-add-area').hide();
             $('#manage-popup-error').hide();
             $('#ManageEditorsModal').modal('show');
         });
@@ -365,7 +377,7 @@ var kbcatalogue = {
             },
         });    
     },
-    get_catalogue_editors: function(){
+    get_catalogue_editors: function(permissioned=true){
         var catalogue_id = $('#catalogue_entry_id').val();
         $.ajax({
             url: kbcatalogue.var.catalogue_permission_url+"?catalogue_entry="+catalogue_id,
@@ -384,8 +396,12 @@ var kbcatalogue = {
                             html+= " <td>"+response[i].id+"</td>";
                             html+= " <td>"+response[i].first_name+"</td>";
                             html+= " <td>"+response[i].last_name+"</td>";                        
-                            html+= " <td>"+response[i].email+"</td>";                                                    
-                            html+= " <td class='text-end'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
+                            html+= " <td>"+response[i].email+"</td>";
+                            if(permissioned){                                                    
+                                html+= " <td class='text-end'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
+                            } else {
+                                html+= "<td></td>";   
+                            }
                             html+= "<tr>";
                         }
                                                                    

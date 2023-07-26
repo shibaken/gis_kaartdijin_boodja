@@ -70,5 +70,12 @@ var utils={
             },
             error: error_callback,
         });
+    },
+    enter_keyup: function(text_input, callback){
+        text_input.on("keyup", function(e) {
+            if (e.keyCode === 13) { // eneter key
+                callback();
+            }
+          });
     }
 }

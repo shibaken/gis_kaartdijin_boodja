@@ -32,6 +32,8 @@ var kblayersubmission = {
             kblayersubmission.get_layer_submissions();
         });
 
+        utils.enter_keyup($('#layer-submission-name'), kblayersubmission.get_layer_submissions);
+
         kblayersubmission.get_layer_submissions();
     },
     init_submission_view:function(){

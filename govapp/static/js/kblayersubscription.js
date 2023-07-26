@@ -6,6 +6,9 @@ var kblayersubscription = {
         subscription_table_date_format: "DD MMM YYYY HH:mm:ss",
         workspace_map: {}, // will be filled later
         subscription_type_map: {1:"WMS", 2:"WFS"},
+        default_connection_timout: 30000,
+        default_read_timout: 30000,
+        default_max_concurrent_connections: 6,
     },
     init_dashboard: function() { 
 
@@ -32,6 +35,10 @@ var kblayersubscription = {
         $( "#subscription-new-btn" ).click(function() {
             kblayersubscription.show_new_subsctiption_modal();
         });
+
+        utils.enter_keyup($('#subscription-name'), kblayersubscription.get_layer_subscription);
+        utils.enter_keyup($('#subscription-description'), kblayersubscription.get_layer_subscription);
+        utils.enter_keyup($('#subscription-number'), kblayersubscription.get_layer_subscription);
 
         kblayersubscription.get_workspace(kblayersubscription.get_layer_subscription);
     },
@@ -130,9 +137,9 @@ var kblayersubscription = {
         let capabilities_url_id = common_entity_modal.add_field(label="capabilities URL", type="text");
         let user_name_id = common_entity_modal.add_field(label="User Name", type="text");
         let user_password_id = common_entity_modal.add_field(label="User Password", type="password");
-        let connection_timeout_id = common_entity_modal.add_field(label="Connection Timeout(ms)", type="number");
-        let max_concurrent_connections_id = common_entity_modal.add_field(label="Max Concurrent Connections", type="number");
-        let read_timeout_id = common_entity_modal.add_field(label="Read Timeout(ms)", type="number");
+        let connection_timeout_id = common_entity_modal.add_field(label="Connection Timeout(ms)", type="number", value=kblayersubscription.var.default_connection_timout);
+        let max_concurrent_connections_id = common_entity_modal.add_field(label="Max Concurrent Connections", type="number", value=kblayersubscription.var.default_max_concurrent_connections);
+        let read_timeout_id = common_entity_modal.add_field(label="Read Timeout(ms)", type="number", value=kblayersubscription.var.default_read_timout);
 
         $('#'+type_id).change(function(){
             common_entity_modal.hide_entity(max_concurrent_connections_id);
