@@ -15,6 +15,7 @@ from govapp.apps.catalogue import models
     
 class CatalogueEntryPermissionInline(admin.TabularInline):
     model = models.permission.CatalogueEntryPermission
+    raw_id_fields = ('user',)
 
 class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for Catalogue Entries."""
@@ -24,6 +25,7 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'status', 'created_at', 'updated_at')
     ordering = ('id',)
     inlines = [CatalogueEntryPermissionInline]
+    raw_id_fields = ('custodian', 'assigned_to')
     
 
 class CustodianAdmin(reversion.admin.VersionAdmin):
@@ -34,6 +36,7 @@ class CustodianAdmin(reversion.admin.VersionAdmin):
 class LayerAttributeAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'type', 'order', 'catalogue_entry')
     ordering = ('id',)
+    raw_id_fields = ('catalogue_entry',)
 
 class LayerAttributeTypeAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'key', 'name', 'created_at')
@@ -42,19 +45,23 @@ class LayerAttributeTypeAdmin(reversion.admin.VersionAdmin):
 class LayerMetadataAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'created_at', 'catalogue_entry')
     ordering = ('id',)
+    raw_id_fields = ('catalogue_entry',)
     
 class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'status', 'is_active', 'catalogue_entry', 'created_at')
     ordering = ('id',)
+    raw_id_fields = ('catalogue_entry',)
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'catalogue_entry', 'name', 'enabled', 'username', 'url', 'host', 'updated_at', 'created_at')
     ordering = ('id',)
+    raw_id_fields = ('catalogue_entry',)
     
 class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
     search_fields = ('catalogue_entry__id','sld')
     list_display = ('id', 'catalogue_entry', 'sld')
     ordering = ('id',)
+    raw_id_fields = ('catalogue_entry',)
     
 class EmailNotificationAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','email')
@@ -67,10 +74,6 @@ class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'type', 'url', 'catalogue_entry')
     ordering = ('id',)
 
-class LayerSubmission(reversion.admin.VersionAdmin):
-    search_fields = ('id','catalogue_entry__name','description')
-    
-    
 class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'user', 'catalogue_entry')
     # inlines = [CatalogueEntryInline]
