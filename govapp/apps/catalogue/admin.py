@@ -48,7 +48,7 @@ class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
     ordering = ('id',)
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'catalogue_entry', 'name', 'enabled', 'username', 'url', 'updated_at', 'created_at')
+    list_display = ('id', 'catalogue_entry', 'name', 'enabled', 'username', 'url', 'host', 'updated_at', 'created_at')
     ordering = ('id',)
     
 class LayerSymbologyAdmin(reversion.admin.VersionAdmin):

@@ -20,6 +20,7 @@ class LayerSubscriptionType(models.IntegerChoices):
     """Enumeration for a Layer Subscription Status."""
     WMS = 1
     WFS = 2
+    POST_GIS = 3
 
 
 @reversion.register()
@@ -28,11 +29,12 @@ class LayerSubscription(mixins.RevisionedMixin):
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
     enabled = models.BooleanField(default=True)
-    url = models.URLField()
+    url = models.URLField(null=True) # for WMS or WFS
     username = models.CharField(max_length=100)
     userpassword = models.CharField(max_length=100)
     connection_timeout = models.IntegerField(default=10000) # ms
-    max_connections = models.IntegerField(default=1, null=True) # for WMS
+    max_connections = models.IntegerField(default=1, null=True) # for WMS or POST GIS
+    min_connections = models.IntegerField(default=1, null=True) # for POST GIS
     read_timeout = models.IntegerField(default=10000, null=True) # ms, for WMS
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -44,6 +46,11 @@ class LayerSubscription(mixins.RevisionedMixin):
         workspaces.Workspace,
         related_name="workspace",
         on_delete=models.CASCADE)
+    host = models.CharField(max_length=1000, null=True) # for POST GIS
+    port = models.IntegerField(null=True) # for POST GIS
+    database = models.CharField(max_length=100, null=True) # for POST GIS
+    schema = models.CharField(max_length=100, null=True) # for POST GIS
+    fetch_size = models.IntegerField(default=1000, null=True) # for POST GIS
 
     class Meta:
         """Layer Subscription Model Metadata."""
