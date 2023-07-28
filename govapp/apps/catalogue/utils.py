@@ -52,3 +52,9 @@ def attributes_hash(attributes: Optional[Iterable[Any]]) -> str:
 
     # Return
     return hash.hexdigest()
+
+def find_enum_by_value(enum, value):
+        for name, member in enum.__members__.items():
+            if member.value == value:
+                return member
+        raise ValueError('No enum member found with value: {}'.format(value))

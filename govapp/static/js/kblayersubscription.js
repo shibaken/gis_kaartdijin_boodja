@@ -6,6 +6,7 @@ var kblayersubscription = {
         subscription_table_date_format: "DD MMM YYYY HH:mm:ss",
         workspace_map: {}, // will be filled later
         subscription_type_map: {1:"WMS", 2:"WFS", 3:"POST GIS"},
+        status_map: {1:"NEW DRAFT", 2:"LOCKED", 3:"DECLINED", 4:"DRAFT", 5:"PENDING"},
         required_fields:{
             1:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
                 'username', 'userpassword', 'connection_timeout', 'max_connections', 'read_timeout'],
@@ -19,6 +20,9 @@ var kblayersubscription = {
         default_max_concurrent_connections: 6,
         default_mim_concurrent_connections: 1,
         default_fetch_size: 1000,
+
+        // for view  page
+        subscription_save_url: '/api/catalogue/layers/subscriptions/',
     },
     init_dashboard: function() { 
 
@@ -85,10 +89,12 @@ var kblayersubscription = {
                     response.results[i]['created_at'] = utils.convert_datetime_format(response.results[i].created_at, kblayersubscription.var.subscription_table_date_format);
                     response.results[i]['type_str'] = kblayersubscription.var.subscription_type_map[+response.results[i].type];
                     response.results[i]['workspace_str'] = kblayersubscription.var.workspace_map[+response.results[i].workspace];
+                    response.results[i]['status_str'] = kblayersubscription.var.status_map[+response.results[i].status];
                 }
+                // ID, Name, Status, Type, Workspace, Enabled, URL, Updated at, Assigned to
                 table.set_tbody($('#subscription-tbody'), response.results, 
-                                [{id:"text"}, {name:'text'}, {description:'text'}, {workspace_str:'text'}, 
-                                {type_str:'text'}, {enabled:'text'}, {created_at:'text'}],
+                                [{id:"text"}, {name:'text'}, {status_str:'text'}, {type_str:'text'},
+                                {workspace_str:'text'}, {enabled:'text'}, {created_at:'text'}, {assigned_to:'text'}],
                                 buttons={View:(att)=>window.location.href = '/layer/subscriptions/'+att.id+'/',
                                          History:(att)=>kblayersubscription.get_layer_subscription()});
                 common_pagination.init(response.count, params, kblayersubscription.get_layer_subscription, $('#subscription-navi'));
@@ -210,6 +216,15 @@ var kblayersubscription = {
 
     // *** View page *** //
     init_subscription_item: function(){
+        $( "#subscription-lock" ).click(() => kblayersubscription.change_subscription_status('lock'));
+        $( "#subscription-unlock" ).click(() => kblayersubscription.change_subscription_status('unlock'));
+        $( "#subsctiption-assigned-to-btn" ).click(() =>kblayersubscription.set_assigned_to());
+        
+        $("#log_actions_show").click(kblayersubscription.show_action_log);
+        $("#log_communication_show").click(kblayersubscription.show_communication_log);
+        $("#log_communication_add").click(kblayersubscription.add_communication_log);
+
+        
         $( "#subscription-btn-save" ).click(function() {
             console.log("Save Publish Table");
             kblayersubscription.save_subscription('save');
@@ -218,18 +233,8 @@ var kblayersubscription = {
             console.log("Save Publish Table");
             kbpublish.save_publish('save-and-exit');
         });       
-        $( "#publish-lock" ).click(function() {
-            console.log("Locking");
-            kbpublish.change_publish_status('lock');
-        });
-        $( "#publish-unlock" ).click(function() {
-            console.log("Unlocking");
-            kbpublish.change_publish_status('unlock');
-        });
-        $( "#publish-assigned-to-btn" ).click(function() {
-            console.log("Assign To");
-            kbpublish.set_assigned_to();
-        });             
+        
+                   
         $( "#publish-new-geoserver-btn" ).click(function() {
             console.log("New Geoserver");              
             $('#new-publish-spatial-format').removeAttr('disabled');
@@ -292,10 +297,6 @@ var kblayersubscription = {
                 this.var.publish_workspace_map[entry.id] = entry.name;
             }
         }
-
-        $("#log_actions_show").click(kbpublish.show_action_log);
-        $("#log_communication_show").click(kbpublish.show_communication_log);
-        $("#log_communication_add").click(kbpublish.add_communication_log);
         
 
         $('#manage-editors-search').select2({
@@ -338,5 +339,200 @@ var kblayersubscription = {
         kbpublish.get_publish_cddp();
         kbpublish.retrieve_communication_types();
         // this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
-    }
+    },
+    change_subscription_status: function(status){
+        var status_url = "lock";
+        if (status == 'unlock') {
+            status_url = 'unlock';
+        }
+
+        var subscription_id = $('#subscription_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        $.ajax({
+            url: kblayersubscription.var.subscription_save_url+subscription_id+"/"+status_url+"/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                window.location = "/layer/subscriptions/"+subscription_id;
+            },
+            error: function (error) {
+                common_entity_modal.show_alert("ERROR Changing Status");
+            },
+        });
+    },
+    set_assigned_to: function(){
+        var assignedto = $('#subsctiption-assigned-to').val();
+        var subscription_id = $('#subscription_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        if (assignedto.length > 0) {  
+            $.ajax({
+                url: kblayersubscription.var.subscription_save_url+subscription_id+"/assign/"+assignedto+"/",
+                type: 'POST',
+                headers: {'X-CSRFToken' : csrf_token},
+                contentType: 'application/json',
+                success: function (response) {
+                    window.location = "/layer/subscriptions/"+subscription_id;
+                },
+                error: function (error) {
+                    common_entity_modal.show_alert("ERROR Setting assigned person.");
+                },
+            });
+    
+            
+        } else {
+            common_entity_modal.show_alert("Please select an assigned to person first.");
+
+        }
+    },
+    show_action_log: function(){
+        common_entity_modal.init("Action log", "info");
+        common_entity_modal.init_talbe();
+        let thead = common_entity_modal.get_thead();
+        table.set_thead(thead, {Who:3, What:5, When:4});
+        common_entity_modal.get_limit().change(()=>kblayersubscription.get_action_log());
+        common_entity_modal.get_search().keyup((event)=>{
+            if (event.which === 13 || event.keyCode === 13){
+                event.preventDefault();
+                kblayersubscription.get_action_log()
+            }
+        });
+        common_entity_modal.show();
+
+        kblayersubscription.get_action_log();
+    },
+    get_action_log: function(params_str){
+        if(!params_str){
+            params = {
+                limit:  common_entity_modal.get_limit().val(),
+                search: common_entity_modal.get_search().val(),
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+    
+        var subscription_id = $('#subscription_id').val();
+        $.ajax({
+            url: kblayersubscription.var.subscription_save_url+subscription_id+"/logs/actions/?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                if(!response || !response.results){
+                    table.message_tbody("No results found");
+                    return;
+                }
+                for(let i in response.results){
+                    response.results[i]['when'] = utils.convert_datetime_format(response.results[i].when, kblayersubscription.var.subscription_table_date_format); 
+                }
+                table.set_tbody(common_entity_modal.get_tbody(), response.results, [{username:"text"}, {what:'text'}, {when:'text'}]);
+                common_pagination.init(response.count, params, kblayersubscription.get_action_log, common_entity_modal.get_page_navi());
+            },
+            error: function (error){
+                common_entity_modal.show_error_modal(error);
+            }
+        });
+    },
+    show_communication_log: function(){
+        common_entity_modal.init("Communication log", "info");
+        common_entity_modal.init_talbe();
+        let thead = common_entity_modal.get_thead();
+        table.set_thead(thead, {User:2, To:2, Cc:2, From:2, Subject:2, Text:2});
+        common_entity_modal.get_limit().change(()=>kblayersubscription.get_communication_log());
+        common_entity_modal.get_search().keyup((event)=>{
+            if (event.which === 13 || event.keyCode === 13){
+                event.preventDefault();
+                kblayersubscription.get_communication_log()
+            }
+        });
+        common_entity_modal.show();
+
+        kblayersubscription.get_communication_log();
+    },
+    get_communication_log: function(params_str){
+        if(!params_str){
+            params = {
+                limit:  common_entity_modal.get_limit().val(),
+                search: common_entity_modal.get_search().val(),
+            }
+
+            params_str = utils.make_query_params(params);
+        }
+    
+        var subscription_id = $('#subscription_id').val();
+        $.ajax({
+            url: kblayersubscription.var.subscription_save_url+subscription_id+"/logs/communications/?"+params_str,
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                if(!response || !response.results){
+                    table.message_tbody("No results found");
+                    return;
+                }
+                for(let i in response.results){
+                    response.results[i]['created_at'] = utils.convert_datetime_format(response.results[i].created_at, kblayersubscription.var.subscription_table_date_format); 
+                }
+                table.set_tbody(common_entity_modal.get_tbody(), response.results, 
+                                [{username:"text"}, {to:'text'}, {cc:'text'}, {from:'text'}, {subject:'text'}, {text:'text'}]);
+                common_pagination.init(response.count, params, kblayersubscription.get_communication_log, common_entity_modal.get_page_navi());
+            },
+            error: function (error){
+                common_entity_modal.show_error_modal(error);
+            }
+        });
+    },
+    add_communication_log: function(){
+        common_entity_modal.init("Add New Communication log", "submit");
+        let type_id = common_entity_modal.add_field(label="Communication Type", type="select", value=null, option_map=kbpublish.var.communication_type);
+        let to_id = common_entity_modal.add_field(label="To", type="text");
+        let cc_id = common_entity_modal.add_field(label="Cc", type="text");
+        let from_id = common_entity_modal.add_field(label="From", type="text");
+        let subject_id = common_entity_modal.add_field(label="Subject", type="text");
+        let text_id = common_entity_modal.add_field(label="Text", type="text_area");
+
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                        kblayersubscription.create_communication_log(
+                                            success_callback, error_callback, type_id, 
+                                            to_id, cc_id, from_id, subject_id, text_id));
+        common_entity_modal.show();
+    },
+    create_communication_log: function(success_callback, error_callback, type_id, to_id, cc_id, from_id, subject_id, text_id){
+        // get & validation check
+        const type = utils.validate_empty_input('type', $('#'+type_id).val());
+        const to = utils.validate_empty_input('to', $('#'+to_id).val());
+        const cc = utils.validate_empty_input('cc', $('#'+cc_id).val());
+        const from = utils.validate_empty_input('from', $('#'+from_id).val());
+        const subject = utils.validate_empty_input('subject', $('#'+subject_id).val());
+        const text = utils.validate_empty_input('text', $('#'+text_id).val());
+        
+        // make data body
+        var communication_log_data = {
+            type:type,
+            to:to,
+            cc:cc,
+            from:from,
+            subject:subject,
+            text:text,
+            user:$('#current-user').val(),
+        };
+        
+        var subscription_id = $('#subscription_id').val();
+        var url = kblayersubscription.var.subscription_save_url+subscription_id+"/logs/communications/";
+        var method = 'POST';
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(communication_log_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
 }

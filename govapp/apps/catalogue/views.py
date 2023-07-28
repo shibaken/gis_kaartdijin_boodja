@@ -388,13 +388,15 @@ class LayerSubmissionViewSet(
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
 class LayerSubscriptionViewSet(mixins.ChoicesMixin, 
-                               mixins.MultipleSerializersMixin,
-                               viewsets.mixins.CreateModelMixin,
-                               viewsets.mixins.DestroyModelMixin,
-                               viewsets.mixins.RetrieveModelMixin,
-                               viewsets.mixins.ListModelMixin,
-                               viewsets.mixins.UpdateModelMixin,
-                               viewsets.GenericViewSet): 
+                                mixins.MultipleSerializersMixin,
+                                logs_mixins.ActionsLogMixin,
+                                logs_mixins.CommunicationsLogMixin,
+                                viewsets.mixins.CreateModelMixin,
+                                viewsets.mixins.DestroyModelMixin,
+                                viewsets.mixins.RetrieveModelMixin,
+                                viewsets.mixins.ListModelMixin,
+                                viewsets.mixins.UpdateModelMixin,
+                                viewsets.GenericViewSet): 
                             #    viewsets.ReadOnlyModelViewSet):
     """Layer Subscription View Set."""
     queryset = models.layer_subscriptions.LayerSubscription.objects.all()
@@ -462,6 +464,169 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin,
         
         return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)
                 
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def lock(self, request: request.Request, pk: str) -> response.Response:
+        """Locks the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+
+        # Lock
+        success = subscription.lock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=subscription,
+                action="Layer Subscription was locked"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def unlock(self, request: request.Request, pk: str) -> response.Response:
+        """Unlocks the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+
+        # Unlock
+        success = subscription.unlock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=subscription,
+                action="Layer Subscription was unlocked"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def decline(self, request: request.Request, pk: str) -> response.Response:
+        """Declines the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Decline
+        success = catalogue_entry.decline()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was declined"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"], url_path=r"assign/(?P<user_pk>\d+)")
+    def assign(self, request: request.Request, pk: str, user_pk: str) -> response.Response:
+        """Assigns the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+            user_pk (str): Primary key of the User to assign to.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+
+        # Retrieve User
+        user = shortcuts.get_object_or_404(UserModel, id=user_pk)
+
+        # Assign!
+        success = subscription.assign(user)
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=subscription,
+                action=f"Layer Subscription was assigned to {user} (id: {user.pk})"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def unassign(self, request: request.Request, pk: str) -> response.Response:
+        """Unassigns the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Unassign!
+        success = catalogue_entry.unassign()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was unassigned"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(

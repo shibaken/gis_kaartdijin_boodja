@@ -1,0 +1,521 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+      {% if request.user.is_authenticated is True %}
+
+            {% include "govapp/publish_view_new_geoserver.html" %}
+            {% include "govapp/publish_view_new_cddp.html" %}
+            {% include "govapp/common_entity_modal.html" %}
+
+            <div class="container" id="dashboard-table-container">
+                  <div class='col-6'> <h3>{{ subscription_obj.name }}</h3> </div>
+                  <div class='col-12'> &nbsp; </div>
+
+                  <div class='row'>
+                        <div class='col-3'>
+                              <div class='col-12 border'>
+                                    <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
+                                          Logs
+                                    </div>
+                                    <div class='col-12 p-3 border-bottom'>
+                                          <p><b>Communication</b><br>
+                                          <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
+                                    </div>
+                                    <div class='col-12 p-3'>
+                                          <p><b>Actions</b><br>
+                                          <a href='#' id="log_actions_show">Show</a></p>
+                                    </div>
+                              </div>
+
+                              <br>
+                              <div class='col-12 border'>
+                                    <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
+                                          Workflow
+                                    </div>
+                                    <div class='col-12 p-3 border-bottom'>
+                                          <p>
+                                                <b>Status</b>
+                                                <br>
+                                                {{ status }}
+                                                <br>
+                                                <br>
+                                                <b>Currently assigned to</b>
+                                                
+                                                <div class='text-end'>                                          
+                                                      <select class='form-control' id="subsctiption-assigned-to">
+                                                            <option value=''>-- Select One --</option>
+                                                            {% for su in system_users %}                                          
+                                                                  {% if subscription_obj.assigned_to.id == su.id %}
+                                                                        <option value='{{ su.id }}' selected>{{ su.first_name }} {{ su.last_name }}</option>
+                                                                  {% else %}
+                                                                        <option value='{{ su.id }}'>{{ su.first_name }} {{ su.last_name }}</option>
+                                                                  {% endif %}
+                                                            {% endfor %}
+                                                      </select>
+                                                      <button class='btn btn-primary btn-sm' id='subsctiption-assigned-to-btn' href=''>Assign</button>
+                                                </div>
+                                          </p>
+
+                                    </div>
+                                    <div class='col-12 p-3'>
+                                          <p>
+                                                <b>Actions</b><br>
+                                                {% if subscription_obj.is_locked %}                                          
+                                                      <button class='btn btn-primary btn-sm' id='subscription-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                {% else %}                                          
+                                                      <button class='btn btn-primary btn-sm' id='subscription-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                {% endif %}
+                                          </p>
+                                    </div>
+                              </div>
+                        </div>
+
+                        <div class='col-9'>
+
+                              <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+                              <input type="hidden" id="subscription_id" name="subscription_id" value="{{ subscription_obj.id  }}">
+                              <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
+                              <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
+                              
+                              <div class="card" >
+                              <div class="card-header fw-bold h4" style="padding:30px;">
+                                    <div class="row">
+                                    <div class="col-6">
+                                          Details
+                                    </div>
+                                    <div class="col-6 text-end">
+                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                                    </div>
+                                    </div>         
+                              </div>
+                              <div class="card-body collapse show" id="box1-card-body">
+                                    <div class='row'>
+                                          <div class='col-3 d-flex align-items-center'> Type </div> 
+                                          <div class='col-5 p-1'> {{ type }} </div> 
+                                          <div class='col-4'> &nbsp; </div>
+                                          
+                                          <div class='col-3 d-flex align-items-center'> Workspace </div>
+                                          {% if has_edit_access is True %}
+                                                <div class='col-5 p-1'>
+                                                      <select class='form-control' id="subscription-workspace">
+                                                            {% for workspace in workspaces %}                                          
+                                                                  {% if subscription_obj.workspace.id == workspace.id %}
+                                                                        <option value='{{ workspace.id }}' selected>{{ workspace.name }}</option>
+                                                                  {% else %}
+                                                                        <option value='{{ workspace.id }}'>{{ workspace.name }}</option>
+                                                                  {% endif %}
+                                                            {% endfor %}
+                                                      </select>
+                                                </div>       
+                                          {% else %}
+                                                <div class='col-5 p-1'> {{ subscription_obj.workspace.name }} </div>    
+                                          {% endif %}
+                                          <div class='col-4'> &nbsp; </div>
+                                          
+                                          <div class='col-3 d-flex align-items-center'> Name </div> 
+                                          <div class='col-5 p-1'>{{ subscription_obj.name }}</div> 
+                                          <div class='col-4'> &nbsp; </div>
+                                          
+                                          <div class='col-3 d-flex align-items-center'> Enabled </div>
+                                          <div class='col-5 p-1' >
+                                          {% if has_edit_access is True %}
+                                                <div class='form-check form-switch'>
+                                                      <input type='checkbox' class='form-check-input' id='subscription-enabled' value='{{ enabled_js }}' role='switch'>
+                                                </div>
+                                          {% else %}
+                                                {{ subscription_obj.enabled }}  
+                                          {% endif %}
+                                          </div>
+                                          <div class='col-4'> &nbsp; </div> 
+
+                                          {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
+                                                <div class='col-3 d-flex align-items-center'> Url </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-url" class="form-control" value="{{ subscription_obj.url }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.url }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>    
+                                          {% elif subscription_obj.type == 3 %}
+                                                <div class='col-3 d-flex align-items-center'> Host </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-host" class="form-control" value="{{ subscription_obj.host }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.host }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+                                                      
+                                                <div class='col-3 d-flex align-items-center'> Port </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="number" id="subscription-port" class="form-control" value="{{ subscription_obj.port }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.port }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+
+                                                <div class='col-3 d-flex align-items-center'> Database </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-database" class="form-control" value="{{ subscription_obj.database }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.database }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+
+                                                <div class='col-3 d-flex align-items-center'> Schema </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-schema" class="form-control" value="{{ subscription_obj.schema }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.schema }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+                                          {% endif %}
+
+                                          <div class='col-3 d-flex align-items-center'> User Name </div>
+                                          <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}
+                                                      <input type="text" id="subscription-username" class="form-control" value="{{ subscription_obj.username }}"></input>
+                                                {% else %}
+                                                      {{ subscription_obj.username }}
+                                                {% endif %}
+                                          </div>
+                                          <div class='col-4'> &nbsp; </div>
+
+                                          <div class='col-3 d-flex align-items-center'> User Password </div>
+                                          <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}
+                                                      <input type="text" id="subscription-userpassword" class="form-control" value="{{ subscription_obj.userpassword }}"></input>
+                                                {% else %}
+                                                      {{ subscription_obj.userpassword }}
+                                                {% endif %}
+                                          </div>
+                                          <div class='col-4'> &nbsp; </div>
+
+                                          <div class='col-3 d-flex align-items-center'> Connection Timeout(ms) </div>
+                                          <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}
+                                                      <input type="text" id="subscription-connection-timeout" class="form-control" value="{{ subscription_obj.connection_timeout }}"></input>
+                                                {% else %}
+                                                      {{ subscription_obj.connection_timeout }}
+                                                {% endif %}
+                                          </div>
+                                          <div class='col-4'> &nbsp; </div>
+
+                                          {% if subscription_obj.type is 1 or subscription_obj.type is 3 %}
+                                                <div class='col-3 d-flex align-items-center'> Max Concurrent Connections </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-max-connections" class="form-control" value="{{ subscription_obj.max_connections }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.max_connections }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+                                          {% endif %}
+
+                                          {% if subscription_obj.type is 1 %}
+                                                <div class='col-3 d-flex align-items-center'> Read Timeout(ms) </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-read-timeout" class="form-control" value="{{ subscription_obj.read_timeout }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.read_timeout }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+                                          {% endif %}
+                                          
+                                          {% if subscription_obj.type is 3 %}
+                                                <div class='col-3 d-flex align-items-center'> Min Concurrent Connections </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-min-connections" class="form-control" value="{{ subscription_obj.min_connections }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.min_connections }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+                                          {% endif %}
+                                          
+                                          {% if subscription_obj.type is 3 %}
+                                                <div class='col-3 d-flex align-items-center'> Fetch Size </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-fetch-size" class="form-control" value="{{ subscription_obj.fetch_size }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.fetch_size }}
+                                                      {% endif %}
+                                                </div>
+                                                <div class='col-4'> &nbsp; </div>
+                                          {% endif %}
+
+                                          <div class='col-3 d-flex align-items-center'> Last Updated Date Time </div>
+                                          <div class='col-5 p-1'> {{ subscription_obj.updated_at }} </div>
+                                          <div class='col-4'> &nbsp; </div>
+                                    </div>
+                              </div>
+
+                        </div>
+                        <BR>
+
+                        <div class="card" >
+                              <div class="card-header fw-bold h4" style="padding:30px;">
+                                    <div class="row">
+                                    <div class="col-6">
+                                          Description
+                                    </div>
+                                    <div class="col-6 text-end">
+                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                    </div>
+                                    </div>         
+                              </div>
+                              <div class="card-body collapse show" id="box2-card-body">
+                                    <div class='row'>
+                                          <div class='col-12'>
+                                                {% if has_edit_access is True %}     
+                                                      <textarea class="form-control"id="subscription-description" rows="3">{{ subscription_obj.description }}</textarea>                                    
+                                                      &nbsp;
+                                                {% else %}
+                                                      {{ subscription_obj.description }}
+                                                {% endif %}
+                                          </div>                        
+                                    </div>
+                              </div>
+                        </div>
+                        <BR>
+                        {% comment %} <div class="card" >
+                              <div class="card-header fw-bold h4" style="padding:30px;">
+                                    <div class="row">
+                                    <div class="col-6">
+                                          Geoserver Publish
+                                    </div>
+                                    <div class="col-6 text-end">
+                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box3-card-body" onclick=""></i>
+                                    </div>
+                                    </div>         
+                              </div>
+                              <div class="card-body collapse show" id="box3-card-body">
+            
+                                    <div class='col-12 p-1'>
+                                          <div class='row'>
+                                                <div class='col-6'> 
+                                                      &nbsp;
+                                                </div>
+                                                <div class='col-6 text-end'> 
+                                                      {% if has_edit_access is True %}
+                                                      <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-geoserver-btn'>New Geoserver</button>   
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                    </div>
+                                    <div class='col-12'>
+                                          
+                                          <div id='publish-table'>
+                                                <table id="example" class="table" style="width:100%">
+                                                      <thead class='table-dark'>
+                                                      <tr>
+                                                            <th>ID</th>
+                                                            <th>Spatial Format</th>
+                                                            <th>Frequency Type</th>
+                                                            <th>Workspace</th>
+                                                            <th>Publish Date/time</th>                                      
+                                                            <th>Action</th>
+                                                      </tr>
+                                                      </thead>
+                                                      <tbody id='publish-geoserver-tbody'>
+                                                      <tr>
+                                                            <td colspan="5" class='text-center'>No Results</td>
+                                                      </tr>
+                                                      </tbody>
+                                                </table>                                  
+                                          </div>      
+                                    </div>
+
+                              </div>
+
+                        </div>
+                        <BR>
+                              <div class="card" >
+                                    <div class="card-header fw-bold h4" style="padding:30px;">
+                                          <div class="row">
+                                          <div class="col-6">
+                                                CDDP Publish
+                                          </div>
+                                          <div class="col-6 text-end">
+                                                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
+                                          </div>
+                                          </div>         
+                                    </div>
+                                    <div class="card-body collapse show" id="box4-card-body">
+            
+                                          <div class='col-12 p-1'>
+                                                <div class='row'>
+                                                      <div class='col-6'> 
+                                                            &nbsp;
+                                                      </div>
+                                                      <div class='col-6 text-end'> 
+                                                            {% if has_edit_access is True %}
+                                                                  <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-cddp-btn'>New CDDP</button>   
+                                                            {% endif %}
+                                                      </div>
+                                                </div>
+                                          </div>
+                                          <div class='col-12'>
+                                                
+                                                <div id='publish-table'>
+                                                      <table id="example" class="table" style="width:100%">
+                                                            <thead class='table-dark'>
+                                                            <tr>
+                                                                  <th>ID</th>                                                             
+                                                                  <th>Spatial Format</th>
+                                                                  <th>Spatial Mode</th>
+                                                                  <th>Frequency Type</th>
+                                                                  <th>Path</th>
+                                                                  <th>Publish Date/time</th>                                      
+                                                                  <th>Action</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody id='publish-cddp-tbody'>
+                                                            <tr>
+                                                                  <td colspan="6" class='text-center'>No Results</td>
+                                                            </tr>
+                                                            </tbody>
+                                                      </table>                                  
+                                                </div>      
+                                          </div>
+                  
+                                    </div>
+                  
+                              </div>
+
+
+
+                        <BR>
+                        <div class="card" >
+                              <div class="card-header fw-bold h4" style="padding:30px;">
+                                    <div class="row">
+                                    <div class="col-6">
+                                          Notification
+                                    </div>
+                                    <div class="col-6 text-end">
+                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box5-card-body" onclick=""></i>
+                                    </div>
+                                    </div>         
+                              </div>
+                              <div class="card-body collapse show" id="box5-card-body">
+                                    <div class="col-12 text-end">
+                                    {% if has_edit_access is True %}
+                                          <button class="btn btn-primary left" id='publish-btn-add-notification' aria-current="page" >Add Notification</button>
+                                    {% endif %}
+                                    </div>
+                                    <div class='col-12 pt-2 pb-2 '>
+                                          <div class='row'>
+                                                <div class='col-6'>
+                                                      <div class="row">
+                                                            <div class="col-sm-12 col-md-6">
+                                                                  <div class="dataTables_length" id="bookings-table_length">
+                                                                        <label>Show
+                                                                              <select name="bookings-table_length"
+                                                                                    aria-controls="bookings-table"
+                                                                                    class="form-select form-select-sm"
+                                                                                    id="publish-notification-limit">
+                                                                                    <option value="5">5</option>
+                                                                                    <option value="10" >10</option>
+                                                                                    <option value="25" selected>25</option>
+                                                                                    <option value="50">50</option>
+                                                                                    <option value="100">100</option>
+                                                                              </select> entries
+                                                                        </label>
+                                                                  </div>
+                                                            </div>
+                                                      </div>
+                                                </div>
+                                                <div class='col-6 text-end'>
+                                                      <div class="row">
+                                                            <div class="col-sm-12 col-md-12 text-end">
+                                                                  <div class="dataTables_length" id="bookings-table_length">
+                                                                        <label>Order By
+                                                                              <select name="bookings-table_length"
+                                                                                    aria-controls="bookings-table"
+                                                                                    class="form-select form-select-sm"
+                                                                                    id="publish-notification-order-by">
+                                                                                    <option value="id">ID</option>
+                                                                                    <option value="name">Name</option>
+                                                                                    <option value="type">Type</option>
+                                                                                    <option value="email">Email</option>
+                                                                                    <option value="active">Active</option>
+                                                                              </select>
+                                                                        </label>
+                                                                  </div>
+                                                            </div>
+                                                      </div>
+                                                </div>
+                                          </div>
+                                    </div>
+
+                                    <div id='publish-table'>
+                                          <table id="example" class="table" style="width:100%">
+                                                <thead class='table-dark'>
+                                                      <tr>
+                                                            <th class="col-1">Id</th>
+                                                            <th class="col-2">Name</th>
+                                                            <th class="col-2">Type</th>
+                                                            <th class="col-4">Email</th>
+                                                            <th class="col-1">Active</th>
+                                                            <th class='col-2'>Action</th>
+                                                      </tr>
+                                                </thead>
+                                                <tbody id='publish-notification-tbody'>
+                                                      <tr>
+                                                            <td colspan="7" class='text-center'>No Results</td>
+                                                      </tr>
+                                                </tbody>
+                                          </table>
+                                          <nav aria-label="Page navigation example" id='publish-notification-pagination'>
+                                                <ul class="pagination justify-content-end" id='notification-paging-navi'>
+                                                      <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                                      <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                                </ul>
+                                          </nav>
+                                    </div>
+                              </div>
+                        </div> {% endcomment %}
+                        <div class='col-12 pt-2'>
+                                    <div class='row'>
+                                          <div class='col-6'>
+                                                &nbsp;
+                                          </div>
+                                          <div class='col-6 text-end'>
+                                                {% if has_edit_access is True %}
+                                                      <button class="btn btn-primary" id='subscription-btn-save' aria-current="page" >Save</button>  
+                                                      <button class="btn btn-primary" id='subscription-btn-save-exit'  aria-current="page" >Save and exit</button>  
+                                                {% endif %}
+                                          </div>
+
+                                    </div>
+                        </div>
+                  </div>
+            </div>
+
+            <script>
+                  kblayersubscription.init_subscription_item();
+
+            </script>
+      {% else %}
+            <div class="container" id="dashboard-table-container">
+                  <h3>Permission Denied.  You are not authenticated.</h3>
+            </div>
+      {% endif %}
+{% endblock %}
