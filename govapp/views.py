@@ -8,7 +8,7 @@ from django.views.generic import base
 from django.contrib import auth
 from django import conf
 
-
+# Internal
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
@@ -16,6 +16,8 @@ from govapp.apps.publisher.models import workspaces as publish_workspaces_models
 from govapp.apps.catalogue.models import layer_symbology as catalogue_layer_symbology_models
 from govapp.apps.catalogue.models import layer_metadata as catalogue_layer_metadata_models
 from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
+from govapp.apps.catalogue.models import layer_subscriptions as catalogue_layer_subscription_models
+from govapp.apps.catalogue import utils as catalogue_utils
 from govapp.apps.accounts import utils
 
 # Typing
@@ -379,13 +381,20 @@ class LayerSubmissionView(base.TemplateView):
     
 
 class LayerSubscriptions(base.TemplateView):
-    """Layer Submissions view."""
+    """Layer Subscriptions page."""
 
     # Template name
     template_name = "govapp/layer_subscriptions.html"
+      
+    
+class LayerSubscriptionsView(base.TemplateView):
+    """Layer Submissions view."""
 
+    # Template name
+    template_name = "govapp/layer_subscriptions_view.html"
+    
     def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
-        """Provides the GET request endpoint for the Submissions view.
+        """Provides the GET request endpoint for the Subscription view.
 
         Args:
             request (http.HttpRequest): The incoming HTTP request.
@@ -395,9 +404,30 @@ class LayerSubscriptions(base.TemplateView):
         Returns:
             http.HttpResponse: The rendered template response.
         """
+        
+        pk = self.kwargs['pk']
+        subscription_obj = catalogue_layer_subscription_models.LayerSubscription.objects.get(id=pk)
+        LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus;
+        LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType;
+        
+        system_users_list = []
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        for su in system_users_obj:
+            system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
+        has_edit_access = False
+        if utils.is_administrator(request.user) is True and request.user == subscription_obj.assigned_to:
+             if subscription_obj.status in (LayerSubscriptionStatus.DRAFT, LayerSubscriptionStatus.NEW_DRAFT, LayerSubscriptionStatus.PENDING):
+                has_edit_access = True
+                
         # Construct Context
         context: dict[str, Any] = {}
-        context['tab'] = 'layer_subscriptions'
+        context['subscription_obj'] = subscription_obj
+        context['status'] = catalogue_utils.find_enum_by_value(LayerSubscriptionStatus, subscription_obj.status).name.replace('_', ' ')
+        context['system_users'] = system_users_list
+        context['has_edit_access'] = has_edit_access
+        context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
+        context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
+        context['enabled_js'] = "true" if subscription_obj.enabled else "false"
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
