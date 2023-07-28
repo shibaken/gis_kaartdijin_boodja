@@ -17,7 +17,7 @@ class LayerSubscriptionSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "description", "type", "enabled", 
                   "url", "connection_timeout", "max_connections", "min_connections", 
                   "read_timeout", "created_at", "updated_at", "workspace", 
-                  "host", "port", "database", "schema", "fetch_size")
+                  "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
         read_only_fields = fields
         
 class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
@@ -82,4 +82,4 @@ class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
         fields = ("name", "description", "type", "enabled", 
                   "url", "username", "userpassword", "connection_timeout", "max_connections", "min_connections",
                   "read_timeout", "created_at", "updated_at", "workspace",
-                  "host", "port", "database", "schema", "fetch_size")
+                  "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
