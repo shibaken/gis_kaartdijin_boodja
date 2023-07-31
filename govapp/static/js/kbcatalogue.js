@@ -279,7 +279,7 @@ var kbcatalogue = {
                 updated_after:          utils.convert_date_format($('#catalogue-lastupdatedfrom').val(), kbcatalogue.var.catalogue_date_format, hh="00", mm="00", ss="00"),
                 updated_before:         utils.convert_date_format($('#catalogue-lastupdatedto').val(), kbcatalogue.var.catalogue_date_format, hh="23", mm="59", ss="59"),
                 id:                     $('#catalogue-number').val().replace("PE", ""),
-                type:                   $('#catalogue-type').val(),
+                type:                   1,
                 limit:                  $('#catalogue-limit').val(),
                 order_by:               $('#catalogue-order-by').val()
             }
@@ -329,7 +329,6 @@ var kbcatalogue = {
                             }
                             html+= "</td>";
                             html+= " <td>"+kbcatalogue.var.catalogue_status[response.results[i].status]+"</td>";
-                            html+= " <td>"+kbcatalogue.var.catalogue_Type[response.results[i].type]+"</td>";
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             html+= " <td class='text-end'>";                        
