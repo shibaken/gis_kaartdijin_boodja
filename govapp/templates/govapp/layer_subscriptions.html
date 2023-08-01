@@ -112,7 +112,9 @@
                                           &nbsp;
                                     </div>
                                     <div class='col-6 text-end'>
-                                          <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>New Subscription</button>
+                                          {% if is_administrator %}
+                                                <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>New Subscription</button>
+                                          {% endif %}
                                     </div>
                               </div>
                         </div>      

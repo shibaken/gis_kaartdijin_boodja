@@ -386,6 +386,26 @@ class LayerSubscriptions(base.TemplateView):
     # Template name
     template_name = "govapp/layer_subscriptions.html"
       
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the Subscription.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        if utils.is_administrator(request.user) is True:
+                is_administrator = True
+                
+        # Construct Context
+        context: dict[str, Any] = {}
+        context['is_administrator'] = is_administrator
+
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)   
     
 class LayerSubscriptionsView(base.TemplateView):
     """Layer Submissions view."""
