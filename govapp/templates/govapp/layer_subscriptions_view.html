@@ -76,6 +76,7 @@
                               <input type="hidden" id="subscription_id" name="subscription_id" value="{{ subscription_obj.id  }}">
                               <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
                               <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
+                              <input type="hidden" id="subscription-type-num" name="subscription-type-num" value="{{ subscription_obj.type }}">
                               
                               <div class="card" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
@@ -112,8 +113,14 @@
                                           {% endif %}
                                           <div class='col-4'> &nbsp; </div>
                                           
-                                          <div class='col-3 d-flex align-items-center'> Name </div> 
-                                          <div class='col-5 p-1'>{{ subscription_obj.name }}</div> 
+                                          <div class='col-3 d-flex align-items-center'> Name </div>
+                                          <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}
+                                                      <input type="text" id="subscription-name" class="form-control" value="{{ subscription_obj.name }}"></input>
+                                                {% else %}
+                                                      {{ subscription_obj.name }}
+                                                {% endif %}
+                                          </div>
                                           <div class='col-4'> &nbsp; </div>
                                           
                                           <div class='col-3 d-flex align-items-center'> Enabled </div>

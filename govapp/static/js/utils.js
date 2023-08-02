@@ -62,7 +62,7 @@ var utils={
             type: 'GET',
             contentType: 'application/json',
             success: (response) => {
-                if(!response){
+                if(!response || !response.results){
                     error_callback();
                     return;
                 }

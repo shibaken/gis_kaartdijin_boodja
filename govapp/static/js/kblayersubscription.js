@@ -15,8 +15,8 @@ var kblayersubscription = {
             3:['type', 'workspace', 'name', 'description', 'enabled', 'host', 'port', 
                 'database', 'schema', 'username', 'userpassword', 'connection_timeout', 
                 'max_connections', 'min_connections', 'fetch_size']},
-        default_connection_timout: 30000,
-        default_read_timout: 30000,
+        default_connection_timout: 10000,
+        default_read_timout: 10000,
         default_max_concurrent_connections: 6,
         default_mim_concurrent_connections: 1,
         default_fetch_size: 1000,
@@ -64,7 +64,7 @@ var kblayersubscription = {
                 
                 catalogue_entry__name__icontains:  $('#subscription-name').val(),
                 workspace:  $('#subscription-workspace').val(),
-                enabled:    $('#subscription-enabled').val(),
+                enabled:    $('#subscription-enabled').prop('checked'),
                 updated_after:  utils.convert_date_format($('#subscription-updated-from').val(), kblayersubscription.var.layersubscription_date_format, hh="00", mm="00", ss="00"),
                 updated_before: utils.convert_date_format($('#subscription-updated-to').val(), kblayersubscription.var.layersubscription_date_format,hh="23", mm="59", ss="59"),
                 type:       $('#subscription-type').val(),
@@ -231,114 +231,8 @@ var kblayersubscription = {
         });
         $( "#subscription-btn-save-exit" ).click(function() {
             console.log("Save Publish Table");
-            kbpublish.save_publish('save-and-exit');
+            kblayersubscription.save_subscription('save-and-exit');
         });       
-        
-                   
-        $( "#publish-new-geoserver-btn" ).click(function() {
-            console.log("New Geoserver");              
-            $('#new-publish-spatial-format').removeAttr('disabled');
-            $('#new-publish-frequency-type').removeAttr('disabled');
-            $('#new-publish-workspace').removeAttr('disabled');  
-                        
-            $('#new-publish-spatial-format').val('');
-            $('#new-publish-frequency-type').val('');
-            $('#new-publish-workspace').val('');             
-
-            $('#PublishNewGeoserverModal').modal('show');
-        });      
-        $( "#publish-new-cddp-btn" ).click(function() {
-            console.log("New CDDP");  
-            $('#new-publish-cddp-spatial-format').removeAttr('disabled');
-            $('#new-publish-cddp-frequency-type').removeAttr('disabled');
-            $('#new-publish-cddp-spatial-mode').removeAttr('disabled');  
-            $('#new-publish-cddp-path').removeAttr('disabled'); 
-
-            $('#new-publish-cddp-spatial-format').val('');
-            $('#new-publish-cddp-frequency-type').val('');
-            $('#new-publish-cddp-spatial-mode').val('');
-            $('#new-publish-cddp-path').val(''); 
-           
-            $('#PublishNewCDDPModal').modal('show');
-        });            
-
-        $( "#create-publish-geoserver-btn" ).click(function() {
-            console.log("Create new geoserver");             
-            kbpublish.create_publish_geoserver();
-        });
-
-        $( "#create-publish-cddp-btn" ).click(function() {
-            console.log("Create new CDDP");
-
-            kbpublish.create_publish_cddp();
-        });
-        
-        var has_edit_access = $('#has_edit_access').val();
-        if (has_edit_access == 'True') {
-            kbpublish.var.has_edit_access = true;
-        }
-
-        $('#publish-btn-add-notification').click(function(){
-            kbpublish.show_add_email_notification_modal();
-        })
-
-        $('#publish-notification-order-by').change(()=>table.refresh(this.get_email_notification));
-        $('#publish-notification-limit').change(()=>table.refresh(this.get_email_notification));
-
-        const publish_workspace_list = $('#publish_workspace_list').data('list');
-        if(!publish_workspace_list && typeof publish_workspace_list == 'string' && publish_workspace_list.length > 0){
-            this.var.publish_workspace_list = JSON.parse(publish_workspace_list.replaceAll("'", '"'));
-        } else if(publish_workspace_list instanceof Array){
-            this.var.publish_workspace_list = publish_workspace_list
-        }
-        if(this.var.publish_workspace_list){
-            for(let i in this.var.publish_workspace_list){
-                let entry = this.var.publish_workspace_list[i];
-                this.var.publish_workspace_map[entry.id] = entry.name;
-            }
-        }
-        
-
-        $('#manage-editors-search').select2({
-            placeholder: 'Select an option',
-            minimumInputLength: 2,
-            allowClear: true,
-            dropdownParent: $('#ManageEditorsModal'),
-            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
-            theme: 'bootstrap-5',
-            ajax: {
-                url: "/api/accounts/users/",
-                dataType: 'json',
-                quietMillis: 100,
-                data: function (params, page) {
-                    return {
-                        q: params.term,                        
-                    };
-                },          
-                  processResults: function (data) {
-                    // Transforms the top-level key of the response object from 'items' to 'results'
-                    var results = [];
-                    $.each(data.results, function(index, item){
-                      results.push({
-                        id: item.id,
-                        text: item.first_name+' '+item.last_name
-                      });
-                    });
-                    return {
-                        results: results
-                    };
-                  }                  
-            },
-        });
-
-        $('#manage-editors-add-btn').click(function(e){
-            kbpublish.add_publish_editor($('#manage-editors-search').val());
-        });
-
-        kbpublish.get_publish_geoservers();
-        kbpublish.get_publish_cddp();
-        kbpublish.retrieve_communication_types();
-        // this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
     change_subscription_status: function(status){
         var status_url = "lock";
@@ -535,4 +429,45 @@ var kblayersubscription = {
             error: error_callback
         });
     },
+    save_subscription: function(mode){
+        const type = $('#subscription-type-num').val();
+        
+        // make data body
+        var update_subscription_data = {};
+        const fields = kblayersubscription.var.required_fields;
+        for( let i in fields[type] ){
+            const key = fields[type][i];
+            if( key == 'type'){
+                continue;
+            }
+            const id = "subscription-"+key.replaceAll('_', '-');
+            if(key == 'enabled'){
+                update_subscription_data[key] = $('#'+id).prop('checked');
+            } else {
+                update_subscription_data[key] = utils.validate_empty_input(key, $('#'+id).val());
+            }
+        }
+        
+        var subscription_id = $('#subscription_id').val();
+        var url = kblayersubscription.var.subscription_save_url+subscription_id+"/";
+        var method = 'PUT';
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(update_subscription_data),
+            success: function (response) {
+                if(mode == "save"){
+                    window.open("#");
+                } else if (mode == "save-and-exit"){
+                    window.open("/layer/subscriptions/");
+                }
+            },
+            error: error => common_entity_modal.show_error_modal(error)
+        });
+    }
 }
