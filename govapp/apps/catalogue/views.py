@@ -26,6 +26,7 @@ from govapp.apps.catalogue import models
 from govapp.apps.publisher import models as publish_models
 from govapp.apps.catalogue import permissions
 from govapp.apps.catalogue import serializers
+from govapp.apps.catalogue import utils as catalogue_utils
 from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
 from govapp.apps.logs import mixins as logs_mixins
 from govapp.apps.logs import utils as logs_utils
@@ -387,21 +388,26 @@ class LayerSubmissionViewSet(
         
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
-class LayerSubscriptionViewSet(mixins.ChoicesMixin, 
-                               mixins.MultipleSerializersMixin,
-                               viewsets.mixins.CreateModelMixin,
-                               viewsets.mixins.DestroyModelMixin,
-                               viewsets.mixins.RetrieveModelMixin,
-                               viewsets.mixins.ListModelMixin,
-                               viewsets.mixins.UpdateModelMixin,
-                               viewsets.GenericViewSet): 
+class LayerSubscriptionViewSet(
+    mixins.ChoicesMixin, 
+    mixins.MultipleSerializersMixin,
+    logs_mixins.ActionsLogMixin,
+    logs_mixins.CommunicationsLogMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet): 
                             #    viewsets.ReadOnlyModelViewSet):
     """Layer Subscription View Set."""
     queryset = models.layer_subscriptions.LayerSubscription.objects.all()
     serializer_class = serializers.layer_subscriptions.LayerSubscriptionSerializer
-    serializer_classes = {"create":serializers.layer_subscriptions.LayerSubscriptionCreateSerializer}
+    serializer_classes = {"create":serializers.layer_subscriptions.LayerSubscriptionCreateSerializer,
+                          "update":serializers.layer_subscriptions.LayerSubscriptionUpdateSerializer}
     filterset_class = filters.LayerSubscriptionFilter
     search_fields = ["catalogue_entry__name"]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -412,35 +418,38 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin,
             return response.Response({'error_msg':errors}, 
                                       content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
         
-        # convert data types
+        # Convert data types
         for key in data:
             if key in ['type', 'workspace', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
                 data[key] = int(data.get(key))
                 
-        # check duplicated catalogue entry name
+        # Check duplicated catalogue entry name
         if models.catalogue_entries.CatalogueEntry.objects.filter(name=data['name']).exists():
             return response.Response({'error_msg':f"catalogue entry name '{data['name']}' has been already taken."}, 
                                       content_type='application/json', status=status.HTTP_400_BAD_REQUEST)     
         
-        # check type
-        type = {type.value:type for type in models.layer_subscriptions.LayerSubscriptionType}.get(data.get('type'))
-        if type is None:
+        # Check type
+        type = None
+        try:
+            type = catalogue_utils.find_enum_by_value(data.get('type'))
+            # type = {type.value:type for type in models.layer_subscriptions.LayerSubscriptionType}.get()
+        except ValueError as exc:
             return response.Response({'error_msg':f"type '{data.get('type')}' is invalid."}, 
-                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST) 
-        # check workspace
+                                    content_type='application/json', status=status.HTTP_400_BAD_REQUEST) 
+        # Check workspace
         workspace = publish_models.workspaces.Workspace.objects.get(id=data.get('workspace'))
         if workspace is None:
             return response.Response({'error_msg':f"workspace '{data.get('workspace')}' does not exist."}, 
                                       content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
         
-        # create catalogue entry first
+        # Create catalogue entry first
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
             name=data.get('name'),
             description=data.get('description'),
             type= models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION
         )
         
-        # create layer subscription
+        # Create layer subscription
         models.layer_subscriptions.LayerSubscription.objects.create(
             type=type,
             workspace=workspace,
@@ -461,7 +470,234 @@ class LayerSubscriptionViewSet(mixins.ChoicesMixin,
         )
         
         return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)
-                
+        
+    @transaction.atomic()
+    def update(self, request: request.Request, pk: str):
+        
+        # Retrieve object from DB
+        subscriptions = models.layer_subscriptions.LayerSubscription.objects.filter(id=pk)
+        if not subscriptions.exists():
+            return response.Response({'error_msg':f'ID {pk} does not exist.'}, 
+                                      content_type='application/json', status=status.HTTP_404_NOT_FOUND)
+        
+        subscription_obj = subscriptions.first()
+        
+        # Validation check
+        data = request.data
+        data['type'] = subscription_obj.type
+        serializer = serializers.layer_subscriptions.LayerSubscriptionUpdateSerializer(data=data)
+        if not serializer.is_valid():
+            errors = serializer.errors
+            return response.Response({'error_msg':errors}, 
+                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        name = data['name'] if 'name' in data else None
+        description = data['description'] if 'description' in data else None
+        data = serializer.validated_data
+        
+        if subscription_obj.is_locked():
+             return response.Response({'error_msg':f'This  subscription "{pk}" is locked.'}, 
+                                      content_type='application/json', status=status.HTTP_404_NOT_FOUND)
+        
+        # Convert string numbers to integer
+        for key in data:
+            if key in ['workspace', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
+                data[key] = int(data.get(key))
+        
+        ### Update subscription
+        # Check workspace
+        workspace = None
+        if 'workspace' in data:
+            workspace = publish_models.workspaces.Workspace.objects.filter(id=data.get('workspace'))
+            if not workspace.exists():
+                return response.Response({'error_msg':f"workspace '{data.get('workspace')}' does not exist."}, 
+                                        content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+            data['workspace'] = workspace.first()
+        
+        for key in data:
+            setattr(subscription_obj, key, data[key])
+        
+        subscription_obj.save()
+        
+        ### Update catalogue entry
+        catalogue_entry = subscription_obj.catalogue_entry
+        # check duplicated catalogue entry name
+        if name is not None:
+            if models.catalogue_entries.CatalogueEntry.objects.filter(name=name).exclude(id=catalogue_entry.id).exists():
+                return response.Response({'error_msg':f"catalogue entry name '{name}' has been already taken."}, 
+                                        content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+            catalogue_entry.name = name
+        
+        if description is not None:
+            catalogue_entry.description = description
+        
+        catalogue_entry.save()
+        
+        return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)
+            
+    
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def lock(self, request: request.Request, pk: str) -> response.Response:
+        """Locks the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+
+        # Lock
+        success = subscription.lock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=subscription,
+                action="Layer Subscription was locked"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def unlock(self, request: request.Request, pk: str) -> response.Response:
+        """Unlocks the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+
+        # Unlock
+        success = subscription.unlock()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=subscription,
+                action="Layer Subscription was unlocked"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def decline(self, request: request.Request, pk: str) -> response.Response:
+        """Declines the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Decline
+        success = catalogue_entry.decline()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was declined"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"], url_path=r"assign/(?P<user_pk>\d+)")
+    def assign(self, request: request.Request, pk: str, user_pk: str) -> response.Response:
+        """Assigns the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+            user_pk (str): Primary key of the User to assign to.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+
+        # Retrieve User
+        user = shortcuts.get_object_or_404(UserModel, id=user_pk)
+
+        # Assign!
+        success = subscription.assign(user)
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=subscription,
+                action=f"Layer Subscription was assigned to {user} (id: {user.pk})"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"])
+    def unassign(self, request: request.Request, pk: str) -> response.Response:
+        """Unassigns the Layer Subscription.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        catalogue_entry = self.get_object()
+        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+
+        # Unassign!
+        success = catalogue_entry.unassign()
+
+        # Check Success
+        if success:
+            # Add Action Log Entry
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action="Catalogue entry was unassigned"
+            )
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(
@@ -533,7 +769,7 @@ class CataloguePermissionViewSet(
     viewsets.mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):      
-    """Layer Attribute Type View Set."""
+    """Catalogue Permission View Set."""
     queryset = models.permission.CatalogueEntryPermission.objects.all()
     serializer_class = serializers.permission.CataloguePermissionSerializer
     serializer_classes = {"create": serializers.permission.CataloguePermissionCreateSerializer}

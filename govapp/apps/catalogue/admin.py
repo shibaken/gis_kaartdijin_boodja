@@ -53,7 +53,7 @@ class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
     raw_id_fields = ('catalogue_entry',)
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'catalogue_entry', 'name', 'enabled', 'username', 'url', 'host', 'updated_at', 'created_at')
+    list_display = ('id', 'catalogue_entry', 'status', 'enabled', 'assigned_to', 'username', 'url', 'host', 'updated_at', 'created_at')
     ordering = ('id',)
     raw_id_fields = ('catalogue_entry',)
     

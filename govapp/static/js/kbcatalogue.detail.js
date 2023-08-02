@@ -313,7 +313,7 @@ var kbcatalogue_detail = {
                 }
                 table.set_tbody(common_entity_modal.get_tbody(), response.results, 
                                 [{username:"text"}, {to:'text'}, {cc:'text'}, {from:'text'}, {subject:'text'}, {text:'text'}]);
-                common_pagination.init(response.count, params, kbcatalogue_detail.get_action_log, common_entity_modal.get_page_navi());
+                common_pagination.init(response.count, params, kbcatalogue_detail.get_communication_log, common_entity_modal.get_page_navi());
             },
             error: function (error){
                 common_entity_modal.show_error_modal(error);

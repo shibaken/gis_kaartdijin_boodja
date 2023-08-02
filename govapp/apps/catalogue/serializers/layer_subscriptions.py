@@ -6,75 +6,75 @@ from rest_framework import serializers
 
 # Local
 from govapp.apps.catalogue import models
+from govapp.apps.catalogue import utils
 from govapp.apps.catalogue.models.layer_subscriptions import LayerSubscriptionType
 
+required_map = {
+            LayerSubscriptionType.WMS:{'url', 'max_connections', 'read_timeout'},
+            LayerSubscriptionType.WFS:{'url',},
+            LayerSubscriptionType.POST_GIS:{'max_connections', 'min_connections', 'host', 'port', 'database', 'schema', 'fetch_size'}}
+
+all_fields = set()
+for key in required_map:
+    for field in required_map[key]:
+        all_fields.add(field)
+
+# fields that must not be included by each types
+forbidden_map = {
+            LayerSubscriptionType.WMS:
+                {field for field in all_fields if field not in required_map[LayerSubscriptionType.WMS]},
+            LayerSubscriptionType.WFS:
+                {field for field in all_fields if field not in required_map[LayerSubscriptionType.WFS]},
+            LayerSubscriptionType.POST_GIS:
+                {field for field in all_fields if field not in required_map[LayerSubscriptionType.POST_GIS]}}
 
 class LayerSubscriptionSerializer(serializers.ModelSerializer):
     """Layer Subscription Model Serializer."""
+    # workspace = serializers.IntegerField(required=False)
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
         model = models.layer_subscriptions.LayerSubscription
-        fields = ("id", "name", "description", "type", "enabled", 
+        fields = ("id", "name", "description", "type", "enabled",
                   "url", "connection_timeout", "max_connections", "min_connections", 
                   "read_timeout", "created_at", "updated_at", "workspace", 
-                  "host", "port", "database", "schema", "fetch_size")
-        read_only_fields = fields
+                  "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
+        read_only_fields = ("id", "assigned_to", "status", "created_at", "updated_at")
+        
+    # def validate(self, data):
+    #     type = data['type']
+    #     type_name = utils.find_enum_by_value(LayerSubscriptionType, type).name.replace('_', ' ')
+        
+    #     forbidden_list = list(forbidden_map[type])
+    #     forbidden_list = forbidden_list + ['id', 'created_at', 'catalogue_entry', 'catalogue_entry_id', 'updated_at', 'status', 'assugned_to', 'assugned_to_id']
+        
+    #     # check forbidden or should they be removed?
+    #     for key in forbidden_list:
+    #         if key in data:
+    #             raise serializers.ValidationError(f"A member value '{key}' must not be included in the request when type is '{type_name}'.")
+            
+    #     return data
         
 class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
     """Layer Subscription Model Serializer."""
-    url = serializers.URLField(required=False) # required if type is WMS or WFS
-    max_connections = serializers.IntegerField(required=False) # required if type is WMS or POST GIS
-    read_timeout = serializers.IntegerField(required=False) # required if type is WMS
-    min_connections = serializers.IntegerField(required=False) # required if type is POST GIS
-    host = serializers.CharField(required=False) # required if type is POST GIS
-    port = serializers.IntegerField(required=False) # required if type is POST GIS
-    database = serializers.CharField(required=False) # required if type is POST GIS
-    schema = serializers.CharField(required=False) # required if type is POST GIS
-    fetch_size = serializers.IntegerField(required=False) # required if type is POST GIS
+    name = serializers.CharField()
+    description = serializers.CharField()
+    connection_timeout = serializers.IntegerField() 
     
-    required_map = {LayerSubscriptionType.WFS:('url',),
-                LayerSubscriptionType.WMS:('url', 'max_connections', 'read_timeout'),
-                LayerSubscriptionType.POST_GIS:('max_connections', 'min_connections', 'host', 'port', 'database', 'schema', 'fetch_size')}    
-    
-    def validate_url(self, url):
-        return self.validate_conditional_optionals(url, 'url')
-    
-    def validate_max_connections(self, max_connections):
-        return self.validate_conditional_optionals(max_connections, 'max_connections')
-    
-    def validate_min_connections(self, min_connections):
-        return self.validate_conditional_optionals(min_connections, 'min_connections')
-    
-    def validate_read_timeout(self, read_timeout):
-        return self.validate_conditional_optionals(read_timeout, 'read_timeout')
-    
-    def validate_host(self, host):
-        return self.validate_conditional_optionals(host, 'host')
-    
-    def validate_port(self, port):
-        return self.validate_conditional_optionals(port, 'port')
-    
-    def validate_database(self, database):
-        return self.validate_conditional_optionals(database, 'database')
-    
-    def validate_schema(self, schema):
-        return self.validate_conditional_optionals(schema, 'schema')
-    
-    def validate_fetch_size(self, fetch_size):
-        return self.validate_conditional_optionals(fetch_size, 'fetch_size')
-     
-    def validate_conditional_optionals(self, param, param_name):
-        type = self.get_type_by_value(self.initial_data.get('type'))
-        if param_name in self.required_map[type] and not param:
-            raise serializers.ValidationError(f"Value of '{param_name}' is required when the type is {type}.")
-        return param
+    def validate(self, data):
+        # check property values
+        type_key = data['type']
+        type_name = utils.find_enum_by_value(LayerSubscriptionType, type_key).name.replace('_', ' ')
+        # check required
+        for key in required_map[type_key]:
+            if key not in data or data[key] == None or (type(data[key]) == 'str' and data[key] == ""):
+                raise serializers.ValidationError(f"A member value '{key}' is required when type is '{type_name}'.")
+            
+        # check forbidden or should they be removed?
+        for key in forbidden_map[type_key]:
+            if key in data:
+                raise serializers.ValidationError(f"A member value '{key}' must not be included in the request when type is '{type_name}'.")
         
-    def get_type_by_value(self, value):
-        for type in LayerSubscriptionType:
-            if type.value == int(value):
-                return type
-        raise serializers.ValidationError(f"A member has value '{value}' does not exist in LayerSubscriptionType.")
-        
+        return data
         
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
@@ -82,4 +82,32 @@ class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
         fields = ("name", "description", "type", "enabled", 
                   "url", "username", "userpassword", "connection_timeout", "max_connections", "min_connections",
                   "read_timeout", "created_at", "updated_at", "workspace",
-                  "host", "port", "database", "schema", "fetch_size")
+                  "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
+        
+class LayerSubscriptionUpdateSerializer(serializers.ModelSerializer):
+    workspace = serializers.IntegerField(required=False)
+    username = serializers.CharField(required=False)
+    userpassword = serializers.CharField(required=False)
+    
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = models.layer_subscriptions.LayerSubscription
+        # fields = "__all__"
+        fields = ("name", "description", "type", "enabled", "url", "username", "userpassword", 
+                  "connection_timeout", "max_connections", "min_connections", "read_timeout", 
+                  "workspace", "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
+        read_only_fields = ('id', 'created_at', 'catalogue_entry', 'catalogue_entry_id', 'updated_at', 'status', 'assugned_to', 'assugned_to_id')
+        
+    def validate(self, data):
+        type = data['type']
+        type_name = utils.find_enum_by_value(LayerSubscriptionType, type).name.replace('_', ' ')
+        
+        forbidden_list = list(forbidden_map[type])
+        # forbidden_list = forbidden_list + ['id', 'created_at', 'catalogue_entry', 'catalogue_entry_id', 'updated_at', 'status', 'assugned_to', 'assugned_to_id']
+        
+        # check forbidden or should they be removed?
+        for key in forbidden_list:
+            if key in data:
+                raise serializers.ValidationError(f"A member value '{key}' must not be included in the request when type is '{type_name}'.")
+            
+        return data

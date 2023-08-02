@@ -65,6 +65,7 @@ urlpatterns = [
     urls.path("layer/submission/", views.LayerSubmission.as_view()),     
     urls.re_path("layer/submission/(?P<pk>\d+)/(?P<tab>\w+)/", views.LayerSubmissionView.as_view()),
     urls.path("layer/subscriptions/", views.LayerSubscriptions.as_view()),
+    urls.re_path("layer/subscriptions/(?P<pk>\d+)/", views.LayerSubscriptionsView.as_view()),
 
 
 

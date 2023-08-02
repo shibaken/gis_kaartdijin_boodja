@@ -112,7 +112,9 @@
                                           &nbsp;
                                     </div>
                                     <div class='col-6 text-end'>
-                                          <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>New Subscription</button>
+                                          {% if is_administrator %}
+                                                <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>New Subscription</button>
+                                          {% endif %}
                                     </div>
                               </div>
                         </div>      
@@ -180,14 +182,14 @@
                                                       <div class="dataTables_length" id="bookings-table_length">
                                                             <label>Order By 
                                                                   <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm"  id="subscription-order-by">
-                                                                        <option value="id">ID</option>
+                                                                        <option value="id">Number</option>
                                                                         <option value="name">Name</option>
-                                                                        <option value="description">Description</option>
-                                                                        <option value="workspace">Workspace</option>                                                                        
+                                                                        <option value="status">Status</option>
                                                                         <option value="type">Type</option>
+                                                                        <option value="workspace">Workspace</option>                                                                        
                                                                         <option value="enabled">Enabled</option>
-                                                                        <option value="url">URL</option>
                                                                         <option value="updated_at">Updated at</option>
+                                                                        <option value="assigned_to">Assigned to</option>
                                                                   </select> 
                                                             </label>
                                                       </div>
@@ -202,11 +204,12 @@
                                     <tr>
                                           <th>Number</th>
                                           <th>Name</th>
-                                          <th>Description</th>
-                                          <th>Workspace</th>
+                                          <th>Status</th>
                                           <th>Type</th>
+                                          <th>Workspace</th>
                                           <th>Enabled</th>
                                           <th>Updated_at</th>
+                                          <th>Assigned to</th>
                                           <th class="text-center">Action</th>
                                     </tr>
                                     </thead>
