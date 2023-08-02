@@ -223,25 +223,45 @@ class CatalogueEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
     
-    @decorators.action(detail=True, methods=["GET"], permission_classes=[accounts_permissions.IsAuthenticated])
-    def layer(self, request: request.Request, pk: str):
+    @decorators.action(detail=False, methods=["GET"], permission_classes=[accounts_permissions.IsAuthenticated],
+                       url_path='(?P<name>\w+)/layer')
+    def layer_by_name(self, request: request.Request, name: str):
         """ Api to provide geojson file
 
         Args:
             request (request.Request): request object passed by Django framework
-            pk (str): uri parameter represents id of layer submission(catalogue id?)
+            name (str): uri parameter represents name of layer submission(catalogue name)
 
         Returns:
             response.Response: HTTP response with geojson data file
         """
-        layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.filter(catalogue_entry=pk, is_active=True).first()
+        entry = self.queryset.filter(name=name)
+        if entry.exists():
+            return self.layer_by_id(request, entry.first().id)
+        else:
+            return response.Response({"error": 'Invalid query param "name:{name}".'}, 
+                                     status=status.HTTP_400_BAD_REQUEST)
+        
+    @decorators.action(detail=False, methods=["GET"], permission_classes=[accounts_permissions.IsAuthenticated],
+                       url_path='(?P<id>\d+)/layer')
+    def layer_by_id(self, request: request.Request, id: int):
+        """ Api to provide geojson file
+
+        Args:
+            request (request.Request): request object passed by Django framework
+            pk (int): uri parameter represents id of layer submission(catalogue id)
+
+        Returns:
+            response.Response: HTTP response with geojson data file
+        """
+        layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.filter(catalogue_entry=id, is_active=True).first()
         map_data = None
         try:
             with open(layer_submission.geojson) as file:
                 map_data = file.read()
                 map_data = json.loads(map_data)
         except Exception as e:
-            return response.Response({"error": 'an exception occured during load a target file.'}, 
+            return response.Response({"error": 'An exception was occured while loading a target file.'}, 
                                      status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response(map_data, content_type='application/json', status=status.HTTP_200_OK)
