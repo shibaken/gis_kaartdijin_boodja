@@ -90,14 +90,22 @@ var kblayersubscription = {
                     response.results[i]['type_str'] = kblayersubscription.var.subscription_type_map[+response.results[i].type];
                     response.results[i]['workspace_str'] = kblayersubscription.var.workspace_map[+response.results[i].workspace];
                     response.results[i]['status_str'] = kblayersubscription.var.status_map[+response.results[i].status];
+                    response.results[i]['assigned_to_name'] = null;
+                    if(response.results[i]['assigned_to_first_name'])
+                        response.results[i]['assigned_to_name'] = response.results[i]['assigned_to_first_name'] + ' ' 
+                                                                + response.results[i]['assigned_to_last_name'];
+                    
                 }
                 // ID, Name, Status, Type, Workspace, Enabled, URL, Updated at, Assigned to
+                buttons={View:(subscription)=>window.location.href = '/layer/subscriptions/'+subscription.id+'/',
+                                         History:(subscription)=>kblayersubscription.get_layer_subscription()};
+                if($('#is-administrator').val() == "True"){
+                    buttons['Delete']=(subscription)=>kblayersubscription.delete_subscription(subscription);
+                }
                 table.set_tbody($('#subscription-tbody'), response.results, 
                                 [{id:"text"}, {name:'text'}, {status_str:'text'}, {type_str:'text'},
-                                {workspace_str:'text'}, {enabled:'text'}, {created_at:'text'}, {assigned_to:'text'}],
-                                buttons={View:(subscription)=>window.location.href = '/layer/subscriptions/'+subscription.id+'/',
-                                         History:(subscription)=>kblayersubscription.get_layer_subscription(),
-                                         Delete:(subscription)=>kblayersubscription.delete_subscription(subscription)});
+                                {workspace_str:'text'}, {enabled:'text'}, {updated_at:'text'}, {assigned_to_name:'text'}],
+                                buttons=buttons);
                 common_pagination.init(response.count, params, kblayersubscription.get_layer_subscription, $('#subscription-navi'));
             },
             error: function (error){
