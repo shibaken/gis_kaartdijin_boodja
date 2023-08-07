@@ -50,6 +50,37 @@ var kblayersubscription = {
             kblayersubscription.show_new_subsctiption_modal();
         });
 
+        $('#subscription-assignedto').select2({
+            placeholder: 'Select an option',
+            minimumInputLength: 2,
+            allowClear: true,
+            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+            theme: 'bootstrap-5',
+            ajax: {
+                url: "/api/accounts/users/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (params, page) {
+                    return {
+                        q: params.term,                        
+                    };
+                },          
+                  processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    var results = [];
+                    $.each(data.results, function(index, item){
+                      results.push({
+                        id: item.id,
+                        text: item.first_name+' '+item.last_name
+                      });
+                    });
+                    return {
+                        results: results
+                    };
+                  }                  
+            },
+        });
+
         utils.enter_keyup($('#subscription-name'), kblayersubscription.get_layer_subscription);
         utils.enter_keyup($('#subscription-description'), kblayersubscription.get_layer_subscription);
         utils.enter_keyup($('#subscription-number'), kblayersubscription.get_layer_subscription);
@@ -70,6 +101,7 @@ var kblayersubscription = {
                 type:       $('#subscription-type').val(),
                 catalogue_entry__description__icontains:  $('#subscription-description').val(),
                 id:         $('#subscription-number').val(),
+                assigned_to:            +$('#subscription-assignedto').val(),
             }
             
             param_str = utils.make_query_params(params);

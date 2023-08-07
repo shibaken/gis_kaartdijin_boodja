@@ -95,7 +95,7 @@ class LayerSubscriptionFilter(filters.FilterSet):
         """Layer Subscription Filter Metadata."""
         model = models.layer_subscriptions.LayerSubscription
         fields = {"catalogue_entry__name":["icontains", "contains"], "catalogue_entry__description":["icontains", "contains"], 
-                  "enabled":["exact"], "type":["exact"], "workspace":["exact"], "id":["exact"]}
+                  "enabled":["exact"], "type":["exact"], "workspace":["exact"], "id":["exact"], "assigned_to":["exact"]}
 
 
 class LayerSymbologyFilter(filters.FilterSet):
