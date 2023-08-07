@@ -495,12 +495,8 @@ class LayerSubscriptionViewSet(
     def update(self, request: request.Request, pk: str):
         
         # Retrieve object from DB
-        subscriptions = models.layer_subscriptions.LayerSubscription.objects.filter(id=pk)
-        if not subscriptions.exists():
-            return response.Response({'error_msg':f'ID {pk} does not exist.'}, 
-                                      content_type='application/json', status=status.HTTP_404_NOT_FOUND)
-        
-        subscription_obj = subscriptions.first()
+        subscription = self.get_object()
+        subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
         # Validation check
         data = request.data

@@ -50,6 +50,37 @@ var kblayersubscription = {
             kblayersubscription.show_new_subsctiption_modal();
         });
 
+        $('#subscription-assignedto').select2({
+            placeholder: 'Select an option',
+            minimumInputLength: 2,
+            allowClear: true,
+            width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+            theme: 'bootstrap-5',
+            ajax: {
+                url: "/api/accounts/users/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (params, page) {
+                    return {
+                        q: params.term,                        
+                    };
+                },          
+                  processResults: function (data) {
+                    // Transforms the top-level key of the response object from 'items' to 'results'
+                    var results = [];
+                    $.each(data.results, function(index, item){
+                      results.push({
+                        id: item.id,
+                        text: item.first_name+' '+item.last_name
+                      });
+                    });
+                    return {
+                        results: results
+                    };
+                  }                  
+            },
+        });
+
         utils.enter_keyup($('#subscription-name'), kblayersubscription.get_layer_subscription);
         utils.enter_keyup($('#subscription-description'), kblayersubscription.get_layer_subscription);
         utils.enter_keyup($('#subscription-number'), kblayersubscription.get_layer_subscription);
@@ -70,6 +101,7 @@ var kblayersubscription = {
                 type:       $('#subscription-type').val(),
                 catalogue_entry__description__icontains:  $('#subscription-description').val(),
                 id:         $('#subscription-number').val(),
+                assigned_to:            +$('#subscription-assignedto').val(),
             }
             
             param_str = utils.make_query_params(params);
@@ -90,13 +122,22 @@ var kblayersubscription = {
                     response.results[i]['type_str'] = kblayersubscription.var.subscription_type_map[+response.results[i].type];
                     response.results[i]['workspace_str'] = kblayersubscription.var.workspace_map[+response.results[i].workspace];
                     response.results[i]['status_str'] = kblayersubscription.var.status_map[+response.results[i].status];
+                    response.results[i]['assigned_to_name'] = null;
+                    if(response.results[i]['assigned_to_first_name'])
+                        response.results[i]['assigned_to_name'] = response.results[i]['assigned_to_first_name'] + ' ' 
+                                                                + response.results[i]['assigned_to_last_name'];
+                    
                 }
                 // ID, Name, Status, Type, Workspace, Enabled, URL, Updated at, Assigned to
+                buttons={View:(subscription)=>window.location.href = '/layer/subscriptions/'+subscription.id+'/',
+                                         History:(subscription)=>kblayersubscription.get_layer_subscription()};
+                if($('#is-administrator').val() == "True"){
+                    buttons['Delete']=(subscription)=>kblayersubscription.delete_subscription(subscription);
+                }
                 table.set_tbody($('#subscription-tbody'), response.results, 
                                 [{id:"text"}, {name:'text'}, {status_str:'text'}, {type_str:'text'},
-                                {workspace_str:'text'}, {enabled:'text'}, {created_at:'text'}, {assigned_to:'text'}],
-                                buttons={View:(att)=>window.location.href = '/layer/subscriptions/'+att.id+'/',
-                                         History:(att)=>kblayersubscription.get_layer_subscription()});
+                                {workspace_str:'text'}, {enabled:'text'}, {updated_at:'text'}, {assigned_to_name:'text'}],
+                                buttons=buttons);
                 common_pagination.init(response.count, params, kblayersubscription.get_layer_subscription, $('#subscription-navi'));
             },
             error: function (error){
@@ -212,6 +253,33 @@ var kblayersubscription = {
             success: success_callback,
             error: error_callback
         });
+    },
+    delete_subscription: function(subscription){
+        let delete_subscription_callback = function(success_callback, error_callback){
+            var url = kblayersubscription.var.layersubscription_data_url+subscription.id+"/";
+            var method = 'DELETE';
+
+            // call POST API
+            $.ajax({
+                url: url,
+                method: method,
+                dataType: 'json',
+                contentType: 'application/json',
+                headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+                success: success_callback,
+                error: error_callback
+            });
+        }
+
+        common_entity_modal.init("Delete Subscription", "delete");
+        common_entity_modal.add_field(label="ID", type="number", value=subscription.id);
+        common_entity_modal.add_field(label="Name", type="text", value=subscription.name);
+        common_entity_modal.add_field(label="Type", type="text", value=subscription.type_str);
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                    delete_subscription_callback(success_callback, error_callback),
+                                    success_callback=()=>table.refresh(kblayersubscription.get_layer_subscription));
+        common_entity_modal.show();
+        
     },
 
     // *** View page *** //

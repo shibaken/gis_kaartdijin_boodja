@@ -397,6 +397,7 @@ class LayerSubscriptions(base.TemplateView):
         Returns:
             http.HttpResponse: The rendered template response.
         """
+        is_administrator = False
         if utils.is_administrator(request.user) is True:
                 is_administrator = True
                 
