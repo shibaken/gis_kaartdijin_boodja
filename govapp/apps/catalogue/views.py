@@ -462,16 +462,11 @@ class LayerSubscriptionViewSet(
             return response.Response({'error_msg':f"workspace '{data.get('workspace')}' does not exist."}, 
                                       content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
         
-        # Create catalogue entry first
-        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
-            name=data.get('name'),
-            description=data.get('description'),
-            type= models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION
-        )
-        
         # Create layer subscription
         models.layer_subscriptions.LayerSubscription.objects.create(
             type=type,
+            name=data.get('name'),
+            description=data.get('description'),
             workspace=workspace,
             enabled=data.get('enabled'),
             url=data.get('url'),
@@ -485,8 +480,7 @@ class LayerSubscriptionViewSet(
             min_connections=data.get('min_connections'),
             read_timeout=data.get('read_timeout'),
             schema=data.get('schema'),
-            fetch_size=data.get('fetch_size'),
-            catalogue_entry=catalogue_entry
+            fetch_size=data.get('fetch_size')
         )
         
         return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)

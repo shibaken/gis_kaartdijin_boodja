@@ -44,9 +44,8 @@ class LayerSubscriptionSerializer(serializers.ModelSerializer):
         
 class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
     """Layer Subscription Model Serializer."""
-    name = serializers.CharField()
-    description = serializers.CharField()
-    connection_timeout = serializers.IntegerField() 
+    description = serializers.CharField(required=False)
+    # connection_timeout = serializers.IntegerField() 
     
     def validate(self, data):
         # check property values

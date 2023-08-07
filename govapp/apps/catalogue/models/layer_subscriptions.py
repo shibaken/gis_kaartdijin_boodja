@@ -45,6 +45,8 @@ class LayerSubscription(mixins.RevisionedMixin):
     """Model for a Layer Subscription."""
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
+    name = models.TextField()
+    description = models.TextField(blank=True)
     enabled = models.BooleanField(default=True)
     url = models.URLField(null=True) # for WMS or WFS
     username = models.CharField(null=True, max_length=100)
@@ -58,7 +60,8 @@ class LayerSubscription(mixins.RevisionedMixin):
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
         related_name="subscription",
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        null=True)
     workspace = models.ForeignKey(
         workspaces.Workspace,
         related_name="workspace",
@@ -96,25 +99,25 @@ class LayerSubscription(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.name}"
 
-    @property
-    def name(self) -> str:
-        """Proxies the Layer Subscription's name to this model.
+    # @property
+    # def name(self) -> str:
+    #     """Proxies the Layer Subscription's name to this model.
 
-        Returns:
-            str: Name of the Layer Subscription.
-        """
-        # Retrieve and Return
-        return self.catalogue_entry.name
+    #     Returns:
+    #         str: Name of the Layer Subscription.
+    #     """
+    #     # Retrieve and Return
+    #     return self.catalogue_entry.name
     
-    @property
-    def description(self) -> str:
-        """Proxies the Layer Subscription's description to this model.
+    # @property
+    # def description(self) -> str:
+    #     """Proxies the Layer Subscription's description to this model.
 
-        Returns:
-            str: Description of the Layer Subscription.
-        """
-        # Retrieve and Return
-        return self.catalogue_entry.description
+    #     Returns:
+    #         str: Description of the Layer Subscription.
+    #     """
+    #     # Retrieve and Return
+    #     return self.catalogue_entry.description
     
     def is_locked(self) -> bool:
         """Determines whether the Layer Subscription is locked.
@@ -238,7 +241,7 @@ class LayerSubscription(mixins.RevisionedMixin):
                 self.active_layer.decline()
 
             # Set Layer Subscription to Declined
-            self.status = CatalogueEntryStatus.DECLINED
+            self.status = catalogue_entries.CatalogueEntryStatus.DECLINED
             self.save()
 
             # Success!
