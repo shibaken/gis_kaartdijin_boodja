@@ -451,7 +451,7 @@ class LayerSubscriptionViewSet(
         # Check type
         type = None
         try:
-            type = catalogue_utils.find_enum_by_value(data.get('type'))
+            type = catalogue_utils.find_enum_by_value(models.layer_subscriptions.LayerSubscriptionType, data.get('type'))
             # type = {type.value:type for type in models.layer_subscriptions.LayerSubscriptionType}.get()
         except ValueError as exc:
             return response.Response({'error_msg':f"type '{data.get('type')}' is invalid."}, 

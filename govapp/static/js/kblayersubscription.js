@@ -9,12 +9,13 @@ var kblayersubscription = {
         status_map: {1:"NEW DRAFT", 2:"LOCKED", 3:"DECLINED", 4:"DRAFT", 5:"PENDING"},
         required_fields:{
             1:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
-                'username', 'userpassword', 'connection_timeout', 'max_connections', 'read_timeout'],
+                'connection_timeout', 'max_connections', 'read_timeout'],
             2:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
-                'username', 'userpassword', 'connection_timeout',],
+                'connection_timeout',],
             3:['type', 'workspace', 'name', 'description', 'enabled', 'host', 'port', 
-                'database', 'schema', 'username', 'userpassword', 'connection_timeout', 
+                'database', 'schema', 'connection_timeout', 
                 'max_connections', 'min_connections', 'fetch_size']},
+        optional_fields:['username', 'userpassword'],
         default_connection_timout: 10000,
         default_read_timout: 10000,
         default_max_concurrent_connections: 6,
@@ -194,8 +195,8 @@ var kblayersubscription = {
         fields.port = {id:common_entity_modal.add_field(label="Port", type="number")};
         fields.database = {id:common_entity_modal.add_field(label="Database", type="text")};
         fields.schema = {id:common_entity_modal.add_field(label="Schema", type="text")};
-        fields.username = {id:common_entity_modal.add_field(label="User Name", type="text")};
-        fields.userpassword = {id:common_entity_modal.add_field(label="User Password", type="password")};
+        fields.username = {id:common_entity_modal.add_field(label="User Name(Optional)", type="text")};
+        fields.userpassword = {id:common_entity_modal.add_field(label="User Password(Optional)", type="password")};
         fields.connection_timeout = {id:common_entity_modal.add_field(label="Connection Timeout(ms)", type="number", value=kblayersubscription.var.default_connection_timout)};
         fields.max_connections = {id:common_entity_modal.add_field(label="Max Concurrent Connections", type="number", value=kblayersubscription.var.default_max_concurrent_connections)};
         fields.min_connections = {id:common_entity_modal.add_field(label="Min Concurrent Connections", type="number", value=kblayersubscription.var.default_mim_concurrent_connections)};
@@ -210,6 +211,11 @@ var kblayersubscription = {
             const required_fields = kblayersubscription.var.required_fields[type];
             for(let i in required_fields){
                 common_entity_modal.show_entity(fields[required_fields[i]].id);
+            }
+
+            const optional_fields = kblayersubscription.var.optional_fields;
+            for(let i in optional_fields){
+                common_entity_modal.show_entity(fields[optional_fields[i]].id);
             }
         }
         
@@ -236,6 +242,14 @@ var kblayersubscription = {
                 subscription_data[key] = $('#'+fields[key].id).prop('checked');
             } else {
                 subscription_data[key] = utils.validate_empty_input(common_entity_modal.get_label(fields[key].id), $('#'+fields[key].id).val());
+            }
+        }
+        optional_fields = kblayersubscription.var.optional_fields;
+        for(let i in optional_fields){
+            const key = optional_fields[i];
+            const val = $('#'+fields[key].id).val();
+            if(val){
+                subscription_data[key] = val;
             }
         }
         

@@ -47,8 +47,8 @@ class LayerSubscription(mixins.RevisionedMixin):
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
     enabled = models.BooleanField(default=True)
     url = models.URLField(null=True) # for WMS or WFS
-    username = models.CharField(max_length=100)
-    userpassword = models.CharField(max_length=100)
+    username = models.CharField(null=True, max_length=100)
+    userpassword = models.CharField(null=True, max_length=100)
     connection_timeout = models.IntegerField(default=10000) # ms
     max_connections = models.IntegerField(default=1, null=True) # for WMS or POST GIS
     min_connections = models.IntegerField(default=1, null=True) # for POST GIS
