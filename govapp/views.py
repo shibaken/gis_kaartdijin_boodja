@@ -7,6 +7,7 @@ from django import shortcuts
 from django.views.generic import base
 from django.contrib import auth
 from django import conf
+import json
 
 # Internal
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
@@ -449,6 +450,8 @@ class LayerSubscriptionsView(base.TemplateView):
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
         context['enabled_js'] = "true" if subscription_obj.enabled else "false"
+        context['related_tables'] = json.dumps(["table name 02"])
+        context['related_layers'] = json.dumps(["native layer name 03"])
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        

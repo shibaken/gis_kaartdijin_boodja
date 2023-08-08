@@ -1340,7 +1340,7 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response || !response.results){
-                    table.message_tbody("No results found");
+                    table.message_tbody(common_entity_modal.get_tbody(), "No results found");
                     return;
                 }
                 for(let i in response.results){
@@ -1388,7 +1388,7 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response || !response.results){
-                    table.message_tbody("No results found");
+                    table.message_tbody(common_entity_modal.get_tbody(), "No results found");
                     return;
                 }
                 for(let i in response.results){
