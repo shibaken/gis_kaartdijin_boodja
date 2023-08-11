@@ -72,6 +72,8 @@ class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
                   "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
         
 class LayerSubscriptionUpdateSerializer(serializers.ModelSerializer):
+    name = serializers.IntegerField(required=False)
+    description = serializers.IntegerField(required=False)
     workspace = serializers.IntegerField(required=False)
     username = serializers.CharField(required=False)
     userpassword = serializers.CharField(required=False)
@@ -79,8 +81,8 @@ class LayerSubscriptionUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
         model = models.layer_subscriptions.LayerSubscription
-        fields = "__all__"
-        read_only_fields = ('id', 'created_at', 'catalogue_entry', 'catalogue_entry_id', 'updated_at', 'status', 'assugned_to', 'assugned_to_id')
+        fields = ("__all__")
+        read_only_fields = ('id', 'created_at', 'updated_at', 'status', 'assugned_to', 'assugned_to_id')
         
     def validate(self, data):
         type = data['type']

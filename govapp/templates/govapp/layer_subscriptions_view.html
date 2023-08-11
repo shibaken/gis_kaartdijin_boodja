@@ -580,9 +580,7 @@
             </div>
 
             <script>
-                  kblayersubscription.var.related_tables = JSON.parse('{{ related_tables|escapejs }}');
-                  kblayersubscription.var.related_layers = JSON.parse('{{ related_layers|escapejs }}');
-                  
+                  kblayersubscription.var.mapping_names = JSON.parse('{{ mapping_names|escapejs }}');
                   kblayersubscription.init_subscription_item();
             </script>
       {% else %}

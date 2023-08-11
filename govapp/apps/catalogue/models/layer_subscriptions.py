@@ -11,9 +11,9 @@ from typing import Union, Optional
 
 # Local
 from govapp.common import mixins
+from govapp.apps.catalogue.models import catalogue_entries
 from govapp.apps.catalogue import notifications as notifications_utils
 from govapp.apps.accounts import utils as accounts_utils
-from govapp.apps.catalogue.models import catalogue_entries
 from govapp.apps.publisher.models import workspaces
 from govapp.apps.publisher.models import publish_entries
 
@@ -57,11 +57,11 @@ class LayerSubscription(mixins.RevisionedMixin):
     read_timeout = models.IntegerField(default=10000, null=True) # ms, for WMS
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    catalogue_entry = models.OneToOneField(
-        catalogue_entries.CatalogueEntry,
-        related_name="subscription",
-        on_delete=models.CASCADE,
-        null=True)
+    # catalogue_entry = models.OneToOneField(
+    #     catalogue_entries.CatalogueEntry,
+    #     related_name="subscription",
+    #     on_delete=models.CASCADE,
+    #     null=True)
     workspace = models.ForeignKey(
         workspaces.Workspace,
         related_name="workspace",
@@ -203,7 +203,9 @@ class LayerSubscription(mixins.RevisionedMixin):
         self.save()
 
         # Send Emails
-        notifications_utils.catalogue_entry_lock(self.catalogue_entry)
+        mapped_catalogue_entries = catalogue_entries.CatalogueEntry.objects.filter(layer_subscription=self)
+        for catalogue_entry in mapped_catalogue_entries:
+            notifications_utils.catalogue_entry_lock(catalogue_entry)
         
         # Success!
         return True
@@ -227,28 +229,28 @@ class LayerSubscription(mixins.RevisionedMixin):
         # Failed
         return False
 
-    def decline(self) -> bool:
-        """Declines the Layer Subscription.
+    # def decline(self) -> bool:
+    #     """Declines the Layer Subscription.
 
-        Returns:
-            bool: Whether the declining was successful.
-        """
-        # Check Layer Subscription
-        if self.is_unlocked():
-            # Check if Layer Subscription is new
-            if self.is_new():
-                # Decline the currently active layer
-                self.active_layer.decline()
+    #     Returns:
+    #         bool: Whether the declining was successful.
+    #     """
+    #     # Check Layer Subscription
+    #     if self.is_unlocked():
+    #         # Check if Layer Subscription is new
+    #         if self.is_new():
+    #             # Decline the currently active layer
+    #             self.active_layer.decline()
 
-            # Set Layer Subscription to Declined
-            self.status = catalogue_entries.CatalogueEntryStatus.DECLINED
-            self.save()
+    #         # Set Layer Subscription to Declined
+    #         self.status = catalogue_entries.CatalogueEntryStatus.DECLINED
+    #         self.save()
 
-            # Success!
-            return True
+    #         # Success!
+    #         return True
 
-        # Failed
-        return False
+    #     # Failed
+    #     return False
 
     def assign(self, user: auth_models.User) -> bool:
         """Assigns a user to the Layer Subscription if applicable.
@@ -263,8 +265,8 @@ class LayerSubscription(mixins.RevisionedMixin):
         # To be assigned, a user must be:
         # 1. In the Catalogue Editors group
         # 2. One of this Layer Subscription's editors
-        if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
-            pass
+        # if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
+        #     pass
         if accounts_utils.is_administrator(user):
             # Assign user
             self.assigned_to = user

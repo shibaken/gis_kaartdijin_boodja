@@ -23,10 +23,11 @@ if TYPE_CHECKING:
     from govapp.apps.catalogue.models import layer_attributes
     from govapp.apps.catalogue.models import layer_metadata
     from govapp.apps.catalogue.models import layer_submissions
-    from govapp.apps.catalogue.models import layer_subscriptions
+    from govapp.apps.catalogue.models.layer_subscriptions import LayerSubscription
     from govapp.apps.catalogue.models import layer_symbology
     from govapp.apps.catalogue.models import notifications
     from govapp.apps.publisher.models import publish_entries
+    from govapp.apps.catalogue.models import permission
 
 
 # Shortcuts
@@ -56,6 +57,7 @@ class CatalogueEntryType(models.IntegerChoices):
         "email_notifications",
         "webhook_notifications",
         "publish_entry",
+        # "permissions"
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
@@ -64,6 +66,13 @@ class CatalogueEntry(mixins.RevisionedMixin):
     description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPECIAL_FILE)
+    mapping_name = models.CharField(max_length=1000, null=True, unique=True)
+    layer_subscription = models.ForeignKey(
+        "LayerSubscription",
+        null=True,
+        related_name="layer_subscription",
+        on_delete=models.CASCADE,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     custodian = models.ForeignKey(
@@ -88,16 +97,20 @@ class CatalogueEntry(mixins.RevisionedMixin):
     attributes: "models.Manager[layer_attributes.LayerAttribute]"
     layers: "models.Manager[layer_submissions.LayerSubmission]"
     metadata: "layer_metadata.LayerMetadata"
-    subscription: "layer_subscriptions.LayerSubscription"
+    # subscription: "layer_subscriptions.LayerSubscription"
     symbology: "layer_symbology.LayerSymbology"
     email_notifications: "models.Manager[notifications.EmailNotification]"
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
     publish_entry: "Optional[publish_entries.PublishEntry]"
+    # permissions: "models.Manager[permission.CatalogueEntryPermission]"
 
     class Meta:
         """Catalogue Entry Model Metadata."""
         verbose_name = "Catalogue Entry"
         verbose_name_plural = "Catalogue Entries"
+        constraints = [
+            models.UniqueConstraint(fields=['mapping_name', 'layer_subscription'], name='unique_mapping_subscription')
+        ]
 
     def __str__(self) -> str:
         """Provides a string representation of the object.

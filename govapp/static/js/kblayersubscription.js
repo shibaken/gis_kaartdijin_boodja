@@ -578,100 +578,152 @@ var kblayersubscription = {
             table.set_thead(thead, {"Native Layer Name":11, "Action":1});
 
             const tbody = $("#subscription-layer-table-tbody");
-            if(!response || !response.results || !Array.isArray(response.results)){
+            if(!response || !response.results){
                 table.message_tbody(tbody, "No results found");
                 return;
             }
             let buttons = null;
-            buttons={ADD:{callback:(layer)=>kblayersubscription.show_add_layer_modal(layer), 
-                            is_valid:(layer)=>!kblayersubscription.var.related_layers.includes(layer.name)},
-                    EDIT:{callback:(layer)=>kblayersubscription.show_edit_layer_modal(layer), 
-                            is_valid:(layer)=>kblayersubscription.var.related_layers.includes(layer.name)}};
-            table.set_tbody(tbody, response.results, [{name:"text"}], buttons)
+            buttons={ADD:{callback:(layer)=>kblayersubscription.show_add_table_modal(layer), 
+                            is_valid:(layer)=>!(layer.name in response.results)},
+                    EDIT:{callback:(layer)=>kblayersubscription.show_edit_table_modal(layer), 
+                            is_valid:(layer)=>layer.name in response.results}};
+            table.set_tbody(tbody, kblayersubscription.var.mapping_names, [{name:"text"}], buttons)
         }
 
-        callback({results:[{name:"native layer name 01"},
-                            {name:"native layer name 02"},
-                            {name:"native layer name 03"},
-                            {name:"native layer name 04"}]});
+        kblayersubscription.get_mappings(callback);
     },
     show_add_layer_modal: function(layer){
         common_entity_modal.init("New Catalogue Subscription Layer");
-        common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
-        common_entity_modal.add_field(label="Description", type="text");
-        common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
+        fields['mapping_name'] = common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
         common_entity_modal.add_callbacks(
-            submit_callback=(success_callback, error_callback) => kblayersubscription.create_layer(success_callback, error_callback), 
+            submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
             success_callback=kblayersubscription.get_layers);
         common_entity_modal.show();
     },
-    create_layer: function(success_callback, error_callback){
+    create_mapping: function(success_callback, error_callback, fields){
         // call create layer api via ajax
+        mapping_data = {};
 
+        for(const key in fields){
+            mapping_data[key] = utils.validate_empty_input(key, $('#'+fields[key]).val());
+        }
+        
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
+        var method = 'POST';
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(mapping_data),
+            success: success_callback,
+            error: error_callback
+        });
     },
     show_edit_layer_modal: function(layer){
+        const catalogue_id = kblayersubscription.var.mappings[layer.name].catalogue_entry_id;
         common_entity_modal.init("Update Catalogue Subscription Layer");
-        common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
-        common_entity_modal.add_field(label="Description", type="text");
-        common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text", kblayersubscription.var.mappings[layer.name].name);
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text", kblayersubscription.var.mappings[layer.name].description);
+        fields['mapping_name'] = common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
         common_entity_modal.add_callbacks(
-            submit_callback=(success_callback, error_callback) => kblayersubscription.update_layer(success_callback, error_callback), 
+            submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
             success_callback=kblayersubscription.get_layers);
         common_entity_modal.show();
     },
-    update_layer: function(success_callback, error_callback){
+    update_mapping: function(success_callback, error_callback, fields, catalogue_id){
         // call update layer api via ajax
+        mapping_data = {};
 
+        for(const key in fields){
+            mapping_data[key] = utils.validate_empty_input(key, $('#'+fields[key]).val());
+        }
+        
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/" + catalogue_id + "/";
+        var method = 'PUT';
+
+        // call PUT API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(mapping_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+    get_mappings: function(success_callback){
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
+        var method = 'GET';
+
+        // call PUT API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: success_callback,
+            error: (error)=> {
+                common_entity_modal.show_alert("An error occured while getting mappings.");
+                // console.error(error);
+            },
+        });
     },
     get_tables: function(){
         callback = (response) => {
             const thead = $("#subscription-dbtable-table-thead");
-            table.set_thead(thead, {"Table Name":11, "Action":1});
 
             const tbody = $("#subscription-dbtable-table-tbody");
-            if(!response || !response.results || !Array.isArray(response.results)){
+            if(!response || !response.results){
                 table.message_tbody(tbody, "No results found");
                 return;
             }
             let buttons = null;
-            buttons={ADD:{callback:(table)=>kblayersubscription.show_add_table_modal(table), 
-                            is_valid:(table)=>!kblayersubscription.var.related_tables.includes(table.name)},
-                    EDIT:{callback:(table)=>kblayersubscription.show_edit_table_modal(table), 
-                            is_valid:(table)=>kblayersubscription.var.related_tables.includes(table.name)}};
-            table.set_tbody(tbody, response.results, [{name:"text"}], buttons)
+            if($('#has_edit_access').val() == "True"){
+                buttons={ADD:{callback:(table)=>kblayersubscription.show_add_table_modal(table), 
+                                is_valid:(table)=>!(table.name in response.results)},
+                        EDIT:{callback:(table)=>kblayersubscription.show_edit_table_modal(table), 
+                                is_valid:(table)=>table.name in response.results}};
+                table.set_thead(thead, {"Table Name":11, "Action":1});
+            } else {
+                table.set_thead(thead, {"Table Name":12});
+            }
+            table.set_tbody(tbody, kblayersubscription.var.mapping_names, [{name:"text"}], buttons);
         }
 
-        callback({results:[{name:"table name 01"},
-                            {name:"table name 02"},
-                            {name:"table name 03"},
-                            {name:"table name 04"}]});
+        kblayersubscription.get_mappings(callback);
     },
     show_add_table_modal: function(table){
         common_entity_modal.init("New Catalogue Subscription Table");
-        common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
-        common_entity_modal.add_field(label="Description", type="text");
-        common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
+        fields['mapping_name'] = common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
         common_entity_modal.add_callbacks(
-            submit_callback=(success_callback, error_callback) => kblayersubscription.create_table(success_callback, error_callback), 
+            submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
             success_callback=kblayersubscription.get_tables);
         common_entity_modal.show();
-    },
-    create_table: function(success_callback, error_callback){
-        // call create table api via ajax
-
     },
     show_edit_table_modal: function(table){
+        const catalogue_id = kblayersubscription.var.mappings[table.name].catalogue_entry_id;
         common_entity_modal.init("Update Catalogue Subscription Table");
-        common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
-        common_entity_modal.add_field(label="Description", type="text");
-        common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
+        fields['mapping_name'] = common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
         common_entity_modal.add_callbacks(
-            submit_callback=(success_callback, error_callback) => kblayersubscription.update_table(success_callback, error_callback), 
+            submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
             success_callback=kblayersubscription.get_tables);
         common_entity_modal.show();
-    },
-    update_table: function(success_callback, error_callback){
-        // call update table api via ajax
-
     },
 }
