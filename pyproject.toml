@@ -27,6 +27,8 @@ py7zr = "^0.20.2"
 rarfile = "^4.0"
 httpx = "^0.23.2"
 lxml = "^4.9.2"
+owslib = "0.29.2"
+numpy = "1.25.0"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.16.2"
