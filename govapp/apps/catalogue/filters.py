@@ -79,22 +79,13 @@ class LayerSubscriptionFilter(filters.FilterSet):
     """Layer Subscription Filter."""
     updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
     order_by = filters.OrderingFilter(
-        fields=(
-            "id",
-            ("catalogue_entry__name", "name"),  # Proxy through the Catalogue Entry name to sort by
-            ("catalogue_entry__description", "description"),
-            "workspace",
-            "type",
-            "url",
-            "enabled",
-            "updated_at",
-        )
+        fields=("id", "name", "description", "workspace", "type", "url", "enabled", "updated_at",)
     )
 
     class Meta:
         """Layer Subscription Filter Metadata."""
         model = models.layer_subscriptions.LayerSubscription
-        fields = {"catalogue_entry__name":["icontains", "contains"], "catalogue_entry__description":["icontains", "contains"], 
+        fields = {"name":["icontains", "contains"], "description":["icontains", "contains"], 
                   "enabled":["exact"], "type":["exact"], "workspace":["exact"], "id":["exact"], "assigned_to":["exact"]}
 
 

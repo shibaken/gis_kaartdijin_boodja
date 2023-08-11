@@ -77,6 +77,7 @@
                               <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
                               <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
                               <input type="hidden" id="subscription-type-num" name="subscription-type-num" value="{{ subscription_obj.type }}">
+                              <input type="hidden" id="subscription-type" name="subscription-type" value="{{ type }}">
                               
                               <div class="card" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
@@ -145,7 +146,7 @@
                                                       {% endif %}
                                                 </div>
                                                 <div class='col-4'> &nbsp; </div>    
-                                          {% elif subscription_obj.type == 3 %}
+                                          {% elif subscription_obj.type is 3 %}
                                                 <div class='col-3 d-flex align-items-center'> Host </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -277,12 +278,12 @@
                         <div class="card" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
-                                    <div class="col-6">
-                                          Description
-                                    </div>
-                                    <div class="col-6 text-end">
-                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
-                                    </div>
+                                          <div class="col-6">
+                                                Description
+                                          </div>
+                                          <div class="col-6 text-end">
+                                                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                          </div>
                                     </div>         
                               </div>
                               <div class="card-body collapse show" id="box2-card-body">
@@ -299,6 +300,68 @@
                               </div>
                         </div>
                         <BR>
+
+                        {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
+                              <div class="card" >
+                                    <div class="card-header fw-bold h4" style="padding:30px;">
+                                          <div class="row">
+                                                <div class="col-6">
+                                                      Layers
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                                </div>
+                                          </div>         
+                                    </div>
+                                    <div class="card-body collapse show" id="box2-card-body">
+                                          <div class='row'>
+                                                <div class='col-12'>
+                                                      <div id='subscription-layer-table'>
+                                                            <table id="example" class="table" style="width:100%">
+                                                                  <thead class='table-dark' id='subscription-layer-table-thead'>
+                                                                  </thead>
+                                                                  <tbody id='subscription-layer-table-tbody'>
+                                                                        <tr> <td colspan="7" class='text-center'>No Results</td> </tr>
+                                                                  </tbody>
+                                                            </table>
+                                                      </div>
+                                                </div>                        
+                                          </div>
+                                    </div>
+                              </div>
+                              <BR>
+                        {% endif %}
+
+                        {% if subscription_obj.type is 3 %}
+                              <div class="card" >
+                                    <div class="card-header fw-bold h4" style="padding:30px;">
+                                          <div class="row">
+                                                <div class="col-6">
+                                                      Tables
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                                </div>
+                                          </div>         
+                                    </div>
+                                    <div class="card-body collapse show" id="box2-card-body">
+                                          <div class='row'>
+                                                <div class='col-12'>
+                                                      <div id='subscription-dbtable-table'>
+                                                            <table id="example" class="table" style="width:100%">
+                                                                  <thead class='table-dark' id='subscription-dbtable-table-thead'>
+                                                                  </thead>
+                                                                  <tbody id='subscription-dbtable-table-tbody'>
+                                                                        <tr> <td colspan="7" class='text-center'>No Results</td> </tr>
+                                                                  </tbody>
+                                                            </table>
+                                                      </div>
+                                                </div>                        
+                                          </div>
+                                    </div>
+                              </div>
+                              <BR>
+                        {% endif %}
                         {% comment %} <div class="card" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
@@ -517,8 +580,8 @@
             </div>
 
             <script>
+                  kblayersubscription.var.mapping_names = JSON.parse('{{ mapping_names|escapejs }}');
                   kblayersubscription.init_subscription_item();
-
             </script>
       {% else %}
             <div class="container" id="dashboard-table-container">

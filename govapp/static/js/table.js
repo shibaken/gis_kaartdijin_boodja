@@ -63,10 +63,19 @@ var table={
         let td = $('<td>');
         td.attr("class", "text-end");
         for(let key in buttons){
-            let button = $('<button>').attr("class", "btn btn-primary btn-sm").attr("id", id_prefix+"-"+key.toLowerCase()).text(key);
-            button.click(()=>buttons[key](data));
-            td.append(button);
-            td.append(" ")
+            if(typeof buttons[key] == 'function'){
+                let button = $('<button>').attr("class", "btn btn-primary btn-sm").attr("id", id_prefix+"-"+key.toLowerCase()).text(key);
+                button.click(()=>buttons[key](data));
+                td.append(button);
+                td.append(" ");
+            } else {
+                if(buttons[key].is_valid(data)){
+                    let button = $('<button>').attr("class", "btn btn-primary btn-sm").attr("id", id_prefix+"-"+key.toLowerCase()).text(key);
+                    button.click(()=>buttons[key].callback(data));
+                    td.append(button);
+                    td.append(" ");
+                }
+            }
         }
         return td;
     },

@@ -9,12 +9,13 @@ var kblayersubscription = {
         status_map: {1:"NEW DRAFT", 2:"LOCKED", 3:"DECLINED", 4:"DRAFT", 5:"PENDING"},
         required_fields:{
             1:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
-                'username', 'userpassword', 'connection_timeout', 'max_connections', 'read_timeout'],
+                'connection_timeout', 'max_connections', 'read_timeout'],
             2:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
-                'username', 'userpassword', 'connection_timeout',],
+                'connection_timeout',],
             3:['type', 'workspace', 'name', 'description', 'enabled', 'host', 'port', 
-                'database', 'schema', 'username', 'userpassword', 'connection_timeout', 
+                'database', 'schema', 'connection_timeout', 
                 'max_connections', 'min_connections', 'fetch_size']},
+        optional_fields:['username', 'userpassword'],
         default_connection_timout: 10000,
         default_read_timout: 10000,
         default_max_concurrent_connections: 6,
@@ -114,7 +115,7 @@ var kblayersubscription = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response || !response.results){
-                    table.message_tbody("No results found");
+                    table.message_tbody($('#subscription-tbody'), "No results found");
                     return;
                 }
                 for(let i in response.results){
@@ -141,7 +142,8 @@ var kblayersubscription = {
                 common_pagination.init(response.count, params, kblayersubscription.get_layer_subscription, $('#subscription-navi'));
             },
             error: function (error){
-                common_entity_modal.show_error_modal(error);
+                common_entity_modal.show_alert("An error occured while getting layer subscription.");
+                console.log(error)
             }
         });
     },
@@ -176,7 +178,8 @@ var kblayersubscription = {
                 }
             },
             error: function (error){
-                common_entity_modal.show_error_modal(error);
+                common_entity_modal.show_alert("An error occured while getting workspace.");
+                console.log(error);
             }
         });
     },
@@ -194,8 +197,8 @@ var kblayersubscription = {
         fields.port = {id:common_entity_modal.add_field(label="Port", type="number")};
         fields.database = {id:common_entity_modal.add_field(label="Database", type="text")};
         fields.schema = {id:common_entity_modal.add_field(label="Schema", type="text")};
-        fields.username = {id:common_entity_modal.add_field(label="User Name", type="text")};
-        fields.userpassword = {id:common_entity_modal.add_field(label="User Password", type="password")};
+        fields.username = {id:common_entity_modal.add_field(label="User Name(Optional)", type="text")};
+        fields.userpassword = {id:common_entity_modal.add_field(label="User Password(Optional)", type="password")};
         fields.connection_timeout = {id:common_entity_modal.add_field(label="Connection Timeout(ms)", type="number", value=kblayersubscription.var.default_connection_timout)};
         fields.max_connections = {id:common_entity_modal.add_field(label="Max Concurrent Connections", type="number", value=kblayersubscription.var.default_max_concurrent_connections)};
         fields.min_connections = {id:common_entity_modal.add_field(label="Min Concurrent Connections", type="number", value=kblayersubscription.var.default_mim_concurrent_connections)};
@@ -210,6 +213,11 @@ var kblayersubscription = {
             const required_fields = kblayersubscription.var.required_fields[type];
             for(let i in required_fields){
                 common_entity_modal.show_entity(fields[required_fields[i]].id);
+            }
+
+            const optional_fields = kblayersubscription.var.optional_fields;
+            for(let i in optional_fields){
+                common_entity_modal.show_entity(fields[optional_fields[i]].id);
             }
         }
         
@@ -235,7 +243,21 @@ var kblayersubscription = {
             if(key == 'enabled'){
                 subscription_data[key] = $('#'+fields[key].id).prop('checked');
             } else {
-                subscription_data[key] = utils.validate_empty_input(common_entity_modal.get_label(fields[key].id), $('#'+fields[key].id).val());
+                try{
+                    subscription_data[key] = utils.validate_empty_input(common_entity_modal.get_label(fields[key].id), $('#'+fields[key].id).val());
+                } catch (error){
+                    common_entity_modal.show_alert("An error occured while creating a new subscription.");
+                    console.log(error)
+                    return;
+                }
+            }
+        }
+        optional_fields = kblayersubscription.var.optional_fields;
+        for(let i in optional_fields){
+            const key = optional_fields[i];
+            const val = $('#'+fields[key].id).val();
+            if(val){
+                subscription_data[key] = val;
             }
         }
         
@@ -292,7 +314,6 @@ var kblayersubscription = {
         $("#log_communication_show").click(kblayersubscription.show_communication_log);
         $("#log_communication_add").click(kblayersubscription.add_communication_log);
 
-        
         $( "#subscription-btn-save" ).click(function() {
             console.log("Save Publish Table");
             kblayersubscription.save_subscription('save');
@@ -300,7 +321,12 @@ var kblayersubscription = {
         $( "#subscription-btn-save-exit" ).click(function() {
             console.log("Save Publish Table");
             kblayersubscription.save_subscription('save-and-exit');
-        });       
+        });
+        if([1,2].includes(+$('#subscription-type-num').val())){
+            kblayersubscription.get_layers();
+        }else{
+            kblayersubscription.get_tables();
+        }
     },
     change_subscription_status: function(status){
         var status_url = "lock";
@@ -383,7 +409,7 @@ var kblayersubscription = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response || !response.results){
-                    table.message_tbody("No results found");
+                    table.message_tbody(common_entity_modal.get_tbody(), "No results found");
                     return;
                 }
                 for(let i in response.results){
@@ -431,7 +457,7 @@ var kblayersubscription = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response || !response.results){
-                    table.message_tbody("No results found");
+                    table.message_tbody(common_entity_modal.get_tbody(), "No results found");
                     return;
                 }
                 for(let i in response.results){
@@ -512,7 +538,12 @@ var kblayersubscription = {
             if(key == 'enabled'){
                 update_subscription_data[key] = $('#'+id).prop('checked');
             } else {
-                update_subscription_data[key] = utils.validate_empty_input(key, $('#'+id).val());
+                try{
+                    update_subscription_data[key] = utils.validate_empty_input(key, $('#'+id).val());
+                } catch (error){
+                    common_entity_modal.show_alert(error);
+                    return;
+                }
             }
         }
         
@@ -535,7 +566,164 @@ var kblayersubscription = {
                     window.open("/layer/subscriptions/");
                 }
             },
-            error: error => common_entity_modal.show_error_modal(error)
+            error: error => {
+                common_entity_modal.show_alert("An error occured while updating a subscription.");
+                console.log(error);
+            }
         });
-    }
+    },
+    get_layers: function(){
+        callback = (response) => {
+            const thead = $("#subscription-layer-table-thead");
+            table.set_thead(thead, {"Native Layer Name":11, "Action":1});
+
+            const tbody = $("#subscription-layer-table-tbody");
+            if(!response || !response.results){
+                table.message_tbody(tbody, "No results found");
+                return;
+            }
+            let buttons = null;
+            buttons={ADD:{callback:(layer)=>kblayersubscription.show_add_table_modal(layer), 
+                            is_valid:(layer)=>!(layer.name in response.results)},
+                    EDIT:{callback:(layer)=>kblayersubscription.show_edit_table_modal(layer), 
+                            is_valid:(layer)=>layer.name in response.results}};
+            table.set_tbody(tbody, kblayersubscription.var.mapping_names, [{name:"text"}], buttons)
+        }
+
+        kblayersubscription.get_mappings(callback);
+    },
+    show_add_layer_modal: function(layer){
+        common_entity_modal.init("New Catalogue Subscription Layer");
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
+        fields['mapping_name'] = common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
+        common_entity_modal.add_callbacks(
+            submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
+            success_callback=kblayersubscription.get_layers);
+        common_entity_modal.show();
+    },
+    create_mapping: function(success_callback, error_callback, fields){
+        // call create layer api via ajax
+        mapping_data = {};
+
+        for(const key in fields){
+            mapping_data[key] = utils.validate_empty_input(key, $('#'+fields[key]).val());
+        }
+        
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
+        var method = 'POST';
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(mapping_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+    show_edit_layer_modal: function(layer){
+        const catalogue_id = kblayersubscription.var.mappings[layer.name].catalogue_entry_id;
+        common_entity_modal.init("Update Catalogue Subscription Layer");
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text", kblayersubscription.var.mappings[layer.name].name);
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text", kblayersubscription.var.mappings[layer.name].description);
+        fields['mapping_name'] = common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
+        common_entity_modal.add_callbacks(
+            submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
+            success_callback=kblayersubscription.get_layers);
+        common_entity_modal.show();
+    },
+    update_mapping: function(success_callback, error_callback, fields, catalogue_id){
+        // call update layer api via ajax
+        mapping_data = {};
+
+        for(const key in fields){
+            mapping_data[key] = utils.validate_empty_input(key, $('#'+fields[key]).val());
+        }
+        
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/" + catalogue_id + "/";
+        var method = 'PUT';
+
+        // call PUT API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(mapping_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+    get_mappings: function(success_callback){
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
+        var method = 'GET';
+
+        // call PUT API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: success_callback,
+            error: (error)=> {
+                common_entity_modal.show_alert("An error occured while getting mappings.");
+                // console.error(error);
+            },
+        });
+    },
+    get_tables: function(){
+        callback = (response) => {
+            const thead = $("#subscription-dbtable-table-thead");
+
+            const tbody = $("#subscription-dbtable-table-tbody");
+            if(!response || !response.results){
+                table.message_tbody(tbody, "No results found");
+                return;
+            }
+            let buttons = null;
+            if($('#has_edit_access').val() == "True"){
+                buttons={ADD:{callback:(table)=>kblayersubscription.show_add_table_modal(table), 
+                                is_valid:(table)=>!(table.name in response.results)},
+                        EDIT:{callback:(table)=>kblayersubscription.show_edit_table_modal(table), 
+                                is_valid:(table)=>table.name in response.results}};
+                table.set_thead(thead, {"Table Name":11, "Action":1});
+            } else {
+                table.set_thead(thead, {"Table Name":12});
+            }
+            table.set_tbody(tbody, kblayersubscription.var.mapping_names, [{name:"text"}], buttons);
+        }
+
+        kblayersubscription.get_mappings(callback);
+    },
+    show_add_table_modal: function(table){
+        common_entity_modal.init("New Catalogue Subscription Table");
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
+        fields['mapping_name'] = common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
+        common_entity_modal.add_callbacks(
+            submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
+            success_callback=kblayersubscription.get_tables);
+        common_entity_modal.show();
+    },
+    show_edit_table_modal: function(table){
+        const catalogue_id = kblayersubscription.var.mappings[table.name].catalogue_entry_id;
+        common_entity_modal.init("Update Catalogue Subscription Table");
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
+        fields['mapping_name'] = common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
+        common_entity_modal.add_callbacks(
+            submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
+            success_callback=kblayersubscription.get_tables);
+        common_entity_modal.show();
+    },
 }
