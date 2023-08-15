@@ -149,7 +149,7 @@ var common_entity_modal = {
     },
     add_callbacks: function(submit_callback, success_callback){
         let error_handler = (error)=>{
-            common_entity_modal.set_all_disabled(false);
+            common_entity_modal.roll_all_disabilities_back(false);
             if('status' in error){
                 let error_obj = JSON.parse(error.responseText);
                 let msg;
@@ -209,12 +209,28 @@ var common_entity_modal = {
         return $('#modal-table-page-navi');
     },
     set_all_disabled: function(disabled){
+        common_entity_modal.var.disabilities = {}
         for(let i in common_entity_modal.var.fields){
+            const id = common_entity_modal.var.fields[i].attr("id");
+            const disability = common_entity_modal.var.fields[i].prop("disabled");
+            common_entity_modal.var.disabilities[id] = disability;
             common_entity_modal.var.fields[i].prop("disabled", disabled);
         }
-        $('#common-entity-modal-submit-btn').prop("disabled", disabled);
-        $('#common-entity-modal-cancel-btn').prop("disabled", disabled);
-        $('#common-entity-modal-delete-btn').prop("disabled", disabled);
+        const btn_submit = $('#common-entity-modal-submit-btn');
+        const btn_cancel = $('#common-entity-modal-cancel-btn');
+        const btn_delete = $('#common-entity-modal-delete-btn');
+
+        common_entity_modal.var.disabilities[btn_submit.attr("id")] = btn_submit.prop("disabled");
+        common_entity_modal.var.disabilities[btn_cancel.attr("id")] = btn_cancel.prop("disabled");
+        common_entity_modal.var.disabilities[btn_delete.attr("id")] = btn_delete.prop("disabled");
+        btn_submit.prop("disabled", disabled);
+        btn_cancel.prop("disabled", disabled);
+        btn_delete.prop("disabled", disabled);
+    },
+    roll_all_disabilities_back: function(){
+        for(let id in common_entity_modal.var.disabilities){
+            $('#'+id).prop("disabled", common_entity_modal.var.disabilities[id]);
+        }
     },
     show_alert: function (content, title){
         common_entity_modal.hide_all_modal('alert');
