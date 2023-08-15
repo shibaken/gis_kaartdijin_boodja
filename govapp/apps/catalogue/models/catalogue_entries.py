@@ -60,7 +60,7 @@ class CatalogueEntryType(models.IntegerChoices):
         "email_notifications",
         "webhook_notifications",
         "publish_entry",
-        "permissions"
+        "catalouge_permissions"
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
