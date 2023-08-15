@@ -15,7 +15,10 @@ UserModel = auth.get_user_model()
 
 @reversion.register()
 class CatalogueEntryPermission(mixins.RevisionedMixin):
-    catalogue_entry = models.ForeignKey(catalogue_entries.CatalogueEntry, on_delete=models.CASCADE)
+    catalogue_entry = models.ForeignKey(
+        catalogue_entries.CatalogueEntry, 
+        related_name="catalouge_permissions", 
+        on_delete=models.CASCADE)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
     
