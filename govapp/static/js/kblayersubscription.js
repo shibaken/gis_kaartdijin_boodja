@@ -327,6 +327,9 @@ var kblayersubscription = {
         }else{
             kblayersubscription.get_mappings('table');
         }
+        if($('#subscription_enabled').val() == 'True'){
+            $('#subscription-enabled').prop('checked', true);
+        }
     },
     change_subscription_status: function(status){
         var status_url = "lock";
@@ -571,9 +574,9 @@ var kblayersubscription = {
             data: JSON.stringify(update_subscription_data),
             success: function (response) {
                 if(mode == "save"){
-                    window.open("#");
+                    location.reload();
                 } else if (mode == "save-and-exit"){
-                    window.open("/layer/subscriptions/");
+                    window.location.href = "/layer/subscriptions/";
                 }
             },
             error: error => {
