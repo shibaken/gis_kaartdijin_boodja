@@ -600,15 +600,24 @@ var kblayersubscription = {
                 }
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
-                    buttons={ADD:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping), 
+                    buttons={ADD:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
                                     is_valid:(mapping)=>!(mapping.name in response.results)},
-                            EDIT:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name]), 
+                            EDIT:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
                                     is_valid:(mapping)=>mapping.name in response.results}};
-                    table.set_thead(thead, {[title+"s"]:11, "Action":1});
+                    table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
                 } else {
-                    table.set_thead(thead, {[title+"s"]:12});
+                    table.set_thead(thead, {[title+"s"]:6, "Catalogue Name":6});
                 }
-                table.set_tbody(tbody, kblayersubscription.var.mapping_names, [{name:"text"}], buttons);
+                let rows = []
+                for(let i in kblayersubscription.var.mapping_names){
+                    let mapping = {'name':kblayersubscription.var.mapping_names[i]};
+                    mapping.catalogue = "";
+                    if(mapping.name in response.results){
+                        mapping.catalogue = response.results[mapping.name].name;
+                    }
+                    rows.push(mapping);
+                }
+                table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
             },
             error: (error)=> {
                 common_entity_modal.show_alert("An error occured while getting mappings.");
@@ -616,7 +625,7 @@ var kblayersubscription = {
             },
         });
     },
-    show_add_mapping_modal: function(title, mapping){
+    show_add_mapping_modal: function(title, mapping, subscription_type){
         common_entity_modal.init("New Catalogue Subscription " + title);
         let fields = {}
         fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
@@ -624,10 +633,10 @@ var kblayersubscription = {
         fields['mapping_name'] = common_entity_modal.add_field(label= title + " Name", type="text", mapping.name, null, true);
         common_entity_modal.add_callbacks(
             submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
-            success_callback=kblayersubscription.get_mappings);
+            success_callback=() => kblayersubscription.get_mappings(subscription_type));
         common_entity_modal.show();
     },
-    show_edit_mapping_modal: function(title, mapping, catalogue){
+    show_edit_mapping_modal: function(title, mapping, catalogue, subscription_type){
         const catalogue_id = catalogue.catalogue_entry_id;
         common_entity_modal.init("Update Catalogue Subscription " + title);
         let fields = {}
@@ -636,7 +645,7 @@ var kblayersubscription = {
         fields['mapping_name'] = common_entity_modal.add_field(label=title + " Name", type="text", mapping.name, null, true);
         common_entity_modal.add_callbacks(
             submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
-            success_callback=kblayersubscription.get_mappings);
+            success_callback=() => kblayersubscription.get_mappings(subscription_type));
         common_entity_modal.show();
     },
     create_mapping: function(success_callback, error_callback, fields){
