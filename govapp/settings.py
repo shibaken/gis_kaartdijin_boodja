@@ -102,7 +102,8 @@ WSGI_APPLICATION = "govapp.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
-    "default": decouple.config("DATABASE_URL", cast=dj_database_url.parse, default="sqlite://memory"),
+    "default": decouple.config("DATABASE_URL", cast=dj_database_url.parse),
+    "postgis": decouple.config("POSTGIS_DATABASE_URL", cast=dj_database_url.parse),
 }
 
 # Password validation
@@ -257,3 +258,11 @@ DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
 # Django Timezone
 TIME_ZONE = 'Australia/Perth'
+
+# Layer Subscription
+WMS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
+WMS_CACHE_KEY = "wms native layer names"
+WFS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
+WFS_CACHE_KEY = "wfs native layer names"
+POST_GIS_CACHE_KEY = "post gis table names"
+SUBSCRIPTION_CACHE_TTL = 3

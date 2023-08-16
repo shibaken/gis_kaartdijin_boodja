@@ -7,6 +7,9 @@ from django import shortcuts
 from django.views.generic import base
 from django.contrib import auth
 from django import conf
+from django.core.cache import cache
+from owslib.wms import WebMapService
+from django.db import connections
 import json
 
 # Internal
@@ -453,16 +456,30 @@ class LayerSubscriptionsView(base.TemplateView):
         #                     'catalogue_entry_id':mapping['id']}
         #                 for mapping in mappings}
         
-        if subscription_obj.type in (LayerSubscriptionType.WFS, LayerSubscriptionType.WMS):
-            mapping_names = [{"name":"native layer name 01"},
-                            {"name":"native layer name 02"},
-                            {"name":"native layer name 03"},
-                            {"name":"native layer name 04"}]
+        def cache_or_call(url, key):
+            mapping_names = cache.get(key)
+            if not mapping_names:
+                res = WebMapService(url=url)
+                mapping_names = list(res.contents.keys())
+                cache.set(key, mapping_names, conf.settings.SUBSCRIPTION_CACHE_TTL)
+            return mapping_names
+        
+        def get_postgis_table_list():
+            table_list = cache.get(conf.settings.POST_GIS_CACHE_KEY)
+            if table_list:
+                return table_list
+            with connections['postgis'].cursor() as cursor:
+                table_list = connections['postgis'].introspection.get_table_list(cursor)
+            table_list = [table.name for table in table_list]
+            cache.set(conf.settings.POST_GIS_CACHE_KEY, table_list, conf.settings.SUBSCRIPTION_CACHE_TTL)
+            return table_list
+    
+        if subscription_obj.type == LayerSubscriptionType.WMS:
+            mapping_names = cache_or_call(conf.settings.WMS_URL, conf.settings.WMS_CACHE_KEY)
+        elif subscription_obj.type == LayerSubscriptionType.WFS:
+            mapping_names = cache_or_call(conf.settings.WFS_URL, conf.settings.WFS_CACHE_KEY)
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-            mapping_names = [{"name":"table name 01"},
-                            {"name":"table name 02"},
-                            {"name":"table name 03"},
-                            {"name":"table name 04"}]
+            mapping_names = get_postgis_table_list()
         
         # Construct Context
         context: dict[str, Any] = {}
@@ -478,3 +495,5 @@ class LayerSubscriptionsView(base.TemplateView):
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
+    
+    
