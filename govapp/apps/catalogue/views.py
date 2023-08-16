@@ -437,7 +437,7 @@ class LayerSubscriptionViewSet(
         
         # Convert data types
         for key in data:
-            if key in ['type', 'workspace', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
+            if key in ['type', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
                 data[key] = int(data.get(key))
                 
         # Check duplicated catalogue entry name
@@ -453,18 +453,13 @@ class LayerSubscriptionViewSet(
         except ValueError as exc:
             return response.Response({'error_msg':f"type '{data.get('type')}' is invalid."}, 
                                     content_type='application/json', status=status.HTTP_400_BAD_REQUEST) 
-        # Check workspace
-        workspace = publish_models.workspaces.Workspace.objects.get(id=data.get('workspace'))
-        if workspace is None:
-            return response.Response({'error_msg':f"workspace '{data.get('workspace')}' does not exist."}, 
-                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
         
         # Create layer subscription
         models.layer_subscriptions.LayerSubscription.objects.create(
             type=type,
             name=data.get('name'),
             description=data.get('description'),
-            workspace=workspace,
+            workspace=data.get('workspace'),
             enabled=data.get('enabled'),
             url=data.get('url'),
             host=data.get('host'),
