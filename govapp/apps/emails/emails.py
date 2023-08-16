@@ -40,7 +40,7 @@ class TemplateEmailBase(WAGovUtilsTemplateEmailBase):
         for email in filtered_emails:
             print (email)
             # Send the email!
-            self.send(email, context=context, headers={})
+            self.send(email, context=context)
 
 
 class OLDTemplateEmailBase:
