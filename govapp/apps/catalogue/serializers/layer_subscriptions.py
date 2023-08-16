@@ -72,8 +72,8 @@ class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
                   "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
         
 class LayerSubscriptionUpdateSerializer(serializers.ModelSerializer):
-    name = serializers.IntegerField(required=False)
-    description = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
     workspace = serializers.IntegerField(required=False)
     username = serializers.CharField(required=False)
     userpassword = serializers.CharField(required=False)

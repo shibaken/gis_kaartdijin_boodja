@@ -191,9 +191,15 @@
                                           <div class='col-3 d-flex align-items-center'> User Name </div>
                                           <div class='col-5 p-1'>
                                                 {% if has_edit_access is True %}
-                                                      <input type="text" id="subscription-username" class="form-control" value="{{ subscription_obj.username }}"></input>
+                                                      {% if subscription_obj.username %}
+                                                            <input type="text" id="subscription-username" class="form-control" value="{{ subscription_obj.username }}"></input>
+                                                      {% else %}
+                                                            <input type="text" id="subscription-username" class="form-control"></input>
+                                                      {% endif %}
                                                 {% else %}
-                                                      {{ subscription_obj.username }}
+                                                      {% if subscription_obj.username %}
+                                                            {{ subscription_obj.username }}
+                                                      {% endif %}
                                                 {% endif %}
                                           </div>
                                           <div class='col-4'> &nbsp; </div>
@@ -201,9 +207,15 @@
                                           <div class='col-3 d-flex align-items-center'> User Password </div>
                                           <div class='col-5 p-1'>
                                                 {% if has_edit_access is True %}
-                                                      <input type="text" id="subscription-userpassword" class="form-control" value="{{ subscription_obj.userpassword }}"></input>
+                                                      {% if subscription_obj.userpassword %}
+                                                            <input type="text" id="subscription-userpassword" class="form-control" value="{{ subscription_obj.userpassword }}"></input>
+                                                      {% else %}
+                                                            <input type="text" id="subscription-userpassword" class="form-control"></input>
+                                                      {% endif %}
                                                 {% else %}
-                                                      {{ subscription_obj.userpassword }}
+                                                      {% if subscription_obj.userpassword %}
+                                                            {{ subscription_obj.userpassword }}
+                                                      {% endif %}
                                                 {% endif %}
                                           </div>
                                           <div class='col-4'> &nbsp; </div>

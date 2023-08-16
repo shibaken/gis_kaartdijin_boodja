@@ -547,6 +547,16 @@ var kblayersubscription = {
             }
         }
         
+        let optional_fields = kblayersubscription.var.optional_fields
+        for( let i in optional_fields ){
+            const key = optional_fields[i];
+            const id = "subscription-"+key.replaceAll('_', '-');
+            const val = $('#'+id).val();
+            if(val){
+                update_subscription_data[key] = val;
+            }
+        }
+
         var subscription_id = $('#subscription_id').val();
         var url = kblayersubscription.var.subscription_save_url+subscription_id+"/";
         var method = 'PUT';
