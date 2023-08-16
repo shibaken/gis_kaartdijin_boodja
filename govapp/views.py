@@ -486,10 +486,11 @@ class LayerSubscriptionsView(base.TemplateView):
         context['subscription_obj'] = subscription_obj
         context['status'] = catalogue_utils.find_enum_by_value(LayerSubscriptionStatus, subscription_obj.status).name.replace('_', ' ')
         context['system_users'] = system_users_list
+        context['is_system_user'] = utils.is_administrator(request.user)
         context['has_edit_access'] = has_edit_access
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
-        context['enabled_js'] = "true" if subscription_obj.enabled else "false"
+        # context['enabled_js'] = "true" if subscription_obj.enabled else "false"
         context['mapping_names'] = json.dumps(mapping_names)
         # context['mapping_layers'] = json.dumps(["native layer name 03"])
 
