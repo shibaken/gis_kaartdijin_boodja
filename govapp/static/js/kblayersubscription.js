@@ -94,13 +94,13 @@ var kblayersubscription = {
                 limit:      $('#subscription-limit').val(),
                 order_by:   $('#subscription-order-by').val(),
                 
-                catalogue_entry__name__icontains:  $('#subscription-name').val(),
+                name__icontains:  $('#subscription-name').val(),
                 workspace:  $('#subscription-workspace').val(),
-                enabled:    $('#subscription-enabled').prop('checked'),
+                enabled:    $('#subscription-enabled').val(),
                 updated_after:  utils.convert_date_format($('#subscription-updated-from').val(), kblayersubscription.var.layersubscription_date_format, hh="00", mm="00", ss="00"),
                 updated_before: utils.convert_date_format($('#subscription-updated-to').val(), kblayersubscription.var.layersubscription_date_format,hh="23", mm="59", ss="59"),
                 type:       $('#subscription-type').val(),
-                catalogue_entry__description__icontains:  $('#subscription-description').val(),
+                description__icontains:  $('#subscription-description').val(),
                 id:         $('#subscription-number').val(),
                 assigned_to:            +$('#subscription-assignedto').val(),
             }
