@@ -634,6 +634,9 @@ var kblayersubscription = {
                     rows.push(mapping);
                 }
                 table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
+                if(rows.length == 0){
+                    tbody.html("<tr><td colspan='7' class='text-center'> No results found <td></tr>");
+                }
             },
             error: (error)=> {
                 common_entity_modal.show_alert("An error occured while getting mappings.");

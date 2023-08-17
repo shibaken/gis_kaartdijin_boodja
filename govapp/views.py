@@ -9,7 +9,7 @@ from django.contrib import auth
 from django import conf
 from django.core.cache import cache
 from owslib.wms import WebMapService
-from django.db import connections
+import psycopg2
 import json
 
 # Internal
@@ -444,42 +444,43 @@ class LayerSubscriptionsView(base.TemplateView):
              if subscription_obj.status in (LayerSubscriptionStatus.DRAFT, LayerSubscriptionStatus.NEW_DRAFT, LayerSubscriptionStatus.PENDING):
                 has_edit_access = True
         
-        # mappings = list(catalogue_entries_models.CatalogueEntry.objects
-        #                      .filter(layer_subscription=pk)
-        #                      .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
-        # if not mappings:
-        #     mappings = {}
-        # else:
-        #     mappings = {mapping['mapping_name']:{
-        #                     'name':mapping['name'],
-        #                     'description':mapping['description'],
-        #                     'catalogue_entry_id':mapping['id']}
-        #                 for mapping in mappings}
-        
-        def cache_or_call(url, key):
-            mapping_names = cache.get(key)
-            if not mapping_names:
-                res = WebMapService(url=url)
-                mapping_names = list(res.contents.keys())
-                cache.set(key, mapping_names, conf.settings.SUBSCRIPTION_CACHE_TTL)
-            return mapping_names
-        
-        def get_postgis_table_list():
-            table_list = cache.get(conf.settings.POST_GIS_CACHE_KEY)
-            if table_list:
-                return table_list
-            with connections['postgis'].cursor() as cursor:
-                table_list = connections['postgis'].introspection.get_table_list(cursor)
-            table_list = [table.name for table in table_list]
-            cache.set(conf.settings.POST_GIS_CACHE_KEY, table_list, conf.settings.SUBSCRIPTION_CACHE_TTL)
-            return table_list
-    
+        def cache_or_callback(key, callback):
+            val = cache.get(key)
+            if not val:
+                try:
+                    val = callback()
+                    cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
+                except Exception as e:
+                    print(e)
+            return val
+            
         if subscription_obj.type == LayerSubscriptionType.WMS:
-            mapping_names = cache_or_call(conf.settings.WMS_URL, conf.settings.WMS_CACHE_KEY)
+            def get_wms():
+                res = WebMapService(url=conf.settings.WMS_URL)
+                return list(res.contents.keys())
+            mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY, get_wms)
         elif subscription_obj.type == LayerSubscriptionType.WFS:
-            mapping_names = cache_or_call(conf.settings.WFS_URL, conf.settings.WFS_CACHE_KEY)
+            def get_wfs():
+                res = WebMapService(url=conf.settings.WFS_URL)
+                return list(res.contents.keys())
+            mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY, get_wfs)
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-            mapping_names = get_postgis_table_list()
+            def get_post_gis():
+                conn = psycopg2.connect(
+                    host=subscription_obj.host,
+                    database=subscription_obj.database,
+                    user=subscription_obj.username,
+                    password=subscription_obj.userpassword
+                )
+                query = """
+                            SELECT table_name 
+                            FROM information_schema.tables 
+                            WHERE table_schema = 'public';  -- You can replace 'public' with your schema name if needed
+                        """
+                with conn.cursor() as cursor:
+                    cursor.execute(query)
+                    return cursor.fetchall()
+            mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
         
         # Construct Context
         context: dict[str, Any] = {}
@@ -490,9 +491,7 @@ class LayerSubscriptionsView(base.TemplateView):
         context['has_edit_access'] = has_edit_access
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
-        # context['enabled_js'] = "true" if subscription_obj.enabled else "false"
         context['mapping_names'] = json.dumps(mapping_names)
-        # context['mapping_layers'] = json.dumps(["native layer name 03"])
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
