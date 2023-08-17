@@ -24,6 +24,8 @@ var kblayersubscription = {
 
         // for view  page
         subscription_save_url: '/api/catalogue/layers/subscriptions/',
+        log_communication_type_url:"/api/logs/communications/type/",
+        communication_type: null,
     },
     init_dashboard: function() { 
 
@@ -330,6 +332,7 @@ var kblayersubscription = {
         if($('#subscription_enabled').val() == 'True'){
             $('#subscription-enabled').prop('checked', true);
         }
+        kblayersubscription.retrieve_communication_types();
     },
     change_subscription_status: function(status){
         var status_url = "lock";
@@ -477,7 +480,7 @@ var kblayersubscription = {
     },
     add_communication_log: function(){
         common_entity_modal.init("Add New Communication log", "submit");
-        let type_id = common_entity_modal.add_field(label="Communication Type", type="select", value=null, option_map=kbpublish.var.communication_type);
+        let type_id = common_entity_modal.add_field(label="Communication Type", type="select", value=null, option_map=kblayersubscription.var.communication_type);
         let to_id = common_entity_modal.add_field(label="To", type="text");
         let cc_id = common_entity_modal.add_field(label="Cc", type="text");
         let from_id = common_entity_modal.add_field(label="From", type="text");
@@ -705,6 +708,29 @@ var kblayersubscription = {
             data: JSON.stringify(mapping_data),
             success: success_callback,
             error: error_callback
+        });
+    },
+    retrieve_communication_types: function(){
+        $.ajax({
+            url: kblayersubscription.var.log_communication_type_url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: (response) => {
+                if(!response){
+                    common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
+                    return;    
+                }
+                var communication_type = {};
+                for(let i in response.results){
+                    const type = response.results[i];
+                    communication_type[type.id] = type.label;
+                }
+                kblayersubscription.var.communication_type = communication_type;
+            },
+            error: (error)=> {
+                common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
+                // console.error(error);
+            },
         });
     },
 }
