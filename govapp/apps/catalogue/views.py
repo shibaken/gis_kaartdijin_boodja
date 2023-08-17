@@ -706,6 +706,7 @@ class LayerSubscriptionViewSet(
             name=data['name'],
             description=data['description'] if 'description' in data else None,
             mapping_name=data['mapping_name'],
+            type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION,
             layer_subscription=subscription
         )
         
