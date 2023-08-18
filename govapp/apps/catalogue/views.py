@@ -845,10 +845,10 @@ class LayerSubscriptionViewSet(
                 query = """
                             SELECT table_name 
                             FROM information_schema.tables 
-                            WHERE table_schema = 'public';  -- You can replace 'public' with your schema name if needed
+                            WHERE table_schema = %s;
                         """
                 with conn.cursor() as cursor:
-                    cursor.execute(query)
+                    cursor.execute(query, [subscription_obj.schema])
                     return [e[0] for e in cursor.fetchall()]
             mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
         
