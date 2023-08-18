@@ -24,6 +24,8 @@ var kblayersubscription = {
 
         // for view  page
         subscription_save_url: '/api/catalogue/layers/subscriptions/',
+        log_communication_type_url:"/api/logs/communications/type/",
+        communication_type: null,
     },
     init_dashboard: function() { 
 
@@ -94,13 +96,13 @@ var kblayersubscription = {
                 limit:      $('#subscription-limit').val(),
                 order_by:   $('#subscription-order-by').val(),
                 
-                catalogue_entry__name__icontains:  $('#subscription-name').val(),
+                name__icontains:  $('#subscription-name').val(),
                 workspace:  $('#subscription-workspace').val(),
-                enabled:    $('#subscription-enabled').prop('checked'),
+                enabled:    $('#subscription-enabled').val(),
                 updated_after:  utils.convert_date_format($('#subscription-updated-from').val(), kblayersubscription.var.layersubscription_date_format, hh="00", mm="00", ss="00"),
                 updated_before: utils.convert_date_format($('#subscription-updated-to').val(), kblayersubscription.var.layersubscription_date_format,hh="23", mm="59", ss="59"),
                 type:       $('#subscription-type').val(),
-                catalogue_entry__description__icontains:  $('#subscription-description').val(),
+                description__icontains:  $('#subscription-description').val(),
                 id:         $('#subscription-number').val(),
                 assigned_to:            +$('#subscription-assignedto').val(),
             }
@@ -323,10 +325,14 @@ var kblayersubscription = {
             kblayersubscription.save_subscription('save-and-exit');
         });
         if([1,2].includes(+$('#subscription-type-num').val())){
-            kblayersubscription.get_layers();
+            kblayersubscription.get_mappings('layer');
         }else{
-            kblayersubscription.get_tables();
+            kblayersubscription.get_mappings('table');
         }
+        if($('#subscription_enabled').val() == 'True'){
+            $('#subscription-enabled').prop('checked', true);
+        }
+        kblayersubscription.retrieve_communication_types();
     },
     change_subscription_status: function(status){
         var status_url = "lock";
@@ -474,7 +480,7 @@ var kblayersubscription = {
     },
     add_communication_log: function(){
         common_entity_modal.init("Add New Communication log", "submit");
-        let type_id = common_entity_modal.add_field(label="Communication Type", type="select", value=null, option_map=kbpublish.var.communication_type);
+        let type_id = common_entity_modal.add_field(label="Communication Type", type="select", value=null, option_map=kblayersubscription.var.communication_type);
         let to_id = common_entity_modal.add_field(label="To", type="text");
         let cc_id = common_entity_modal.add_field(label="Cc", type="text");
         let from_id = common_entity_modal.add_field(label="From", type="text");
@@ -547,6 +553,16 @@ var kblayersubscription = {
             }
         }
         
+        let optional_fields = kblayersubscription.var.optional_fields
+        for( let i in optional_fields ){
+            const key = optional_fields[i];
+            const id = "subscription-"+key.replaceAll('_', '-');
+            const val = $('#'+id).val();
+            if(val){
+                update_subscription_data[key] = val;
+            }
+        }
+
         var subscription_id = $('#subscription_id').val();
         var url = kblayersubscription.var.subscription_save_url+subscription_id+"/";
         var method = 'PUT';
@@ -561,9 +577,9 @@ var kblayersubscription = {
             data: JSON.stringify(update_subscription_data),
             success: function (response) {
                 if(mode == "save"){
-                    window.open("#");
+                    location.reload();
                 } else if (mode == "save-and-exit"){
-                    window.open("/layer/subscriptions/");
+                    window.location.href = "/layer/subscriptions/";
                 }
             },
             error: error => {
@@ -572,35 +588,123 @@ var kblayersubscription = {
             }
         });
     },
-    get_layers: function(){
-        callback = (response) => {
-            const thead = $("#subscription-layer-table-thead");
-            table.set_thead(thead, {"Native Layer Name":11, "Action":1});
+    get_mappings: function(type){
+        kblayersubscription.get_mapping_source(type, () => kblayersubscription.get_mapping_info(type));
+    },
+    get_mapping_source: function(type, success_callback){
+        let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/source";
+        let method = 'GET';
 
-            const tbody = $("#subscription-layer-table-tbody");
-            if(!response || !response.results){
-                table.message_tbody(tbody, "No results found");
-                return;
-            }
-            let buttons = null;
-            buttons={ADD:{callback:(layer)=>kblayersubscription.show_add_table_modal(layer), 
-                            is_valid:(layer)=>!(layer.name in response.results)},
-                    EDIT:{callback:(layer)=>kblayersubscription.show_edit_table_modal(layer), 
-                            is_valid:(layer)=>layer.name in response.results}};
-            table.set_tbody(tbody, kblayersubscription.var.mapping_names, [{name:"text"}], buttons)
+        let thead = $("#subscription-layer-table-thead");
+        let tbody = $("#subscription-layer-table-tbody");
+        let title = "Native Layer";
+
+        if(type == 'table'){
+            thead = $("#subscription-dbtable-table-thead");
+            tbody = $("#subscription-dbtable-table-tbody");
+            title = "Table";
         }
 
-        kblayersubscription.get_mappings(callback);
+        // call GET API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response) => {
+                if(!response || !response.results){
+                    table.message_tbody(tbody, "No results found");
+                    return;
+                }
+                kblayersubscription.var.mapping_names = response.results;
+                success_callback();
+            },
+            error: (error)=> {
+                table.message_tbody(tbody, "No results found");
+                common_entity_modal.show_alert("An error occured while getting mappings.");
+                // console.error(error);
+            },
+        });
     },
-    show_add_layer_modal: function(layer){
-        common_entity_modal.init("New Catalogue Subscription Layer");
+    get_mapping_info: function(type){
+        let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
+        let method = 'GET';
+
+        let thead = $("#subscription-layer-table-thead");
+        let tbody = $("#subscription-layer-table-tbody");
+        let title = "Native Layer";
+
+        if(type == 'table'){
+            thead = $("#subscription-dbtable-table-thead");
+            tbody = $("#subscription-dbtable-table-tbody");
+            title = "Table";
+        }
+
+        // call GET API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response) => {
+                if(!response || !response.results){
+                    table.message_tbody(tbody, "No results found");
+                    return;
+                }
+                let buttons = null;
+                if($('#has_edit_access').val() == "True"){
+                    buttons={ADD:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
+                                    is_valid:(mapping)=>!(mapping.name in response.results)},
+                            EDIT:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
+                                    is_valid:(mapping)=>mapping.name in response.results}};
+                    table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
+                } else {
+                    table.set_thead(thead, {[title+"s"]:6, "Catalogue Name":6});
+                }
+                let rows = []
+                for(let i in kblayersubscription.var.mapping_names){
+                    let mapping = {'name':kblayersubscription.var.mapping_names[i]};
+                    mapping.catalogue = "";
+                    if(mapping.name in response.results){
+                        mapping.catalogue = response.results[mapping.name].name;
+                    }
+                    rows.push(mapping);
+                }
+                table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
+                if(rows.length == 0){
+                    table.message_tbody(tbody, "No results found");
+                }
+            },
+            error: (error)=> {
+                table.message_tbody(tbody, "No results found");
+                common_entity_modal.show_alert("An error occured while getting mappings.");
+                // console.error(error);
+            },
+        });
+    },
+    show_add_mapping_modal: function(title, mapping, subscription_type){
+        common_entity_modal.init("New Catalogue Subscription " + title);
         let fields = {}
         fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
         fields['description'] = common_entity_modal.add_field(label="Description", type="text");
-        fields['mapping_name'] = common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
+        fields['mapping_name'] = common_entity_modal.add_field(label= title + " Name", type="text", mapping.name, null, true);
         common_entity_modal.add_callbacks(
             submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
-            success_callback=kblayersubscription.get_layers);
+            success_callback=() => kblayersubscription.get_mappings(subscription_type));
+        common_entity_modal.show();
+    },
+    show_edit_mapping_modal: function(title, mapping, catalogue, subscription_type){
+        const catalogue_id = catalogue.catalogue_entry_id;
+        common_entity_modal.init("Update Catalogue Subscription " + title);
+        let fields = {}
+        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text", catalogue.name);
+        fields['description'] = common_entity_modal.add_field(label="Description", type="text", catalogue.description);
+        fields['mapping_name'] = common_entity_modal.add_field(label=title + " Name", type="text", mapping.name, null, true);
+        common_entity_modal.add_callbacks(
+            submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
+            success_callback=() => kblayersubscription.get_mappings(subscription_type));
         common_entity_modal.show();
     },
     create_mapping: function(success_callback, error_callback, fields){
@@ -626,18 +730,6 @@ var kblayersubscription = {
             error: error_callback
         });
     },
-    show_edit_layer_modal: function(layer){
-        const catalogue_id = kblayersubscription.var.mappings[layer.name].catalogue_entry_id;
-        common_entity_modal.init("Update Catalogue Subscription Layer");
-        let fields = {}
-        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text", kblayersubscription.var.mappings[layer.name].name);
-        fields['description'] = common_entity_modal.add_field(label="Description", type="text", kblayersubscription.var.mappings[layer.name].description);
-        fields['mapping_name'] = common_entity_modal.add_field(label="Native Name", type="text", layer.name, null, true);
-        common_entity_modal.add_callbacks(
-            submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
-            success_callback=kblayersubscription.get_layers);
-        common_entity_modal.show();
-    },
     update_mapping: function(success_callback, error_callback, fields, catalogue_id){
         // call update layer api via ajax
         mapping_data = {};
@@ -661,69 +753,27 @@ var kblayersubscription = {
             error: error_callback
         });
     },
-    get_mappings: function(success_callback){
-        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
-        var method = 'GET';
-
-        // call PUT API
+    retrieve_communication_types: function(){
         $.ajax({
-            url: url,
-            method: method,
-            dataType: 'json',
+            url: kblayersubscription.var.log_communication_type_url,
+            type: 'GET',
             contentType: 'application/json',
-            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
-            success: success_callback,
+            success: (response) => {
+                if(!response){
+                    common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
+                    return;    
+                }
+                var communication_type = {};
+                for(let i in response.results){
+                    const type = response.results[i];
+                    communication_type[type.id] = type.label;
+                }
+                kblayersubscription.var.communication_type = communication_type;
+            },
             error: (error)=> {
-                common_entity_modal.show_alert("An error occured while getting mappings.");
+                common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
                 // console.error(error);
             },
         });
-    },
-    get_tables: function(){
-        callback = (response) => {
-            const thead = $("#subscription-dbtable-table-thead");
-
-            const tbody = $("#subscription-dbtable-table-tbody");
-            if(!response || !response.results){
-                table.message_tbody(tbody, "No results found");
-                return;
-            }
-            let buttons = null;
-            if($('#has_edit_access').val() == "True"){
-                buttons={ADD:{callback:(table)=>kblayersubscription.show_add_table_modal(table), 
-                                is_valid:(table)=>!(table.name in response.results)},
-                        EDIT:{callback:(table)=>kblayersubscription.show_edit_table_modal(table), 
-                                is_valid:(table)=>table.name in response.results}};
-                table.set_thead(thead, {"Table Name":11, "Action":1});
-            } else {
-                table.set_thead(thead, {"Table Name":12});
-            }
-            table.set_tbody(tbody, kblayersubscription.var.mapping_names, [{name:"text"}], buttons);
-        }
-
-        kblayersubscription.get_mappings(callback);
-    },
-    show_add_table_modal: function(table){
-        common_entity_modal.init("New Catalogue Subscription Table");
-        let fields = {}
-        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
-        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
-        fields['mapping_name'] = common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
-        common_entity_modal.add_callbacks(
-            submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
-            success_callback=kblayersubscription.get_tables);
-        common_entity_modal.show();
-    },
-    show_edit_table_modal: function(table){
-        const catalogue_id = kblayersubscription.var.mappings[table.name].catalogue_entry_id;
-        common_entity_modal.init("Update Catalogue Subscription Table");
-        let fields = {}
-        fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
-        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
-        fields['mapping_name'] = common_entity_modal.add_field(label="Table", type="text", table.name, null, true);
-        common_entity_modal.add_callbacks(
-            submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
-            success_callback=kblayersubscription.get_tables);
-        common_entity_modal.show();
     },
 }

@@ -61,9 +61,13 @@
                                           <p>
                                                 <b>Actions</b><br>
                                                 {% if subscription_obj.is_locked %}                                          
-                                                      <button class='btn btn-primary btn-sm' id='subscription-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                      {% if is_system_user is True %}
+                                                            <button class='btn btn-primary btn-sm' id='subscription-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                      {% endif %}
                                                 {% else %}                                          
-                                                      <button class='btn btn-primary btn-sm' id='subscription-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                      {% if has_edit_access is True %}
+                                                            <button class='btn btn-primary btn-sm' id='subscription-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                                      {% endif %}
                                                 {% endif %}
                                           </p>
                                     </div>
@@ -74,6 +78,7 @@
 
                               <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
                               <input type="hidden" id="subscription_id" name="subscription_id" value="{{ subscription_obj.id  }}">
+                              <input type="hidden" id="subscription_enabled" name="subscription_enabled" value="{{ subscription_obj.enabled  }}">
                               <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
                               <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
                               <input type="hidden" id="subscription-type-num" name="subscription-type-num" value="{{ subscription_obj.type }}">
@@ -191,9 +196,15 @@
                                           <div class='col-3 d-flex align-items-center'> User Name </div>
                                           <div class='col-5 p-1'>
                                                 {% if has_edit_access is True %}
-                                                      <input type="text" id="subscription-username" class="form-control" value="{{ subscription_obj.username }}"></input>
+                                                      {% if subscription_obj.username %}
+                                                            <input type="text" id="subscription-username" class="form-control" value="{{ subscription_obj.username }}"></input>
+                                                      {% else %}
+                                                            <input type="text" id="subscription-username" class="form-control"></input>
+                                                      {% endif %}
                                                 {% else %}
-                                                      {{ subscription_obj.username }}
+                                                      {% if subscription_obj.username %}
+                                                            {{ subscription_obj.username }}
+                                                      {% endif %}
                                                 {% endif %}
                                           </div>
                                           <div class='col-4'> &nbsp; </div>
@@ -201,9 +212,15 @@
                                           <div class='col-3 d-flex align-items-center'> User Password </div>
                                           <div class='col-5 p-1'>
                                                 {% if has_edit_access is True %}
-                                                      <input type="text" id="subscription-userpassword" class="form-control" value="{{ subscription_obj.userpassword }}"></input>
+                                                      {% if subscription_obj.userpassword %}
+                                                            <input type="text" id="subscription-userpassword" class="form-control" value="{{ subscription_obj.userpassword }}"></input>
+                                                      {% else %}
+                                                            <input type="text" id="subscription-userpassword" class="form-control"></input>
+                                                      {% endif %}
                                                 {% else %}
-                                                      {{ subscription_obj.userpassword }}
+                                                      {% if subscription_obj.userpassword %}
+                                                            {{ subscription_obj.userpassword }}
+                                                      {% endif %}
                                                 {% endif %}
                                           </div>
                                           <div class='col-4'> &nbsp; </div>
@@ -309,11 +326,11 @@
                                                       Layers
                                                 </div>
                                                 <div class="col-6 text-end">
-                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box3-card-body" onclick=""></i>
                                                 </div>
                                           </div>         
                                     </div>
-                                    <div class="card-body collapse show" id="box2-card-body">
+                                    <div class="card-body collapse show" id="box3-card-body">
                                           <div class='row'>
                                                 <div class='col-12'>
                                                       <div id='subscription-layer-table'>
@@ -321,7 +338,7 @@
                                                                   <thead class='table-dark' id='subscription-layer-table-thead'>
                                                                   </thead>
                                                                   <tbody id='subscription-layer-table-tbody'>
-                                                                        <tr> <td colspan="7" class='text-center'>No Results</td> </tr>
+                                                                        <tr> <td colspan="7" class='text-center'>No results found</td> </tr>
                                                                   </tbody>
                                                             </table>
                                                       </div>
@@ -340,11 +357,11 @@
                                                       Tables
                                                 </div>
                                                 <div class="col-6 text-end">
-                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
                                                 </div>
                                           </div>         
                                     </div>
-                                    <div class="card-body collapse show" id="box2-card-body">
+                                    <div class="card-body collapse show" id="box4-card-body">
                                           <div class='row'>
                                                 <div class='col-12'>
                                                       <div id='subscription-dbtable-table'>
@@ -580,7 +597,6 @@
             </div>
 
             <script>
-                  kblayersubscription.var.mapping_names = JSON.parse('{{ mapping_names|escapejs }}');
                   kblayersubscription.init_subscription_item();
             </script>
       {% else %}

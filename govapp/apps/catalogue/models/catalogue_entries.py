@@ -1,12 +1,15 @@
 """Kaartdijin Boodja Catalogue Django Application Catalogue Entry Models."""
 
+# Standard
+import types
+import reversion
 
 # Third-Party
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.db import models
 from rest_framework import request
-import reversion
+
 
 # Local
 from govapp.common import mixins
@@ -23,11 +26,11 @@ if TYPE_CHECKING:
     from govapp.apps.catalogue.models import layer_attributes
     from govapp.apps.catalogue.models import layer_metadata
     from govapp.apps.catalogue.models import layer_submissions
-    from govapp.apps.catalogue.models.layer_subscriptions import LayerSubscription
     from govapp.apps.catalogue.models import layer_symbology
     from govapp.apps.catalogue.models import notifications
     from govapp.apps.publisher.models import publish_entries
     from govapp.apps.catalogue.models import permission
+    from govapp.apps.catalogue.models.layer_subscriptions import LayerSubscription
 
 
 # Shortcuts
@@ -57,7 +60,7 @@ class CatalogueEntryType(models.IntegerChoices):
         "email_notifications",
         "webhook_notifications",
         "publish_entry",
-        # "permissions"
+        "catalouge_permissions"
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
@@ -66,7 +69,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPECIAL_FILE)
-    mapping_name = models.CharField(max_length=1000, null=True, unique=True)
+    mapping_name = models.CharField(max_length=1000, null=True)
     layer_subscription = models.ForeignKey(
         "LayerSubscription",
         null=True,
@@ -97,12 +100,11 @@ class CatalogueEntry(mixins.RevisionedMixin):
     attributes: "models.Manager[layer_attributes.LayerAttribute]"
     layers: "models.Manager[layer_submissions.LayerSubmission]"
     metadata: "layer_metadata.LayerMetadata"
-    # subscription: "layer_subscriptions.LayerSubscription"
     symbology: "layer_symbology.LayerSymbology"
     email_notifications: "models.Manager[notifications.EmailNotification]"
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
     publish_entry: "Optional[publish_entries.PublishEntry]"
-    # permissions: "models.Manager[permission.CatalogueEntryPermission]"
+    catalouge_permissions: "models.Manager[permission.CatalogueEntryPermission]"
 
     class Meta:
         """Catalogue Entry Model Metadata."""
@@ -145,10 +147,10 @@ class CatalogueEntry(mixins.RevisionedMixin):
         Returns:
             [auth_models.User] : a list of users
         """
-        from govapp.apps.catalogue.models.permission import CatalogueEntryPermission
-        permissions = CatalogueEntryPermission.objects.select_related('user').filter(catalogue_entry=self)
-        return UserModel.objects.filter(id__in=(p.user.id for p in permissions))
-        # return [p.user for p in permissions]
+        permissions= list(self.catalouge_permissions.all())
+        obj = types.SimpleNamespace()
+        obj.all = lambda : permissions
+        return obj
 
     @classmethod
     def from_request(cls, request: request.Request) -> Optional["CatalogueEntry"]:

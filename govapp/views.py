@@ -7,6 +7,9 @@ from django import shortcuts
 from django.views.generic import base
 from django.contrib import auth
 from django import conf
+from django.core.cache import cache
+from owslib.wms import WebMapService
+import psycopg2
 import json
 
 # Internal
@@ -429,8 +432,8 @@ class LayerSubscriptionsView(base.TemplateView):
         
         pk = self.kwargs['pk']
         subscription_obj = catalogue_layer_subscription_models.LayerSubscription.objects.get(id=pk)
-        LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus;
-        LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType;
+        LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus
+        LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType
         
         system_users_list = []
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
@@ -441,40 +444,17 @@ class LayerSubscriptionsView(base.TemplateView):
              if subscription_obj.status in (LayerSubscriptionStatus.DRAFT, LayerSubscriptionStatus.NEW_DRAFT, LayerSubscriptionStatus.PENDING):
                 has_edit_access = True
         
-        # mappings = list(catalogue_entries_models.CatalogueEntry.objects
-        #                      .filter(layer_subscription=pk)
-        #                      .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
-        # if not mappings:
-        #     mappings = {}
-        # else:
-        #     mappings = {mapping['mapping_name']:{
-        #                     'name':mapping['name'],
-        #                     'description':mapping['description'],
-        #                     'catalogue_entry_id':mapping['id']}
-        #                 for mapping in mappings}
-        
-        if subscription_obj.type in (LayerSubscriptionType.WFS, LayerSubscriptionType.WMS):
-            mapping_names = [{"name":"native layer name 01"},
-                            {"name":"native layer name 02"},
-                            {"name":"native layer name 03"},
-                            {"name":"native layer name 04"}]
-        elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-            mapping_names = [{"name":"table name 01"},
-                            {"name":"table name 02"},
-                            {"name":"table name 03"},
-                            {"name":"table name 04"}]
-        
         # Construct Context
         context: dict[str, Any] = {}
         context['subscription_obj'] = subscription_obj
         context['status'] = catalogue_utils.find_enum_by_value(LayerSubscriptionStatus, subscription_obj.status).name.replace('_', ' ')
         context['system_users'] = system_users_list
+        context['is_system_user'] = utils.is_administrator(request.user)
         context['has_edit_access'] = has_edit_access
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
-        context['enabled_js'] = "true" if subscription_obj.enabled else "false"
-        context['mapping_names'] = json.dumps(mapping_names)
-        # context['mapping_layers'] = json.dumps(["native layer name 03"])
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
+    
+    
