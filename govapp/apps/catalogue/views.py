@@ -2,6 +2,7 @@
 
 
 # Third-Party
+from django import conf
 from django import shortcuts
 from django.contrib import auth
 from django.db import connection
@@ -15,6 +16,9 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 from datetime import timedelta
+from django.core.cache import cache
+from owslib.wms import WebMapService
+import psycopg2
 import json
 import os
 
@@ -763,7 +767,7 @@ class LayerSubscriptionViewSet(
             pk (str): Primary key of the Layer Subscription.
 
         Returns:
-            response.Response: Empty response confirming success.
+            response.Response: A dictionary of mapping data.
         """
         # Retrieve Layer Subscription
         # Help `mypy` by casting the resulting object to a Layer Subscription
@@ -785,6 +789,73 @@ class LayerSubscriptionViewSet(
             
         # Return Response
         return response.Response({'results':mappings}, content_type='application/json', status=status.HTTP_200_OK)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer,
+        responses={status.HTTP_200_OK: None})
+    @decorators.action(detail=True, methods=["GET"], url_path="mapping/source")
+    def get_mapping_source(self, request: request.Request, pk: str) -> response.Response:
+        """Response mapping source.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: A list of mapping source names
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
+        
+        def cache_or_callback(key, callback):
+            val = cache.get(key)
+            if not val:
+                try:
+                    val = callback()
+                    cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
+                except Exception as e:
+                    print(e)
+            return val
+        
+        if subscription_obj.type == LayerSubscriptionType.WMS:
+            def get_wms():
+                res = WebMapService(url=subscription_obj.url, 
+                                    username=subscription_obj.username, 
+                                    password=subscription_obj.userpassword)
+                return list(res.contents.keys())
+            mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
+        elif subscription_obj.type == LayerSubscriptionType.WFS:
+            def get_wfs():
+                res = WebMapService(url=subscription_obj.url, 
+                                    username=subscription_obj.username, 
+                                    password=subscription_obj.userpassword)
+                return list(res.contents.keys())
+            mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
+        elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
+            def get_post_gis():
+                conn = psycopg2.connect(
+                    host=subscription_obj.host,
+                    database=subscription_obj.database,
+                    user=subscription_obj.username,
+                    password=subscription_obj.userpassword
+                )
+                query = """
+                            SELECT table_name 
+                            FROM information_schema.tables 
+                            WHERE table_schema = 'public';  -- You can replace 'public' with your schema name if needed
+                        """
+                with conn.cursor() as cursor:
+                    cursor.execute(query)
+                    return [e[0] for e in cursor.fetchall()]
+            mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
+        
+        # Return Response
+        return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
+        
+        
     
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(

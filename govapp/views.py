@@ -444,48 +444,6 @@ class LayerSubscriptionsView(base.TemplateView):
              if subscription_obj.status in (LayerSubscriptionStatus.DRAFT, LayerSubscriptionStatus.NEW_DRAFT, LayerSubscriptionStatus.PENDING):
                 has_edit_access = True
         
-        def cache_or_callback(key, callback):
-            val = cache.get(key)
-            if not val:
-                try:
-                    val = callback()
-                    cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
-                except Exception as e:
-                    print(e)
-            return val
-            
-        if subscription_obj.type == LayerSubscriptionType.WMS:
-            def get_wms():
-                res = WebMapService(url=subscription_obj.url, 
-                                    username=subscription_obj.username, 
-                                    password=subscription_obj.userpassword)
-                return list(res.contents.keys())
-            mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + subscription_obj.url, get_wms)
-        elif subscription_obj.type == LayerSubscriptionType.WFS:
-            def get_wfs():
-                res = WebMapService(url=subscription_obj.url, 
-                                    username=subscription_obj.username, 
-                                    password=subscription_obj.userpassword)
-                return list(res.contents.keys())
-            mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + subscription_obj.url, get_wfs)
-        elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-            def get_post_gis():
-                conn = psycopg2.connect(
-                    host=subscription_obj.host,
-                    database=subscription_obj.database,
-                    user=subscription_obj.username,
-                    password=subscription_obj.userpassword
-                )
-                query = """
-                            SELECT table_name 
-                            FROM information_schema.tables 
-                            WHERE table_schema = 'public';  -- You can replace 'public' with your schema name if needed
-                        """
-                with conn.cursor() as cursor:
-                    cursor.execute(query)
-                    return cursor.fetchall()
-            mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
-        
         # Construct Context
         context: dict[str, Any] = {}
         context['subscription_obj'] = subscription_obj
@@ -495,7 +453,6 @@ class LayerSubscriptionsView(base.TemplateView):
         context['has_edit_access'] = has_edit_access
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
-        context['mapping_names'] = json.dumps(mapping_names)
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        

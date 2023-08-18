@@ -589,6 +589,45 @@ var kblayersubscription = {
         });
     },
     get_mappings: function(type){
+        kblayersubscription.get_mapping_source(type, () => kblayersubscription.get_mapping_info(type));
+    },
+    get_mapping_source: function(type, success_callback){
+        let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/source";
+        let method = 'GET';
+
+        let thead = $("#subscription-layer-table-thead");
+        let tbody = $("#subscription-layer-table-tbody");
+        let title = "Native Layer";
+
+        if(type == 'table'){
+            thead = $("#subscription-dbtable-table-thead");
+            tbody = $("#subscription-dbtable-table-tbody");
+            title = "Table";
+        }
+
+        // call GET API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response) => {
+                if(!response || !response.results){
+                    table.message_tbody(tbody, "No results found");
+                    return;
+                }
+                kblayersubscription.var.mapping_names = response.results;
+                success_callback();
+            },
+            error: (error)=> {
+                table.message_tbody(tbody, "No results found");
+                common_entity_modal.show_alert("An error occured while getting mappings.");
+                // console.error(error);
+            },
+        });
+    },
+    get_mapping_info: function(type){
         let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
         let method = 'GET';
 
@@ -635,10 +674,11 @@ var kblayersubscription = {
                 }
                 table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
                 if(rows.length == 0){
-                    tbody.html("<tr><td colspan='7' class='text-center'> No results found <td></tr>");
+                    table.message_tbody(tbody, "No results found");
                 }
             },
             error: (error)=> {
+                table.message_tbody(tbody, "No results found");
                 common_entity_modal.show_alert("An error occured while getting mappings.");
                 // console.error(error);
             },
