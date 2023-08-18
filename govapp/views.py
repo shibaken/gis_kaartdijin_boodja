@@ -432,8 +432,8 @@ class LayerSubscriptionsView(base.TemplateView):
         
         pk = self.kwargs['pk']
         subscription_obj = catalogue_layer_subscription_models.LayerSubscription.objects.get(id=pk)
-        LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus;
-        LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType;
+        LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus
+        LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType
         
         system_users_list = []
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
@@ -456,18 +456,18 @@ class LayerSubscriptionsView(base.TemplateView):
             
         if subscription_obj.type == LayerSubscriptionType.WMS:
             def get_wms():
-                res = WebMapService(url=conf.settings.WMS_URL, 
+                res = WebMapService(url=subscription_obj.url, 
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
                 return list(res.contents.keys())
-            mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY, get_wms)
+            mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + subscription_obj.url, get_wms)
         elif subscription_obj.type == LayerSubscriptionType.WFS:
             def get_wfs():
-                res = WebMapService(url=conf.settings.WFS_URL, 
+                res = WebMapService(url=subscription_obj.url, 
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
                 return list(res.contents.keys())
-            mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY, get_wfs)
+            mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + subscription_obj.url, get_wfs)
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
             def get_post_gis():
                 conn = psycopg2.connect(
