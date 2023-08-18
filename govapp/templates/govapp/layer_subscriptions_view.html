@@ -326,11 +326,11 @@
                                                       Layers
                                                 </div>
                                                 <div class="col-6 text-end">
-                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box3-card-body" onclick=""></i>
                                                 </div>
                                           </div>         
                                     </div>
-                                    <div class="card-body collapse show" id="box2-card-body">
+                                    <div class="card-body collapse show" id="box3-card-body">
                                           <div class='row'>
                                                 <div class='col-12'>
                                                       <div id='subscription-layer-table'>
@@ -338,7 +338,7 @@
                                                                   <thead class='table-dark' id='subscription-layer-table-thead'>
                                                                   </thead>
                                                                   <tbody id='subscription-layer-table-tbody'>
-                                                                        <tr> <td colspan="7" class='text-center'>No Results</td> </tr>
+                                                                        <tr> <td colspan="7" class='text-center'>No results found</td> </tr>
                                                                   </tbody>
                                                             </table>
                                                       </div>
@@ -357,11 +357,11 @@
                                                       Tables
                                                 </div>
                                                 <div class="col-6 text-end">
-                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
                                                 </div>
                                           </div>         
                                     </div>
-                                    <div class="card-body collapse show" id="box2-card-body">
+                                    <div class="card-body collapse show" id="box4-card-body">
                                           <div class='row'>
                                                 <div class='col-12'>
                                                       <div id='subscription-dbtable-table'>
@@ -597,7 +597,6 @@
             </div>
 
             <script>
-                  kblayersubscription.var.mapping_names = JSON.parse('{{ mapping_names|escapejs }}');
                   kblayersubscription.init_subscription_item();
             </script>
       {% else %}
