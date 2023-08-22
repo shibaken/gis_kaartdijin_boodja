@@ -1,5 +1,5 @@
 {% block greetings %}
-Dear Sir/Madam,
+Dear {{ username }},
 {% endblock %}
 {% block content %}
 This is example content.

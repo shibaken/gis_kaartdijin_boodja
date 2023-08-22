@@ -35,12 +35,18 @@ class TemplateEmailBase(WAGovUtilsTemplateEmailBase):
         """
         # Filter the supplied users to only objects that have an `email`
         # attribute, and cast them to a set to eliminate any duplicated
-        filtered_emails = set(u.email for u in users if hasattr(u, "email"))
+        filtered = {}
+        for user in users:
+            filtered[user.id] = {'email':user.email, 'username':f"{user.first_name} {user.last_name}"}
         # Loop through users
-        for email in filtered_emails:
-            print (email)
+        for id in filtered:
+            filtered_user = filtered[id]
+            print (filtered_user)
             # Send the email!
-            self.send(email, context=context)
+            if context is None:
+                context = {}
+            context = {**context, **{'username':filtered_user['username']}}
+            self.send(filtered_user['email'], context=context)
 
 
 class OLDTemplateEmailBase:
