@@ -275,6 +275,18 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         related_name="geoserver_channel",
         on_delete=models.CASCADE,
     )
+    srs = models.CharField(null=True, max_length=500)
+    nbb_minx = models.CharField(null=True, max_length=500)
+    nbb_maxx = models.CharField(null=True, max_length=500)
+    nbb_miny = models.CharField(null=True, max_length=500)
+    nbb_maxy = models.CharField(null=True, max_length=500)
+    nbb_crs = models.CharField(null=True, max_length=500)
+    llb_minx = models.CharField(null=True, max_length=500)
+    llb_maxx = models.CharField(null=True, max_length=500)
+    llb_miny = models.CharField(null=True, max_length=500)
+    llb_maxy = models.CharField(null=True, max_length=500)
+    llb_crs = models.CharField(null=True, max_length=500)
+    active = models.BooleanField(null=True)
 
     class Meta:
         """GeoServer Publish Channel Model Metadata."""
