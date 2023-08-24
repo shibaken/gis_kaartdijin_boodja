@@ -37,7 +37,7 @@ class TemplateEmailBase(WAGovUtilsTemplateEmailBase):
         # attribute, and cast them to a set to eliminate any duplicated
         filtered = {}
         for user in users:
-            filtered[user.id] = {'email':user.email, 'username':f"{user.first_name} {user.last_name}"}
+            filtered[user.id] = {'email':user.email, 'first_name':f"{user.first_name}"}
         # Loop through users
         for id in filtered:
             filtered_user = filtered[id]
