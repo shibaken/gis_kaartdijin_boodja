@@ -45,7 +45,7 @@ class TemplateEmailBase(WAGovUtilsTemplateEmailBase):
             # Send the email!
             if context is None:
                 context = {}
-            context = {**context, **{'username':filtered_user['username']}}
+            context = {**context, **{'first_name':filtered_user['first_name']}}
             self.send(filtered_user['email'], context=context)
 
 
