@@ -43,6 +43,22 @@ var common_entity_modal = {
         common_entity_modal.var.field_map[id] = {field:field, label:label};
         return id;
     },
+    // labels_fields = [{label:label_obj, field:field_obj}]     
+    add_div: function(label_str, div, labels_fields){
+        let contents = $('#common-entity-modal-content');
+        //label
+        const label = $('<label>').text(label_str);
+        contents.append(label);
+
+        contents.append(div);
+
+        for(let i in labels_fields){
+            const field = labels_fields[i].field;
+            const label = labels_fields[i].label;
+            common_entity_modal.var.fields.push(field);
+            common_entity_modal.var.field_map[this.get_id(field)] = {field:field, label:label};
+        }
+    },
     init_talbe: function(){
         $('#modal-table thead').empty();
         $('#modal-table tbody').empty();
@@ -109,30 +125,23 @@ var common_entity_modal = {
             div.append(field);
             return div;
         },
-        // option_map = {label:{width:int, type:str}} e.g) {Name:{width:2, type:'text'}}
-        // table: (label, value, disabled, option_map) => {
-        //     let div = $('<div>');
-        //     column_thead = {};
-        //     for(let key in option_map){
-        //         column_thead[key] = option_map[key][width];
-        //     }
-        //     let tbody = table.set_table(div, label+"-table", column_thead);
-
-        //     column_tbody = {};
-        //     for(let key in option_map){
-        //         column_tbody[key] = option_map[key][type];
-        //     }
-        //     table.set_tbody(tbody, value, column_tbody);
-        //     if (disabled){ 
-        //         div.prop("disabled", true);
-        //     }
-        //     return div
-        // },
-        empty: () => {
+        empty: () => {  // is this being used?
             let div = $('<div>');
             div.attr('id', 'modal-table');
             return div;
-        }
+        },
+        div: () => {
+            let div = $('<div>');
+            div.attr('id', 'modal-div');
+            div.attr('class', 'col-12');
+            return div;
+        },
+        label: (label_str, id) => {
+            let label = $('<label>').text(label_str);
+            if(id){
+                label.att('id', '');
+            }
+        },
     },
     get_id: function(element, type){
         if(!element.is('div') || (element.is('div') && type == 'empty')){

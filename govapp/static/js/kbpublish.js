@@ -135,11 +135,11 @@ var kbpublish = {
         $( "#publish-limit" ).change(function(){
             common_pagination.var.current_page=0;
             kbpublish.get_publish();
-        })
+        });
         $( "#publish-order-by" ).change(function(){
             common_pagination.var.current_page=0;
             kbpublish.get_publish();
-        })
+        });
 
         const catalogue_entry_list = $('#catalogue_entry_list').data('list');
         if(catalogue_entry_list && typeof catalogue_entry_list == 'string' && catalogue_entry_list.length > 0){
@@ -187,16 +187,23 @@ var kbpublish = {
             $('#ManageEditorsModal').modal('show');
         });           
         $( "#publish-new-geoserver-btn" ).click(function() {
-            console.log("New Geoserver");              
-            $('#new-publish-spatial-format').removeAttr('disabled');
-            $('#new-publish-frequency-type').removeAttr('disabled');
-            $('#new-publish-workspace').removeAttr('disabled');  
-                        
-            $('#new-publish-spatial-format').val('');
-            $('#new-publish-frequency-type').val('');
-            $('#new-publish-workspace').val('');             
+            console.log("New Geoserver");
 
-            $('#PublishNewGeoserverModal').modal('show');
+            // SPECIAL_FILE = 1, SUBSCRIPTION = 2
+            if($('#catalogue-type').val() == '1'){
+                $('#new-publish-spatial-format').removeAttr('disabled');
+                $('#new-publish-frequency-type').removeAttr('disabled');
+                $('#new-publish-workspace').removeAttr('disabled');  
+                            
+                $('#new-publish-spatial-format').val('');
+                $('#new-publish-frequency-type').val('');
+                $('#new-publish-workspace').val('');             
+
+                $('#PublishNewGeoserverModal').modal('show');
+            } else {
+                kbpublish.show_write_geoserver_subscription_modal();
+                // $('#PublishNewGeoserverSubscriptionModal').modal('show');
+            }
         });      
         $( "#publish-new-cddp-btn" ).click(function() {
             console.log("New CDDP");  
@@ -237,7 +244,7 @@ var kbpublish = {
         $('#publish-notification-limit').change(()=>table.refresh(this.get_email_notification));
 
         const publish_workspace_list = $('#publish_workspace_list').data('list');
-        if(!publish_workspace_list && typeof publish_workspace_list == 'string' && publish_workspace_list.length > 0){
+        if(publish_workspace_list && typeof publish_workspace_list == 'string' && publish_workspace_list.length > 0){
             this.var.publish_workspace_list = JSON.parse(publish_workspace_list.replaceAll("'", '"'));
         } else if(publish_workspace_list instanceof Array){
             this.var.publish_workspace_list = publish_workspace_list
@@ -547,6 +554,88 @@ var kbpublish = {
         });
 
 
+    },
+    create_publish_subscription_geoserver: function() {
+        var publish_id = $('#publish_id').val();
+        var workspace = utils.validate_empty_input($('#new-publish-subscription-workspace').val());
+        var srs = $('#new-publish-subscription-srs').val();
+
+        var post_data = {
+            "publish_entry": publish_id, 
+            "mode": "1", 
+            "frequency": "1", 
+            "workspace": workspace, 
+            "srs":srs, 
+        };
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+       
+        $('#new-publish-new-geoserver-popup-error').html("");
+        $('#new-publish-new-geoserver-popup-error').hide();
+        $('#new-publish-new-geoserver-success').html("");
+        $('#new-publish-new-geoserver-success').hide();
+        
+        if (newpublishspatialformat.length < 1) {
+            $('#new-publish-new-geoserver-popup-error').html("Please choose a spatial format.");
+            $('#new-publish-new-geoserver-popup-error').show();
+            return false;
+        }
+
+        if (newpublishfrequencytype.length < 1) {
+            $('#new-publish-new-geoserver-popup-error').html("Please choose a frequency type.");
+            $('#new-publish-new-geoserver-popup-error').show();
+            return false;
+        }
+
+        if (newpublishworkspace.length < 1) {
+            $('#new-publish-new-geoserver-popup-error').html("Please choose a workspace.");
+            $('#new-publish-new-geoserver-popup-error').show();
+            return false;
+        }
+       
+        $('#new-publish-spatial-format').attr('disabled','disabled');
+        $('#new-publish-frequency-type').attr('disabled','disabled');
+        $('#new-publish-workspace').attr('disabled','disabled');
+
+        
+        $.ajax({
+            url: kbpublish.var.publish_save_geoserver_url,        
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: 'application/json',
+            success: function (response) {
+                    var html = '';
+                    console.log(response);
+                
+                    $('#new-publish-new-geoserver-popup-success').html("Successfully created publish entry");
+                    $('#new-publish-new-geoserver-popup-success').show();                
+                    setTimeout("$('#PublishNewGeoserverModal').modal('hide');",1000);
+                    kbpublish.get_publish_geoservers();
+
+                    //$('#new-publish-spatial-format').removeAttr('disabled');
+                    //$('#new-publish-frequency-type').removeAttr('disabled');
+                    //$('#new-publish-workspace').removeAttr('disabled');                                       
+
+            },
+            error: function (response) {
+                console.log(response);
+                var jsonresponse = {};
+                if (response.hasOwnProperty('responseJSON')) { 
+                    jsonresponse = response.responseJSON;
+                }
+
+                if (jsonresponse.hasOwnProperty('publish_entry')) {
+                    $('#new-publish-new-geoserver-popup-error').html(jsonresponse['publish_entry']);
+                    $('#new-publish-new-geoserver-popup-error').show();        
+                } else {
+                    $('#new-publish-new-geoserver-popup-error').html("Error create to publish.");
+                    $('#new-publish-new-geoserver-popup-error').show();        
+                }
+                $('#new-publish-spatial-format').removeAttr('disabled');
+                $('#new-publish-frequency-type').removeAttr('disabled');
+                $('#new-publish-workspace').removeAttr('disabled');  
+            },
+        });
     },
     create_publish_cddp: function() {
         var publish_id = $('#publish_id').val();
@@ -994,7 +1083,12 @@ var kbpublish = {
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
                             });
                             $( ".publish-geoserver-update" ).click(function() {
-                                kbpublish.show_update_geoserver_modal(responsejson[i]);
+                                if($('#catalogue-type').val() == '1'){
+                                    kbpublish.show_update_geoserver_modal(responsejson[i]);
+                                }
+                                if($('#catalogue-type').val() == '2'){
+                                    kbpublish.show_write_geoserver_subscription_modal(responsejson[i]);
+                                }
                             });
                         }
                     } else {
@@ -1016,6 +1110,92 @@ var kbpublish = {
             },
         });
     },
+    show_write_geoserver_subscription_modal: function(prev){
+        let workspace = null;
+        let srs = null;
+        let nbb = {minx:null, maxx:null, miny:null, maxy:null, crs:null};
+        let llb = {minx:null, maxx:null, miny:null, maxy:null, crs:null};
+        let active = null;
+        let prev_id = null;
+
+        if(prev){
+            workspace = prev.workspace;
+            srs = prev.srs;
+            nbb.minx = prev.nbb_minx;
+            nbb.maxx = prev.nbb_maxx;
+            nbb.miny = prev.nbb_miny;
+            nbb.maxy = prev.nbb_maxy;
+            nbb.crs = prev.nbb_crs;
+            llb.minx = prev.llb_minx;
+            llb.maxx = prev.llb_maxx;
+            llb.miny = prev.llb_miny;
+            llb.maxy = prev.llb_maxy;
+            llb.crs = prev.llb_crs;
+            active = prev.active;
+            prev_id = prev.id;
+        }
+
+        common_entity_modal.init("Publish New Geoserver", "submit");
+        common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
+        const workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=workspace, option_map=kbpublish.var.publish_workspace_map);
+        const srs_id = common_entity_modal.add_field(label="SRS", type="text", value=srs);
+        
+        ids = {
+            workspace:workspace_id,
+            srs:srs_id,
+        };
+
+        const bounding_keywords = ['minx', 'maxx', 'miny', 'maxy', 'crs'];
+        const bounding_labels = ['Min X', 'Max X', 'Min Y', 'Max Y', 'CRS'];
+
+        let nbb_div = common_entity_modal.maker.div();
+        nbb_div.attr('class', nbb_div.attr('class') + ' col-12');
+        let nbb_row_div = common_entity_modal.maker.div();
+        nbb_row_div.attr('class', nbb_row_div.attr('class') + ' row');
+        let labels_fields_nbb = [];
+        for(let i in bounding_keywords){
+            const keyword = 'new-publish-subscription-nbb'+bounding_keywords[i];
+            const label = $('<label>').text(bounding_labels[i]);
+            const field = common_entity_modal.maker.text(keyword, nbb[bounding_keywords[i]]);
+            const div = common_entity_modal.maker.div();
+            div.attr('class', 'col-2');
+            div.append(label);
+            div.append(field);
+            nbb_row_div.append(div);
+            labels_fields_nbb.push({label:label, field:field});
+            ids['nbb_'+bounding_keywords[i]] = field.attr('id');
+        }
+        nbb_div.append(nbb_row_div);
+        common_entity_modal.add_div("Native Bounding Box(Optional)", nbb_div, labels_fields_nbb);
+
+        let llb_div = common_entity_modal.maker.div();
+        llb_div.attr('class', llb_div.attr('class') + ' col-12');
+        let llb_row_div = common_entity_modal.maker.div();
+        llb_row_div.attr('class', llb_row_div.attr('class') + ' row');
+        llb_div.append(llb_row_div);
+        let labels_fields_llb = [];
+        for(let i in bounding_keywords){
+            const keyword = 'new-publish-subscription-llb'+bounding_keywords[i];
+            const label = $('<label>').text(bounding_labels[i]);
+            const field = common_entity_modal.maker.text(keyword, llb[bounding_keywords[i]]);
+            const div = common_entity_modal.maker.div();
+            div.attr('class', 'col-2');
+            div.append(label);
+            div.append(field);
+            llb_row_div.append(div);
+            labels_fields_llb.push({label:label, field:field});
+            ids['llb_'+bounding_keywords[i]] = field.attr('id');
+        }
+        common_entity_modal.add_div("Lat Lon Bounding Box(Optional)", llb_div, labels_fields_llb);
+
+        const active_id = common_entity_modal.add_field(label="Active", type="switch", value=active);
+        ids.active = active_id;
+
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_geoserver_subscription(success_callback, error_callback, ids, prev_id),
+                                            success_callback=this.get_publish_geoservers);
+        common_entity_modal.show();
+    },
     show_update_geoserver_modal: function(prev){
         common_entity_modal.init("Update Geoserver Notification", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
@@ -1028,7 +1208,52 @@ var kbpublish = {
                                             success_callback=this.get_publish_geoservers);
         common_entity_modal.show();
     },
-    write_geoserver: function(success_callback, error_callback, format_id, frequency_id, workspace_id, geoserver_id){
+    write_geoserver_subscription: function(success_callback, error_callback, ids, geoserver_id){
+        const publish_id = $('#publish_id').val(); 
+        // prefixed. could be changed in the future
+        var geoserver_data = {
+            mode:"1",
+            frequency:"1",
+            publish_entry: publish_id
+        };
+
+        for(let key in ids){
+            let val;
+            if(key == 'active'){
+                val = $('#'+ids[key]).prop('checked');
+            } else {
+                val = $('#'+ids[key]).val();
+                if(!val){
+                    val = null;
+                }
+            }
+            // validation check mandatories
+            if(key in ['workspace', 'srs']){
+                val = utils.validate_empty_input(key, val);
+            }
+            geoserver_data[key] = val;
+        }
+
+        var url = this.var.publish_save_geoserver_url;
+        var method = 'POST';
+        if(geoserver_id){
+            url += geoserver_id+'/';
+            method = 'PUT';
+        }
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(geoserver_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+    write_geoserver: function(success_callback, error_callback, format_id, frequency_id, workspace_id, publish_id){
         // get & validation check
         const mode = utils.validate_empty_input('format', $('#'+format_id).val());
         const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
@@ -1039,13 +1264,13 @@ var kbpublish = {
             mode:mode,
             frequency:frequency,
             workspace:workspace,
-            publish_entry:$('#publish-entry-id')
+            publish_entry:$('#publish-entry-id').val()
         };
         var url = this.var.publish_save_geoserver_url;
         var method = 'POST';
-        if(geoserver_id){
+        if(publish_id){
             delete geoserver_data['publish_entry'];
-            url += geoserver_id+'/';
+            url += publish_id+'/';
             method = 'PUT';
         }
 
