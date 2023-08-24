@@ -195,20 +195,15 @@ class PublishEntryViewSet(
         Returns:
             response.Response: Empty response confirming success.
         """
-        # Retrieve Publish Entry
-        # Help `mypy` by casting the resulting object to a Publish Entry
+        # # Retrieve Publish Entry
+        # # Help `mypy` by casting the resulting object to a Publish Entry
         publish_entry = self.get_object()
         publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
         geoserver_publish_channel = models.publish_channels.GeoServerPublishChannel.objects.filter(publish_entry=publish_entry)
-        geoserver_list = []
-        for gpc in geoserver_publish_channel:
-            published_at = None
-            if gpc.published_at:
-                published_at = gpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')
-            geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_id": gpc.workspace.id, "workspace_name": gpc.workspace.name,"published_at": published_at})
-
+        serializer = serializers.publish_channels.GeoServerPublishChannelSerializer(geoserver_publish_channel, many=True)
+        
         # Return Response
-        return response.Response(geoserver_list, status=status.HTTP_200_OK)
+        return response.Response(serializer.data, status=status.HTTP_200_OK)
 
     @decorators.action(detail=True, methods=["GET"], url_path=r"cddp")
     def cddp_list(self, request: request.Request, pk: str) -> response.Response:
