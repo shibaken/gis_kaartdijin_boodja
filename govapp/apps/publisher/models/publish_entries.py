@@ -25,6 +25,7 @@ from typing import Optional, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from govapp.apps.publisher.models import notifications
 #    from govapp.apps.publisher.models import publish_channels
+    from govapp.apps.publisher.models import geoserver_queue
 
 
 # Shortcuts
@@ -71,6 +72,7 @@ class PublishEntry(mixins.RevisionedMixin):
     cddp_channel: "Optional[publish_channels.CDDPPublishChannel]"
     geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
     email_notifications: "models.Manager[notifications.EmailNotification]"
+    geoserver_queue: "models.Manager[geoserver_queue.GeoServerQueue]"
 
     class Meta:
         """Publish Entry Model Metadata."""

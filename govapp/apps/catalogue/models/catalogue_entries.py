@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from govapp.apps.catalogue.models import layer_symbology
     from govapp.apps.catalogue.models import notifications
     from govapp.apps.publisher.models import publish_entries
+    from govapp.apps.publisher.models import geoserver_queue
     from govapp.apps.catalogue.models import permission
     from govapp.apps.catalogue.models.layer_subscriptions import LayerSubscription
 
@@ -60,7 +61,8 @@ class CatalogueEntryType(models.IntegerChoices):
         "email_notifications",
         "webhook_notifications",
         "publish_entry",
-        "catalouge_permissions"
+        "catalouge_permissions",
+        "geoserver_queues"
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
@@ -105,6 +107,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
     publish_entry: "Optional[publish_entries.PublishEntry]"
     catalouge_permissions: "models.Manager[permission.CatalogueEntryPermission]"
+    geoserver_queues: "models.Manager[geoserver_queue.GeoServerQueue]"
 
     class Meta:
         """Catalogue Entry Model Metadata."""

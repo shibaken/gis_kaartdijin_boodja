@@ -7,8 +7,6 @@ import reversion
 
 # Local
 from govapp.common import mixins
-from govapp.common import utils
-from govapp.apps.publisher.models import publish_entries
 
 @reversion.register()
 class GeoServerPool(mixins.RevisionedMixin):
