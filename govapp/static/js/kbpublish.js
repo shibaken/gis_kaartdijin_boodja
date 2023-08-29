@@ -932,7 +932,7 @@ var kbpublish = {
                 $('#publish-external-loading-'+btn_id).hide();
                 $("#publish-external-error-"+btn_id).show();
                 $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');   
+                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
             },
         });        
     },
@@ -958,12 +958,16 @@ var kbpublish = {
                 $("#publish-external-success-"+btn_id).show();
                 $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
                 $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');  
+                common_pagination.var.current_page=0;
             },
             error: function (error) {
                 $('#publish-external-loading-'+btn_id).hide();
                 $("#publish-external-error-"+btn_id).show();
                 $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');   
+                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
+                if(error.status == 409){
+                    common_entity_modal.show_alert("This geoserver publish is already in a queue.", "Duplicated");
+                }   
             },
         });        
     },    
@@ -1601,7 +1605,7 @@ var kbpublish = {
                 limit:  common_entity_modal.get_limit().val(),
                 search: common_entity_modal.get_search().val(),
             }
-
+            
             params_str = utils.make_query_params(params);
         }
     
