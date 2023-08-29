@@ -102,7 +102,7 @@ WSGI_APPLICATION = "govapp.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
-    "default": decouple.config("DATABASE_URL", cast=dj_database_url.parse),
+    "default": decouple.config("DATABASE_URL", cast=dj_database_url.parse, default="sqlite://memory"),
 }
 
 # Password validation
@@ -264,4 +264,4 @@ WMS_CACHE_KEY = "wms native layer names"
 WFS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
 WFS_CACHE_KEY = "wfs native layer names"
 POST_GIS_CACHE_KEY = "post gis table names"
-SUBSCRIPTION_CACHE_TTL =3600
+SUBSCRIPTION_CACHE_TTL = 3600
