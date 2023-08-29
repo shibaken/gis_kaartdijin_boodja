@@ -43,6 +43,22 @@ var common_entity_modal = {
         common_entity_modal.var.field_map[id] = {field:field, label:label};
         return id;
     },
+    // labels_fields = [{label:label_obj, field:field_obj}]     
+    add_div: function(label_str, div, labels_fields){
+        let contents = $('#common-entity-modal-content');
+        //label
+        const label = $('<label>').text(label_str);
+        contents.append(label);
+
+        contents.append(div);
+
+        for(let i in labels_fields){
+            const field = labels_fields[i].field;
+            const label = labels_fields[i].label;
+            common_entity_modal.var.fields.push(field);
+            common_entity_modal.var.field_map[this.get_id(field)] = {field:field, label:label};
+        }
+    },
     init_talbe: function(){
         $('#modal-table thead').empty();
         $('#modal-table tbody').empty();
@@ -109,30 +125,23 @@ var common_entity_modal = {
             div.append(field);
             return div;
         },
-        // option_map = {label:{width:int, type:str}} e.g) {Name:{width:2, type:'text'}}
-        // table: (label, value, disabled, option_map) => {
-        //     let div = $('<div>');
-        //     column_thead = {};
-        //     for(let key in option_map){
-        //         column_thead[key] = option_map[key][width];
-        //     }
-        //     let tbody = table.set_table(div, label+"-table", column_thead);
-
-        //     column_tbody = {};
-        //     for(let key in option_map){
-        //         column_tbody[key] = option_map[key][type];
-        //     }
-        //     table.set_tbody(tbody, value, column_tbody);
-        //     if (disabled){ 
-        //         div.prop("disabled", true);
-        //     }
-        //     return div
-        // },
-        empty: () => {
+        empty: () => {  // is this being used?
             let div = $('<div>');
             div.attr('id', 'modal-table');
             return div;
-        }
+        },
+        div: () => {
+            let div = $('<div>');
+            div.attr('id', 'modal-div');
+            div.attr('class', 'col-12');
+            return div;
+        },
+        label: (label_str, id) => {
+            let label = $('<label>').text(label_str);
+            if(id){
+                label.att('id', '');
+            }
+        },
     },
     get_id: function(element, type){
         if(!element.is('div') || (element.is('div') && type == 'empty')){
@@ -149,7 +158,7 @@ var common_entity_modal = {
     },
     add_callbacks: function(submit_callback, success_callback){
         let error_handler = (error)=>{
-            common_entity_modal.set_all_disabled(false);
+            common_entity_modal.roll_all_disabilities_back(false);
             if('status' in error){
                 let error_obj = JSON.parse(error.responseText);
                 let msg;
@@ -209,12 +218,28 @@ var common_entity_modal = {
         return $('#modal-table-page-navi');
     },
     set_all_disabled: function(disabled){
+        common_entity_modal.var.disabilities = {}
         for(let i in common_entity_modal.var.fields){
+            const id = common_entity_modal.var.fields[i].attr("id");
+            const disability = common_entity_modal.var.fields[i].prop("disabled");
+            common_entity_modal.var.disabilities[id] = disability;
             common_entity_modal.var.fields[i].prop("disabled", disabled);
         }
-        $('#common-entity-modal-submit-btn').prop("disabled", disabled);
-        $('#common-entity-modal-cancel-btn').prop("disabled", disabled);
-        $('#common-entity-modal-delete-btn').prop("disabled", disabled);
+        const btn_submit = $('#common-entity-modal-submit-btn');
+        const btn_cancel = $('#common-entity-modal-cancel-btn');
+        const btn_delete = $('#common-entity-modal-delete-btn');
+
+        common_entity_modal.var.disabilities[btn_submit.attr("id")] = btn_submit.prop("disabled");
+        common_entity_modal.var.disabilities[btn_cancel.attr("id")] = btn_cancel.prop("disabled");
+        common_entity_modal.var.disabilities[btn_delete.attr("id")] = btn_delete.prop("disabled");
+        btn_submit.prop("disabled", disabled);
+        btn_cancel.prop("disabled", disabled);
+        btn_delete.prop("disabled", disabled);
+    },
+    roll_all_disabilities_back: function(){
+        for(let id in common_entity_modal.var.disabilities){
+            $('#'+id).prop("disabled", common_entity_modal.var.disabilities[id]);
+        }
     },
     show_alert: function (content, title){
         common_entity_modal.hide_all_modal('alert');

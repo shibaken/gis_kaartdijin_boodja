@@ -7,6 +7,10 @@ from django import shortcuts
 from django.views.generic import base
 from django.contrib import auth
 from django import conf
+from django.core.cache import cache
+from owslib.wms import WebMapService
+import psycopg2
+import json
 
 # Internal
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
@@ -397,6 +401,7 @@ class LayerSubscriptions(base.TemplateView):
         Returns:
             http.HttpResponse: The rendered template response.
         """
+        is_administrator = False
         if utils.is_administrator(request.user) is True:
                 is_administrator = True
                 
@@ -427,8 +432,8 @@ class LayerSubscriptionsView(base.TemplateView):
         
         pk = self.kwargs['pk']
         subscription_obj = catalogue_layer_subscription_models.LayerSubscription.objects.get(id=pk)
-        LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus;
-        LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType;
+        LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus
+        LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType
         
         system_users_list = []
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
@@ -438,16 +443,18 @@ class LayerSubscriptionsView(base.TemplateView):
         if utils.is_administrator(request.user) is True and request.user == subscription_obj.assigned_to:
              if subscription_obj.status in (LayerSubscriptionStatus.DRAFT, LayerSubscriptionStatus.NEW_DRAFT, LayerSubscriptionStatus.PENDING):
                 has_edit_access = True
-                
+        
         # Construct Context
         context: dict[str, Any] = {}
         context['subscription_obj'] = subscription_obj
         context['status'] = catalogue_utils.find_enum_by_value(LayerSubscriptionStatus, subscription_obj.status).name.replace('_', ' ')
         context['system_users'] = system_users_list
+        context['is_system_user'] = utils.is_administrator(request.user)
         context['has_edit_access'] = has_edit_access
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
-        context['enabled_js'] = "true" if subscription_obj.enabled else "false"
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
+    
+    

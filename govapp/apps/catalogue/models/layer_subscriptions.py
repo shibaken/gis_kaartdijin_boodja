@@ -11,9 +11,9 @@ from typing import Union, Optional
 
 # Local
 from govapp.common import mixins
+from govapp.apps.catalogue.models import catalogue_entries
 from govapp.apps.catalogue import notifications as notifications_utils
 from govapp.apps.accounts import utils as accounts_utils
-from govapp.apps.catalogue.models import catalogue_entries
 from govapp.apps.publisher.models import workspaces
 from govapp.apps.publisher.models import publish_entries
 
@@ -45,20 +45,23 @@ class LayerSubscription(mixins.RevisionedMixin):
     """Model for a Layer Subscription."""
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
+    name = models.TextField()
+    description = models.TextField(blank=True)
     enabled = models.BooleanField(default=True)
     url = models.URLField(null=True) # for WMS or WFS
-    username = models.CharField(max_length=100)
-    userpassword = models.CharField(max_length=100)
+    username = models.CharField(null=True, max_length=100)
+    userpassword = models.CharField(null=True, max_length=100)
     connection_timeout = models.IntegerField(default=10000) # ms
     max_connections = models.IntegerField(default=1, null=True) # for WMS or POST GIS
     min_connections = models.IntegerField(default=1, null=True) # for POST GIS
     read_timeout = models.IntegerField(default=10000, null=True) # ms, for WMS
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    catalogue_entry = models.OneToOneField(
-        catalogue_entries.CatalogueEntry,
-        related_name="subscription",
-        on_delete=models.CASCADE)
+    # catalogue_entry = models.OneToOneField(
+    #     catalogue_entries.CatalogueEntry,
+    #     related_name="subscription",
+    #     on_delete=models.CASCADE,
+    #     null=True)
     workspace = models.ForeignKey(
         workspaces.Workspace,
         related_name="workspace",
@@ -96,25 +99,25 @@ class LayerSubscription(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.name}"
 
-    @property
-    def name(self) -> str:
-        """Proxies the Layer Subscription's name to this model.
+    # @property
+    # def name(self) -> str:
+    #     """Proxies the Layer Subscription's name to this model.
 
-        Returns:
-            str: Name of the Layer Subscription.
-        """
-        # Retrieve and Return
-        return self.catalogue_entry.name
+    #     Returns:
+    #         str: Name of the Layer Subscription.
+    #     """
+    #     # Retrieve and Return
+    #     return self.catalogue_entry.name
     
-    @property
-    def description(self) -> str:
-        """Proxies the Layer Subscription's description to this model.
+    # @property
+    # def description(self) -> str:
+    #     """Proxies the Layer Subscription's description to this model.
 
-        Returns:
-            str: Description of the Layer Subscription.
-        """
-        # Retrieve and Return
-        return self.catalogue_entry.description
+    #     Returns:
+    #         str: Description of the Layer Subscription.
+    #     """
+    #     # Retrieve and Return
+    #     return self.catalogue_entry.description
     
     def is_locked(self) -> bool:
         """Determines whether the Layer Subscription is locked.
@@ -200,7 +203,9 @@ class LayerSubscription(mixins.RevisionedMixin):
         self.save()
 
         # Send Emails
-        notifications_utils.catalogue_entry_lock(self.catalogue_entry)
+        mapped_catalogue_entries = catalogue_entries.CatalogueEntry.objects.filter(layer_subscription=self)
+        for catalogue_entry in mapped_catalogue_entries:
+            notifications_utils.catalogue_entry_lock(catalogue_entry)
         
         # Success!
         return True
@@ -224,28 +229,28 @@ class LayerSubscription(mixins.RevisionedMixin):
         # Failed
         return False
 
-    def decline(self) -> bool:
-        """Declines the Layer Subscription.
+    # def decline(self) -> bool:
+    #     """Declines the Layer Subscription.
 
-        Returns:
-            bool: Whether the declining was successful.
-        """
-        # Check Layer Subscription
-        if self.is_unlocked():
-            # Check if Layer Subscription is new
-            if self.is_new():
-                # Decline the currently active layer
-                self.active_layer.decline()
+    #     Returns:
+    #         bool: Whether the declining was successful.
+    #     """
+    #     # Check Layer Subscription
+    #     if self.is_unlocked():
+    #         # Check if Layer Subscription is new
+    #         if self.is_new():
+    #             # Decline the currently active layer
+    #             self.active_layer.decline()
 
-            # Set Layer Subscription to Declined
-            self.status = CatalogueEntryStatus.DECLINED
-            self.save()
+    #         # Set Layer Subscription to Declined
+    #         self.status = catalogue_entries.CatalogueEntryStatus.DECLINED
+    #         self.save()
 
-            # Success!
-            return True
+    #         # Success!
+    #         return True
 
-        # Failed
-        return False
+    #     # Failed
+    #     return False
 
     def assign(self, user: auth_models.User) -> bool:
         """Assigns a user to the Layer Subscription if applicable.
@@ -260,8 +265,8 @@ class LayerSubscription(mixins.RevisionedMixin):
         # To be assigned, a user must be:
         # 1. In the Catalogue Editors group
         # 2. One of this Layer Subscription's editors
-        if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
-            pass
+        # if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
+        #     pass
         if accounts_utils.is_administrator(user):
             # Assign user
             self.assigned_to = user

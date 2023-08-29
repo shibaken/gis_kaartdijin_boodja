@@ -2,6 +2,7 @@
 
 
 # Third-Party
+from django import conf
 from django import shortcuts
 from django.contrib import auth
 from django.db import connection
@@ -15,6 +16,9 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 from datetime import timedelta
+from django.core.cache import cache
+from owslib.wms import WebMapService
+import psycopg2
 import json
 import os
 
@@ -27,9 +31,11 @@ from govapp.apps.publisher import models as publish_models
 from govapp.apps.catalogue import permissions
 from govapp.apps.catalogue import serializers
 from govapp.apps.catalogue import utils as catalogue_utils
+from govapp.apps.catalogue.utils import validate_request
 from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
 from govapp.apps.logs import mixins as logs_mixins
 from govapp.apps.logs import utils as logs_utils
+
 
 
 # Typing
@@ -429,18 +435,13 @@ class LayerSubscriptionViewSet(
     search_fields = ["catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
-    @transaction.atomic()
-    def create(self, request, *args, **kwargs):
-        data = request.data
-        serializer = serializers.layer_subscriptions.LayerSubscriptionCreateSerializer(data=data)
-        if not serializer.is_valid():
-            errors = serializer.errors
-            return response.Response({'error_msg':errors}, 
-                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request):
+        # Validation check
+        data = validate_request(self.serializer_classes['create'], request.data)
         
         # Convert data types
         for key in data:
-            if key in ['type', 'workspace', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
+            if key in ['type', 'connection_timeout', 'max_connections', 'read_timeout'] and data.get(key) is not None:
                 data[key] = int(data.get(key))
                 
         # Check duplicated catalogue entry name
@@ -451,28 +452,18 @@ class LayerSubscriptionViewSet(
         # Check type
         type = None
         try:
-            type = catalogue_utils.find_enum_by_value(data.get('type'))
+            type = catalogue_utils.find_enum_by_value(models.layer_subscriptions.LayerSubscriptionType, data.get('type'))
             # type = {type.value:type for type in models.layer_subscriptions.LayerSubscriptionType}.get()
         except ValueError as exc:
             return response.Response({'error_msg':f"type '{data.get('type')}' is invalid."}, 
                                     content_type='application/json', status=status.HTTP_400_BAD_REQUEST) 
-        # Check workspace
-        workspace = publish_models.workspaces.Workspace.objects.get(id=data.get('workspace'))
-        if workspace is None:
-            return response.Response({'error_msg':f"workspace '{data.get('workspace')}' does not exist."}, 
-                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
-        
-        # Create catalogue entry first
-        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
-            name=data.get('name'),
-            description=data.get('description'),
-            type= models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION
-        )
         
         # Create layer subscription
         models.layer_subscriptions.LayerSubscription.objects.create(
             type=type,
-            workspace=workspace,
+            name=data.get('name'),
+            description=data.get('description'),
+            workspace=data.get('workspace'),
             enabled=data.get('enabled'),
             url=data.get('url'),
             host=data.get('host'),
@@ -485,34 +476,21 @@ class LayerSubscriptionViewSet(
             min_connections=data.get('min_connections'),
             read_timeout=data.get('read_timeout'),
             schema=data.get('schema'),
-            fetch_size=data.get('fetch_size'),
-            catalogue_entry=catalogue_entry
+            fetch_size=data.get('fetch_size')
         )
         
         return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)
-        
-    @transaction.atomic()
+    
     def update(self, request: request.Request, pk: str):
         
         # Retrieve object from DB
-        subscriptions = models.layer_subscriptions.LayerSubscription.objects.filter(id=pk)
-        if not subscriptions.exists():
-            return response.Response({'error_msg':f'ID {pk} does not exist.'}, 
-                                      content_type='application/json', status=status.HTTP_404_NOT_FOUND)
-        
-        subscription_obj = subscriptions.first()
+        subscription = self.get_object()
+        subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
         # Validation check
         data = request.data
         data['type'] = subscription_obj.type
-        serializer = serializers.layer_subscriptions.LayerSubscriptionUpdateSerializer(data=data)
-        if not serializer.is_valid():
-            errors = serializer.errors
-            return response.Response({'error_msg':errors}, 
-                                      content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
-        name = data['name'] if 'name' in data else None
-        description = data['description'] if 'description' in data else None
-        data = serializer.validated_data
+        data = validate_request(self.serializer_classes['update'], data)
         
         if subscription_obj.is_locked():
              return response.Response({'error_msg':f'This  subscription "{pk}" is locked.'}, 
@@ -537,20 +515,6 @@ class LayerSubscriptionViewSet(
             setattr(subscription_obj, key, data[key])
         
         subscription_obj.save()
-        
-        ### Update catalogue entry
-        catalogue_entry = subscription_obj.catalogue_entry
-        # check duplicated catalogue entry name
-        if name is not None:
-            if models.catalogue_entries.CatalogueEntry.objects.filter(name=name).exclude(id=catalogue_entry.id).exists():
-                return response.Response({'error_msg':f"catalogue entry name '{name}' has been already taken."}, 
-                                        content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
-            catalogue_entry.name = name
-        
-        if description is not None:
-            catalogue_entry.description = description
-        
-        catalogue_entry.save()
         
         return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)
             
@@ -619,37 +583,37 @@ class LayerSubscriptionViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
-    @decorators.action(detail=True, methods=["POST"])
-    def decline(self, request: request.Request, pk: str) -> response.Response:
-        """Declines the Layer Subscription.
+    # @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    # @decorators.action(detail=True, methods=["POST"])
+    # def decline(self, request: request.Request, pk: str) -> response.Response:
+    #     """Declines the Layer Subscription.
 
-        Args:
-            request (request.Request): API request.
-            pk (str): Primary key of the Layer Subscription.
+    #     Args:
+    #         request (request.Request): API request.
+    #         pk (str): Primary key of the Layer Subscription.
 
-        Returns:
-            response.Response: Empty response confirming success.
-        """
-        # Retrieve Layer Subscription
-        # Help `mypy` by casting the resulting object to a Layer Subscription
-        catalogue_entry = self.get_object()
-        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+    #     Returns:
+    #         response.Response: Empty response confirming success.
+    #     """
+    #     # Retrieve Layer Subscription
+    #     # Help `mypy` by casting the resulting object to a Layer Subscription
+    #     catalogue_entry = self.get_object()
+    #     catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
-        # Decline
-        success = catalogue_entry.decline()
+    #     # Decline
+    #     success = catalogue_entry.decline()
 
-        # Check Success
-        if success:
-            # Add Action Log Entry
-            logs_utils.add_to_actions_log(
-                user=request.user,
-                model=catalogue_entry,
-                action="Catalogue entry was declined"
-            )
+    #     # Check Success
+    #     if success:
+    #         # Add Action Log Entry
+    #         logs_utils.add_to_actions_log(
+    #             user=request.user,
+    #             model=catalogue_entry,
+    #             action="Catalogue entry was declined"
+    #         )
 
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+    #     # Return Response
+    #     return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"], url_path=r"assign/(?P<user_pk>\d+)")
@@ -701,24 +665,198 @@ class LayerSubscriptionViewSet(
         """
         # Retrieve Layer Subscription
         # Help `mypy` by casting the resulting object to a Layer Subscription
-        catalogue_entry = self.get_object()
-        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
 
         # Unassign!
-        success = catalogue_entry.unassign()
+        success = subscription.unassign()
 
         # Check Success
         if success:
             # Add Action Log Entry
             logs_utils.add_to_actions_log(
                 user=request.user,
-                model=catalogue_entry,
-                action="Catalogue entry was unassigned"
+                model=subscription,
+                action="Layer Subscription was unassigned"
             )
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer,
+        responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"], url_path="mapping")
+    def mapping(self, request: request.Request, pk: str,) -> response.Response:
+        """Add mapping to target service.
 
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        
+         # Validation check
+        data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer, request.data)
+        
+        # Create Catalogue Entry
+        models.catalogue_entries.CatalogueEntry.objects.create(
+            name=data['name'],
+            description=data['description'] if 'description' in data else None,
+            mapping_name=data['mapping_name'],
+            type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION,
+            layer_subscription=subscription
+        )
+        
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer,
+        responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["PUT"], url_path=r"mapping/(?P<catalogue_id>\d+)")
+    def update_mapping(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
+        """Update mapping to target service.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+            catalogue_id (str): Primary key of the Catalogue Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        
+        # Check Catalogue Entry
+        if not models.catalogue_entries.CatalogueEntry.objects.filter(id=catalogue_id).exists():
+            return response.Response({'error_msg':f'catalogue entry({catalogue_id}) does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(id=catalogue_id)
+        
+        # Validation check
+        data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer, request.data)
+        
+        # Update Catalogue Entry
+        catalogue_entry.name = data['name']
+        catalogue_entry.description = data['description']
+        catalogue_entry.mapping_name = data['mapping_name']
+        
+        catalogue_entry.save()
+        
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryGetSubscriptionMappingSerializer,
+        responses={status.HTTP_200_OK: None})
+    @mapping.mapping.get
+    def get_mapping(self, request: request.Request, pk: str) -> response.Response:
+        """Add mapping to target service.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: A dictionary of mapping data.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        
+        # Retrieve Catalogue Entry with Layer Submission Id
+        mappings = list(models.catalogue_entries.CatalogueEntry.objects
+                             .filter(layer_subscription=subscription)
+                             .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
+        if not mappings:
+            mappings = {}
+        else:
+            mappings = {mapping['mapping_name']:{
+                            'name':mapping['name'],
+                            'description':mapping['description'],
+                            'catalogue_entry_id':mapping['id']}
+                        for mapping in mappings}
+            
+        # Return Response
+        return response.Response({'results':mappings}, content_type='application/json', status=status.HTTP_200_OK)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer,
+        responses={status.HTTP_200_OK: None})
+    @decorators.action(detail=True, methods=["GET"], url_path="mapping/source")
+    def get_mapping_source(self, request: request.Request, pk: str) -> response.Response:
+        """Response mapping source.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: A list of mapping source names
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
+        
+        def cache_or_callback(key, callback):
+            val = cache.get(key)
+            if not val:
+                try:
+                    val = callback()
+                    cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
+                except Exception as e:
+                    print(e)
+            return val
+        
+        if subscription_obj.type == LayerSubscriptionType.WMS:
+            def get_wms():
+                res = WebMapService(url=subscription_obj.url, 
+                                    username=subscription_obj.username, 
+                                    password=subscription_obj.userpassword)
+                return list(res.contents.keys())
+            mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
+        elif subscription_obj.type == LayerSubscriptionType.WFS:
+            def get_wfs():
+                res = WebMapService(url=subscription_obj.url, 
+                                    username=subscription_obj.username, 
+                                    password=subscription_obj.userpassword)
+                return list(res.contents.keys())
+            mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
+        elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
+            def get_post_gis():
+                conn = psycopg2.connect(
+                    host=subscription_obj.host,
+                    database=subscription_obj.database,
+                    user=subscription_obj.username,
+                    password=subscription_obj.userpassword
+                )
+                query = """
+                            SELECT table_name 
+                            FROM information_schema.tables 
+                            WHERE table_schema = %s;
+                        """
+                with conn.cursor() as cursor:
+                    cursor.execute(query, [subscription_obj.schema])
+                    return [e[0] for e in cursor.fetchall()]
+            mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
+        
+        # Return Response
+        return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
+        
+        
+    
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(
     mixins.ChoicesMixin,

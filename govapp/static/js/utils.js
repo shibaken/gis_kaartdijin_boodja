@@ -35,20 +35,16 @@ var utils={
         if(!date_str) return null;
         // make a moment object by original format
         let original_format = format.toUpperCase()+'-hh:mm:ss';
-        let target_format = 'YYYY-MM-DDThh:mm:ss';
+        date_str = date_str + '-' + hh + ":" + mm + ":" + ss;
+        let target_format = 'YYYY-MM-DDTHH:mm:ss';
         let converted_str = this.convert_datetime_format(date_str, target_format, original_format);
-        let date = new Date(converted_str);
-        date.setHours(hh);
-        date.setMinutes(mm);
-        date.setSeconds(ss);
-        return date.toISOString();
+        return converted_str
     },
     convert_datetime_format: function(datetime_str, target_format, original_format){
         if(!datetime_str) return null;
         let original_datetime;
         if(original_format){
             // make a moment object by original format
-            original_format = original_format.toUpperCase();
             original_datetime = moment(datetime_str, original_format);
         }else{
             original_datetime = moment(datetime_str);
