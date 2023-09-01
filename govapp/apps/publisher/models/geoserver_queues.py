@@ -3,11 +3,18 @@
 
 # Third-Party
 from django.db import models
+from django.utils import timezone
 import reversion
 
 # Local
 from govapp.common import mixins
-from govapp.apps.publisher.models import publish_entries, geoserver_pool
+
+# Typing
+from typing import TYPE_CHECKING
+
+# Type Checking
+if TYPE_CHECKING:
+    from govapp.apps.publisher.models.publish_entries import PublishEntry
 
 class GeoServerQueueStatus(models.IntegerChoices):
     READY = 0
@@ -19,7 +26,7 @@ class GeoServerQueueStatus(models.IntegerChoices):
 class GeoServerQueue(mixins.RevisionedMixin):
     """Model for an Geoserver Queue."""
     publish_entry = models.ForeignKey(
-        publish_entries.PublishEntry,
+        to="PublishEntry",
         related_name="geoserver_queues",
         on_delete=models.CASCADE,
     )
@@ -36,6 +43,14 @@ class GeoServerQueue(mixins.RevisionedMixin):
         verbose_name = "Geoserver Queue"
         verbose_name_plural = "Geoserver Queues"
 
+    def change_status(self, status:GeoServerQueueStatus) -> None:
+        self.status = status
+        if status == GeoServerQueueStatus.ON_PUBLISHING:
+            self.started_at = timezone.now()
+        elif status == GeoServerQueueStatus.PUBLISHED:
+            self.completed_at = timezone.now()
+        self.save()
+        
     def __str__(self) -> str:
         """Provides a string representation of the object.
 
