@@ -312,7 +312,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Retrieve and Return
         return self.publish_entry.name
 
-    def publish(self, symbology_only: bool = False) -> None:
+    def publish(self, symbology_only: bool = False, geoserver: gis.geoserver.GeoServer = None) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
@@ -321,8 +321,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}'")
 
+        # if not geoserver:
+        #     geoserver = gis.geoserver.geoserver()
+
         # Publish Symbology
-        self.publish_geoserver_symbology()
+        self.publish_geoserver_symbology(geoserver=geoserver)
 
         # Check Symbology Only Flag
         if symbology_only:
@@ -336,11 +339,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         match self.mode:
             case GeoServerPublishChannelMode.WMS:
                 # Publish to GeoServer (WMS Only)
-                self.publish_geoserver_layer(wms=True, wfs=False)
+                self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver)
 
             case GeoServerPublishChannelMode.WMS_AND_WFS:
                 # Publish to GeoServer (WMS and WFS)
-                self.publish_geoserver_layer(wms=True, wfs=True)
+                self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver)
 
         # Update Published At
         publish_time = timezone.now()
@@ -349,20 +352,20 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         self.published_at = publish_time
         self.save()
 
-    def publish_geoserver_symbology(self) -> None:
+    def publish_geoserver_symbology(self, geoserver: gis.geoserver.GeoServer) -> None:
         """Publishes the Symbology to GeoServer if applicable."""
         # Log
         log.info(f"Publishing '{self}' (Symbology) to GeoServer")
 
         # Publish Style to GeoServer
-        gis.geoserver.geoserver().upload_style(
+        geoserver.upload_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,
             sld=self.publish_entry.catalogue_entry.symbology.sld,
         )
 
-    def publish_geoserver_layer(self, wms: bool, wfs: bool) -> None:
+    def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
         """Publishes the Catalogue Entry to GeoServer if applicable.
 
         Args:
@@ -385,16 +388,16 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             catalogue_name=self.publish_entry.catalogue_entry.name,
             export_method='geoserver'
         )
-
+            
         # Push Layer to GeoServer
-        gis.geoserver.geoserver().upload_geopackage(
+        geoserver.upload_geopackage(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             filepath=geopackage['full_filepath'],
         )
 
         # Set Default Style
-        gis.geoserver.geoserver().set_default_style(
+        geoserver.set_default_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,

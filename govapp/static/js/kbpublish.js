@@ -967,7 +967,9 @@ var kbpublish = {
                 $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
                 if(error.status == 409){
                     common_entity_modal.show_alert("This geoserver publish is already in a queue.", "Duplicated");
-                }   
+                } else if(error.status == 412){
+                    common_entity_modal.show_alert("No geoserver publish has been set for this publish entry.", "Target Not Found");
+                }
             },
         });        
     },    

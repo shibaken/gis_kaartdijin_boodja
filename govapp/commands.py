@@ -114,7 +114,28 @@ class ManagementCommands(viewsets.ViewSet):
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=False, methods=["POST"])
+    def excute_geoserver_queue(self, request: request.Request) -> response.Response:
+        """Runs the `geoserver queue` Management Command.
 
+        Args:
+            request (request.Request): API request.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Handle Errors
+        try:
+            management.call_command("runcrons", "govapp.apps.publisher.cron.PublishGeoServerQueueCronJob", "--force")
+
+        except Exception as exc:
+            # Log
+            log.error(f"Unable to perform scan: {exc}")
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
 # Router
 router = routers.DefaultRouter()
 router.register("commands", ManagementCommands, basename="commands")

@@ -16,7 +16,7 @@ from govapp.common import mixins
 from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.publisher import notifications as notifications_utils
 from govapp.apps.catalogue.models import catalogue_entries
-
+from govapp.apps.publisher import geoserver_queue_manager
 
 # Typing
 from typing import Optional, Union, TYPE_CHECKING
@@ -25,7 +25,7 @@ from typing import Optional, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from govapp.apps.publisher.models import notifications
 #    from govapp.apps.publisher.models import publish_channels
-    from govapp.apps.publisher.models import geoserver_queue
+    from govapp.apps.publisher.models import geoserver_queues
 
 
 # Shortcuts
@@ -72,7 +72,7 @@ class PublishEntry(mixins.RevisionedMixin):
     cddp_channel: "Optional[publish_channels.CDDPPublishChannel]"
     geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
     email_notifications: "models.Manager[notifications.EmailNotification]"
-    geoserver_queue: "models.Manager[geoserver_queue.GeoServerQueue]"
+    geoserver_queue: "models.Manager[geoserver_queues.GeoServerQueue]"
 
     class Meta:
         """Publish Entry Model Metadata."""
@@ -166,37 +166,40 @@ class PublishEntry(mixins.RevisionedMixin):
             notifications_utils.publish_entry_publish_success(self)
 
     def publish_geoserver(self, symbology_only: bool = False) -> None:
-        """Publishes to GeoServer channel if applicable.
+        """Push a publish cron job to GeoServer Queue and will be excuted later by cron
 
         Args:
             symbology_only (bool): Flag to only publish symbology.
         """
-        # Check for Publish Channel
-        if not hasattr(self, "geoserver_channel"):
-            # Log
-            log.info(f"'{self}' has no GeoServer Publish Channel")
+        geoserver_queue_manager.push(publish_entry=self, symbology_only=symbology_only)
+        
+        
+        # # Check for Publish Channel
+        # if not hasattr(self, "geoserver_channel"):
+        #     # Log
+        #     log.info(f"'{self}' has no GeoServer Publish Channel")
 
-            # Exit Early
-            return
+        #     # Exit Early
+        #     return
 
-        # Log
-        log.info(f"Publishing '{self.catalogue_entry}' - '{self.geoserver_channel}' ({symbology_only=})")
+        # # Log
+        # log.info(f"Publishing '{self.catalogue_entry}' - '{self.geoserver_channel}' ({symbology_only=})")
 
-        # Handle Errors
-        try:
-            # Publish!
-            self.geoserver_channel.publish(symbology_only)  # type: ignore[union-attr]
+        # # Handle Errors
+        # try:
+        #     # Publish!
+        #     self.geoserver_channel.publish(symbology_only)  # type: ignore[union-attr]
 
-        except Exception as exc:
-            # Log
-            log.error(f"Unable to publish to GeoServer Publish Channel: {exc}")
+        # except Exception as exc:
+        #     # Log
+        #     log.error(f"Unable to publish to GeoServer Publish Channel: {exc}")
 
-            # Send Failure Emails
-            notifications_utils.publish_entry_publish_failure(self)
+        #     # Send Failure Emails
+        #     notifications_utils.publish_entry_publish_failure(self)
 
-        else:
-            # Send Success Emails
-            notifications_utils.publish_entry_publish_success(self)
+        # else:
+        #     # Send Success Emails
+        #     notifications_utils.publish_entry_publish_success(self)
 
     def is_locked(self) -> bool:
         """Determines whether the Publish Entry is locked.

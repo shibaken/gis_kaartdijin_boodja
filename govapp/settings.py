@@ -236,7 +236,8 @@ GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
 CRON_SCANNER_PERIOD_MINS = 3  # Run every 5 minutes
 CRON_CLASSES = [
     "govapp.apps.catalogue.cron.SharepointScannerCronJob",
-    "govapp.apps.catalogue.cron.DirectoryScannerCronJob"
+    "govapp.apps.catalogue.cron.DirectoryScannerCronJob",
+    "govapp.apps.publisher.cron.PublishGeoServerQueueCronJob"
     #CRON_SCANNER_CLASS,
 ]
 

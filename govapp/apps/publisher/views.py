@@ -23,7 +23,8 @@ from govapp.apps.publisher import filters
 from govapp.apps.publisher import models
 from govapp.apps.publisher import permissions
 from govapp.apps.publisher import serializers
-from govapp.apps.publisher.models.geoserver_queue import GeoServerQueueStatus
+from govapp.apps.publisher import geoserver_queue_manager
+from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.catalogue.models import catalogue_entries
 
 # Typing
@@ -181,11 +182,11 @@ class PublishEntryViewSet(
             return response.Response(status=status.HTTP_409_CONFLICT)
         else:
             # creating a queue item when it doesn't exist
-            models.geoserver_queue.GeoServerQueue.objects.create(
-                publish_entry=publish_entry,
-                symbology_only=symbology_only)
-        
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+            res = geoserver_queue_manager.push(publish_entry=publish_entry, symbology_only=symbology_only)
+        if res:
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        else :
+            return response.Response(status=status.HTTP_412_PRECONDITION_FAILED)
 
 
     @decorators.action(detail=True, methods=["GET"], url_path=r"geoserver")
