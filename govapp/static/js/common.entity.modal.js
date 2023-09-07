@@ -217,6 +217,14 @@ var common_entity_modal = {
     get_page_navi: function(){
         return $('#modal-table-page-navi');
     },
+    change_disabled: function (ids){
+        ids = Array.isArray(ids) ? ids : [ids];
+        for(let i in ids){
+            id = ids[i];
+            const disabled = $('#'+id).prop("disabled");
+            $('#'+id).prop("disabled", !disabled);
+        }
+    },
     set_all_disabled: function(disabled){
         common_entity_modal.var.disabilities = {}
         for(let i in common_entity_modal.var.fields){
@@ -294,5 +302,5 @@ var common_entity_modal = {
     },
     get_label: function (id){
         return common_entity_modal.var.field_map[id].label.text();
-    }
+    },
 }

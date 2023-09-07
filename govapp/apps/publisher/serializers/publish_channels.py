@@ -75,6 +75,10 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
             "description"
         )
         
+    def validate(self, data):
+        _validate_bbox(data)
+        return data
+        
 
 
 class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
@@ -90,3 +94,21 @@ class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
             "name",
             "published_at",
         )
+    
+    def validate(self, data):
+        _validate_bbox(data)
+        return data
+
+def _validate_bbox(data):
+    if not data['override_bbox']:
+        return
+    if _has_null(data['native_crs'], 
+                    data['nbb_minx'], data['nbb_maxx'], data['nbb_miny'], data['nbb_maxy'], data['nbb_crs'],
+                    data['llb_minx'], data['llb_maxx'], data['llb_miny'], data['llb_maxy'], data['llb_crs']):
+        raise serializers.ValidationError("'If override_bbox is True, every related fields must be filled.")
+        
+def _has_null(*args):
+    for arg in args:
+        if arg == None:
+            return True
+    return False

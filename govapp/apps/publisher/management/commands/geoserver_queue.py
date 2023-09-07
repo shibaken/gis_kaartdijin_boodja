@@ -22,5 +22,4 @@ class Command(base.BaseCommand):
         self.stdout.write("Excuting items of geoserver queue")
 
         # Go!
-        geoserver_queue_manager.excute()
-
+        geoserver_queue_manager.GeoServerQueueExcutor().excute()

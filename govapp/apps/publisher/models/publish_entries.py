@@ -72,7 +72,7 @@ class PublishEntry(mixins.RevisionedMixin):
     cddp_channel: "Optional[publish_channels.CDDPPublishChannel]"
     geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
     email_notifications: "models.Manager[notifications.EmailNotification]"
-    geoserver_queue: "models.Manager[geoserver_queues.GeoServerQueue]"
+    geoserver_queues: "models.Manager[geoserver_queues.GeoServerQueue]"
 
     class Meta:
         """Publish Entry Model Metadata."""
