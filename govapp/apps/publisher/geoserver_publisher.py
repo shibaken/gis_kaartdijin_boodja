@@ -82,8 +82,8 @@ def _publish_wfs(publish_entry: "PublishEntry",
                  layer_subscription: "layer_subscriptions.LayerSubscription",
                  geoserver:geoserver.GeoServer):
     context = {
-      "name": publish_entry.name, #?
-      "description": publish_entry.description, #?
+      "name": layer_subscription.name,
+      "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
       "username": layer_subscription.username,
@@ -91,14 +91,14 @@ def _publish_wfs(publish_entry: "PublishEntry",
     }
     geoserver.upload_store_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
     context = {
-        "name": publish_entry.name, #?
-        "description": publish_entry.description, #?
-        "native_name":catalogue_entry.mapping_name, #?
-        "title":catalogue_entry.name, #?
-        "abstract": None, # ignoring?,
+        "name": catalogue_entry.name,
+        "description": catalogue_entry.description,
+        "native_name":catalogue_entry.mapping_name,
+        "title":catalogue_entry.name,
+        "abstract": None,
         "override_bbox": publish_entry.geoserver_channel.override_bbox,
-        "native_crs":publish_entry.geoserver_channel.native_crs,#?
-        "crs": publish_entry.geoserver_channel.srs,#srs?,
+        "native_crs":publish_entry.geoserver_channel.native_crs,
+        "crs": publish_entry.geoserver_channel.srs,
         "nativeBoundingBox": {
             "minx": publish_entry.geoserver_channel.nbb_minx,
             "maxx": publish_entry.geoserver_channel.nbb_maxx,
@@ -113,18 +113,21 @@ def _publish_wfs(publish_entry: "PublishEntry",
             "maxy": publish_entry.geoserver_channel.llb_maxy,
             "crs": publish_entry.geoserver_channel.llb_crs,
         },
-        "enabled": layer_subscription.enabled,
+        "enabled": "true",
         # "keywords":, #?
     }
-    geoserver.upload_layer_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
+    geoserver.upload_layer_wfs(workspace=layer_subscription.workspace.name, 
+                               store_name=layer_subscription.name, 
+                               layer_name=catalogue_entry.name, 
+                               context=context)
     
 def _publish_wms(publish_entry: "PublishEntry", 
                  catalogue_entry: "CatalogueEntry", 
                  layer_subscription: "layer_subscriptions.LayerSubscription",
                  geoserver:geoserver.GeoServer):
     context = {
-      "name": publish_entry.name, #?
-      "description": publish_entry.description, #?
+      "name": layer_subscription.name,
+      "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
       "username": layer_subscription.username,
@@ -139,14 +142,14 @@ def _publish_wms(publish_entry: "PublishEntry",
     geoserver.upload_store_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
     
     context = {
-        "name": publish_entry.name, #?
-        "description": publish_entry.description, #?
-        "native_name": catalogue_entry.mapping_name, #?
-        "title": catalogue_entry.name, #?
-        "abstract": None, # ignoring?,
+        "name": catalogue_entry.name,
+        "description": catalogue_entry.description,
+        "native_name": catalogue_entry.mapping_name,
+        "title": catalogue_entry.name,
+        "abstract": None,
         "override_bbox": publish_entry.geoserver_channel.override_bbox,
-        "native_crs": publish_entry.geoserver_channel.native_crs,#?
-        "crs": publish_entry.geoserver_channel.srs,#srs?,
+        "native_crs": publish_entry.geoserver_channel.native_crs,
+        "crs": publish_entry.geoserver_channel.srs,
         "nativeBoundingBox": {
             "minx": publish_entry.geoserver_channel.nbb_minx,
             "maxx": publish_entry.geoserver_channel.nbb_maxx,
@@ -170,11 +173,9 @@ def _publish_postgis(publish_entry: "PublishEntry",
                      catalogue_entry: "CatalogueEntry", 
                      layer_subscription: "layer_subscriptions.LayerSubscription",
                      geoserver:geoserver.GeoServer):
-    # geoserver.upload_store_wfs
-    
     context = {
-      "name": publish_entry.name, #?
-      "description": publish_entry.description, #?
+      "name": layer_subscription.name,
+      "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
       "username": layer_subscription.username,
