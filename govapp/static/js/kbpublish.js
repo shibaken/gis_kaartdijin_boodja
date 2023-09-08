@@ -1117,90 +1117,84 @@ var kbpublish = {
         });
     },
     show_write_geoserver_subscription_modal: function(prev){
-        let workspace = null;
-        let srs = null;
-        let nbb = {minx:null, maxx:null, miny:null, maxy:null, crs:null};
-        let llb = {minx:null, maxx:null, miny:null, maxy:null, crs:null};
-        let active = null;
-        let prev_id = null;
+        let workspace = prev ? prev.workspace : null;
+        let srs = prev ? prev.srs : null;
+        let override_bbox = prev ? prev.override_bbox : false;
+        let native_crs = prev ? prev.native_crs : null;
+        let nbb = { minx : prev ? prev.nbb_minx : null, 
+                    maxx : prev ? prev.nbb_maxx : null, 
+                    miny : prev ? prev.nbb_miny : null, 
+                    maxy : prev ? prev.nbb_maxy : null, 
+                    crs  : prev ? prev.nbb_crs : null
+                };
+        let llb = { minx : prev ? prev.llb_minx : null, 
+                    maxx : prev ? prev.llb_maxx : null, 
+                    miny : prev ? prev.llb_miny : null, 
+                    maxy : prev ? prev.llb_maxy : null, 
+                    crs  : prev ? prev.llb_crs : null
+                };
+        let active = prev ? prev.active : null;
+        let prev_id = prev ? prev.id : null;
 
-        if(prev){
-            workspace = prev.workspace;
-            srs = prev.srs;
-            nbb.minx = prev.nbb_minx;
-            nbb.maxx = prev.nbb_maxx;
-            nbb.miny = prev.nbb_miny;
-            nbb.maxy = prev.nbb_maxy;
-            nbb.crs = prev.nbb_crs;
-            llb.minx = prev.llb_minx;
-            llb.maxx = prev.llb_maxx;
-            llb.miny = prev.llb_miny;
-            llb.maxy = prev.llb_maxy;
-            llb.crs = prev.llb_crs;
-            active = prev.active;
-            prev_id = prev.id;
-        }
+        ids = {}
+        override_bbox_ids=[]
 
         common_entity_modal.init("Publish New Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
-        const workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=workspace, option_map=kbpublish.var.publish_workspace_map);
-        const srs_id = common_entity_modal.add_field(label="SRS", type="text", value=srs);
-        
-        ids = {
-            workspace:workspace_id,
-            srs:srs_id,
-        };
+        ids.workspace = common_entity_modal.add_field(label="Workspace", type="select", value=workspace, option_map=kbpublish.var.publish_workspace_map);
+        ids.srs = common_entity_modal.add_field(label="SRS", type="text", value=srs);
 
-        const bounding_keywords = ['minx', 'maxx', 'miny', 'maxy', 'crs'];
-        const bounding_labels = ['Min X', 'Max X', 'Min Y', 'Max Y', 'CRS'];
+        ids.override_bbox = common_entity_modal.add_field(label="Override_bbox", type="switch", value=override_bbox);
+        ids.native_crs = common_entity_modal.add_field(label="Native CRS", type="text", value=native_crs, option_map=null, disabled=!override_bbox);
+        override_bbox_ids.push(ids.native_crs);
 
-        let nbb_div = common_entity_modal.maker.div();
-        nbb_div.attr('class', nbb_div.attr('class') + ' col-12');
-        let nbb_row_div = common_entity_modal.maker.div();
-        nbb_row_div.attr('class', nbb_row_div.attr('class') + ' row');
-        let labels_fields_nbb = [];
-        for(let i in bounding_keywords){
-            const keyword = 'new-publish-subscription-nbb'+bounding_keywords[i];
-            const label = $('<label>').text(bounding_labels[i]);
-            const field = common_entity_modal.maker.text(keyword, nbb[bounding_keywords[i]]);
-            const div = common_entity_modal.maker.div();
-            div.attr('class', 'col-2');
-            div.append(label);
-            div.append(field);
-            nbb_row_div.append(div);
-            labels_fields_nbb.push({label:label, field:field});
-            ids['nbb_'+bounding_keywords[i]] = field.attr('id');
-        }
-        nbb_div.append(nbb_row_div);
-        common_entity_modal.add_div("Native Bounding Box(Optional)", nbb_div, labels_fields_nbb);
+        const nbb_info = kbpublish.make_bbox_div(nbb, 'nbb', !override_bbox);
+        common_entity_modal.add_div("Native Bounding Box(Optional)", nbb_info[0], nbb_info[1]);
+        ids = {...ids, ...nbb_info[2]};
+        override_bbox_ids = [...override_bbox_ids, ...nbb_info[3]];
 
-        let llb_div = common_entity_modal.maker.div();
-        llb_div.attr('class', llb_div.attr('class') + ' col-12');
-        let llb_row_div = common_entity_modal.maker.div();
-        llb_row_div.attr('class', llb_row_div.attr('class') + ' row');
-        llb_div.append(llb_row_div);
-        let labels_fields_llb = [];
-        for(let i in bounding_keywords){
-            const keyword = 'new-publish-subscription-llb'+bounding_keywords[i];
-            const label = $('<label>').text(bounding_labels[i]);
-            const field = common_entity_modal.maker.text(keyword, llb[bounding_keywords[i]]);
-            const div = common_entity_modal.maker.div();
-            div.attr('class', 'col-2');
-            div.append(label);
-            div.append(field);
-            llb_row_div.append(div);
-            labels_fields_llb.push({label:label, field:field});
-            ids['llb_'+bounding_keywords[i]] = field.attr('id');
-        }
-        common_entity_modal.add_div("Lat Lon Bounding Box(Optional)", llb_div, labels_fields_llb);
+        const llb_info = kbpublish.make_bbox_div(llb, 'llb', !override_bbox);
+        common_entity_modal.add_div("Lat Lon Bounding Box(Optional)", llb_info[0], llb_info[1]);
+        ids = {...ids, ...llb_info[2]};
+        override_bbox_ids = [...override_bbox_ids, ...llb_info[3]];
 
-        const active_id = common_entity_modal.add_field(label="Active", type="switch", value=active);
-        ids.active = active_id;
+        ids.active = common_entity_modal.add_field(label="Active", type="switch", value=active);
 
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.write_geoserver_subscription(success_callback, error_callback, ids, prev_id),
                                             success_callback=this.get_publish_geoservers);
+
+        // make all bbox fields disable
+        $('#'+ids.override_bbox).change(() => common_entity_modal.change_disabled(override_bbox_ids));
         common_entity_modal.show();
+    },
+    make_bbox_div: function(bbox, bbox_keyword, override_bbox){
+        let bbox_div = common_entity_modal.maker.div();
+        let labels_fields = [];
+        let ids = {};
+        let ids_list = [];
+
+        const bounding_keywords = ['minx', 'maxx', 'miny', 'maxy', 'crs'];
+        const bounding_labels = ['Min X', 'Max X', 'Min Y', 'Max Y', 'CRS'];
+
+        bbox_div.attr('class', bbox_div.attr('class') + ' col-12');
+        let bbox_row_div = common_entity_modal.maker.div();
+        bbox_row_div.attr('class', bbox_row_div.attr('class') + ' row');
+        for(let i in bounding_keywords){
+            const keyword = 'new-publish-subscription-'+bbox_keyword+bounding_keywords[i];
+            const label = $('<label>').text(bounding_labels[i]);
+            const field = common_entity_modal.maker.text(keyword, bbox[bounding_keywords[i]], override_bbox);
+            const div = common_entity_modal.maker.div();
+            div.attr('class', 'col-2');
+            div.append(label);
+            div.append(field);
+            bbox_row_div.append(div);
+            labels_fields.push({label:label, field:field});
+            ids[bbox_keyword+'_'+bounding_keywords[i]] = field.attr('id');
+            ids_list.push(field.attr('id'));
+        }
+        bbox_div.append(bbox_row_div);
+        return [bbox_div, labels_fields, ids, ids_list];
     },
     show_update_geoserver_modal: function(prev){
         common_entity_modal.init("Update Geoserver Notification", "submit");
@@ -1225,7 +1219,7 @@ var kbpublish = {
 
         for(let key in ids){
             let val;
-            if(key == 'active'){
+            if(['active', 'override_bbox'].includes(key)){
                 val = $('#'+ids[key]).prop('checked');
             } else {
                 val = $('#'+ids[key]).val();

@@ -12,6 +12,7 @@ from govapp.apps.publisher.models import geoserver_queues
 from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
+from govapp.apps.publisher import geoserver_queue_manager
 from govapp.gis import geoserver
 
 # Typing
@@ -24,39 +25,68 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 QUEUE_EXPIRED_MINUTES = 1
- 
-def excute():
-    target_items = _retrieve_target_items()
-    log.info(f"Start publishing for {target_items.count()} geoserver queue items.")
-    for queue_item in target_items:
-        queue_item.change_status(GeoServerQueueStatus.ON_PUBLISHING)
-        publishing_log = queue_item.publishing_result if queue_item.publishing_result is not None else ""
-        publishing_log += _publishing_log("Start publishg..")
-        result_status = GeoServerQueueStatus.PUBLISHED
-        
-        # Retrieving information of all eabled geoserver from the pool
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
-        
-        for geoserver_info in geoserver_pool:
-            geoserver_obj = geoserver.geoserverWithCustomCreds(
-                geoserver_info.url, geoserver_info.username, geoserver_info.password)
-            
-            # Publish here
-            res, exc = geoserver_publisher.publish(queue_item.publish_entry, geoserver_obj)
-            
-            if res:
-                publishing_log += _publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_info.url}] Publishing succeed.")
-                
-            else :
-                result_status = GeoServerQueueStatus.FAILED
-                publishing_log += _publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_info.url}] Publishing failed.")
-                publishing_log += _publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_info.url}] {exc}")
-            
-        queue_item.status = result_status
-        queue_item.publishing_result = publishing_log
-        queue_item.save()
-    return
 
+class GeoServerQueueExcutor:
+    def __init__(self) -> None:
+        self.result_status = GeoServerQueueStatus.PUBLISHED
+        self.result_success = True
+        self.publishing_log = ""
+
+    def excute(self) -> None:
+        target_items = self._retrieve_target_items()
+        log.info(f"Start publishing for {target_items.count()} geoserver queue items.")
+        for queue_item in target_items:
+            self._init_excuting(queue_item=queue_item)
+        
+            geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+            for geoserver_info in geoserver_pool:
+                self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_info)
+        
+            self._update_result(queue_item=queue_item)
+            if self.result_success:
+                geoserver_queue_manager.push(publish_entry=queue_item.publish_entry, symbology_only=queue_item.symbology_only)
+
+    def _retrieve_target_items(self):
+        """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """
+        query = Q(status=GeoServerQueueStatus.READY) | \
+                Q(status=GeoServerQueueStatus.ON_PUBLISHING, started_at__lte=timezone.now() - timezone.timedelta(minutes=QUEUE_EXPIRED_MINUTES))
+        
+        return geoserver_queues.GeoServerQueue.objects.filter(query)
+    
+    def _init_excuting(self, queue_item):
+        queue_item.change_status(GeoServerQueueStatus.ON_PUBLISHING)
+        self.publishing_log = queue_item.publishing_result if queue_item.publishing_result is not None else ""
+        self.result_status = GeoServerQueueStatus.PUBLISHED
+        self._add_publishing_log("Start publishg..")
+
+    def _add_publishing_log(self, msg):
+        log_msg = f"[{timezone.now()}] {msg}\n"
+        log.info(log_msg)
+        self.publishing_log += log_msg
+        return log_msg
+        
+    def _publish_to_a_geoserver(self, publish_entry: "PublishEntry", geoserver_info: geoserver_pools.GeoServerPool):
+        geoserver_obj = geoserver.geoserverWithCustomCreds(
+            geoserver_info.url, geoserver_info.username, geoserver_info.password)
+        
+        # Publish here
+        res, exc = geoserver_publisher.publish(publish_entry, geoserver_obj)
+        
+        if res:
+            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.url}] Publishing succeed.")
+            
+        else :
+            self.result_status = GeoServerQueueStatus.FAILED
+            self.result_success = False
+            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.url}] Publishing failed.")
+            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.url}] {exc}")
+            
+    def _update_result(self, queue_item: geoserver_queues.GeoServerQueue):
+        queue_item.status = self.result_status
+        queue_item.success = self.result_success
+        queue_item.publishing_result = self.publishing_log
+        queue_item.save()
+    
 def push(publish_entry: "PublishEntry", symbology_only: bool) -> bool:
     if not hasattr(publish_entry, "geoserver_channel"):
         log.info(f"'{publish_entry}' has no GeoServer Publish Channel")
@@ -66,16 +96,3 @@ def push(publish_entry: "PublishEntry", symbology_only: bool) -> bool:
         publish_entry=publish_entry,
         symbology_only=symbology_only)
     return True
-
-def _retrieve_target_items():
-    """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """
-    query = Q(status=GeoServerQueueStatus.READY) | \
-            Q(status=GeoServerQueueStatus.ON_PUBLISHING, started_at__lte=timezone.now() - timezone.timedelta(minutes=QUEUE_EXPIRED_MINUTES))
-    
-    return geoserver_queues.GeoServerQueue.objects.filter(query)
-
-def _publishing_log(msg):
-    log_msg = f"[{timezone.now()}] {msg}\n"
-    log.info(log_msg)
-    return log_msg
-    

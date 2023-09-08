@@ -62,7 +62,6 @@ class CatalogueEntryType(models.IntegerChoices):
         "webhook_notifications",
         "publish_entry",
         "catalouge_permissions",
-        "geoserver_queues"
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
@@ -107,7 +106,6 @@ class CatalogueEntry(mixins.RevisionedMixin):
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
     publish_entry: "Optional[publish_entries.PublishEntry]"
     catalouge_permissions: "models.Manager[permission.CatalogueEntryPermission]"
-    geoserver_queues: "models.Manager[geoserver_queues.GeoServerQueue]"
 
     class Meta:
         """Catalogue Entry Model Metadata."""

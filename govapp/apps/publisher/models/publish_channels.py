@@ -10,6 +10,7 @@ import os
 # Third-Party
 from django import conf
 from django.db import models
+from django.core import exceptions
 from django.utils import timezone
 import reversion
 
@@ -275,24 +276,44 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         related_name="geoserver_channel",
         on_delete=models.CASCADE,
     )
-    srs = models.CharField(null=True, max_length=500)
-    nbb_minx = models.CharField(null=True, max_length=500)
-    nbb_maxx = models.CharField(null=True, max_length=500)
-    nbb_miny = models.CharField(null=True, max_length=500)
-    nbb_maxy = models.CharField(null=True, max_length=500)
-    nbb_crs = models.CharField(null=True, max_length=500)
-    llb_minx = models.CharField(null=True, max_length=500)
-    llb_maxx = models.CharField(null=True, max_length=500)
-    llb_miny = models.CharField(null=True, max_length=500)
-    llb_maxy = models.CharField(null=True, max_length=500)
-    llb_crs = models.CharField(null=True, max_length=500)
-    active = models.BooleanField(null=True)
+    srs = models.CharField(null=True, blank=True, max_length=500)
+    override_bbox = models.BooleanField(default=False)
+    native_crs = models.CharField(null=True, blank=True, max_length=500)    # will become required, if overried_box is True
+    nbb_minx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_maxx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_miny = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
+    llb_minx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_maxx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_miny = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
+    active = models.BooleanField(null=True, blank=True,)
 
     class Meta:
         """GeoServer Publish Channel Model Metadata."""
         verbose_name = "GeoServer Publish Channel"
         verbose_name_plural = "GeoServer Publish Channels"
 
+    def clean(self):
+        if not self.override_bbox:
+            return
+        if self._has_null(self.native_crs, 
+                           self.nbb_minx, self.nbb_maxx, self.nbb_miny, self.nbb_maxy, self.nbb_crs,
+                           self.llb_minx, self.llb_maxx, self.llb_miny, self.llb_maxy, self.llb_crs):
+            raise exceptions.ValidationError("If override_bbox is True, every related fields must be filled.")
+        
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def _has_null(*args):
+        for arg in args:
+            if arg is None:
+                return True
+        return False
+        
     def __str__(self) -> str:
         """Provides a string representation of the object.
 
