@@ -403,7 +403,8 @@ class LayerSubscriptions(base.TemplateView):
         # Construct Context
         context: dict[str, Any] = {}
         context['is_administrator'] = is_administrator
-
+        context['tab'] = "layer_subscriptions"
+        
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)   
     
@@ -448,6 +449,6 @@ class LayerSubscriptionsView(base.TemplateView):
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
         context['enabled_js'] = "true" if subscription_obj.enabled else "false"
-
+        
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
