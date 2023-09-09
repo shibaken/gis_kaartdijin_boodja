@@ -232,7 +232,8 @@ class GeoServer:
                 url=url,
                 auth=(self.username, self.password),
                 data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=3000
             )
             print ("404")
             print (response.text)
@@ -447,7 +448,9 @@ class GeoServer:
                 url=url,
                 auth=(self.username, self.password),
                 data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                # data=request_body,
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=300.0
             )
             print ("404")
             print (response.text)

@@ -4,6 +4,7 @@
 # Third-Party
 from datetime import datetime
 from django import shortcuts
+from django.db import transaction
 from django.contrib import auth
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
@@ -22,6 +23,9 @@ from govapp.apps.publisher import filters
 from govapp.apps.publisher import models
 from govapp.apps.publisher import permissions
 from govapp.apps.publisher import serializers
+from govapp.apps.publisher import geoserver_queue_manager
+from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
+from govapp.apps.catalogue.models import catalogue_entries
 
 # Typing
 from typing import cast
@@ -146,6 +150,7 @@ class PublishEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
+    @transaction.atomic()
     @drf_utils.extend_schema(
         parameters=[drf_utils.OpenApiParameter("symbology_only", type=bool)],
         request=None,
@@ -171,18 +176,18 @@ class PublishEntryViewSet(
         symbology_only = self.request.query_params.get("symbology_only")
         symbology_only = utils.string_to_boolean(symbology_only)  # type: ignore[assignment]
 
-        # Publish!
-        publish_entry.publish_geoserver(symbology_only)
+        # already exists
+        if publish_entry.geoserver_queues.filter(
+            status__in=[GeoServerQueueStatus.READY, GeoServerQueueStatus.ON_PUBLISHING]).exists():
+            return response.Response(status=status.HTTP_409_CONFLICT)
+        else:
+            # creating a queue item when it doesn't exist
+            res = geoserver_queue_manager.push(publish_entry=publish_entry, symbology_only=symbology_only)
+        if res:
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        else :
+            return response.Response(status=status.HTTP_412_PRECONDITION_FAILED)
 
-        # Add Action Log Entry
-        logs_utils.add_to_actions_log(
-            user=request.user,
-            model=publish_entry,
-            action="Publish entry was manually re-published to the GeoServer channel"
-        )
-
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     @decorators.action(detail=True, methods=["GET"], url_path=r"geoserver")
     def geoserver_list(self, request: request.Request, pk: str) -> response.Response:
@@ -195,20 +200,15 @@ class PublishEntryViewSet(
         Returns:
             response.Response: Empty response confirming success.
         """
-        # Retrieve Publish Entry
-        # Help `mypy` by casting the resulting object to a Publish Entry
+        # # Retrieve Publish Entry
+        # # Help `mypy` by casting the resulting object to a Publish Entry
         publish_entry = self.get_object()
         publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
         geoserver_publish_channel = models.publish_channels.GeoServerPublishChannel.objects.filter(publish_entry=publish_entry)
-        geoserver_list = []
-        for gpc in geoserver_publish_channel:
-            published_at = None
-            if gpc.published_at:
-                published_at = gpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')
-            geoserver_list.append({"id": gpc.id, "mode": gpc.mode, "frequency": gpc.frequency, "workspace_id": gpc.workspace.id, "workspace_name": gpc.workspace.name,"published_at": published_at})
-
+        serializer = serializers.publish_channels.GeoServerPublishChannelSerializer(geoserver_publish_channel, many=True)
+        
         # Return Response
-        return response.Response(geoserver_list, status=status.HTTP_200_OK)
+        return response.Response(serializer.data, status=status.HTTP_200_OK)
 
     @decorators.action(detail=True, methods=["GET"], url_path=r"cddp")
     def cddp_list(self, request: request.Request, pk: str) -> response.Response:

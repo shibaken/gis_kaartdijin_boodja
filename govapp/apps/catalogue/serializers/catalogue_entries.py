@@ -29,7 +29,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             # "editors",
             "custodian",
             "assigned_to",
-            "subscription",
+            # "subscription",
             "active_layer",
             "type",
             "layers",
@@ -42,7 +42,8 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "custodian_name",
             "assigned_to_first_name",
             "assigned_to_last_name",
-            "assigned_to_email"
+            "assigned_to_email",
+            
         )
         read_only_fields = (
             "id",
@@ -52,7 +53,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "updated_at",
             # "editors",
             "assigned_to",
-            "subscription",
+            # "subscription",
             "active_layer",
             "type",
             "layers",
@@ -63,3 +64,31 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "symbology",
             "publish_entry",
         )
+
+class CatalogueEntryCreateSubscriptionMappingSerializer(serializers.ModelSerializer):
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = models.catalogue_entries.CatalogueEntry
+        fields = ("name", "description", "mapping_name")
+    
+    def validate(self, data):
+        if 'description' not in data or not data['description']:
+            raise serializers.ValidationError("'description' field is required.")
+        return data
+
+class CatalogueEntryUpdateSubscriptionMappingSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    mapping_name = serializers.CharField(required=False)
+    
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.model
+        fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields
+        
+class CatalogueEntryGetSubscriptionMappingSerializer(serializers.ModelSerializer):
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.model
+        fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields
+        read_only_fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields

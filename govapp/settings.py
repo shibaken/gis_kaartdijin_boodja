@@ -236,7 +236,8 @@ GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
 CRON_SCANNER_PERIOD_MINS = 3  # Run every 5 minutes
 CRON_CLASSES = [
     "govapp.apps.catalogue.cron.SharepointScannerCronJob",
-    "govapp.apps.catalogue.cron.DirectoryScannerCronJob"
+    "govapp.apps.catalogue.cron.DirectoryScannerCronJob",
+    "govapp.apps.publisher.cron.PublishGeoServerQueueCronJob"
     #CRON_SCANNER_CLASS,
 ]
 
@@ -257,3 +258,11 @@ DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
 # Django Timezone
 TIME_ZONE = 'Australia/Perth'
+
+# Layer Subscription
+WMS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
+WMS_CACHE_KEY = "wms native layer names"
+WFS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
+WFS_CACHE_KEY = "wfs native layer names"
+POST_GIS_CACHE_KEY = "post gis table names"
+SUBSCRIPTION_CACHE_TTL = 3600

@@ -5,6 +5,12 @@
 import hashlib
 import json
 
+# Third Party
+from functools import wraps
+from rest_framework import status
+from rest_framework import response
+from rest_framework.serializers import ValidationError
+
 # Typing
 from typing import Any, Iterable, Optional
 
@@ -58,3 +64,29 @@ def find_enum_by_value(enum, value):
             if member.value == value:
                 return member
         raise ValueError('No enum member found with value: {}'.format(value))
+
+def validate_request(serializer_class, data):
+    serializer = serializer_class(data=data)
+    if not serializer.is_valid():
+        raise ValidationError(serializer.errors)
+    return serializer.validated_data
+
+def view_error_handler(view_func):
+    @wraps(view_func)
+    def _wrapped_view(view_set, request, pk=None):
+        try:
+            return view_func(view_set, request, pk)
+        except (ValueError, ValidationError) as e:
+            return response.Response({'error_msg':e}, content_type='application/json', 
+                                    status=status.HTTP_400_BAD_REQUEST)
+    return _wrapped_view
+
+def validation_error_hander(serializer_class):
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(view_set, request, pk=None):
+            validate_request(serializer_class, request.data)
+            return view_func(view_set, request, pk)
+        return _wrapped_view
+    return decorator
+
