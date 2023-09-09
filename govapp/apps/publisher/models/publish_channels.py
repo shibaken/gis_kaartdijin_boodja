@@ -10,6 +10,7 @@ import os
 # Third-Party
 from django import conf
 from django.db import models
+from django.core import exceptions
 from django.utils import timezone
 import reversion
 
@@ -275,24 +276,44 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         related_name="geoserver_channel",
         on_delete=models.CASCADE,
     )
-    srs = models.CharField(null=True, max_length=500)
-    nbb_minx = models.CharField(null=True, max_length=500)
-    nbb_maxx = models.CharField(null=True, max_length=500)
-    nbb_miny = models.CharField(null=True, max_length=500)
-    nbb_maxy = models.CharField(null=True, max_length=500)
-    nbb_crs = models.CharField(null=True, max_length=500)
-    llb_minx = models.CharField(null=True, max_length=500)
-    llb_maxx = models.CharField(null=True, max_length=500)
-    llb_miny = models.CharField(null=True, max_length=500)
-    llb_maxy = models.CharField(null=True, max_length=500)
-    llb_crs = models.CharField(null=True, max_length=500)
-    active = models.BooleanField(null=True)
+    srs = models.CharField(null=True, blank=True, max_length=500)
+    override_bbox = models.BooleanField(default=False)
+    native_crs = models.CharField(null=True, blank=True, max_length=500)    # will become required, if overried_box is True
+    nbb_minx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_maxx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_miny = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    nbb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
+    llb_minx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_maxx = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_miny = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
+    llb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
+    active = models.BooleanField(null=True, blank=True,)
 
     class Meta:
         """GeoServer Publish Channel Model Metadata."""
         verbose_name = "GeoServer Publish Channel"
         verbose_name_plural = "GeoServer Publish Channels"
 
+    def clean(self):
+        if not self.override_bbox:
+            return
+        if self._has_null(self.native_crs, 
+                           self.nbb_minx, self.nbb_maxx, self.nbb_miny, self.nbb_maxy, self.nbb_crs,
+                           self.llb_minx, self.llb_maxx, self.llb_miny, self.llb_maxy, self.llb_crs):
+            raise exceptions.ValidationError("If override_bbox is True, every related fields must be filled.")
+        
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def _has_null(*args):
+        for arg in args:
+            if arg is None:
+                return True
+        return False
+        
     def __str__(self) -> str:
         """Provides a string representation of the object.
 
@@ -312,7 +333,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Retrieve and Return
         return self.publish_entry.name
 
-    def publish(self, symbology_only: bool = False) -> None:
+    def publish(self, symbology_only: bool = False, geoserver: gis.geoserver.GeoServer = None) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
@@ -321,8 +342,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}'")
 
+        # if not geoserver:
+        #     geoserver = gis.geoserver.geoserver()
+
         # Publish Symbology
-        self.publish_geoserver_symbology()
+        self.publish_geoserver_symbology(geoserver=geoserver)
 
         # Check Symbology Only Flag
         if symbology_only:
@@ -336,11 +360,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         match self.mode:
             case GeoServerPublishChannelMode.WMS:
                 # Publish to GeoServer (WMS Only)
-                self.publish_geoserver_layer(wms=True, wfs=False)
+                self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver)
 
             case GeoServerPublishChannelMode.WMS_AND_WFS:
                 # Publish to GeoServer (WMS and WFS)
-                self.publish_geoserver_layer(wms=True, wfs=True)
+                self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver)
 
         # Update Published At
         publish_time = timezone.now()
@@ -349,20 +373,20 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         self.published_at = publish_time
         self.save()
 
-    def publish_geoserver_symbology(self) -> None:
+    def publish_geoserver_symbology(self, geoserver: gis.geoserver.GeoServer) -> None:
         """Publishes the Symbology to GeoServer if applicable."""
         # Log
         log.info(f"Publishing '{self}' (Symbology) to GeoServer")
 
         # Publish Style to GeoServer
-        gis.geoserver.geoserver().upload_style(
+        geoserver.upload_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,
             sld=self.publish_entry.catalogue_entry.symbology.sld,
         )
 
-    def publish_geoserver_layer(self, wms: bool, wfs: bool) -> None:
+    def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
         """Publishes the Catalogue Entry to GeoServer if applicable.
 
         Args:
@@ -385,16 +409,16 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             catalogue_name=self.publish_entry.catalogue_entry.name,
             export_method='geoserver'
         )
-
+            
         # Push Layer to GeoServer
-        gis.geoserver.geoserver().upload_geopackage(
+        geoserver.upload_geopackage(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             filepath=geopackage['full_filepath'],
         )
 
         # Set Default Style
-        gis.geoserver.geoserver().set_default_style(
+        geoserver.set_default_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,

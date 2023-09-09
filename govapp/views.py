@@ -288,12 +288,17 @@ class CatalogueEntriesView(base.TemplateView):
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
         for su in system_users_obj:
              system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
+        
+        for permission in catalogue_entry_obj.catalouge_permissions.all():
+            system_users_list.append({'first_name': permission.user.first_name, 
+                                      'last_name': permission.user.last_name, 
+                                      'id': permission.user.id, 
+                                      'email': permission.user.email})
                 
         is_administrator = utils.is_administrator(request.user)
         if is_administrator is True and request.user == catalogue_entry_obj.assigned_to:
              if catalogue_entry_obj.status == 1 or catalogue_entry_obj.status == 4 or catalogue_entry_obj.status ==5:
                 has_edit_access = True
-
 
         catalogue_layer_symbology_obj = catalogue_layer_symbology_models.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
         if catalogue_layer_symbology_obj.count() > 0:

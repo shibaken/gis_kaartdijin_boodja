@@ -30,4 +30,4 @@ admin.site.register(models.publish_channels.GeoServerPublishChannel, reversion.a
 admin.site.register(models.publish_entries.PublishEntry, PublishEntryAdmin)
 admin.site.register(models.notifications.EmailNotification, reversion.admin.VersionAdmin)
 admin.site.register(models.workspaces.Workspace, reversion.admin.VersionAdmin)
-admin.site.register(models.geoserver_pool.GeoServerPool, GeoServerPoolAdmin)
+admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
