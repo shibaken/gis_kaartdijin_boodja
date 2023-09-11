@@ -24,7 +24,19 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'url', 'username', 'enabled', 'created_at')
     ordering = ('id',)
 
+class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
+    """Custom Django Admin for GeoServer Pool."""
+    # This provides a better interface for `ManyToMany` fields
+    # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
+    list_display = ('id', 'name', 'ftp_server', 'format', 'frequency','published_at','publish_entry','created')
+    ordering = ('id',)
+    raw_id_fields = ('ftp_server','publish_entry')
+
+
 # Register Models
+
+admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
+admin.site.register(models.publish_channels.FTPPublishChannel, FTPPublishChannelAdmin)
 admin.site.register(models.publish_channels.CDDPPublishChannel, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_channels.GeoServerPublishChannel, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_entries.PublishEntry, PublishEntryAdmin)

@@ -6,6 +6,7 @@
             {% include "govapp/manage_editors_modal.html" %}
             {% include "govapp/publish_view_new_geoserver.html" %}
             {% include "govapp/publish_view_new_cddp.html" %}
+            {% include "govapp/publish_view_new_ftp.html" %}
             {% include "govapp/common_entity_modal.html" %}
 
             <div class="container" id="dashboard-table-container">
@@ -322,7 +323,61 @@
                   
                               </div>
 
-
+                              <BR>
+                                    <div class="card" >
+                                          <div class="card-header fw-bold h4" style="padding:30px;">
+                                                <div class="row">
+                                                <div class="col-6">
+                                                      FTP Publish
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box6-card-body" onclick=""></i>
+                                                </div>
+                                                </div>         
+                                          </div>
+                                          <div class="card-body collapse show" id="box6-card-body">
+                  
+                                                <div class='col-12 p-1'>
+                                                      <div class='row'>
+                                                            <div class='col-6'> 
+                                                                  &nbsp;
+                                                            </div>
+                                                            <div class='col-6 text-end'> 
+                                                                  {% if has_edit_access is True %}
+                                                                        <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-ftp-btn'>New FTP</button>   
+                                                                  {% endif %}
+                                                            </div>
+                                                      </div>
+                                                </div>
+                                                <div class='col-12'>
+                                                      
+                                                      <div id='publish-table'>
+                                                            <table id="example" class="table" style="width:100%">
+                                                                  <thead class='table-dark'>
+                                                                  <tr>
+                                                                        <th>ID</th>     
+                                                                        <th>Filename</th>                                             
+                                                                        <th>FTP Server</th>    
+                                                                        <th>Spatial Format</th>
+                                                                        <th>Frequency Type</th>
+                                                                        <th>Path (Directory)</th>
+                                                                        <th>Publish Date/time</th>                                      
+                                                                        <th>Action</th>
+                                                                  </tr>
+                                                                  </thead>
+                                                                  <tbody id='publish-ftp-tbody'>
+                                                                  <tr>
+                                                                        <td colspan="6" class='text-center'>No Results</td>
+                                                                  </tr>
+                                                                  </tbody>
+                                                            </table>                                  
+                                                      </div>      
+                                                </div>
+                        
+                                          </div>
+                        
+                                    </div>
+      
 
                         <BR>
                         <div class="card" >

@@ -6,8 +6,11 @@ var kbpublish = {
             publish_save_geoserver_url: "/api/publish/channels/geoserver/",
             publish_data_cddp_url: "/api/publish/channels/cddp/",                       
             publish_save_cddp_url: "/api/publish/channels/cddp/",
+            publish_data_ftp_url: "/api/publish/channels/ftp/",                       
+            publish_save_ftp_url: "/api/publish/channels/ftp/",            
             publish_email_notification_url: "/api/publish/notifications/emails/",
             publish_email_notification_type_url: "/api/publish/notifications/emails/type/",
+            ftp_server_url : "/api/publish/channels/ftp-server/",
             log_communication_type_url:"/api/logs/communications/type/",
             publish_status: {
                 1: "Locked",
@@ -36,16 +39,25 @@ var kbpublish = {
             publish_cddp_frequency: {
                 1: "OnChange"
             },
+            publish_ftp_format: {
+                1: "Geopackage",
+                2: "Shapefile",
+                3: "Geodatabase",
+                4: "GeoJSON"
+            },
+            publish_ftp_frequency: {
+                1: "OnChange"
+            },
             catalogue_entry_list: null,
             catalogue_entry_map: {},
             publish_date_format: "dd/mm/yyyy",
             publish_table_date_format: "DD MMM YYYY HH:mm:ss",
             publish_email_notification_type:null,    // will be filled during initiation
             communication_type:null,    // will be filled during initiation
+            ftp_servers: []
     },
     pagination: kbpublish_pagination,
     init_dashboard: function() {    
-
         $('#publish-custodian').select2({
             placeholder: 'Select an option',
             minimumInputLength: 2,
@@ -110,6 +122,8 @@ var kbpublish = {
         });
 
 
+        
+
         $('#publish-lastupdatedfrom').datepicker({ dateFormat: this.var.publish_date_format, 
             format: this.var.publish_date_format,
         });
@@ -161,6 +175,25 @@ var kbpublish = {
         kbpublish.get_publish();
     },
     init_publish_item: function() {    
+        $.ajax({
+            url: kbpublish.var.ftp_server_url,
+            type: 'GET',           
+            contentType: 'application/json',
+            success: function (response) {
+                var ftp_server_options = "";
+                for(let i in response.results){
+                    const row = response.results[i];
+                    kbpublish.var.ftp_servers.push({"id": row.id, "name": row.name});
+                    ftp_server_options+= "<option value='"+row.id+"'>"+row.name+"</option>";
+                }    
+                
+                $('#new-publish-ftp-server-format').html(ftp_server_options);
+            },
+            error: function (error) {
+                common_entity_modal.show_alert("ERROR");
+            },
+        });
+
         $( "#publish-btn-save" ).click(function() {
             console.log("Save Publish Table");
             kbpublish.save_publish('save');
@@ -206,7 +239,7 @@ var kbpublish = {
             }
         });      
         $( "#publish-new-cddp-btn" ).click(function() {
-            console.log("New CDDP");  
+            console.log("New CDDP");             
             $('#new-publish-cddp-spatial-format').removeAttr('disabled');
             $('#new-publish-cddp-frequency-type').removeAttr('disabled');
             $('#new-publish-cddp-spatial-mode').removeAttr('disabled');  
@@ -220,6 +253,25 @@ var kbpublish = {
             $('#PublishNewCDDPModal').modal('show');
         });            
 
+
+        $( "#publish-new-ftp-btn" ).click(function() {
+            console.log("New FTP");  
+
+            $('#new-publish-ftp-name').removeAttr('disabled');
+            $('#new-publish-ftp-server-format').removeAttr('disabled');                
+            $('#new-publish-ftp-spatial-format').removeAttr('disabled');
+            $('#new-publish-ftp-frequency-type').removeAttr('disabled');
+            $('#new-publish-ftp-spatial-mode').removeAttr('disabled');  
+            $('#new-publish-ftp-path').removeAttr('disabled'); 
+
+            $('#new-publish-ftp-spatial-format').val('');
+            $('#new-publish-ftp-frequency-type').val('');
+            $('#new-publish-ftp-spatial-mode').val('');
+            $('#new-publish-ftp-path').val(''); 
+           
+            $('#PublishNewFTPModal').modal('show');
+        });  
+
         $( "#create-publish-geoserver-btn" ).click(function() {
             console.log("Create new geoserver");             
             kbpublish.create_publish_geoserver();
@@ -229,6 +281,10 @@ var kbpublish = {
             console.log("Create new CDDP");
 
             kbpublish.create_publish_cddp();
+        });
+        $( "#create-publish-ftp-btn" ).click(function() {
+            console.log("Create new FTP");;
+            kbpublish.create_publish_ftp();
         });
         
         var has_edit_access = $('#has_edit_access').val();
@@ -299,6 +355,7 @@ var kbpublish = {
 
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
+        kbpublish.get_publish_ftp();
         kbpublish.retrieve_communication_types();
         this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
@@ -421,6 +478,24 @@ var kbpublish = {
             },
         });
     },
+
+    delete_publish_ftp: function(ftp_publish_id) {        
+        var publish_id = $('#publish_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        $.ajax({
+            url: kbpublish.var.publish_save_ftp_url+ftp_publish_id+"/",
+            type: 'DELETE',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response, status_code) {               
+                kbpublish.get_publish_ftp();                    
+            },
+            error: function (error) {
+                common_entity_modal.show_alert("ERROR");
+            },
+        });
+    },    
     set_assigned_to: function() { 
         var publishassignedto = $('#publish-assigned-to').val();
         var publish_id = $('#publish_id').val();
@@ -521,7 +596,6 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                     var html = '';
-                    console.log(response);
                 
                     $('#new-publish-new-geoserver-popup-success').html("Successfully created publish entry");
                     $('#new-publish-new-geoserver-popup-success').show();                
@@ -534,7 +608,6 @@ var kbpublish = {
 
             },
             error: function (response) {
-                console.log(response);
                 var jsonresponse = {};
                 if (response.hasOwnProperty('responseJSON')) { 
                     jsonresponse = response.responseJSON;
@@ -605,7 +678,6 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                     var html = '';
-                    console.log(response);
                 
                     $('#new-publish-new-geoserver-popup-success').html("Successfully created publish entry");
                     $('#new-publish-new-geoserver-popup-success').show();                
@@ -689,15 +761,13 @@ var kbpublish = {
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                    var html = '';
-                    console.log(response);                
+                    var html = '';           
                     $('#new-publish-new-cddp-popup-success').html("Successfully created publish entry");
                     $('#new-publish-new-cddp-popup-success').show();                
                     setTimeout("$('#PublishNewCDDPModal').modal('hide');",1000);
                     kbpublish.get_publish_cddp();                                      
             },
             error: function (response) {
-                console.log(response);
                 var jsonresponse = {};
                 if (response.hasOwnProperty('responseJSON')) { 
                     jsonresponse = response.responseJSON;
@@ -720,6 +790,85 @@ var kbpublish = {
         });
 
 
+    },    
+    create_publish_ftp: function() {
+        var publish_id = $('#publish_id').val();
+        var newpublishname = $('#new-publish-ftp-name').val();
+        var newpublishftpserver = $('#new-publish-ftp-server-format').val();
+        var newpublishspatialformat = $('#new-publish-ftp-spatial-format').val();
+        var newpublishfrequencytype = $('#new-publish-ftp-frequency-type').val();        
+        var newpublishftppath =  $('#new-publish-ftp-path').val();      
+
+        var post_data = {"format": newpublishspatialformat, "name" : newpublishname, "frequency": newpublishfrequencytype, "path": newpublishftppath, "publish_entry": publish_id, 'ftp_server': newpublishftpserver};
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+       
+        $('#new-publish-new-ftp-popup-error').html("");
+        $('#new-publish-new-ftp-popup-error').hide();
+        $('#new-publish-new-ftp-success').html("");
+        $('#new-publish-new-ftp-success').hide();
+        
+        if (newpublishspatialformat.length < 1) {
+            $('#new-publish-new-ftp-popup-error').html("Please choose a spatial format.");
+            $('#new-publish-new-ftp-popup-error').show();
+            return false;
+        }
+
+        if (newpublishfrequencytype.length < 1) {
+            $('#new-publish-new-ftp-popup-error').html("Please choose a frequency type.");
+            $('#new-publish-new-ftp-popup-error').show();
+            return false;
+        }
+
+        if (newpublishftppath.length < 3) {
+            $('#new-publish-new-ftp-popup-error').html("Please choose a path");
+            $('#new-publish-new-ftp-popup-error').show();
+            return false;
+        }
+      
+        $('#new-publish-ftp-name').attr('disabled','disabled');
+        $('#new-publish-ftp-server-format').attr('disabled','disabled');
+        $('#new-publish-ftp-spatial-format').attr('disabled','disabled');
+        $('#new-publish-ftp-frequency-type').attr('disabled','disabled');
+        $('#new-publish-ftp-spatial-mode').attr('disabled','disabled');
+        $('#new-publish-ftp-path').attr('disabled','disabled');
+        
+        $.ajax({
+            url: kbpublish.var.publish_save_ftp_url,        
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: 'application/json',
+            success: function (response) {
+                    var html = '';
+              
+                    $('#new-publish-new-ftp-popup-success').html("Successfully created FTP publish entry");
+                    $('#new-publish-new-ftp-popup-success').show();                
+                    setTimeout("$('#PublishNewFTPModal').modal('hide');",1000);
+                    kbpublish.get_publish_ftp();             
+                      
+            },
+            error: function (response) {
+                var jsonresponse = {};
+                if (response.hasOwnProperty('responseJSON')) { 
+                    jsonresponse = response.responseJSON;
+                }
+
+                if (jsonresponse.hasOwnProperty('publish_entry')) {
+                    $('#new-publish-new-ftp-popup-error').html(jsonresponse['publish_entry']);
+                    $('#new-publish-new-ftp-popup-error').show();        
+                } else {
+                    $('#new-publish-new-ftp-popup-error').html("Error create to publish.");
+                    $('#new-publish-new-ftp-popup-error').show();        
+                }
+
+                $('#new-publish-ftp-name').removeAttr('disabled');
+                $('#new-publish-ftp-server-format').removeAttr('disabled');
+                $('#new-publish-ftp-spatial-format').removeAttr('disabled');
+                $('#new-publish-ftp-frequency-type').removeAttr('disabled');
+                $('#new-publish-ftp-path').removeAttr('disabled');  
+
+            },
+        });
     },    
     create_publish: function(success_callback, error_callback, catalogue_entry_id, description_id){
         // get & validation check
@@ -855,6 +1004,7 @@ var kbpublish = {
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             html+= " <td class='text-end'>";
                             if (response.results[i].status == 1) {
+                                html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>&nbsp;";
                                 html+= " <button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>&nbsp;";
                                 html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>&nbsp;";                        
                                 html+= " <button class='btn btn-primary btn-sm publish-table-button' id='publish-external-loading-"+response.results[i].id+"' type='button' disabled><span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span class='visually-hidden'>Loading...</span></button>&nbsp;";
@@ -1054,7 +1204,6 @@ var kbpublish = {
                 var html = '';
                 
                 if (response != null) {
-                    console.log(response);
                     if (response.length > 0) {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
@@ -1079,11 +1228,9 @@ var kbpublish = {
                                 html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"' >Delete</button>";
                             }
                             html+= "</td>";
-                            html+= "<tr>";
-                            console.log(html);                                       
+                            html+= "<tr>";                                    
                             $('#publish-geoserver-tbody').html(html);
                             $( ".publish-geoserver-delete" ).click(function() {
-                                console.log($(this).attr('data-json'));
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
@@ -1298,7 +1445,6 @@ var kbpublish = {
                 var html = '';
                 
                 if (response != null) {
-                    console.log(response);
                     if (response.length > 0) {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
@@ -1324,11 +1470,10 @@ var kbpublish = {
                                 html+= "<button class='btn btn-danger btn-sm publish-cddp-delete' data-json='"+button_json+"' >Delete</button>";
                             }
                             html+= "</td>";
-                            html+= "<tr>";
-                            console.log(html);                                       
+                            html+= "<tr>";                                      
                             $('#publish-cddp-tbody').html(html);
                             $( ".publish-cddp-delete" ).click(function() {
-                                console.log($(this).attr('data-json'));
+
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_cddp(btndata.id);                                                        
@@ -1356,6 +1501,78 @@ var kbpublish = {
             },
         });
     },
+    get_publish_ftp: function() {
+        var publish_id = $('#publish_id').val();
+        $.ajax({
+            url: kbpublish.var.publish_data_url+publish_id+"/ftp/",
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function (response) {
+                var html = '';
+                
+                if (response != null) {
+                    if (response.length > 0) {
+                        var responsejson = response;
+                        for (let i = 0; i < responsejson.length; i++) {
+                            
+                            button_json = '{"id": "'+responsejson[i].id+'"}'
+                            button_json_data = '{"id": "'+responsejson[i].id+'", "name" : "'+responsejson[i].name.replaceAll('"','<-Quote->')+'", "format" : "'+responsejson[i].format+'", "frequency" : "'+responsejson[i].frequency+'" , "path" : "'+responsejson[i].path+'", "ftp_server_id":"'+responsejson[i].ftp_server_id+'" }'
+                            html+= "<tr>";
+                            html+= " <td>"+responsejson[i].id+"</td>";         
+                            html+= " <td>"+responsejson[i].name.replaceAll('"','&quot;')+"</td>";                 
+                            html+= " <td>"+responsejson[i].ftp_server_name+"</td>"; 
+                            html+= " <td>"+kbpublish.var.publish_ftp_format[responsejson[i].format]+"</td>";                                                
+                            html+= " <td>"+kbpublish.var.publish_ftp_frequency[responsejson[i].frequency]+"</td>";                                                    
+                            html+= " <td>"+responsejson[i].path+"</td>"; 
+                            html+= " <td>";
+                            if (responsejson[i].published_at == null) {
+                                html+= "Not Published";   
+                            } else {
+                                html+= responsejson[i].published_at;
+                            }
+                            html+= "</td>";
+                            html+= " <td class='text-end'>";
+                            if (kbpublish.var.has_edit_access == true) {
+                                html+= "<button class='btn btn-primary btn-sm publish-ftp-update' data-json='"+button_json+"' >Update</button> ";
+                                html+= "<button class='btn btn-danger btn-sm publish-ftp-delete' data-json='"+button_json+"' >Delete</button>";
+                                html+= "<textarea style='display:none' id='publish-ftp-data-"+responsejson[i].id+"'>"+button_json_data+"</textarea>"
+                            }
+                            html+= "</td>";
+                            html+= "<tr>";
+
+                            $('#publish-ftp-tbody').html(html);
+                            $( ".publish-ftp-delete" ).click(function() {
+                                var btndata_json = $(this).attr('data-json');
+                                var btndata = JSON.parse(btndata_json);
+                                kbpublish.delete_publish_ftp(btndata.id);                                                        
+                            });
+                            $( ".publish-ftp-update" ).click(function() {
+                                var btndata_json = $(this).attr('data-json');
+                                var btndata = JSON.parse(btndata_json);
+                                kbpublish.show_update_ftp_modal(btndata);                                
+                                //kbpublish.show_update_ftp_modal(responsejson[i]);
+                            });
+                        }
+                    } else {
+                        $('#publish-ftp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+
+                    }
+                } else {
+                      $('#publish-ftp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                }
+
+       
+            },
+            error: function (error) {
+                $('#save-publish-popup-error').html("Error Loading publish data");
+                $('#save-publish-popup-error').show();
+                $('#save-publish-tbody').html('');
+
+                console.log('Error Loading publish data');
+            },
+        });
+    },
     show_update_cddp_modal: function(prev){
         common_entity_modal.init("Update Cddp Notification", "submit");
         let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name);
@@ -1369,6 +1586,8 @@ var kbpublish = {
                                             success_callback=this.get_publish_cddp);
         common_entity_modal.show();
     },
+
+
     write_cddp: function(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, cddp_id){
         // get & validation check
         const name = utils.validate_empty_input('name', $('#'+name_id).val());
@@ -1402,6 +1621,68 @@ var kbpublish = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             data: JSON.stringify(cddp_data),
+            success: success_callback,
+            error: error_callback
+        });
+    },
+
+    show_update_ftp_modal: function(btn_data){       
+        var btn_data_ta = $('#publish-ftp-data-'+btn_data.id).val();
+        var prev = JSON.parse(btn_data_ta);
+        common_entity_modal.init("Update FTP ", "submit");
+        ftp_server_map = {}
+        for(let i in kbpublish.var.ftp_servers){
+            const row = kbpublish.var.ftp_servers[i];
+            ftp_server_map[row.id] = row.name;
+        }
+        // 
+
+
+        let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name.replaceAll('<-Quote->','"'));
+        let ftp_server_id = common_entity_modal.add_field(label="FTP Server", type="select", value=prev.ftp_server_id, option_map=ftp_server_map);
+        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.format, option_map=kbpublish.var.publish_cddp_format);
+        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_cddp_frequency);
+        let path_id = common_entity_modal.add_field(label="Path", type="text", value=prev.path);
+
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                            this.write_ftp(success_callback, error_callback, name_id,ftp_server_id, format_id, frequency_id, path_id, prev.id),
+                                            success_callback=this.get_publish_ftp);
+        common_entity_modal.show();
+    },
+
+    write_ftp: function(success_callback, error_callback, name_id, ftp_server_id, format_id, frequency_id, path_id, ftp_id){
+        // get & validation check
+        const name = utils.validate_empty_input('name', $('#'+name_id).val());
+        const format = utils.validate_empty_input('format', $('#'+format_id).val());
+        const ftp_server = utils.validate_empty_input('ftp_server_id', $('#'+ftp_server_id).val());
+        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
+        const path = utils.validate_empty_input('path', $('#'+path_id).val());
+        
+        // make data body
+        var ftp_data = {
+            name:name,
+            format:format,
+            frequency:frequency,
+            ftp_server: ftp_server,
+            path:path,
+            publish_entry:$('#publish-entry-id')
+        };
+        var url = this.var.publish_save_ftp_url;
+        var method = 'POST';
+        if(ftp_id){
+            delete ftp_data['publish_entry'];
+            url += ftp_id+'/';
+            method = 'PUT';
+        }
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(ftp_data),
             success: success_callback,
             error: error_callback
         });
