@@ -12,6 +12,8 @@ from govapp.apps.publisher import views
 router = routers.DefaultRouter()
 router.register("entries", views.PublishEntryViewSet)
 router.register("channels/cddp", views.CDDPPublishChannelViewSet)
+router.register("channels/ftp", views.FTPPublishChannelViewSet)
+router.register("channels/ftp-server", views.FTPServerViewSet)
 router.register("channels/geoserver", views.GeoServerPublishChannelViewSet)
 router.register("notifications/emails", views.EmailNotificationViewSet)
 router.register("workspaces", views.WorkspaceViewSet)

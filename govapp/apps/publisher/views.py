@@ -237,6 +237,63 @@ class PublishEntryViewSet(
         # Return Response
         return response.Response(cddp_list, status=status.HTTP_200_OK)
 
+    @decorators.action(detail=True, methods=["GET"], url_path=r"ftp")
+    def ftp_list(self, request: request.Request, pk: str) -> response.Response:
+        """Produce a list of FTP publish configurations
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Publish Entry.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Publish Entry
+        # Help `mypy` by casting the resulting object to a Publish Entry
+        publish_entry = self.get_object()
+        publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
+        ftp_publish_channel = models.publish_channels.FTPPublishChannel.objects.filter(publish_entry=publish_entry)
+        ftp_list = []
+        for cpc in ftp_publish_channel:
+            published_at = None
+            
+            if cpc.published_at:
+                 published_at = cpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')  
+            ftp_server_id = ""
+            ftp_server_name = ""
+                                              
+            if cpc.ftp_server:
+                ftp_server_id = cpc.ftp_server.id
+                ftp_server_name = cpc.ftp_server.name
+                             
+            ftp_list.append({"id": cpc.id, "name":cpc.name, "ftp_server_id": ftp_server_id, "ftp_server_name" : ftp_server_name, "format": cpc.format, "path": cpc.path, "frequency": cpc.frequency, "published_at": published_at})
+
+        # Return Response
+        return response.Response(ftp_list, status=status.HTTP_200_OK)
+
+    # @decorators.action(detail=True, methods=["GET"], url_path=r"ftp-server")
+    # def ftp_server_list(self, request: request.Request, pk: str) -> response.Response:
+    #     """Produce a list of FTP Servers
+
+    #     Args:
+    #         request (request.Request): API request.
+    #         pk (str): Primary key of the Publish Entry.
+
+    #     Returns:
+    #         response.Response: Empty response confirming success.
+    #     """
+    #     # Retrieve Publish Entry
+    #     # Help `mypy` by casting the resulting object to a Publish Entry
+    #     publish_entry = self.get_object()
+    #     publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
+    #     ftp_servers = models.publish_channels.FTPServer.objects.filter(enabled=True)
+    #     ftp_servers_list = []
+    #     for cpc in ftp_servers:              
+    #         ftp_servers_list.append({"id": cpc.id, "name":cpc.name})
+
+    #     # Return Response
+    #     return response.Response(ftp_servers_list, status=status.HTTP_200_OK)
+
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def lock(self, request: request.Request, pk: str) -> response.Response:
@@ -574,3 +631,46 @@ class WorkspaceViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.workspaces.WorkspaceSerializer
     filterset_class = filters.WorkspaceFilter
     search_fields = ["name"]
+
+
+
+
+@drf_utils.extend_schema(tags=["Publisher - FTP Publish Channels"])
+class FTPPublishChannelViewSet(
+    mixins.ChoicesMixin,
+    mixins.MultipleSerializersMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """FTP Publish Channel View Set."""
+    queryset = models.publish_channels.FTPPublishChannel.objects.all()
+    serializer_class = serializers.publish_channels.FTPPublishChannelSerializer
+    serializer_classes = {"create": serializers.publish_channels.FTPPublishChannelCreateSerializer}
+    filterset_class = filters.FTPPublishChannelFilter
+    search_fields = ["publish_entry__catalogue_entry__name",]# "publish_entry__description"]
+    permission_classes = [permissions.HasPublishEntryPermissions]
+
+
+@drf_utils.extend_schema(tags=["Publisher - FTP Publish Channels"])
+class FTPServerViewSet(
+    mixins.ChoicesMixin,
+    mixins.MultipleSerializersMixin,
+    viewsets.mixins.CreateModelMixin,
+    viewsets.mixins.DestroyModelMixin,
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """FTP Publish Channel View Set."""
+    queryset = models.publish_channels.FTPServer.objects.all()
+    serializer_class = serializers.publish_channels.FTPServerSerializer
+    #serializer_classes = {"create": serializers.publish_channels.FTPPublishChannelCreateSerializer}
+    serializer_classes = {}
+    filterset_class = filters.FTPServerFilter
+    search_fields = ["id","name",]# "publish_entry__description"]
+    permission_classes = [permissions.HasPublishEntryPermissions]    

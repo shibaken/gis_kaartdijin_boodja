@@ -45,6 +45,12 @@ class CDDPPublishChannelFormat(models.IntegerChoices):
     GEODATABASE = 3
     GEOJSON = 4
 
+class FTPPublishChannelFormat(models.IntegerChoices):
+    """Enumeration for a Publish Channel Format."""
+    GEOPACKAGE = 1
+    SHAPEFILE = 2
+    GEODATABASE = 3
+    GEOJSON = 4
 
 @reversion.register()
 class CDDPPublishChannel(mixins.RevisionedMixin):
@@ -428,3 +434,45 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         
         # Delete local temporary copy of file if we can
         #shutil.rmtree(filepath.parent, ignore_errors=True)
+
+
+@reversion.register()
+class FTPServer(mixins.RevisionedMixin):
+    """Model for a GeoServer Publish Channel."""
+    name = models.CharField(null=True, blank=True, max_length=1024)
+    host = models.CharField(null=True, blank=True, max_length=1024)
+    username = models.CharField(null=True, blank=True, max_length=500)
+    password = models.CharField(null=True, blank=True, max_length=500)
+    enabled = models.BooleanField(default=True)
+    created = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+@reversion.register()
+class FTPPublishChannel(mixins.RevisionedMixin):
+    """Model for a GeoServer Publish Channel."""
+    name = models.CharField(null=True, blank=True, max_length=1024)
+    ftp_server = models.ForeignKey(
+        FTPServer,
+        related_name="publish_channels_ftp_server",
+        on_delete=models.CASCADE,
+        null=True, 
+        blank=True,
+    )  
+    publish_entry = models.ForeignKey(
+        publish_entries.PublishEntry,
+        related_name="ftp_channel",
+        on_delete=models.CASCADE,
+        null=True, 
+        blank=True,        
+    )
+    format = models.IntegerField(choices=FTPPublishChannelFormat.choices) 
+    frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
+    path = models.CharField(null=True, blank=True, max_length=2048)
+    published_at = models.DateTimeField(blank=True, null=True)
+    created = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.name

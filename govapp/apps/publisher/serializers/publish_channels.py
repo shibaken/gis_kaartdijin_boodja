@@ -112,3 +112,58 @@ def _has_null(*args):
         if arg == None:
             return True
     return False
+
+
+
+
+class FTPPublishChannelSerializer(serializers.ModelSerializer):
+    """FTP Publish Channel Model Serializer."""
+    #workspace_name = serializers.ReadOnlyField(source='workspace.name')
+    
+    class Meta:
+        """FTP Publish Channel Model Serializer Metadata."""
+        model = models.publish_channels.FTPPublishChannel
+        fields = "__all__"
+        read_only_fields = (
+            "id",
+            # "name",
+            # "ftp_server",
+            # "format",
+            # "frequency",
+             "published_at",
+            # "publish_entry",
+            # "path",
+            # "description"
+        )
+
+
+class FTPPublishChannelCreateSerializer(serializers.ModelSerializer):
+    """FTP Publish Channel Model Create Serializer."""
+    class Meta:
+        """FTP Publish Channel Model Create Serializer Metadata."""
+        model = FTPPublishChannelSerializer.Meta.model
+        fields = FTPPublishChannelSerializer.Meta.fields
+        # No read only fields on this serializer
+        # This allows the `create` action to specify a Publish Entry
+        read_only_fields = (
+            "id",
+            "published_at",
+        )
+
+
+
+
+class FTPServerSerializer(serializers.ModelSerializer):
+    """FTP Publish Channel Model Serializer."""
+
+    class Meta:
+        """CDDP Publish Channel Model Serializer Metadata."""
+        model = models.publish_channels.FTPServer
+        fields = (
+            "id",
+            "name",
+        )
+        read_only_fields = (
+            "id",        
+            "created"
+        )

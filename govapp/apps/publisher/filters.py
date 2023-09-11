@@ -15,6 +15,19 @@ class CDDPPublishChannelFilter(filters.FilterSet):
         model = models.publish_channels.CDDPPublishChannel
         fields = {"id": ["in"]}
 
+class FTPPublishChannelFilter(filters.FilterSet):
+    """FTP Publish Channel Filter."""
+    class Meta:
+        """FTP Publish Channel Filter Metadata."""
+        model = models.publish_channels.FTPPublishChannel
+        fields = {"id": ["in"]}
+
+class FTPServerFilter(filters.FilterSet):
+    """FTP Server Filter."""
+    class Meta:
+        """FTP Server Filter Metadata."""
+        model = models.publish_channels.FTPServer
+        fields = {"id": ["in"]}
 
 class GeoServerPublishChannelFilter(filters.FilterSet):
     """GeoServer Publish Channel Filter."""
