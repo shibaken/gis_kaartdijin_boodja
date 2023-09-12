@@ -106,8 +106,9 @@ var common_entity_modal = {
         },
         select: (label, value, disabled, option_map) => {
             let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="text", element="<select>");
+            field.append('<option value="" selected disabled>Select</option>');
             for(let key in option_map)
-                field.append('<option value="'+key+'">'+option_map[key]+'</option>');
+                field.append('<option value="'+key+'">'+option_map[key]+'</option>');       
             field.val(value);
             return field;
 

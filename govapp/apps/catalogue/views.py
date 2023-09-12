@@ -856,7 +856,109 @@ class LayerSubscriptionViewSet(
         # Return Response
         return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
         
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryCreateSubscriptionQuerySerializer,
+        responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"], url_path="query")
+    def query(self, request: request.Request, pk: str,) -> response.Response:
+        """Add custom query to target service.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
+         # Validation check
+        data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionQuerySerializer, request.data)
+        
+        # Create Catalogue Entry
+        models.catalogue_entries.CatalogueEntry.objects.create(
+            name=data['name'],
+            description=data['description'] if 'description' in data else None,
+            sql_query=data['sql_query'],
+            type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION,
+            layer_subscription=subscription
+        )
+        
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer,
+        responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["PUT"], url_path=r"query/(?P<catalogue_id>\d+)")
+    def update_query(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
+        """Update custom query to target service.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        
+         # Validation check
+        data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer, request.data)
+        
+        # Update Catalogue Entry
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id)
+        catalogue_entry.name = data['name'] if 'name' in data else catalogue_entry.name
+        catalogue_entry.description = data['description'] if 'description' in data else catalogue_entry.description
+        catalogue_entry.sql_query = data['sql_query'] if 'sql_query' in data else catalogue_entry.sql_query
+        catalogue_entry.save()
+        
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryGetSubscriptionQuerySerializer,
+        responses={status.HTTP_200_OK: None})
+    # @decorators.action(detail=True, methods=["GET"], url_path="query")
+    @query.mapping.get
+    def get_query(self, request: request.Request, pk: str) -> response.Response:
+        """get custom query by target service.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: A dictionary of mapping data.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        
+        # Retrieve Catalogue Entry with Layer Submission Id
+        sql_queries = subscription.catalogue_entries.filter(sql_query__isnull=False).values(
+            'id', 'sql_query', 'layer_subscription', 'name', 'description')
+        # sql_queries = list(models.catalogue_entries.CatalogueEntry.objects
+        #                      .filter(layer_subscription=subscription)
+        #                      .values('id', 'sql_query', 'layer_subscription', 'name', 'description'))
+        # if not sql_queries:
+        #     sql_queries = {}
+        # else:
+        #     sql_queries = {sql_query['sql_query']:{
+        #                     'name':sql_query['name'],
+        #                     'description':sql_query['description'],
+        #                     'catalogue_entry_id':sql_query['id']}
+        #                 for sql_query in sql_queries}
+            
+        # Return Response
+        return response.Response({'results':sql_queries}, content_type='application/json', status=status.HTTP_200_OK)
     
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(

@@ -360,7 +360,7 @@
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
                                                 <div class="col-6">
-                                                      Tables
+                                                      TABLE LAYERS
                                                 </div>
                                                 <div class="col-6 text-end">
                                                       <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
@@ -391,219 +391,67 @@
                               </div>
                               <BR>
                         {% endif %}
-                        {% comment %} <div class="card" >
-                              <div class="card-header fw-bold h4" style="padding:30px;">
-                                    <div class="row">
-                                    <div class="col-6">
-                                          Geoserver Publish
-                                    </div>
-                                    <div class="col-6 text-end">
-                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box3-card-body" onclick=""></i>
-                                    </div>
-                                    </div>         
-                              </div>
-                              <div class="card-body collapse show" id="box3-card-body">
-            
-                                    <div class='col-12 p-1'>
-                                          <div class='row'>
-                                                <div class='col-6'> 
-                                                      &nbsp;
-                                                </div>
-                                                <div class='col-6 text-end'> 
-                                                      {% if has_edit_access is True %}
-                                                      <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-geoserver-btn'>New Geoserver</button>   
-                                                      {% endif %}
-                                                </div>
-                                          </div>
-                                    </div>
-                                    <div class='col-12'>
-                                          
-                                          <div id='publish-table'>
-                                                <table id="example" class="table" style="width:100%">
-                                                      <thead class='table-dark'>
-                                                      <tr>
-                                                            <th>ID</th>
-                                                            <th>Spatial Format</th>
-                                                            <th>Frequency Type</th>
-                                                            <th>Workspace</th>
-                                                            <th>Publish Date/time</th>                                      
-                                                            <th>Action</th>
-                                                      </tr>
-                                                      </thead>
-                                                      <tbody id='publish-geoserver-tbody'>
-                                                      <tr>
-                                                            <td colspan="5" class='text-center'>No Results</td>
-                                                      </tr>
-                                                      </tbody>
-                                                </table>                                  
-                                          </div>      
-                                    </div>
-
-                              </div>
-
-                        </div>
-                        <BR>
-                              <div class="card" >
-                                    <div class="card-header fw-bold h4" style="padding:30px;">
-                                          <div class="row">
-                                          <div class="col-6">
-                                                CDDP Publish
-                                          </div>
-                                          <div class="col-6 text-end">
-                                                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
-                                          </div>
-                                          </div>         
-                                    </div>
-                                    <div class="card-body collapse show" id="box4-card-body">
-            
-                                          <div class='col-12 p-1'>
-                                                <div class='row'>
-                                                      <div class='col-6'> 
-                                                            &nbsp;
-                                                      </div>
-                                                      <div class='col-6 text-end'> 
-                                                            {% if has_edit_access is True %}
-                                                                  <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-cddp-btn'>New CDDP</button>   
-                                                            {% endif %}
-                                                      </div>
-                                                </div>
-                                          </div>
-                                          <div class='col-12'>
-                                                
-                                                <div id='publish-table'>
-                                                      <table id="example" class="table" style="width:100%">
-                                                            <thead class='table-dark'>
-                                                            <tr>
-                                                                  <th>ID</th>                                                             
-                                                                  <th>Spatial Format</th>
-                                                                  <th>Spatial Mode</th>
-                                                                  <th>Frequency Type</th>
-                                                                  <th>Path</th>
-                                                                  <th>Publish Date/time</th>                                      
-                                                                  <th>Action</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody id='publish-cddp-tbody'>
-                                                            <tr>
-                                                                  <td colspan="6" class='text-center'>No Results</td>
-                                                            </tr>
-                                                            </tbody>
-                                                      </table>                                  
-                                                </div>      
-                                          </div>
-                  
-                                    </div>
-                  
-                              </div>
-
-
-
-                        <BR>
-                        <div class="card" >
-                              <div class="card-header fw-bold h4" style="padding:30px;">
-                                    <div class="row">
-                                    <div class="col-6">
-                                          Notification
-                                    </div>
-                                    <div class="col-6 text-end">
-                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box5-card-body" onclick=""></i>
-                                    </div>
-                                    </div>         
-                              </div>
-                              <div class="card-body collapse show" id="box5-card-body">
-                                    <div class="col-12 text-end">
-                                    {% if has_edit_access is True %}
-                                          <button class="btn btn-primary left" id='publish-btn-add-notification' aria-current="page" >Add Notification</button>
-                                    {% endif %}
-                                    </div>
-                                    <div class='col-12 pt-2 pb-2 '>
-                                          <div class='row'>
-                                                <div class='col-6'>
-                                                      <div class="row">
-                                                            <div class="col-sm-12 col-md-6">
-                                                                  <div class="dataTables_length" id="bookings-table_length">
-                                                                        <label>Show
-                                                                              <select name="bookings-table_length"
-                                                                                    aria-controls="bookings-table"
-                                                                                    class="form-select form-select-sm"
-                                                                                    id="publish-notification-limit">
-                                                                                    <option value="5">5</option>
-                                                                                    <option value="10" >10</option>
-                                                                                    <option value="25" selected>25</option>
-                                                                                    <option value="50">50</option>
-                                                                                    <option value="100">100</option>
-                                                                              </select> entries
-                                                                        </label>
-                                                                  </div>
-                                                            </div>
-                                                      </div>
-                                                </div>
-                                                <div class='col-6 text-end'>
-                                                      <div class="row">
-                                                            <div class="col-sm-12 col-md-12 text-end">
-                                                                  <div class="dataTables_length" id="bookings-table_length">
-                                                                        <label>Order By
-                                                                              <select name="bookings-table_length"
-                                                                                    aria-controls="bookings-table"
-                                                                                    class="form-select form-select-sm"
-                                                                                    id="publish-notification-order-by">
-                                                                                    <option value="id">ID</option>
-                                                                                    <option value="name">Name</option>
-                                                                                    <option value="type">Type</option>
-                                                                                    <option value="email">Email</option>
-                                                                                    <option value="active">Active</option>
-                                                                              </select>
-                                                                        </label>
-                                                                  </div>
-                                                            </div>
-                                                      </div>
-                                                </div>
-                                          </div>
-                                    </div>
-
-                                    <div id='publish-table'>
-                                          <table id="example" class="table" style="width:100%">
-                                                <thead class='table-dark'>
-                                                      <tr>
-                                                            <th class="col-1">Id</th>
-                                                            <th class="col-2">Name</th>
-                                                            <th class="col-2">Type</th>
-                                                            <th class="col-4">Email</th>
-                                                            <th class="col-1">Active</th>
-                                                            <th class='col-2'>Action</th>
-                                                      </tr>
-                                                </thead>
-                                                <tbody id='publish-notification-tbody'>
-                                                      <tr>
-                                                            <td colspan="7" class='text-center'>No Results</td>
-                                                      </tr>
-                                                </tbody>
-                                          </table>
-                                          <nav aria-label="Page navigation example" id='publish-notification-pagination'>
-                                                <ul class="pagination justify-content-end" id='notification-paging-navi'>
-                                                      <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                                                      <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                                      <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                                                </ul>
-                                          </nav>
-                                    </div>
-                              </div>
-                        </div> {% endcomment %}
-                        <div class='col-12 pt-2'>
+                        {% if subscription_obj.type is 3 %}
+                              <div class='col-12 pt-2'>
                                     <div class='row'>
                                           <div class='col-6'>
                                                 &nbsp;
                                           </div>
                                           <div class='col-6 text-end'>
                                                 {% if has_edit_access is True %}
-                                                      <button class="btn btn-primary" id='subscription-btn-save' aria-current="page" >Save</button>  
-                                                      <button class="btn btn-primary" id='subscription-btn-save-exit'  aria-current="page" >Save and exit</button>  
+                                                      <button class="btn btn-primary" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
                                                 {% endif %}
                                           </div>
-
                                     </div>
+                              </div>
+                              <BR>
+                              <div class="card" >
+                                    <div class="card-header fw-bold h4" style="padding:30px;">
+                                          <div class="row">
+                                                <div class="col-6">
+                                                      TABLE LAYERS (CUSTOM QUERY)
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
+                                                </div>
+                                          </div>         
+                                    </div>
+                                    <div class="card-body collapse show" id="box4-card-body">
+                                          <div class='row'>
+                                                <div class='col-12'>
+                                                      <div id='subscription-dbtable-custom-table'>
+                                                            <table id="example" class="table" style="width:100%">
+                                                                  <thead class='table-dark' id='subscription-custom-query-table-thead'>
+                                                                  </thead>
+                                                                  <tbody id='subscription-custom-query-table-tbody'>
+                                                                        <tr> 
+                                                                              <td colspan="7" class='text-center'>
+                                                                                    <div class="progress">
+                                                                                          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                                                                                    </div>           
+                                                                              </td> 
+                                                                        </tr>
+                                                                  </tbody>
+                                                            </table>
+                                                      </div>
+                                                </div>                        
+                                          </div>
+                                    </div>
+                              </div>
+                              <BR>
+                        {% endif %}
+                        <div class='col-12 pt-2'>
+                              <div class='row'>
+                                    <div class='col-6'>
+                                          &nbsp;
+                                    </div>
+                                    <div class='col-6 text-end'>
+                                          {% if has_edit_access is True %}
+                                                <button class="btn btn-primary" id='subscription-btn-save' aria-current="page" >Save</button>  
+                                                <button class="btn btn-primary" id='subscription-btn-save-exit'  aria-current="page" >Save and exit</button>  
+                                          {% endif %}
+                                    </div>
+                              </div>
                         </div>
                   </div>
             </div>

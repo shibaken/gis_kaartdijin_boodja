@@ -92,3 +92,34 @@ class CatalogueEntryGetSubscriptionMappingSerializer(serializers.ModelSerializer
         model = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.model
         fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields
         read_only_fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields
+        
+
+class CatalogueEntryCreateSubscriptionQuerySerializer(serializers.ModelSerializer):
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = models.catalogue_entries.CatalogueEntry
+        fields = ("name", "description", "sql_query")
+    
+    def validate(self, data):
+        if 'description' not in data or not data['description']:
+            raise serializers.ValidationError("'description' field is required.")
+        if 'sql_query' not in data or not data['sql_query']:
+            raise serializers.ValidationError("'sql_query' field is required.")
+        return data
+
+class CatalogueEntryUpdateSubscriptionQuerySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    sql_query = serializers.CharField(required=False)
+    
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.model
+        fields = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.fields
+        
+class CatalogueEntryGetSubscriptionQuerySerializer(serializers.ModelSerializer):
+    class Meta:
+        """Layer Subscription Model Serializer Metadata."""
+        model = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.model
+        fields = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.fields
+        read_only_fields = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.fields
