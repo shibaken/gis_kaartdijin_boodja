@@ -6,6 +6,7 @@ import logging
 import pathlib
 import shutil
 import os
+import ftplib
 
 # Third-Party
 from django import conf
@@ -13,6 +14,8 @@ from django.db import models
 from django.core import exceptions
 from django.utils import timezone
 import reversion
+from django.template import Template, Context
+from datetime import datetime
 
 # Local
 from govapp import gis
@@ -476,3 +479,53 @@ class FTPPublishChannel(mixins.RevisionedMixin):
 
     def __str__(self) -> str:
         return self.name
+    
+
+
+    def publish_ftp(self) -> None:
+        """Publishes the Catalogue Entry to FTP. """
+        # Log
+        log.info(f"Publishing '{self}' to FTP - Preparing")
+        
+        # Retrieve the Layer File from Storage
+        # filepath = sharepoint.sharepoint_input().get_from_url(
+        #     url=self.publish_entry.catalogue_entry.active_layer.file,
+        # )
+        filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file)        
+
+        # Select Conversion Function
+        match self.format:
+            case CDDPPublishChannelFormat.GEOPACKAGE:
+                function = gis.conversions.to_geopackage
+            case CDDPPublishChannelFormat.SHAPEFILE:
+                function = gis.conversions.to_shapefile
+            case CDDPPublishChannelFormat.GEODATABASE:
+                function = gis.conversions.to_geodatabase
+            case CDDPPublishChannelFormat.GEOJSON:
+                function = gis.conversions.to_geojson
+
+        # Convert Layer to Chosen Format
+        # converted = function(
+        #     filepath=filepath,
+        #     layer=self.publish_entry.catalogue_entry.metadata.name,
+        # )
+
+        t = Template(self.name)
+        c = Context({"date_time": datetime.now()})
+        generated_template = t.render(c)     
+        log.info(f"Publishing '{self}' to FTP - Converting")
+        publish_directory = function(
+            filepath=filepath,
+            layer=generated_template,
+            catalogue_name=self.publish_entry.catalogue_entry.name,
+            export_method='ftp'
+        )
+        
+        log.info(f"Publishing '{self}' to FTP - Uploading to FTP "+(self.path+'/'+generated_template)+'.zip' )
+        session = ftplib.FTP(self.ftp_server.host,self.ftp_server.username,self.ftp_server.password)
+        file = open(publish_directory['compressed_filepath'],'rb')     
+        session.storbinary('STOR '+str(self.path+'/'+generated_template)+'.zip', file)
+        file.close()  
+        session.quit()
+
+        
