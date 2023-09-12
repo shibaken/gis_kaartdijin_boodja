@@ -332,7 +332,12 @@ var kblayersubscription = {
         if($('#subscription_enabled').val() == 'True'){
             $('#subscription-enabled').prop('checked', true);
         }
+        $('#subscription-dbtable-table-custom-add').click(function(){
+            kblayersubscription.show_custom_query_modal();
+        });
+
         kblayersubscription.retrieve_communication_types();
+        kblayersubscription.get_custom_query_info();
     },
     change_subscription_status: function(status){
         var status_url = "lock";
@@ -653,6 +658,7 @@ var kblayersubscription = {
                     table.message_tbody(tbody, "No results found");
                     return;
                 }
+                kblayersubscription.var.mapped_names = response.results;
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
                     buttons={ADD:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
@@ -665,11 +671,9 @@ var kblayersubscription = {
                 }
                 let rows = []
                 for(let i in kblayersubscription.var.mapping_names){
-                    let mapping = {'name':kblayersubscription.var.mapping_names[i]};
-                    mapping.catalogue = "";
-                    if(mapping.name in response.results){
-                        mapping.catalogue = response.results[mapping.name].name;
-                    }
+                    let mapping = {};
+                    mapping.name = kblayersubscription.var.mapping_names[i];
+                    mapping.catalogue = mapping.name in response.results ? response.results[mapping.name].name : "";
                     rows.push(mapping);
                 }
                 table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
@@ -774,6 +778,114 @@ var kblayersubscription = {
                 common_entity_modal.show_alert("An error occured while getting retrieve communication types.");
                 // console.error(error);
             },
+        });
+    },
+    get_custom_query_info: function(){
+        let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/query/";
+        let method = 'GET';
+
+        let thead = $("#subscription-custom-query-table-thead");
+        let tbody = $("#subscription-custom-query-table-tbody");
+        // let title = "Native Layer";
+
+        // call GET API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response) => {
+                if(!response || !response.results){
+                    table.message_tbody(tbody, "No results found");
+                    return;
+                }
+                let buttons = null;
+                if($('#has_edit_access').val() == "True"){
+                    buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
+                            DELETE:(query)=>query};
+                }
+                table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
+                let rows = []
+                for(let i in response.results){
+                    rows.push(response.results[i]);
+                }
+                table.set_tbody(tbody, rows, [{name:"text"}, {description:"text"}], buttons);
+                if(rows.length == 0){
+                    table.message_tbody(tbody, "No results found");
+                }
+            },
+            error: (error)=> {
+                table.message_tbody(tbody, "No results found");
+                common_entity_modal.show_alert("An error occured while getting mappings.");
+                // console.error(error);
+            },
+        });
+    },
+    show_custom_query_modal: function(prev){
+        common_entity_modal.init("Add Custom Table Layer", type="submit");
+        const name_id = common_entity_modal.add_field("Catalogue Entry Name", "text", prev ? prev.name : null);
+        const description_id = common_entity_modal.add_field("Description", "text", prev ? prev.description : null);
+        const sql_query_id = common_entity_modal.add_field("SQL Query", "text_area", prev ? prev.sql_query : null);
+        
+        // const div = common_entity_modal.maker.div();
+        // div.attr('class', div.attr('class') + ' col-12');
+        // let row_div = common_entity_modal.maker.div();
+        // row_div.attr('class', row_div.attr('class') + ' row');
+
+        // const unit_label = $('<label>').text("");
+        // const unit_options = {'evry':'Every', 'daily':'Daily', 'Weekly':'Weekly'};
+        // const unit = common_entity_modal.maker.select("custom_query_unit", prev ? prev.unit : null, false, unit_options);
+        // const unit_div = common_entity_modal.maker.div();
+        // unit_div.attr('class', 'col-2');
+        // unit_div.append(unit_label);
+        // unit_div.append(unit);
+
+        // const frequency_label = $('<label>').text("");
+        // const frequency = common_entity_modal.maker.text("custom_query_frequency", prev ? prev.frequency : null);
+        // const frequency_div = common_entity_modal.maker.div();
+        // frequency_div.attr('class', 'col-2');
+        // frequency_div.append(frequency_label);
+        // frequency_div.append(frequency);
+
+        // row_div.append(unit_div);
+        // row_div.append(frequency_div);
+        // div.append(row_div);
+
+        // common_entity_modal.add_div("Update Frequency", div, 
+        //                             [{label:frequency_label, field:frequency}, 
+        //                             {label:unit_label, field:unit}]);
+
+        // native_layer_options = {}
+        // for(let key in kblayersubscription.var.mapped_names){
+        //     native_layer_options[key] = key;
+        // }
+        // common_entity_modal.add_field("Native Layer Name", "select", prev ? prev.native_layer_name : null, native_layer_options, false);
+        common_entity_modal.add_callbacks(
+            submit_callback=(success_callback, error_callback)=> 
+                kblayersubscription.write_custom_query(success_callback, error_callback, name_id, description_id, sql_query_id, prev),
+            success_callback=kblayersubscription.get_custom_query_info);
+        common_entity_modal.show();
+    },
+    write_custom_query: function(success_callback, error_callback, name_id, description_id, sql_query_id, prev){
+        var custom_query_data = {
+            name : utils.validate_empty_input(common_entity_modal.get_label(name_id), $('#'+name_id).val()),
+            description : utils.validate_empty_input(common_entity_modal.get_label(description_id), $('#'+description_id).val()),
+            sql_query : utils.validate_empty_input(common_entity_modal.get_label(sql_query_id), $('#'+sql_query_id).val()),
+        };
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/query/" + (prev ? prev.id+"/" : "");
+        var method = prev ? 'PUT' : 'POST';
+
+        // call POST API
+        $.ajax({
+            url: url,
+            method: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify(custom_query_data),
+            success: success_callback,
+            error: error_callback
         });
     },
 }
