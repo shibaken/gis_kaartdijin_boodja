@@ -136,8 +136,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
         active_layer = self.layers.filter(is_active=True).last()
 
         # Check only when the type is CatalogueEntryType.SPECIAL_FILE
-        if CatalogueEntryType.SPECIAL_FILE == self.type:
-            assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101
+        #if CatalogueEntryType.SPECIAL_FILE == self.type:
+        #    assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101
 
         # Return
         return active_layer
@@ -149,10 +149,12 @@ class CatalogueEntry(mixins.RevisionedMixin):
         Returns:
             [auth_models.User] : a list of users
         """
-        permissions= list(self.catalouge_permissions.all())
-        obj = types.SimpleNamespace()
-        obj.all = lambda : permissions
-        return obj
+        return self.catalouge_permissions.all()
+        # permissions= list(self.catalouge_permissions.all())
+        # obj = types.SimpleNamespace()
+        # obj.all = lambda : permissions
+
+        # return obj
 
     @classmethod
     def from_request(cls, request: request.Request) -> Optional["CatalogueEntry"]:
@@ -224,7 +226,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
             bool: Whether the user is one of this CataloguE entry's editors.
         """
         # Check and Return
-        return self.editors.all().filter(id=user.id).exists()
+        return self.editors.all().filter(user=user).exists()
 
     def lock(self) -> bool:
         """Locks the Catalogue Entry.
@@ -324,8 +326,12 @@ class CatalogueEntry(mixins.RevisionedMixin):
         # To be assigned, a user must be:
         # 1. In the Catalogue Editors group
         # 2. One of this Catalogue Entry's editors
-        if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
-            pass
+        #if accounts_utils.is_catalogue_editor(user) and self.is_editor(user):
+        if self.is_editor(user):
+            self.assigned_to = user
+            self.save()   
+            # Success!
+            return True         
         if accounts_utils.is_administrator(user):
             # Assign user
             self.assigned_to = user

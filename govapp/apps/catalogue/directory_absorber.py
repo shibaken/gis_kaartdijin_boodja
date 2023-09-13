@@ -103,7 +103,8 @@ class Absorber:
         metadata = layer.metadata()
         attributes = layer.attributes()
         symbology = layer.symbology()
-
+        import json
+        log.info(f"Extracting data from layer: '{attributes}'")
         # Retrieve existing catalogue entry from the database
         # Here we specifically check the Layer Metadata name
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()

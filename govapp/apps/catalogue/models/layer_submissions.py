@@ -114,7 +114,9 @@ class LayerSubmission(mixins.RevisionedMixin):
 
         # Calculate the Catalogue Entry's attributes hash
         attributes_hash = utils.attributes_hash(self.catalogue_entry.attributes.all())
-
+        print ("attributes_hash")
+        print (attributes_hash)
+        print (self.hash)
         # Check if they match!
         # Also check that Catalogue Entry is not declined
         if self.hash == attributes_hash and not self.catalogue_entry.is_declined():
