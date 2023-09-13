@@ -861,7 +861,7 @@ class LayerSubscriptionViewSet(
         responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"], url_path="query")
     def query(self, request: request.Request, pk: str,) -> response.Response:
-        """Add custom query to target service.
+        """Add a custom query.
 
         Args:
             request (request.Request): API request.
@@ -895,7 +895,7 @@ class LayerSubscriptionViewSet(
         responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["PUT"], url_path=r"query/(?P<catalogue_id>\d+)")
     def update_query(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
-        """Update custom query to target service.
+        """Update a custom query.
 
         Args:
             request (request.Request): API request.
@@ -928,7 +928,7 @@ class LayerSubscriptionViewSet(
     # @decorators.action(detail=True, methods=["GET"], url_path="query")
     @query.mapping.get
     def get_query(self, request: request.Request, pk: str) -> response.Response:
-        """get custom query by target service.
+        """get a custom query.
 
         Args:
             request (request.Request): API request.
@@ -945,20 +945,35 @@ class LayerSubscriptionViewSet(
         # Retrieve Catalogue Entry with Layer Submission Id
         sql_queries = subscription.catalogue_entries.filter(sql_query__isnull=False).values(
             'id', 'sql_query', 'layer_subscription', 'name', 'description')
-        # sql_queries = list(models.catalogue_entries.CatalogueEntry.objects
-        #                      .filter(layer_subscription=subscription)
-        #                      .values('id', 'sql_query', 'layer_subscription', 'name', 'description'))
-        # if not sql_queries:
-        #     sql_queries = {}
-        # else:
-        #     sql_queries = {sql_query['sql_query']:{
-        #                     'name':sql_query['name'],
-        #                     'description':sql_query['description'],
-        #                     'catalogue_entry_id':sql_query['id']}
-        #                 for sql_query in sql_queries}
             
         # Return Response
         return response.Response({'results':sql_queries}, content_type='application/json', status=status.HTTP_200_OK)
+    
+    @drf_utils.extend_schema(
+        request=serializers.catalogue_entries.CatalogueEntryGetSubscriptionQuerySerializer,
+        responses={status.HTTP_200_OK: None})
+    # @decorators.action(detail=True, methods=["GET"], url_path="query")
+    @decorators.action(detail=True, methods=["DELETE"], url_path=r"query/(?P<catalogue_id>\d+)")
+    def delete_query(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
+        """delete a custom query.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: A dictionary of mapping data.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        
+        # Retrieve Catalogue Entry with Layer Submission Id
+        models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id).delete()
+            
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
     
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(

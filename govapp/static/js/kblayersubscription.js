@@ -803,7 +803,7 @@ var kblayersubscription = {
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
                     buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
-                            DELETE:(query)=>query};
+                            DELETE:(query)=>kblayersubscription.delete_custom_query(query)};
                 }
                 table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
                 let rows = []
@@ -887,5 +887,33 @@ var kblayersubscription = {
             success: success_callback,
             error: error_callback
         });
+    },
+    delete_custom_query: function(query){
+        let delete_query_callback = function(success_callback, error_callback){
+            var url = kblayersubscription.var.layersubscription_data_url+$('#subscription_id').val()+"/query/"+query.id+"/";
+            var method = 'DELETE';
+
+            // call POST API
+            $.ajax({
+                url: url,
+                method: method,
+                dataType: 'json',
+                contentType: 'application/json',
+                headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+                success: success_callback,
+                error: error_callback
+            });
+        }
+
+        common_entity_modal.init("Delete Subscription", "delete");
+        common_entity_modal.add_field(label="ID", type="number", value=query.id);
+        common_entity_modal.add_field(label="Name", type="text", value=query.name);
+        common_entity_modal.add_field(label="Desctription", type="text_area", value=query.description);
+        common_entity_modal.add_field(label="SQL", type="text_area", value=query.sql_query);
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                    delete_query_callback(success_callback, error_callback),
+                                    success_callback=()=>table.refresh(kblayersubscription.get_custom_query_info));
+        common_entity_modal.show();
+        
     },
 }
