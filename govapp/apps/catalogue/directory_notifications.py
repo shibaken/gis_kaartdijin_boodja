@@ -89,10 +89,16 @@ def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") ->
     Args:
         entry (catalogue_entries.CatalogueEntry): Catalogue Entry to notify for
     """
+
+    editors = entry.editors.all()
+    editors_list = []
+    for ed in editors:
+        editors_list.append(ed.user)
+
     # Send Emails
     emails.CatalogueEntryUpdateFailEmail().send_to(
         *utils.all_administrators(),  # All administrators
-        *entry.editors.all(),  # All editors
+        *editors_list,  # All editors
         context={"name": entry.name},
     )
 

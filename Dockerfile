@@ -23,6 +23,7 @@ RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
 RUN apt-get install --no-install-recommends -y rsyslog
 RUN apt-get install --no-install-recommends -y software-properties-common 
+RUN apt-get install --no-install-recommends -y postgis 
 RUN add-apt-repository ppa:deadsnakes/ppa -y
 RUN apt update
 RUN apt-get install --no-install-recommends -y  python3.10
