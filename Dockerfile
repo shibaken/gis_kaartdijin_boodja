@@ -23,7 +23,6 @@ RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
 RUN apt-get install --no-install-recommends -y rsyslog
 RUN apt-get install --no-install-recommends -y software-properties-common 
-RUN apt-get install --no-install-recommends -y postgis 
 RUN add-apt-repository ppa:deadsnakes/ppa -y
 RUN apt update
 RUN apt-get install --no-install-recommends -y  python3.10
@@ -75,6 +74,7 @@ RUN cd /app/govapp/frontend; npm install
 RUN cd /app/govapp/frontend; npm run build
 RUN python manage.py collectstatic --noinput
 RUN apt-get install --no-install-recommends -y python3-pil
+RUN apt-get install --no-install-recommends -y postgis 
 EXPOSE 8080
 HEALTHCHECK --interval=1m --timeout=5s --start-period=10s --retries=3 CMD ["wget", "-q", "-O", "-", "http://localhost:8080/"]
 CMD ["/startup.sh"]
