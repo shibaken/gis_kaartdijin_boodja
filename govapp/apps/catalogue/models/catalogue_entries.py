@@ -234,6 +234,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
         Returns:
             bool: Whether the locking was successful.
         """
+        lock_success = False
         # Check Catalogue Entry
         if self.is_unlocked():
             # Check if Catalogue Entry is new
@@ -248,10 +249,11 @@ class CatalogueEntry(mixins.RevisionedMixin):
             if self.active_layer.hash == attributes_hash:
                 # Set Catalogue Entry to Locked
                 self.status = CatalogueEntryStatus.LOCKED
-
+                lock_success = True
             else:
                 # Set Catalogue Entry to Pending
                 self.status = CatalogueEntryStatus.PENDING
+                lock_success = False
 
             # Check for Publish Entry
             if hasattr(self, "publish_entry"):
@@ -264,13 +266,13 @@ class CatalogueEntry(mixins.RevisionedMixin):
             # Send Emails
             notifications_utils.catalogue_entry_lock(self)
 
-
-            
+            print ("TRYING TO LOCK")
+            print (lock_success)
             # Success!
-            return True
+            return lock_success
     
         # Failed
-        return False
+        return lock_success
 
     def unlock(self) -> bool:
         """Unlocks the Catalogue Entry.

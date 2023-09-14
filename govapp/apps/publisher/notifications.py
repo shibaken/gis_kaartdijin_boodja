@@ -19,10 +19,16 @@ def publish_entry_lock(entry: "publish_entries.PublishEntry") -> None:
     Args:
         entry (publish_entries.PublishEntry): Publish Entry to notify for
     """
+
+    editors = entry.editors.all()
+    editors_list = []
+    for ed in editors:
+        editors_list.append(ed.user)
+
     # Send Emails
     emails.PublishEntryLockedEmail().send_to(
         *utils.all_administrators(),  # All administrators
-        *entry.editors.all(),  # All editors
+        *editors_list,  # All editors
         *entry.email_notifications(manager="on_lock").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
         context={"name": entry.name},
@@ -35,10 +41,15 @@ def publish_entry_publish_success(entry: "publish_entries.PublishEntry") -> None
     Args:
         entry (publish_entries.PublishEntry): Publish Entry to notify for
     """
+    editors = entry.editors.all()
+    editors_list = []
+    for ed in editors:
+        editors_list.append(ed.user)
+
     # Send Emails
     emails.PublishEntryPublishSuccessEmail().send_to(
         *utils.all_administrators(),  # All administrators
-        *entry.editors.all(),  # All editors
+        *editors_list,  # All editors
         *entry.email_notifications(manager="on_publish").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
         context={"name": entry.name},
@@ -51,9 +62,14 @@ def publish_entry_publish_failure(entry: "publish_entries.PublishEntry") -> None
     Args:
         entry (publish_entries.PublishEntry): Publish Entry to notify for
     """
+    editors = entry.editors.all()
+    editors_list = []
+    for ed in editors:
+        editors_list.append(ed.user)
+
     # Send Emails
     emails.PublishEntryPublishFailEmail().send_to(
         *utils.all_administrators(),  # All administrators
-        *entry.editors.all(),  # All editors
+        *editors_list,  # All editors
         context={"name": entry.name},
     )
