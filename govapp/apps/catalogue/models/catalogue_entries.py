@@ -50,7 +50,7 @@ class CatalogueEntryType(models.IntegerChoices):
     """Enumeration for a Catalogue Entry Status."""
     SPECIAL_FILE = 1
     SUBSCRIPTION = 2
-
+    SUBSCRIPTION_QUERY = 3
 
 @reversion.register(
     follow=(
@@ -71,7 +71,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPECIAL_FILE)
     mapping_name = models.CharField(max_length=1000, null=True)
-    # sql_query = models.TextField(null=True)
+    sql_query = models.TextField(null=True)
     layer_subscription = models.ForeignKey(
         "LayerSubscription",
         null=True,
