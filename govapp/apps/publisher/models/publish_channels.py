@@ -481,6 +481,33 @@ class FTPPublishChannel(mixins.RevisionedMixin):
         return self.name
     
 
+    def publish(self, symbology_only: bool = False) -> None:
+        """Publishes the Catalogue Entry to this channel if applicable.
+
+        Args:
+            symbology_only (bool): Whether to publish symbology only.
+        """
+        # Log
+        log.info(f"Attempting to ftp publish '{self.publish_entry}' to channel '{self}'")
+
+        # Check Symbology Only Flag
+        if symbology_only:
+            # Log
+            log.info(f"Skipping due to {symbology_only=}")
+
+            # Exit Early
+            return
+
+        self.publish_ftp()
+        
+        # Update Published At
+        publish_time = timezone.now()
+        self.publish_entry.published_at = publish_time
+        self.publish_entry.save()
+        self.published_at = publish_time
+        self.save()
+
+
 
     def publish_ftp(self) -> None:
         """Publishes the Catalogue Entry to FTP. """

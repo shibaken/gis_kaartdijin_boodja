@@ -69,6 +69,7 @@ class PublishEntry(mixins.RevisionedMixin):
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.
+    ftp_channel: "Optional[publish_channels.FTPPublishChannel]"
     cddp_channel: "Optional[publish_channels.CDDPPublishChannel]"
     geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
     email_notifications: "models.Manager[notifications.EmailNotification]"
@@ -128,6 +129,9 @@ class PublishEntry(mixins.RevisionedMixin):
         # Publish GeoServer
         self.publish_geoserver(symbology_only)
 
+        # Publish FTP
+        self.publish_ftp(symbology_only)        
+
     def publish_cddp(self, symbology_only: bool = False) -> None:
         """Publishes to CDDP channel if applicable.
 
@@ -149,6 +153,44 @@ class PublishEntry(mixins.RevisionedMixin):
         try:
             # Publish!
             publish_channel_obj = CDDPPublishChannel.objects.filter(publish_entry=self.id)
+            for pc in publish_channel_obj:
+                pc.publish(symbology_only)
+
+            #self.cddp_channel.publish(symbology_only)  # type: ignore[union-attr]
+
+        except Exception as exc:
+            # Log
+            log.error(f"Unable to publish to CDDP Publish Channel: {exc}")
+
+            # Send Failure Emails
+            notifications_utils.publish_entry_publish_failure(self)
+
+        else:
+            # Send Success Emails
+            notifications_utils.publish_entry_publish_success(self)
+
+
+    def publish_ftp(self, symbology_only: bool = False) -> None:
+        """Publishes to FTP channel if applicable.
+
+        Args:
+            symbology_only (bool): Flag to only publish symbology.
+        """
+        # Check for Publish Channel
+        if not hasattr(self, "ftp_channel"):
+            # Log
+            log.info(f"'{self}' has no FTP Publish Channel")
+
+            # Exit Early
+            return
+
+        # Log
+        log.info(f"FTP Publishing '{self.catalogue_entry}' - '{self.cddp_channel}' ({symbology_only=})")
+        from govapp.apps.publisher.models.publish_channels import FTPPublishChannel
+        # Handle Errors
+        try:
+            # Publish!
+            publish_channel_obj = FTPPublishChannel.objects.filter(publish_entry=self.id)
             for pc in publish_channel_obj:
                 pc.publish(symbology_only)
 
