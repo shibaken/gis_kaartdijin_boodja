@@ -31,8 +31,11 @@ var common_entity_modal = {
         let contents = $('#common-entity-modal-content');
         
         //label
-        const label = $('<label>').text(label_str);
-        contents.append(label);
+        let label = null;
+        if(type != "button"){
+            label = $('<label>').text(label_str);
+            contents.append(label);
+        }
         
         //field
         disabled = common_entity_modal.var.type == "delete" ? true: disabled;
@@ -43,8 +46,7 @@ var common_entity_modal = {
         common_entity_modal.var.field_map[id] = {field:field, label:label};
         return id;
     },
-    // labels_fields = [{label:label_obj, field:field_obj}]     
-    add_div: function(label_str, div, labels_fields){
+    add_div: function(label_str, div, labels_fields=[]){
         let contents = $('#common-entity-modal-content');
         //label
         const label = $('<label>').text(label_str);
@@ -52,6 +54,10 @@ var common_entity_modal = {
 
         contents.append(div);
 
+        this.add_labels_fields(labels_fields);
+    },
+    // labels_fields = [{label:label_obj, field:field_obj}] 
+    add_labels_fields: function(labels_fields=[]){
         for(let i in labels_fields){
             const field = labels_fields[i].field;
             const label = labels_fields[i].label;
@@ -140,8 +146,16 @@ var common_entity_modal = {
         label: (label_str, id) => {
             let label = $('<label>').text(label_str);
             if(id){
-                label.att('id', '');
+                label.attr('id', '');
             }
+        },
+        button: (btn_str, value, disabled) => {
+            let btn = $('<button>').text(btn_str);
+            btn.attr('class', 'btn btn-primary');
+            btn.attr("id", "common-entity-modal-btn-"+btn_str.replace(/[^a-zA-Z0-1]/g, ' ').replaceAll(' ', '-').toLowerCase());
+            if (disabled) 
+                btn.prop("disabled", true);
+            return btn
         },
     },
     get_id: function(element, type){
