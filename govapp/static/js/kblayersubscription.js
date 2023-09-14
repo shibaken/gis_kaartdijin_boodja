@@ -824,10 +824,10 @@ var kblayersubscription = {
     },
     show_custom_query_modal: function(prev){
         //options
-        const frequecy_options = {minutes:'Minutes', hours:'Hours', daily:'Daily', weekly:'Weekly', monthly:'Monthly'};
-        const minutes_options = {5:"Every 5 Minutes", 10:"Every 10 Minutes", 15:"Every 15 Minutes", 20:"Every 20 Minutes", 30:"Every 30 Minutes"};
-        const hours_options = {1:"Every 1 Hour", 2:"Every 2 Hours", 3:"Every 3 Hours", 6:"Every 6 Hours", 12:"Every 12 Hours"};
-        const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
+        const frequecy_options = {1:'Every Minutes', 2:'Every Hours', 3:'Daily', 4:'Weekly', 5:'Monthly'};
+        // const minutes_options = {5:"Every 5 Minutes", 10:"Every 10 Minutes", 15:"Every 15 Minutes", 20:"Every 20 Minutes", 30:"Every 30 Minutes"};
+        // const hours_options = {1:"Every 1 Hour", 2:"Every 2 Hours", 3:"Every 3 Hours", 6:"Every 6 Hours", 12:"Every 12 Hours"};
+        // const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
         let date_options = {};
         for(let i=1 ; i <= 28 ; i++){
             date_options[i] = i + "";
@@ -841,31 +841,62 @@ var kblayersubscription = {
         const name_id = common_entity_modal.add_field("Catalogue Entry Name", "text", prev ? prev.name : null);
         const description_id = common_entity_modal.add_field("Description", "text", prev ? prev.description : null);
         const sql_query_id = common_entity_modal.add_field("SQL Query", "text_area", prev ? prev.sql_query : null);
-        const frequency_id = common_entity_modal.add_field("Frequency", "select", prev ? prev.frequency : null, frequecy_options);
-        const frequency_minutes_id = common_entity_modal.add_field("Minutes", "select", prev ? prev.frequency_minutes : null, minutes_options);
-        const frequency_hours_id = common_entity_modal.add_field("Hours", "select", prev ? prev.frequency_hours : null, hours_options);
-        const frequency_day_id = common_entity_modal.add_field("Day", "select", prev ? prev.frequency_day : null, day_options);
-        const frequency_date_id = common_entity_modal.add_field("Date", "select", prev ? prev.frequency_date : null, date_options);
-        const frequency_oclock_id = common_entity_modal.add_field("O'clock", "select", prev ? prev.frequency_oclock : null, oclock_options);
-        
-        const freq_option_ids = [frequency_minutes_id, frequency_hours_id, frequency_day_id, frequency_date_id, frequency_oclock_id];
-        const freq_option_id_map = {minutes:[frequency_minutes_id], hours:[frequency_hours_id], daily:[frequency_oclock_id],
-                                    weekly:[frequency_oclock_id, frequency_day_id], monthly:[frequency_oclock_id, frequency_date_id]};
-        
-        const set_hide_freq_opts = function(shows){
-            for(let i in freq_option_ids){
-                common_entity_modal.hide_entity(freq_option_ids[i]);
-                $('#'+freq_option_ids[i]).val(null);
-            }
-            for(let i in shows){
-                common_entity_modal.show_entity(shows[i]);
-            }
-        };
+        let frequency_type = (prev && prev.frequencies && prev.frequencies.length > 0) ? prev.frequencies[0].type : null;
+        const frequency_id = common_entity_modal.add_field("Frequency", "select", frequency_type, frequecy_options);
 
-        set_hide_freq_opts();
+        const freq_option_ids = [];
+        let div = common_entity_modal.maker.div();
+        common_entity_modal.add_div("Frequency Options", div);
+        
+        const add_freq_btn_id = common_entity_modal.add_field("Add Frequency", "button", null, null, true);
+
+        if(prev && prev.frequencies && prev.frequencies.length > 0){
+            for(let i in prev.frequencies){
+                div.append(kblayersubscription.create_freq_option(prev.frequencies[i].type, prev.frequencies[i], freq_option_ids, div.children().length))
+            }
+            if(frequency_type != 1 && frequency_type != 2){
+                $('#'+add_freq_btn_id).prop("disabled", false);
+            }
+        }
+        
         $('#'+frequency_id).change(function(){
-            set_hide_freq_opts(freq_option_id_map[$('#'+frequency_id).val()]);
+            frequency_type = $('#'+frequency_id).val();
+            freq_option_ids.splice(0, freq_option_ids.length);
+            $('#'+add_freq_btn_id).prop("disabled", false);
+            div.empty();
         });
+        
+        $('#'+add_freq_btn_id).click(()=>{
+            if(frequency_type == 1 || frequency_type == 2)
+            $('#'+add_freq_btn_id).prop("disabled", true);
+            div.append(kblayersubscription.create_freq_option(frequency_type, null, freq_option_ids, div.children().length))
+        });
+        // kblayersubscription.create_freq_option();
+
+        // const frequency_minutes_id = common_entity_modal.add_field("Minutes", "number", prev ? prev.frequency_minutes : null, minutes_options);
+        // const frequency_hours_id = common_entity_modal.add_field("Hours", "number", prev ? prev.frequency_hours : null, hours_options);
+        // const frequency_day_id = common_entity_modal.add_field("Day", "number", prev ? prev.frequency_day : null, day_options);
+        // const frequency_date_id = common_entity_modal.add_field("Date", "select", prev ? prev.frequency_date : null, date_options);
+        // const frequency_oclock_id = common_entity_modal.add_field("O'clock", "select", prev ? prev.frequency_oclock : null, oclock_options);
+        
+        // const freq_option_ids = [frequency_minutes_id, frequency_hours_id, frequency_day_id, frequency_date_id, frequency_oclock_id];
+        // const freq_option_id_map = {minutes:[frequency_minutes_id], hours:[frequency_hours_id], daily:[frequency_oclock_id],
+        //                             weekly:[frequency_oclock_id, frequency_day_id], monthly:[frequency_oclock_id, frequency_date_id]};
+        
+        // const set_hide_freq_opts = function(div, shows){
+        //     for(let i in freq_option_ids){
+        //         common_entity_modal.hide_entity(freq_option_ids[i]);
+        //         $('#'+freq_option_ids[i]).val(null);
+        //     }
+        //     for(let i in shows){
+        //         common_entity_modal.show_entity(shows[i]);
+        //     }
+        // };
+
+        // set_hide_freq_opts();
+        // $('#'+frequency_id).change(function(){
+        //     set_hide_freq_opts(freq_option_id_map[$('#'+frequency_id).val()]);
+        // });
         
         // const div = common_entity_modal.maker.div();
         // div.attr('class', div.attr('class') + ' col-12');
@@ -900,18 +931,91 @@ var kblayersubscription = {
         //     native_layer_options[key] = key;
         // }
         // common_entity_modal.add_field("Native Layer Name", "select", prev ? prev.native_layer_name : null, native_layer_options, false);
+
+        const ids = {name_id:name_id, description_id:description_id, sql_query_id:sql_query_id, frequency_id:frequency_id, freq_option_ids:freq_option_ids};
         common_entity_modal.add_callbacks(
             submit_callback=(success_callback, error_callback)=> 
-                kblayersubscription.write_custom_query(success_callback, error_callback, name_id, description_id, sql_query_id, prev),
+                kblayersubscription.write_custom_query(success_callback, error_callback, ids, prev),
             success_callback=kblayersubscription.get_custom_query_info);
         common_entity_modal.show();
     },
-    write_custom_query: function(success_callback, error_callback, name_id, description_id, sql_query_id, prev){
+    create_freq_option: function(type, value, option_ids, seq){
+        let row_div = common_entity_modal.maker.div();
+        row_div.attr('class', 'row');
+        const ids = {};
+
+        const add_element = function(element, col=1){
+            const div = common_entity_modal.maker.div();
+            div.attr('class', 'col-'+col);
+            div.append(element);
+            row_div.append(div);
+            return element;
+        }
+        if(type == 1){ //every_minutes
+            add_element($('<label>').text("Every"));
+            const minutes_input = add_element(common_entity_modal.maker.number("minutes", value ? value.minutes : null));
+            add_element($('<label>').text("Minutes"));
+            ids.minutes = minutes_input.attr('id');
+        }else if(type == 2){    //every_hours
+            add_element($('<label>').text("Every"));
+            const hours_input = add_element(common_entity_modal.maker.number("hours", value ? value.hours : null));
+            add_element($('<label>').text("hours"));
+            ids.hours = hours_input.attr('id');
+        }else if(type == 3){    //daily
+            add_element($('<label>').text("Every day(HH:MM)"),2);
+            const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
+            const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
+            hour_input.attr('id', hour_input.attr('id')+'-'+seq);
+            minute_input.attr('id', minute_input.attr('id')+'-'+seq);
+            ids.hour = hour_input.attr('id');
+            ids.minute = minute_input.attr('id');
+        }else if(type == 4){    //weekly
+            add_element($('<label>').text("Every week(DAY:HH:MM)"),3);
+            const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
+            const day_input = add_element(common_entity_modal.maker.select("day", value ? value.day : null, false, day_options), 2);
+            const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
+            const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
+            day_input.attr('id', day_input.attr('id')+'-'+seq);
+            hour_input.attr('id', hour_input.attr('id')+'-'+seq);
+            minute_input.attr('id', minute_input.attr('id')+'-'+seq);
+            ids.day = day_input.attr('id');
+            ids.hour = hour_input.attr('id');
+            ids.minute = minute_input.attr('id');
+        }else if(type == 5){    //monthly
+            add_element($('<label>').text("Every week(DD:HH:MM)"),3);
+            const date_input = add_element(common_entity_modal.maker.number("date", value ? value.date : null));
+            const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
+            const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
+            date_input.attr('id', date_input.attr('id')+'-'+seq);
+            hour_input.attr('id', hour_input.attr('id')+'-'+seq);
+            minute_input.attr('id', minute_input.attr('id')+'-'+seq);
+            ids.date = date_input.attr('id');
+            ids.hour = hour_input.attr('id');
+            ids.minute = minute_input.attr('id');
+        }
+        option_ids.push(ids);
+        return row_div;
+    },
+    write_custom_query: function(success_callback, error_callback, ids, prev){
         var custom_query_data = {
-            name : utils.validate_empty_input(common_entity_modal.get_label(name_id), $('#'+name_id).val()),
-            description : utils.validate_empty_input(common_entity_modal.get_label(description_id), $('#'+description_id).val()),
-            sql_query : utils.validate_empty_input(common_entity_modal.get_label(sql_query_id), $('#'+sql_query_id).val()),
+            name : utils.validate_empty_input(common_entity_modal.get_label(ids.name_id), $('#'+ids.name_id).val()),
+            description : utils.validate_empty_input(common_entity_modal.get_label(ids.description_id), $('#'+ids.description_id).val()),
+            sql_query : utils.validate_empty_input(common_entity_modal.get_label(ids.sql_query_id), $('#'+ids.sql_query_id).val()),
+            frequency_type : utils.validate_empty_input(common_entity_modal.get_label(ids.frequency_id), +$('#'+ids.frequency_id).val()),
         };
+        if(ids.freq_option_ids == null || ids.freq_option_ids.length == 0){
+            throw new Error("At least one frequency option is required");
+        }
+        const frequency_options = []
+        for(let i in ids.freq_option_ids){
+            const option = {};
+            for(let key in ids.freq_option_ids[i]){
+                option[key] = utils.validate_empty_input(key, $('#'+ids.freq_option_ids[i][key]).val());
+            }
+            frequency_options.push(option);
+        }
+        custom_query_data.frequency_options=frequency_options;
+
         var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/query/" + (prev ? prev.id+"/" : "");
         var method = prev ? 'PUT' : 'POST';
 
@@ -929,7 +1033,7 @@ var kblayersubscription = {
     },
     delete_custom_query: function(query){
         let delete_query_callback = function(success_callback, error_callback){
-            var url = kblayersubscription.var.layersubscription_data_url+$('#subscription_id').val()+"/query/"+query.id+"/";
+            var url = kblayersubscription.var.layersubscription_data_url+$('#subscription_id').val()+"/delete-query/"+query.id+"/";
             var method = 'DELETE';
 
             // call POST API

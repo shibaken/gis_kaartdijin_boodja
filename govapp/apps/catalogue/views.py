@@ -958,6 +958,7 @@ class LayerSubscriptionViewSet(
             
         return freq_options
     
+    @transaction.atomic()
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer,
         responses={status.HTTP_204_NO_CONTENT: None})
@@ -999,6 +1000,7 @@ class LayerSubscriptionViewSet(
         self._validate_frequency(frequency_type, frequency_options)
         
         # Update Custom Query Frequency
+        models.custom_query_frequency.CustomQueryFrequency.objects.filter(catalogue_entry=catalogue_entry).delete()
         for option in frequency_options:
             freq_options = self._make_frequency_option(frequency_type, option)
             freq_options['catalogue_entry'] = catalogue_entry
@@ -1030,15 +1032,35 @@ class LayerSubscriptionViewSet(
         
         # Retrieve Catalogue Entry with Layer Submission Id
         sql_queries = subscription.catalogue_entries.filter(sql_query__isnull=False).prefetch_related('custom_query_frequencies').all()
-        
+        results = []
+        for sql_query in sql_queries:
+            frequencies = []
+            for freq in sql_query.custom_query_frequencies.all():
+                frequencies.append({
+                    'type':freq.type, 
+                    'minutes':freq.every_minutes, 
+                    'hours':freq.every_hours,
+                    'hour':freq.hour,
+                    'minute':freq.minute,
+                    'day':freq.day_of_week,
+                    'date':freq.date,
+                    })
+            results.append({
+                'id': sql_query.id,
+                'name': sql_query.name,
+                'description' : sql_query.description,
+                'sql_query' : sql_query.sql_query,
+                'frequencies' : frequencies,
+                })
+            
         # Return Response
-        return response.Response({'results':sql_queries}, content_type='application/json', status=status.HTTP_200_OK)
+        return response.Response({'results':results}, content_type='application/json', status=status.HTTP_200_OK)
     
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryGetSubscriptionQuerySerializer,
         responses={status.HTTP_200_OK: None})
     # @decorators.action(detail=True, methods=["GET"], url_path="query")
-    @decorators.action(detail=True, methods=["DELETE"], url_path=r"query/(?P<catalogue_id>\d+)")
+    @decorators.action(detail=True, methods=["DELETE"], url_path=r"delete-query/(?P<catalogue_id>\d+)")
     def delete_query(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
         """delete a custom query.
 
@@ -1049,11 +1071,6 @@ class LayerSubscriptionViewSet(
         Returns:
             response.Response: A dictionary of mapping data.
         """
-        # Retrieve Layer Subscription
-        # Help `mypy` by casting the resulting object to a Layer Subscription
-        subscription = self.get_object()
-        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
-        
         # Retrieve Catalogue Entry with Layer Submission Id
         models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id).delete()
             
