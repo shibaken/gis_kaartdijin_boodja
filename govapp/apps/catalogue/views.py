@@ -822,9 +822,12 @@ class LayerSubscriptionViewSet(
         subscription = self.get_object()
         subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
         LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
-        
+        print ("MAPPIG")
+
         def cache_or_callback(key, callback):
             val = cache.get(key)
+            print (key)
+            print (val)
             if not val:
                 try:
                     val = callback()
@@ -849,11 +852,14 @@ class LayerSubscriptionViewSet(
             mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
             def get_post_gis():
+                print ("PORT")
+                print (subscription_obj.port)
                 conn = psycopg2.connect(
                     host=subscription_obj.host,
                     database=subscription_obj.database,
                     user=subscription_obj.username,
-                    password=subscription_obj.userpassword
+                    password=subscription_obj.userpassword,
+                    port=subscription_obj.port
                 )
                 query = """
                             SELECT table_name 

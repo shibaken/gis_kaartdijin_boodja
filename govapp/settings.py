@@ -140,6 +140,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
         "LOCATION": BASE_DIR / "cache",
+        "OPTIONS": {"MAX_ENTRIES": 10000},
     }
 }
 
@@ -267,3 +268,5 @@ WFS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
 WFS_CACHE_KEY = "wfs native layer names"
 POST_GIS_CACHE_KEY = "post gis table names"
 SUBSCRIPTION_CACHE_TTL = 3600
+
+

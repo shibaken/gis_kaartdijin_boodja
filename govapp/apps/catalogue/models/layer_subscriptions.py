@@ -5,6 +5,8 @@
 from django.db import models
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
+from django.core.cache import cache
+from django import conf
 import reversion
 
 from typing import Union, Optional
@@ -228,6 +230,11 @@ class LayerSubscription(mixins.RevisionedMixin):
 
         # Failed
         return False
+
+    def save(self, *args, **kwargs):
+        cache.delete(conf.settings.POST_GIS_CACHE_KEY + str(self.id))
+        super(LayerSubscription, self).save(*args, **kwargs)
+        
 
     # def decline(self) -> bool:
     #     """Declines the Layer Subscription.
