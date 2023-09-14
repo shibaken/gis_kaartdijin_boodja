@@ -803,7 +803,7 @@ var kblayersubscription = {
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
                     buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
-                            DELETE:(query)=>query};
+                            DELETE:(query)=>kblayersubscription.delete_custom_query(query)};
                 }
                 table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
                 let rows = []
@@ -823,10 +823,49 @@ var kblayersubscription = {
         });
     },
     show_custom_query_modal: function(prev){
+        //options
+        const frequecy_options = {minutes:'Minutes', hours:'Hours', daily:'Daily', weekly:'Weekly', monthly:'Monthly'};
+        const minutes_options = {5:"Every 5 Minutes", 10:"Every 10 Minutes", 15:"Every 15 Minutes", 20:"Every 20 Minutes", 30:"Every 30 Minutes"};
+        const hours_options = {1:"Every 1 Hour", 2:"Every 2 Hours", 3:"Every 3 Hours", 6:"Every 6 Hours", 12:"Every 12 Hours"};
+        const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
+        let date_options = {};
+        for(let i=1 ; i <= 28 ; i++){
+            date_options[i] = i + "";
+        }
+        let oclock_options = {};
+        for(let i=0 ; i < 24 ; i++){
+            oclock_options[i] = (i >= 10 ? i : "0"+i) + ":00";
+        }
+
         common_entity_modal.init("Add Custom Table Layer", type="submit");
         const name_id = common_entity_modal.add_field("Catalogue Entry Name", "text", prev ? prev.name : null);
         const description_id = common_entity_modal.add_field("Description", "text", prev ? prev.description : null);
         const sql_query_id = common_entity_modal.add_field("SQL Query", "text_area", prev ? prev.sql_query : null);
+        const frequency_id = common_entity_modal.add_field("Frequency", "select", prev ? prev.frequency : null, frequecy_options);
+        const frequency_minutes_id = common_entity_modal.add_field("Minutes", "select", prev ? prev.frequency_minutes : null, minutes_options);
+        const frequency_hours_id = common_entity_modal.add_field("Hours", "select", prev ? prev.frequency_hours : null, hours_options);
+        const frequency_day_id = common_entity_modal.add_field("Day", "select", prev ? prev.frequency_day : null, day_options);
+        const frequency_date_id = common_entity_modal.add_field("Date", "select", prev ? prev.frequency_date : null, date_options);
+        const frequency_oclock_id = common_entity_modal.add_field("O'clock", "select", prev ? prev.frequency_oclock : null, oclock_options);
+        
+        const freq_option_ids = [frequency_minutes_id, frequency_hours_id, frequency_day_id, frequency_date_id, frequency_oclock_id];
+        const freq_option_id_map = {minutes:[frequency_minutes_id], hours:[frequency_hours_id], daily:[frequency_oclock_id],
+                                    weekly:[frequency_oclock_id, frequency_day_id], monthly:[frequency_oclock_id, frequency_date_id]};
+        
+        const set_hide_freq_opts = function(shows){
+            for(let i in freq_option_ids){
+                common_entity_modal.hide_entity(freq_option_ids[i]);
+                $('#'+freq_option_ids[i]).val(null);
+            }
+            for(let i in shows){
+                common_entity_modal.show_entity(shows[i]);
+            }
+        };
+
+        set_hide_freq_opts();
+        $('#'+frequency_id).change(function(){
+            set_hide_freq_opts(freq_option_id_map[$('#'+frequency_id).val()]);
+        });
         
         // const div = common_entity_modal.maker.div();
         // div.attr('class', div.attr('class') + ' col-12');
@@ -887,5 +926,33 @@ var kblayersubscription = {
             success: success_callback,
             error: error_callback
         });
+    },
+    delete_custom_query: function(query){
+        let delete_query_callback = function(success_callback, error_callback){
+            var url = kblayersubscription.var.layersubscription_data_url+$('#subscription_id').val()+"/query/"+query.id+"/";
+            var method = 'DELETE';
+
+            // call POST API
+            $.ajax({
+                url: url,
+                method: method,
+                dataType: 'json',
+                contentType: 'application/json',
+                headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+                success: success_callback,
+                error: error_callback
+            });
+        }
+
+        common_entity_modal.init("Delete Subscription", "delete");
+        common_entity_modal.add_field(label="ID", type="number", value=query.id);
+        common_entity_modal.add_field(label="Name", type="text", value=query.name);
+        common_entity_modal.add_field(label="Desctription", type="text_area", value=query.description);
+        common_entity_modal.add_field(label="SQL", type="text_area", value=query.sql_query);
+        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+                                    delete_query_callback(success_callback, error_callback),
+                                    success_callback=()=>table.refresh(kblayersubscription.get_custom_query_info));
+        common_entity_modal.show();
+        
     },
 }

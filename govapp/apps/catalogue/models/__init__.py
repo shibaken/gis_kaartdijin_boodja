@@ -10,3 +10,4 @@ from . import layer_subscriptions
 from . import layer_symbology
 from . import notifications
 from . import permission
+from . import postgis_custom_query

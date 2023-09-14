@@ -284,16 +284,20 @@ class CatalogueEntriesView(base.TemplateView):
         #             catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
         # # END - To be improved later todo a reverse table join     
 
-        system_users_list = []
+        system_users_dict = {}
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
         for su in system_users_obj:
-             system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
+             system_users_dict[su.id] = {'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email}
         
         for permission in catalogue_entry_obj.catalouge_permissions.all():
-            system_users_list.append({'first_name': permission.user.first_name, 
-                                      'last_name': permission.user.last_name, 
-                                      'id': permission.user.id, 
-                                      'email': permission.user.email})
+            system_users_dict[permission.user.id] = {
+                'first_name': permission.user.first_name, 
+                'last_name': permission.user.last_name, 
+                'id': permission.user.id, 
+                'email': permission.user.email}
+            
+        system_users_list = [system_users_dict[key] for key in system_users_dict]
+        
                 
         is_administrator = utils.is_administrator(request.user)
         if is_administrator is True and request.user == catalogue_entry_obj.assigned_to:
