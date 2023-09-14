@@ -89,7 +89,7 @@ var kbpublish = {
                   }                  
             },
         });
-
+        
         $('#publish-assignedto').select2({
             placeholder: 'Select an option',
             minimumInputLength: 2,
@@ -222,7 +222,7 @@ var kbpublish = {
         $( "#publish-new-geoserver-btn" ).click(function() {
             console.log("New Geoserver");
 
-            // SPECIAL_FILE = 1, SUBSCRIPTION = 2
+            // SPATIAL_FILE = 1, SUBSCRIPTION = 2
             if($('#catalogue-type').val() == '1'){
                 $('#new-publish-spatial-format').removeAttr('disabled');
                 $('#new-publish-frequency-type').removeAttr('disabled');

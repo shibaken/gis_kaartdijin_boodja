@@ -3,6 +3,7 @@
 # Standard
 import logging
 import os 
+import shutil
 
 # Third-Party
 from django import conf
@@ -11,6 +12,7 @@ from django import conf
 from govapp.apps.catalogue.models import layer_subscriptions
 from govapp.apps.catalogue.models import catalogue_entries
 from govapp.gis import conversions
+from django import conf
 # from govapp.common import local_storage
 # from govapp.apps.catalogue import directory_absorber
 # from govapp.apps.catalogue import notifications
@@ -33,16 +35,17 @@ class Scanner:
         # Log
         log.info("Scanning Postgres Queries")
         #lay_sub = layer_subscriptions.LayerSubscription.objects.filter(type=3)
-        cat_ent = catalogue_entries.CatalogueEntry.objects.filter(layer_subscription__type=3)
-        print ("RUNN")
-        print (cat_ent)
+        cat_ent = catalogue_entries.CatalogueEntry.objects.filter(layer_subscription__type=3, status=2)
+
         for ce in cat_ent:           
-            print (ce.layer_subscription.host)
-            print (ce.layer_subscription.port)
-            print (ce.layer_subscription.username)
-            print (ce.layer_subscription.userpassword)
-            print (ce.sql_query)
-            conversions.postgres_to_shapefile(ce.name,ce.layer_subscription.host,ce.layer_subscription.username,ce.layer_subscription.userpassword,ce.layer_subscription.database,ce.layer_subscription.port,ce.sql_query)
+            # print (ce.layer_subscription.host)
+            # print (ce.layer_subscription.port)
+            # print (ce.layer_subscription.username)
+            # print (ce.layer_subscription.userpassword)
+            # print (ce.sql_query)
+            co = conversions.postgres_to_shapefile(ce.name,ce.layer_subscription.host,ce.layer_subscription.username,ce.layer_subscription.userpassword,ce.layer_subscription.database,ce.layer_subscription.port,ce.sql_query)
+            shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
+
         # Retrieve file from remote storage staging area
     
 

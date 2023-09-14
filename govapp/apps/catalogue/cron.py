@@ -27,7 +27,18 @@ log = logging.getLogger(__name__)
 #         # Run Management Command
 #         management.call_command("scan")
 
+class PostgresScannerCronJob(django_cron.CronJobBase):
+    """Cron Job for the Catalogue Scanner."""
+    schedule = django_cron.Schedule(run_every_mins=conf.settings.CRON_SCANNER_PERIOD_MINS)
+    code = "govapp.catalogue.postgres_scanner"
 
+    def do(self) -> None:
+        """Perform the Scanner Cron Job."""
+        # Log
+        log.info("Postgres Scanner cron job triggered, running...")
+
+        # Run Management Command
+        management.call_command("scan_postgres")
 
 class SharepointScannerCronJob(django_cron.CronJobBase):
     """Cron Job for the Catalogue Scanner."""
@@ -37,7 +48,7 @@ class SharepointScannerCronJob(django_cron.CronJobBase):
     def do(self) -> None:
         """Perform the Scanner Cron Job."""
         # Log
-        log.info("Scanner cron job triggered, running...")
+        log.info("Sharepoint Scanner cron job triggered, running...")
 
         # Run Management Command
         management.call_command("get_sharepoint_files")
@@ -51,7 +62,7 @@ class DirectoryScannerCronJob(django_cron.CronJobBase):
     def do(self) -> None:
         """Perform the Scanner Cron Job."""
         # Log
-        log.info("Scanner cron job triggered, running...")
+        log.info("Directory Scanner cron job triggered, running...")
 
         # Run Management Command
         management.call_command("scan_dir")        
