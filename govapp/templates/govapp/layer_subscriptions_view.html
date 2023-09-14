@@ -157,7 +157,7 @@
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-host" class="form-control" value="{{ subscription_obj.host }}"></input>
                                                       {% else %}
-                                                            {{ subscription_obj.host }}
+                                                             Hidden
                                                       {% endif %}
                                                 </div>
                                                 <div class='col-4'> &nbsp; </div>
@@ -167,7 +167,7 @@
                                                       {% if has_edit_access is True %}
                                                             <input type="number" id="subscription-port" class="form-control" value="{{ subscription_obj.port }}"></input>
                                                       {% else %}
-                                                            {{ subscription_obj.port }}
+                                                            Hidden
                                                       {% endif %}
                                                 </div>
                                                 <div class='col-4'> &nbsp; </div>
@@ -177,7 +177,7 @@
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-database" class="form-control" value="{{ subscription_obj.database }}"></input>
                                                       {% else %}
-                                                            {{ subscription_obj.database }}
+                                                            Hidden
                                                       {% endif %}
                                                 </div>
                                                 <div class='col-4'> &nbsp; </div>
@@ -187,7 +187,7 @@
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-schema" class="form-control" value="{{ subscription_obj.schema }}"></input>
                                                       {% else %}
-                                                            {{ subscription_obj.schema }}
+                                                            Hidden
                                                       {% endif %}
                                                 </div>
                                                 <div class='col-4'> &nbsp; </div>
@@ -203,7 +203,7 @@
                                                       {% endif %}
                                                 {% else %}
                                                       {% if subscription_obj.username %}
-                                                            {{ subscription_obj.username }}
+                                                            Hidden
                                                       {% endif %}
                                                 {% endif %}
                                           </div>
@@ -218,9 +218,7 @@
                                                             <input type="text" id="subscription-userpassword" class="form-control"></input>
                                                       {% endif %}
                                                 {% else %}
-                                                      {% if subscription_obj.userpassword %}
-                                                            {{ subscription_obj.userpassword }}
-                                                      {% endif %}
+                                                            Hidden
                                                 {% endif %}
                                           </div>
                                           <div class='col-4'> &nbsp; </div>
