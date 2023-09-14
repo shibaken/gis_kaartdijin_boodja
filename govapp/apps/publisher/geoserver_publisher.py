@@ -45,7 +45,7 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbol
     try:
         # Publish!
         # for special file
-        if publish_entry.catalogue_entry.type == CatalogueEntryType.SPECIAL_FILE:
+        if publish_entry.catalogue_entry.type == CatalogueEntryType.SPATIAL_FILE:
             publish_entry.geoserver_channel.publish(symbology_only, geoserver)  # type: ignore[union-attr]
         # for layer subscription
         else:

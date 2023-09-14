@@ -279,7 +279,7 @@ var kbcatalogue = {
                 updated_after:          utils.convert_date_format($('#catalogue-lastupdatedfrom').val(), kbcatalogue.var.catalogue_date_format, hh="00", mm="00", ss="00"),
                 updated_before:         utils.convert_date_format($('#catalogue-lastupdatedto').val(), kbcatalogue.var.catalogue_date_format, hh="23", mm="59", ss="59"),
                 id:                     $('#catalogue-number').val().replace("PE", ""),
-                type:                   1,
+                // type:                   1,
                 limit:                  $('#catalogue-limit').val(),
                 order_by:               $('#catalogue-order-by').val()
             }
@@ -320,13 +320,21 @@ var kbcatalogue = {
                             html+= "<tr>";
                             html+= " <td>CE"+response.results[i].id+"</td>";
                             html+= " <td>"+response.results[i].name+"</td>";
-                            
+                            html+= " <td>";
+                            if (response.results[i].type == 1) {
+                                html+= "Spatial File";
+                            } else if (response.results[i].type == 2) {
+                                html+= "Subscriptions";
+                            }
+
+                            html+= "</td>";
                             html+= " <td>";
                             if (response.results[i].custodian_name != null) { 
                                 html+= response.results[i].custodian_name;
                             } else {
                                 html+= "";
                             }
+
                             html+= "</td>";
                             html+= " <td>"+kbcatalogue.var.catalogue_status[response.results[i].status]+"</td>";
                             html+= " <td>"+response.results[i].updated_at+"</td>";
