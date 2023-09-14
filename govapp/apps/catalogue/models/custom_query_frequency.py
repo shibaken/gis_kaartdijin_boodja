@@ -63,6 +63,7 @@ class CustomQueryFrequency(mixins.RevisionedMixin):
     date = models.PositiveSmallIntegerField(
         null=True, blank=True, 
         validators=[MinValueValidator(1), MaxValueValidator(31)])
+    last_job_run = models.DateTimeField(null=True, default=None)
 
     def clean(self):
         if (self.type == FrequencyType.EVERY_MINUTES and 
