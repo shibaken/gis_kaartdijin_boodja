@@ -95,8 +95,11 @@ class CatalogueEntryViewSet(
                 action="Catalogue entry was locked"
             )
 
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+            # Return Response
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            # Return Response
+            return response.Response("Error Locking Catalogue", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
