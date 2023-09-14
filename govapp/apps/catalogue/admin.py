@@ -75,10 +75,13 @@ class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
 
 class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'user', 'catalogue_entry')
-    # inlines = [CatalogueEntryInline]
-    
+
+class CustomQueryFrequencyAdmin(reversion.admin.VersionAdmin):   
+    list_display = ('id', 'catalogue_entry','last_job_run','type', 'every_minutes','every_hours','hour','minute','day_of_week')
+
 
 # Register Models
+admin.site.register(models.custom_query_frequency.CustomQueryFrequency, CustomQueryFrequencyAdmin)
 admin.site.register(models.catalogue_entries.CatalogueEntry, CatalogueEntryAdmin)
 admin.site.register(models.custodians.Custodian, CustodianAdmin)
 admin.site.register(models.layer_attributes.LayerAttribute, LayerAttributeAdmin)
