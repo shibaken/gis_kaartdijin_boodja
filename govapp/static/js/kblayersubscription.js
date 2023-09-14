@@ -922,7 +922,7 @@ var kblayersubscription = {
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 5){    //monthly
-            add_element($('<label>').text("Every week(DD:HH:MM)"),3);
+            add_element($('<label>').text("Day of Month @ Time (DD:HH:MM)"),3);
             const date_input = add_element(common_entity_modal.maker.number("date", value ? value.date : null));
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
