@@ -53,10 +53,15 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     Args:
         entry (catalogue_entries.CatalogueEntry): Catalogue Entry to notify for
     """
+    editors = entry.editors.all()
+    editors_list = []
+    for ed in editors:
+        editors_list.append(ed.user)
+
     # Send Emails
     emails.CatalogueEntryUpdateSuccessEmail().send_to(
         *utils.all_administrators(),  # All administrators
-        *entry.editors.all(),  # All editors
+        *editors_list,  # All editors
         *entry.email_notifications(manager="on_new_data").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
         context={"name": entry.name},
@@ -109,10 +114,16 @@ def catalogue_entry_lock(entry: "catalogue_entries.CatalogueEntry") -> None:
     Args:
         entry (catalogue_entries.CatalogueEntry): Catalogue Entry to notify for
     """
+
+    editors = entry.editors.all()
+    editors_list = []
+    for ed in editors:
+        editors_list.append(ed.user)
+
     # Send Emails
     emails.CatalogueEntryLockedEmail().send_to(
         *utils.all_administrators(),  # All administrators
-        *entry.editors.all(),  # All editors
+        *editors_list,  # All editors
         *entry.email_notifications(manager="on_lock").all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
         context={"name": entry.name},

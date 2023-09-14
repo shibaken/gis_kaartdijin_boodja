@@ -19,11 +19,15 @@
                             Name
                       </div>
                       <div class='col-5 p-1'>
-                            {% if has_edit_access is True %}
-                                  <input type="text"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
-                            {% else %}
-                                  {{ catalogue_entry_obj.name }}
-                            {% endif %}
+                              {% if catalogue_entry_obj.type == 1 %}
+                                    {% if has_edit_access is True %}
+                                          <input type="text"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
+                                    {% else %}
+                                          {{ catalogue_entry_obj.name }}
+                                    {% endif %}
+                              {% else %}
+                                    {{ catalogue_entry_obj.name }}
+                              {% endif %} 
                       </div>
                       <div class='col-4'>
                             &nbsp;
@@ -64,6 +68,22 @@
                       </div>       
 
 
+                        <div class='col-3'>
+                        Spatial Type
+                        </div>
+
+                        <div class='col-5 p-1'>                              
+                              {% if catalogue_entry_obj.type == 1 %}
+                                    Spatial File
+                              {% elif catalogue_entry_obj.type == 2 %}
+                                    Subscription
+                              {% endif %}
+
+                        </div>
+                        <div class='col-4'>
+                              &nbsp;
+                        </div>                         
+
           </div>
     </div>
 
@@ -83,12 +103,16 @@
         <div class="card-body collapse show" id="box2-card-body">
               <div class='row'>
                     <div class='col-12'>
+                        {% if catalogue_entry_obj.type == 1 %}
                           {% if has_edit_access is True %}     
                                 <textarea class="form-control"id="catalogue-entry-description" rows="3">{{ catalogue_entry_obj.description }}</textarea>                                    
                                 &nbsp;
                           {% else %}
                                 {{ catalogue_entry_obj.description }}
                           {% endif %}
+                        {% else %}
+                              {{ catalogue_entry_obj.description }}
+                        {% endif %}
                     </div>                        
               </div>
         </div>

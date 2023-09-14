@@ -232,8 +232,8 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
         cwd=output_dir
         
     )
-    print (output_dir)
+    
     compressed_filepath = compression.compress(output_dir)
-    print (compressed_filepath)
     hash_array["output_dir"] = output_dir
+    hash_array["compressed_filepath"] = compressed_filepath
     return hash_array 

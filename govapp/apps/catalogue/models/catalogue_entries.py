@@ -48,7 +48,7 @@ class CatalogueEntryStatus(models.IntegerChoices):
     
 class CatalogueEntryType(models.IntegerChoices):
     """Enumeration for a Catalogue Entry Status."""
-    SPECIAL_FILE = 1
+    SPATIAL_FILE = 1
     SUBSCRIPTION = 2
 
 
@@ -69,7 +69,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     name = models.TextField()
     description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
-    type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPECIAL_FILE)
+    type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPATIAL_FILE)
     mapping_name = models.CharField(max_length=1000, null=True)
     sql_query = models.TextField(null=True)
     layer_subscription = models.ForeignKey(
@@ -135,8 +135,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
         # Retrieve Active Layer
         active_layer = self.layers.filter(is_active=True).last()
 
-        # Check only when the type is CatalogueEntryType.SPECIAL_FILE
-        #if CatalogueEntryType.SPECIAL_FILE == self.type:
+        # Check only when the type is CatalogueEntryType.SPATIAL_FILE
+        #if CatalogueEntryType.SPATIAL_FILE == self.type:
         #    assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101
 
         # Return
