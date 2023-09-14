@@ -49,8 +49,10 @@ class CatalogueEntryStatus(models.IntegerChoices):
 class CatalogueEntryType(models.IntegerChoices):
     """Enumeration for a Catalogue Entry Status."""
     SPATIAL_FILE = 1
-    SUBSCRIPTION = 2
-    SUBSCRIPTION_QUERY = 3
+    SUBSCRIPTION_WFS = 2
+    SUBSCRIPTION_WMS = 3
+    SUBSCRIPTION_POSTGIS = 4
+    SUBSCRIPTION_QUERY = 5
 
 @reversion.register(
     follow=(

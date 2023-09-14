@@ -703,15 +703,24 @@ class LayerSubscriptionViewSet(
         subscription = self.get_object()
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
-         # Validation check
+         # Validation Check
         data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer, request.data)
         
+        # Set Type
+        catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WFS
+        if subscription.type == models.layer_subscriptions.LayerSubscriptionType.WFS:
+            catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WFS
+        elif subscription.type == models.layer_subscriptions.LayerSubscriptionType.WMS:
+            catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WMS
+        elif subscription.type == models.layer_subscriptions.LayerSubscriptionType.POST_GIS:
+            catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_POSTGIS
+            
         # Create Catalogue Entry
         models.catalogue_entries.CatalogueEntry.objects.create(
             name=data['name'],
             description=data['description'] if 'description' in data else None,
             mapping_name=data['mapping_name'],
-            type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION,
+            type=catalogue_type,
             layer_subscription=subscription
         )
         
@@ -856,6 +865,7 @@ class LayerSubscriptionViewSet(
         # Return Response
         return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
         
+    @transaction.atomic()
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryCreateSubscriptionQuerySerializer,
         responses={status.HTTP_204_NO_CONTENT: None})
@@ -875,20 +885,75 @@ class LayerSubscriptionViewSet(
         subscription = self.get_object()
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
-         # Validation check
+        # Validation check
         data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionQuerySerializer, request.data)
-        
+        if 'frequency_type' not in request.data:
+            raise ValidationError("frequency_type is required")
+        frequency_type = request.data['frequency_type']
+        if ('frequency_options' not in request.data or
+            type(request.data['frequency_options']) != list):
+            raise ValidationError("frequency_options is required")
+        frequency_options = request.data['frequency_options']
+        self._validate_frequency(frequency_type, frequency_options)
+            
         # Create Catalogue Entry
-        models.catalogue_entries.CatalogueEntry.objects.create(
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
             name=data['name'],
             description=data['description'] if 'description' in data else None,
             sql_query=data['sql_query'],
-            type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION,
+            type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
             layer_subscription=subscription
         )
         
+        # Create Custom Query Frequency
+        for option in frequency_options:
+            freq_options = self._make_frequency_option(frequency_type, option)
+            freq_options['catalogue_entry'] = catalogue_entry
+            freq_options['type'] = frequency_type
+            models.custom_query_frequency.CustomQueryFrequency.objects.create(**freq_options)
+        
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def _validate_frequency(self, frequency_type, frequency_options):
+        for option in frequency_options:
+            if frequency_type == models.custom_query_frequency.FrequencyType.EVERY_MINUTES:
+                if 'minutes' not in option:
+                    raise ValidationError("minutes is required if FrequencyType is EVERY_MINUTES(1)")
+            elif frequency_type == models.custom_query_frequency.FrequencyType.EVERY_HOURS:
+                if 'hours' not in option:
+                    raise ValidationError("hours is required if FrequencyType is EVERY_HOURS(2)")
+                pass
+            elif frequency_type == models.custom_query_frequency.FrequencyType.DAILY:
+                if 'hour' not in option or 'minute' not in option:
+                    raise ValidationError("hour and minute is required if FrequencyType is DAILY(3)")
+            elif frequency_type == models.custom_query_frequency.FrequencyType.WEEKLY:
+                if 'hour' not in option or 'minute' not in option or 'day' not in option:
+                    raise ValidationError("hour, minute, and day is required if FrequencyType is WEEKLY(4)")
+            elif frequency_type == models.custom_query_frequency.FrequencyType.MONTHLY:
+                if 'hour' not in option or 'minute' not in option or 'date' not in option:
+                    raise ValidationError("hour, minute, and date is required if FrequencyType is MONTHLY(4)")
+                
+    def _make_frequency_option(self, frequency_type, option):
+        freq_options = {}
+        
+        if frequency_type == models.custom_query_frequency.FrequencyType.EVERY_MINUTES:
+            freq_options['every_minutes'] = option['minutes']
+        elif frequency_type == models.custom_query_frequency.FrequencyType.EVERY_HOURS:
+            freq_options['every_hours'] = option['hours']
+        elif frequency_type == models.custom_query_frequency.FrequencyType.DAILY:
+            freq_options['hour'] = option['hour']
+            freq_options['minute'] = option['minute']
+        elif frequency_type == models.custom_query_frequency.FrequencyType.WEEKLY:
+            freq_options['hour'] = option['hour']
+            freq_options['minute'] = option['minute']
+            freq_options['day_of_week'] = option['day']
+        elif frequency_type == models.custom_query_frequency.FrequencyType.MONTHLY:
+            freq_options['hour'] = option['hour']
+            freq_options['minute'] = option['minute']
+            freq_options['date'] = option['date']
+            
+        return freq_options
     
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer,
@@ -919,6 +984,24 @@ class LayerSubscriptionViewSet(
         catalogue_entry.sql_query = data['sql_query'] if 'sql_query' in data else catalogue_entry.sql_query
         catalogue_entry.save()
         
+        # Validation check
+        data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionQuerySerializer, request.data)
+        if 'frequency_type' not in request.data:
+            raise ValidationError("frequency_type is required")
+        frequency_type = request.data['frequency_type']
+        if ('frequency_options' not in request.data or
+            type(request.data['frequency_options']) != list):
+            raise ValidationError("frequency_options is required")
+        frequency_options = request.data['frequency_options']
+        self._validate_frequency(frequency_type, frequency_options)
+        
+        # Update Custom Query Frequency
+        for option in frequency_options:
+            freq_options = self._make_frequency_option(frequency_type, option)
+            freq_options['catalogue_entry'] = catalogue_entry
+            freq_options['type'] = frequency_type
+            models.custom_query_frequency.CustomQueryFrequency.objects.create(**freq_options)
+        
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -943,9 +1026,8 @@ class LayerSubscriptionViewSet(
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
-        sql_queries = subscription.catalogue_entries.filter(sql_query__isnull=False).values(
-            'id', 'sql_query', 'layer_subscription', 'name', 'description')
-            
+        sql_queries = subscription.catalogue_entries.filter(sql_query__isnull=False).prefetch_related('custom_query_frequencies').all()
+        
         # Return Response
         return response.Response({'results':sql_queries}, content_type='application/json', status=status.HTTP_200_OK)
     
