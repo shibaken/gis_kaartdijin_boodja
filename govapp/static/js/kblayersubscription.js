@@ -825,9 +825,6 @@ var kblayersubscription = {
     show_custom_query_modal: function(prev){
         //options
         const frequecy_options = {1:'Every Minutes', 2:'Every Hours', 3:'Daily', 4:'Weekly', 5:'Monthly'};
-        // const minutes_options = {5:"Every 5 Minutes", 10:"Every 10 Minutes", 15:"Every 15 Minutes", 20:"Every 20 Minutes", 30:"Every 30 Minutes"};
-        // const hours_options = {1:"Every 1 Hour", 2:"Every 2 Hours", 3:"Every 3 Hours", 6:"Every 6 Hours", 12:"Every 12 Hours"};
-        // const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
         let date_options = {};
         for(let i=1 ; i <= 28 ; i++){
             date_options[i] = i + "";
@@ -852,7 +849,7 @@ var kblayersubscription = {
 
         if(prev && prev.frequencies && prev.frequencies.length > 0){
             for(let i in prev.frequencies){
-                div.append(kblayersubscription.create_freq_option(prev.frequencies[i].type, prev.frequencies[i], freq_option_ids, div.children().length))
+                kblayersubscription.create_freq_option(div, prev.frequencies[i].type, prev.frequencies[i], freq_option_ids, div.children().length);
             }
             if(frequency_type != 1 && frequency_type != 2){
                 $('#'+add_freq_btn_id).prop("disabled", false);
@@ -869,68 +866,8 @@ var kblayersubscription = {
         $('#'+add_freq_btn_id).click(()=>{
             if(frequency_type == 1 || frequency_type == 2)
             $('#'+add_freq_btn_id).prop("disabled", true);
-            div.append(kblayersubscription.create_freq_option(frequency_type, null, freq_option_ids, div.children().length))
+            div.append(kblayersubscription.create_freq_option(div, frequency_type, null, freq_option_ids, div.children().length))
         });
-        // kblayersubscription.create_freq_option();
-
-        // const frequency_minutes_id = common_entity_modal.add_field("Minutes", "number", prev ? prev.frequency_minutes : null, minutes_options);
-        // const frequency_hours_id = common_entity_modal.add_field("Hours", "number", prev ? prev.frequency_hours : null, hours_options);
-        // const frequency_day_id = common_entity_modal.add_field("Day", "number", prev ? prev.frequency_day : null, day_options);
-        // const frequency_date_id = common_entity_modal.add_field("Date", "select", prev ? prev.frequency_date : null, date_options);
-        // const frequency_oclock_id = common_entity_modal.add_field("O'clock", "select", prev ? prev.frequency_oclock : null, oclock_options);
-        
-        // const freq_option_ids = [frequency_minutes_id, frequency_hours_id, frequency_day_id, frequency_date_id, frequency_oclock_id];
-        // const freq_option_id_map = {minutes:[frequency_minutes_id], hours:[frequency_hours_id], daily:[frequency_oclock_id],
-        //                             weekly:[frequency_oclock_id, frequency_day_id], monthly:[frequency_oclock_id, frequency_date_id]};
-        
-        // const set_hide_freq_opts = function(div, shows){
-        //     for(let i in freq_option_ids){
-        //         common_entity_modal.hide_entity(freq_option_ids[i]);
-        //         $('#'+freq_option_ids[i]).val(null);
-        //     }
-        //     for(let i in shows){
-        //         common_entity_modal.show_entity(shows[i]);
-        //     }
-        // };
-
-        // set_hide_freq_opts();
-        // $('#'+frequency_id).change(function(){
-        //     set_hide_freq_opts(freq_option_id_map[$('#'+frequency_id).val()]);
-        // });
-        
-        // const div = common_entity_modal.maker.div();
-        // div.attr('class', div.attr('class') + ' col-12');
-        // let row_div = common_entity_modal.maker.div();
-        // row_div.attr('class', row_div.attr('class') + ' row');
-
-        // const unit_label = $('<label>').text("");
-        // const unit_options = {'evry':'Every', 'daily':'Daily', 'Weekly':'Weekly'};
-        // const unit = common_entity_modal.maker.select("custom_query_unit", prev ? prev.unit : null, false, unit_options);
-        // const unit_div = common_entity_modal.maker.div();
-        // unit_div.attr('class', 'col-2');
-        // unit_div.append(unit_label);
-        // unit_div.append(unit);
-
-        // const frequency_label = $('<label>').text("");
-        // const frequency = common_entity_modal.maker.text("custom_query_frequency", prev ? prev.frequency : null);
-        // const frequency_div = common_entity_modal.maker.div();
-        // frequency_div.attr('class', 'col-2');
-        // frequency_div.append(frequency_label);
-        // frequency_div.append(frequency);
-
-        // row_div.append(unit_div);
-        // row_div.append(frequency_div);
-        // div.append(row_div);
-
-        // common_entity_modal.add_div("Update Frequency", div, 
-        //                             [{label:frequency_label, field:frequency}, 
-        //                             {label:unit_label, field:unit}]);
-
-        // native_layer_options = {}
-        // for(let key in kblayersubscription.var.mapped_names){
-        //     native_layer_options[key] = key;
-        // }
-        // common_entity_modal.add_field("Native Layer Name", "select", prev ? prev.native_layer_name : null, native_layer_options, false);
 
         const ids = {name_id:name_id, description_id:description_id, sql_query_id:sql_query_id, frequency_id:frequency_id, freq_option_ids:freq_option_ids};
         common_entity_modal.add_callbacks(
@@ -939,14 +876,17 @@ var kblayersubscription = {
             success_callback=kblayersubscription.get_custom_query_info);
         common_entity_modal.show();
     },
-    create_freq_option: function(type, value, option_ids, seq){
+    create_freq_option: function(div, type, value, option_ids, seq){
         let row_div = common_entity_modal.maker.div();
+        row_div.attr('class', 'row');
         row_div.attr('class', 'row');
         const ids = {};
 
-        const add_element = function(element, col=1){
+        const add_element = function(element, col=1, align_right=false){
             const div = common_entity_modal.maker.div();
             div.attr('class', 'col-'+col);
+            if(align_right)
+                div.attr('class', div.attr('class') + ' text_right');
             div.append(element);
             row_div.append(div);
             return element;
@@ -993,7 +933,17 @@ var kblayersubscription = {
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }
-        option_ids.push(ids);
+
+        const del_btn = common_entity_modal.maker.button("Delete", null, false);
+        del_btn.click(()=>{
+            row_div.remove();
+            option_ids.splice(option_ids.indexOf(ids), 1);
+        });
+        add_element(del_btn, 2, true);
+        
+        option_ids.push(ids);   
+
+        div.append(row_div)
         return row_div;
     },
     write_custom_query: function(success_callback, error_callback, ids, prev){
