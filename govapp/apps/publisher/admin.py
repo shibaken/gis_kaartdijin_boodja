@@ -23,6 +23,13 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     list_display = ('id', 'url', 'username', 'enabled', 'created_at')
     ordering = ('id',)
+    
+class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
+    """Custom Django Admin for GeoServer Queue."""
+    # This provides a better interface for `ManyToMany` fields
+    # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
+    list_display = ('id', 'publish_entry', 'symbology_only', 'status', 'success', 'started_at', 'completed_at', 'created_at')
+    ordering = ('id',)
 
 class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
@@ -43,3 +50,4 @@ admin.site.register(models.publish_entries.PublishEntry, PublishEntryAdmin)
 admin.site.register(models.notifications.EmailNotification, reversion.admin.VersionAdmin)
 admin.site.register(models.workspaces.Workspace, reversion.admin.VersionAdmin)
 admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
+admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
