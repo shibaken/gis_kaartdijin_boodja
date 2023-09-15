@@ -245,13 +245,7 @@ var kblayersubscription = {
             if(key == 'enabled'){
                 subscription_data[key] = $('#'+fields[key].id).prop('checked');
             } else {
-                try{
-                    subscription_data[key] = utils.validate_empty_input(common_entity_modal.get_label(fields[key].id), $('#'+fields[key].id).val());
-                } catch (error){
-                    common_entity_modal.show_alert("An error occured while creating a new subscription.");
-                    console.log(error)
-                    return;
-                }
+                subscription_data[key] = utils.validate_empty_input(common_entity_modal.get_label(fields[key].id), $('#'+fields[key].id).val());
             }
         }
         optional_fields = kblayersubscription.var.optional_fields;
@@ -922,7 +916,7 @@ var kblayersubscription = {
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 5){    //monthly
-            add_element($('<label>').text("Day of Month @ Time (DD:HH:MM)"),3);
+            add_element($('<label>').text("Every week(DD:HH:MM)"),3);
             const date_input = add_element(common_entity_modal.maker.number("date", value ? value.date : null));
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
