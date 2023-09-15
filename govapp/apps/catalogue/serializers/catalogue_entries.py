@@ -65,6 +65,13 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "publish_entry",
         )
 
+    # def validate_name(self):
+    #     if self.name and self.type == 5:
+    #         pass
+    #     else:
+    #         if len(self.name) < 1:
+    #             raise serializers.ValidationError("Please enter a valid catalogue name.")
+
 class CatalogueEntryCreateSubscriptionMappingSerializer(serializers.ModelSerializer):
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
