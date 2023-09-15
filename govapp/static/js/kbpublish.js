@@ -1043,7 +1043,15 @@ var kbpublish = {
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
                     kbpublish.publish_to_cddp(btndata.id);
-                });                    
+                });    
+                
+                $( ".publish-to-ftp-btn" ).click(function() {
+                    console.log("Publish FTP");
+                    console.log($(this).attr('data-json'));
+                    var btndata_json = $(this).attr('data-json');
+                    var btndata = JSON.parse(btndata_json);
+                    kbpublish.publish_to_ftp(btndata.id);
+                });
 
        
             },
@@ -1061,6 +1069,7 @@ var kbpublish = {
         
         $('#publish-to-geoserver-btn-'+btn_id).attr('disabled','disabled');
         $('#publish-to-cddp-btn-'+btn_id).attr('disabled','disabled');
+        $('#publish-to-ftp-btn-'+btn_id).attr('disabled','disabled');
         $("#publish-external-success-"+btn_id).hide();
         $("#publish-external-error-"+btn_id).hide();
         $('#publish-external-loading-'+btn_id).show();
@@ -1076,13 +1085,15 @@ var kbpublish = {
                 $('#publish-external-loading-'+btn_id).hide();
                 $("#publish-external-success-"+btn_id).show();
                 $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');                
+                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
+                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');                
             },
             error: function (error) {
                 $('#publish-external-loading-'+btn_id).hide();
                 $("#publish-external-error-"+btn_id).show();
                 $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
                 $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
+                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');
             },
         });        
     },
@@ -1091,6 +1102,7 @@ var kbpublish = {
 
         $('#publish-to-geoserver-btn-'+btn_id).attr('disabled','disabled');
         $('#publish-to-cddp-btn-'+btn_id).attr('disabled','disabled');
+        $('#publish-to-ftp-btn-'+btn_id).attr('disabled','disabled');
         $("#publish-external-success-"+btn_id).hide();
         $("#publish-external-error-"+btn_id).hide();
         $('#publish-external-loading-'+btn_id).show();
@@ -1108,6 +1120,7 @@ var kbpublish = {
                 $("#publish-external-success-"+btn_id).show();
                 $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
                 $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');  
+                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');  
                 common_pagination.var.current_page=0;
             },
             error: function (error) {
@@ -1115,6 +1128,7 @@ var kbpublish = {
                 $("#publish-external-error-"+btn_id).show();
                 $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
                 $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
+                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');
                 if(error.status == 409){
                     common_entity_modal.show_alert("This geoserver publish is already in a queue.", "Duplicated");
                 } else if(error.status == 412){
@@ -1123,6 +1137,39 @@ var kbpublish = {
             },
         });        
     },    
+    publish_to_ftp: function(btn_id) { 
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        
+        $('#publish-to-geoserver-btn-'+btn_id).attr('disabled','disabled');
+        $('#publish-to-cddp-btn-'+btn_id).attr('disabled','disabled');
+        $('#publish-to-ftp-btn-'+btn_id).attr('disabled','disabled');
+        $("#publish-external-success-"+btn_id).hide();
+        $("#publish-external-error-"+btn_id).hide();
+        $('#publish-external-loading-'+btn_id).show();
+        post_data = {};
+        $.ajax({
+            url: kbpublish.var.publish_data_url+btn_id+"/publish/ftp/?symbology_only=false",
+            type: 'POST',
+            //dataType: 'json',
+            headers: {'X-CSRFToken' : csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: 'application/json',
+            success: function (response) {
+                $('#publish-external-loading-'+btn_id).hide();
+                $("#publish-external-success-"+btn_id).show();
+                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
+                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');     
+                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');           
+            },
+            error: function (error) {
+                $('#publish-external-loading-'+btn_id).hide();
+                $("#publish-external-error-"+btn_id).show();
+                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
+                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
+                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');
+            },
+        });        
+    },
     get_publish_editors: function() {
         var publish_id = $('#publish_id').val();
         $.ajax({
