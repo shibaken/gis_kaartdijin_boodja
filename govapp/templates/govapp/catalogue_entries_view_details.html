@@ -26,7 +26,12 @@
                                           {{ catalogue_entry_obj.name }}
                                     {% endif %}
                               {% else %}
-                                    {{ catalogue_entry_obj.name }}
+                                    {% if has_edit_access is True %}
+                                          <input type="hidden"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
+                                          {{ catalogue_entry_obj.name }}  
+                                    {% else %}
+                                          {{ catalogue_entry_obj.name }}
+                                    {% endif %}
                               {% endif %} 
                       </div>
                       <div class='col-4'>
