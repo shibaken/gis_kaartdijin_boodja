@@ -49,7 +49,7 @@ class Scanner:
         }
 
         #lay_sub = layer_subscriptions.LayerSubscription.objects.filter(type=3)
-        cat_ent = catalogue_entries.CatalogueEntry.objects.filter(layer_subscription__type=3, status=2)
+        cat_ent = catalogue_entries.CatalogueEntry.objects.filter(type=5, layer_subscription__status=2)
 
         for ce in cat_ent:
             cqf = custom_query_frequency.CustomQueryFrequency.objects.filter(catalogue_entry=ce)
