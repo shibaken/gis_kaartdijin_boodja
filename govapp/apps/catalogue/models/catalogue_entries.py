@@ -3,6 +3,7 @@
 # Standard
 import types
 import reversion
+from datetime import datetime 
 
 # Third-Party
 from django.contrib import auth
@@ -17,6 +18,7 @@ from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.catalogue import notifications as notifications_utils
 from govapp.apps.catalogue import utils
 from govapp.apps.catalogue.models import custodians
+
 
 # Typing
 from typing import Optional, Union, TYPE_CHECKING
@@ -364,3 +366,18 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
         # Failed
         return False
+
+
+
+    def save(self, *args, **kwargs):
+        print ("HERE")
+        from govapp.apps.catalogue.models import layer_metadata
+        if self.type == 5:
+           lm = layer_metadata.LayerMetadata.objects.filter(catalogue_entry=self)
+           if lm.count() > 0:
+               pass
+           else:
+               layer_metadata.LayerMetadata.objects.create(catalogue_entry=self,created_at=datetime.now())
+
+
+        super(CatalogueEntry, self).save(*args, **kwargs)
