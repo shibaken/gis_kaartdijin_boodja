@@ -66,16 +66,6 @@ class CatalogueEntryViewSet(
     search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]    
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        def filter_by_type(type):
-                return True if type in [
-                    models.catalogue_entries.CatalogueEntryType.SPATIAL_FILE, 
-                    models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY
-                    ] else False
-        response.data['results'] = [res for res in response.data['results'] if filter_by_type(res['type'])]
-        return response
-        
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def lock(self, request: request.Request, pk: str) -> response.Response:
