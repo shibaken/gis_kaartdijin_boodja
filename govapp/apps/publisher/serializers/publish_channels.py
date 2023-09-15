@@ -100,7 +100,7 @@ class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
         return data
 
 def _validate_bbox(data):
-    if not data['override_bbox']:
+    if 'override_bbox' not in data:
         return
     if _has_null(data['native_crs'], 
                     data['nbb_minx'], data['nbb_maxx'], data['nbb_miny'], data['nbb_maxy'], data['nbb_crs'],
