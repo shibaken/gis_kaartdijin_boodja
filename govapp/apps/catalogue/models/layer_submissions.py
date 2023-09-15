@@ -36,6 +36,7 @@ class LayerSubmission(mixins.RevisionedMixin):
         related_name="layers",
         on_delete=models.CASCADE,
     )
+    layer_attribute = models.TextField(null=True, blank=True, help_text="This is the attribute data from the spatial file.")
     geojson = models.TextField(null=True, blank=True)
 
     class Meta:

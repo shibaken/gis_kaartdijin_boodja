@@ -103,7 +103,13 @@ class Absorber:
         metadata = layer.metadata()
         attributes = layer.attributes()
         symbology = layer.symbology()
-        import json
+
+       
+        print ("LAYER attributes")
+        for a in attributes:
+            print (a)
+        print (attributes)
+        
         log.info(f"Extracting data from layer: '{attributes}'")
         # Retrieve existing catalogue entry from the database
         # Here we specifically check the Layer Metadata name
@@ -143,6 +149,10 @@ class Absorber:
         # Calculate attributes hash
         attributes_hash = utils.attributes_hash(attributes)
 
+        attributes_str = ""
+        for attr in attributes:
+            attributes_str = attributes_str+str(attr)+"\n"
+
         # Create Catalogue Entry
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
             name=metadata.name,
@@ -159,6 +169,7 @@ class Absorber:
             is_active=True,  # Active!
             created_at=metadata.created_at,
             hash=attributes_hash,
+            layer_attribute=attributes_str,
             catalogue_entry=catalogue_entry,
             geojson=geojson_path
         )
@@ -218,6 +229,10 @@ class Absorber:
         # Calculate Layer Submission Attributes Hash
         attributes_hash = utils.attributes_hash(attributes)
         
+        attributes_str = ""
+        for attr in attributes:
+            attributes_str = attributes_str+str(attr)+"\n"
+
         # Convert to a Geojson text
         geojson_path = self.convert_to_geojson(archive, catalogue_entry)
 
@@ -228,6 +243,7 @@ class Absorber:
             is_active=False,  # Starts out Inactive
             created_at=metadata.created_at,
             hash=attributes_hash,
+            layer_attribute=attributes_str,
             catalogue_entry=catalogue_entry,
             geojson=geojson_path
         )    
