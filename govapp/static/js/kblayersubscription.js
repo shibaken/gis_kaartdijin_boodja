@@ -877,14 +877,25 @@ var kblayersubscription = {
             row_div.append(div);
             return element;
         }
+
+        const set_min_max = function(number_input, min, max){
+            number_input.on('input', function() {
+                var val = $(this).val();
+                if (val == "") return
+                else if (val < min) $(this).val(min);
+                else if (isNaN(val) || val > max) $(this).val(max);
+            });
+        }
         if(type == 1){ //every_minutes
             add_element($('<label>').text("Every"));
             const minutes_input = add_element(common_entity_modal.maker.number("minutes", value ? value.minutes : null));
+            set_min_max(minutes_input, 1, 60);
             add_element($('<label>').text("Minutes"));
             ids.minutes = minutes_input.attr('id');
         }else if(type == 2){    //every_hours
             add_element($('<label>').text("Every"));
             const hours_input = add_element(common_entity_modal.maker.number("hours", value ? value.hours : null));
+            set_min_max(hours_input, 1, 24);
             add_element($('<label>').text("hours"));
             ids.hours = hours_input.attr('id');
         }else if(type == 3){    //daily
@@ -892,7 +903,9 @@ var kblayersubscription = {
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
             hour_input.attr('id', hour_input.attr('id')+'-'+seq);
+            set_min_max(hour_input, 0, 23);
             minute_input.attr('id', minute_input.attr('id')+'-'+seq);
+            set_min_max(minute_input, 0, 59);
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 4){    //weekly
@@ -903,7 +916,9 @@ var kblayersubscription = {
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
             day_input.attr('id', day_input.attr('id')+'-'+seq);
             hour_input.attr('id', hour_input.attr('id')+'-'+seq);
+            set_min_max(hour_input, 0, 23);
             minute_input.attr('id', minute_input.attr('id')+'-'+seq);
+            set_min_max(minute_input, 0, 59);
             ids.day = day_input.attr('id');
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
@@ -913,8 +928,11 @@ var kblayersubscription = {
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
             date_input.attr('id', date_input.attr('id')+'-'+seq);
+            set_min_max(date_input, 1, 31);
             hour_input.attr('id', hour_input.attr('id')+'-'+seq);
+            set_min_max(hour_input, 0, 23);
             minute_input.attr('id', minute_input.attr('id')+'-'+seq);
+            set_min_max(minute_input, 0, 59);
             ids.date = date_input.attr('id');
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');

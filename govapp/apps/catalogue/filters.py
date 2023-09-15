@@ -12,6 +12,7 @@ class CatalogueEntryFilter(filters.FilterSet):
     """Catalogue Entry Filter."""
     updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
     order_by = filters.OrderingFilter(fields=("id", "name", "status", "updated_at", "custodian", "assigned_to"))
+    type_in = filters.CharFilter(method='filter_type_in')
 
     class Meta:
         """Catalogue Entry Filter Metadata."""
@@ -20,6 +21,9 @@ class CatalogueEntryFilter(filters.FilterSet):
                   "status": ["in", "exact"], "name": ["icontains", "contains"], 
                   "description": ["icontains", "contains"], "type": ["exact"]}
 
+    def filter_type_in(self, queryset, name, value):
+        types = value.split(',')
+        return queryset.filter(type__in=types)
 
 class CustodianFilter(filters.FilterSet):
     """Custodian Filter."""

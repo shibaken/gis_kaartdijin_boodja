@@ -279,9 +279,9 @@ var kbcatalogue = {
                 updated_after:          utils.convert_date_format($('#catalogue-lastupdatedfrom').val(), kbcatalogue.var.catalogue_date_format, hh="00", mm="00", ss="00"),
                 updated_before:         utils.convert_date_format($('#catalogue-lastupdatedto').val(), kbcatalogue.var.catalogue_date_format, hh="23", mm="59", ss="59"),
                 id:                     $('#catalogue-number').val().replace("PE", ""),
-                // type:                   1,
                 limit:                  $('#catalogue-limit').val(),
-                order_by:               $('#catalogue-order-by').val()
+                order_by:               $('#catalogue-order-by').val(),
+                type_in:                   "1,5"
             }
 
             params_str = utils.make_query_params(params);
