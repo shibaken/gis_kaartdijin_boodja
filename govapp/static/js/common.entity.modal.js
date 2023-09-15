@@ -86,7 +86,7 @@ var common_entity_modal = {
             return field;
         },
         text: (label, value, disabled) => {
-            value = value ? value: "";
+            value = value == null ? "" : value;
             return common_entity_modal.maker.make_common_field(label, value, disabled);
         },
         password: (label, value, disabled) => {
@@ -100,7 +100,7 @@ var common_entity_modal = {
             // <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
         },
         number: (label, value, disabled) => {
-            value = value ? value: "";
+            value = value == null ? "" : value;
             let field = common_entity_modal.maker.make_common_field(label, value, disabled, type="number");
             field.on('input',function(){
                 $(this).val($(this).val().replace(/\D/g, ""));
