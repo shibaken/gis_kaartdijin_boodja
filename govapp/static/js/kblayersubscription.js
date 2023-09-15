@@ -819,14 +819,6 @@ var kblayersubscription = {
     show_custom_query_modal: function(prev){
         //options
         const frequecy_options = {1:'Every Minutes', 2:'Every Hours', 3:'Daily', 4:'Weekly', 5:'Monthly'};
-        let date_options = {};
-        for(let i=1 ; i <= 28 ; i++){
-            date_options[i] = i + "";
-        }
-        let oclock_options = {};
-        for(let i=0 ; i < 24 ; i++){
-            oclock_options[i] = (i >= 10 ? i : "0"+i) + ":00";
-        }
 
         common_entity_modal.init("Add Custom Table Layer", type="submit");
         const name_id = common_entity_modal.add_field("Catalogue Entry Name", "text", prev ? prev.name : null);
