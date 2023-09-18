@@ -245,10 +245,20 @@ var kbpublish = {
             $('#new-publish-cddp-spatial-mode').removeAttr('disabled');  
             $('#new-publish-cddp-path').removeAttr('disabled'); 
 
+            $("#new-publish-cddp-xml-path-div").hide();
+
             $('#new-publish-cddp-spatial-format').val('');
             $('#new-publish-cddp-frequency-type').val('');
             $('#new-publish-cddp-spatial-mode').val('');
             $('#new-publish-cddp-path').val(''); 
+            $("#new-publish-cddp-xml-path").val('');
+            
+            $('#new-publish-cddp-spatial-format').change(function(){
+                $('#new-publish-cddp-xml-path-div').hide();
+                if($('#new-publish-cddp-spatial-format').val() == 3){
+                    $('#new-publish-cddp-xml-path-div').show();
+                }
+            });
            
             $('#PublishNewCDDPModal').modal('show');
         });            
@@ -716,8 +726,17 @@ var kbpublish = {
         var newpublishspatialmode = $('#new-publish-cddp-spatial-mode').val();
         var newpublishfrequencytype = $('#new-publish-cddp-frequency-type').val();        
         var newpublishcddppath =  $('#new-publish-cddp-path').val();      
+        var newpublishcddpxmppath = $('#new-publish-cddp-xml-path').val();
 
-        var post_data = {"format": newpublishspatialformat, "name" : newpublishname, "mode": newpublishspatialmode, "frequency": newpublishfrequencytype, "path": newpublishcddppath, "publish_entry": publish_id};
+        var post_data = {
+            "format": newpublishspatialformat, 
+            "name" : newpublishname, 
+            "mode": newpublishspatialmode, 
+            "frequency": newpublishfrequencytype, 
+            "path": newpublishcddppath, 
+            "publish_entry": publish_id,
+            "xml_path": newpublishcddpxmppath
+        };
         var csrf_token = $("#csrfmiddlewaretoken").val();
        
         $('#new-publish-new-cddp-popup-error').html("");
@@ -748,6 +767,13 @@ var kbpublish = {
             $('#new-publish-new-cddp-popup-error').show();
             return false;
         }
+
+        if (newpublishspatialformat == 3 && newpublishcddpxmppath.length < 1) {
+            $('#new-publish-new-cddp-popup-error').html("Please choose a xml path");
+            $('#new-publish-new-cddp-popup-error').show();
+            return false;
+        }
+        
        
         $('#new-publish-cddp-spatial-format').attr('disabled','disabled');
         $('#new-publish-cddp-frequency-type').attr('disabled','disabled');
@@ -1629,21 +1655,35 @@ var kbpublish = {
         let mode_id = common_entity_modal.add_field(label="Spatial Mode", type="select", value=prev.mode, option_map=kbpublish.var.publish_cddp_mode);
         let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_cddp_frequency);
         let path_id = common_entity_modal.add_field(label="Path", type="text", value=prev.path);
+        let xml_path_id = common_entity_modal.add_field(label="XML Path", type="text", value=prev.xml_path);
+        if(prev.format != 3){
+            $('#'+xml_path_id).hide();
+        }
+        $('#'+format_id).change(function(){
+            common_entity_modal.hide_entity(xml_path_id);
+            if($('#'+format_id).val() == 3){
+                common_entity_modal.show_entity(xml_path_id);
+            }
+        })
 
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.write_cddp(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, prev.id),
+                                            this.write_cddp(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, xml_path_id, prev.id),
                                             success_callback=this.get_publish_cddp);
         common_entity_modal.show();
     },
 
 
-    write_cddp: function(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, cddp_id){
+    write_cddp: function(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, xml_path_id, cddp_id){
         // get & validation check
         const name = utils.validate_empty_input('name', $('#'+name_id).val());
         const format = utils.validate_empty_input('format', $('#'+format_id).val());
         const mode = utils.validate_empty_input('mode', $('#'+mode_id).val());
         const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
         const path = utils.validate_empty_input('path', $('#'+path_id).val());
+        let xml_path = null;
+        if(format == 3){
+            xml_path = utils.validate_empty_input('xml_path', $('#'+xml_path_id).val());
+        }
         
         // make data body
         var cddp_data = {
@@ -1652,6 +1692,7 @@ var kbpublish = {
             mode:mode,
             frequency:frequency,
             path:path,
+            xml_path:xml_path,
             publish_entry:$('#publish-entry-id')
         };
         var url = this.var.publish_save_cddp_url;

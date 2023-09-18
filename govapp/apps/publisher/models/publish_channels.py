@@ -66,6 +66,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
     mode = models.IntegerField(choices=CDDPPublishChannelMode.choices)
     frequency = models.IntegerField(choices=PublishChannelFrequency.choices)
     path = models.TextField()
+    xml_path = models.TextField(blank=True, null=True)
     publish_entry = models.ForeignKey(
         publish_entries.PublishEntry,
         related_name="cddp_channel",
@@ -276,7 +277,6 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
 
         # Delete local temporary copy of file if we can
         #shutil.rmtree(filepath.parent, ignore_errors=True)
-
 
 class GeoServerPublishChannelMode(models.IntegerChoices):
     """Enumeration for a GeoServer Publish Channel Mode."""
