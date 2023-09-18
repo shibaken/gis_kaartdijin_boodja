@@ -162,6 +162,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         #     filepath=filepath,
         #     layer=self.publish_entry.catalogue_entry.metadata.name,
         # )
+
         publish_directory = function(
             filepath=filepath,
             layer=self.name,
@@ -171,6 +172,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
 
         # # Construct Path
         output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY+"/"+self.path)
+        xml_output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY+"/"+self.xml_path)
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
@@ -184,13 +186,25 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
             if self.format == 3:
-                if os.path.isdir(new_output_path): 
-                    shutil.rmtree(new_output_path)
+                if len(new_output_path) > 0:
+                    if os.path.isdir(new_output_path): 
+                        shutil.rmtree(pathlib.Path(new_output_path))
+                    if os.path.isfile(new_output_path):                                            
+                        os.remove(new_output_path)   
+
             else:
                 if os.path.isfile(new_output_path):                    
                         os.remove(new_output_path)   
             shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)), file_name), output_path)
-            
+
+        if self.format == 3:
+            # Copy XML from orignal spatial archive.
+            xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
+            print (xml_file)
+            if os.path.isfile(xml_file):
+                shutil.copy(xml_file, xml_output_path)
+                       
+
         # # Push to Azure
         # azure.azure_output().put(
         #     path=publish_path,
@@ -251,6 +265,22 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 path=new_output_path,
                 contents=pathlib.Path(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir,file_name)).read_bytes(),
             )
+
+
+
+        if self.format == 3:
+            # Copy XML from orignal spatial archive.
+            xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
+            print (xml_file)
+            if os.path.isfile(xml_file):
+                new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.xml_path,file_name)            
+                sharepoint.sharepoint_output().put(
+                    path=new_output_path,
+                    contents=pathlib.Path(os.path.join(xml_file)).read_bytes(),
+                )
+
+                
+                       
 
             # sharepoint.sharepoint_output().put(
             #     path=os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,filepath),

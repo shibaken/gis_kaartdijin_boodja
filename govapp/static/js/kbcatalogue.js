@@ -323,8 +323,8 @@ var kbcatalogue = {
                             html+= " <td>";
                             if (response.results[i].type == 1) {
                                 html+= "Spatial File";
-                            } else if (response.results[i].type == 2) {
-                                html+= "Subscriptions";
+                            } else if (response.results[i].type == 5) {
+                                html+= "Subscription";
                             }
 
                             html+= "</td>";
