@@ -65,7 +65,8 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
 
 
         )
-    converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath}
+    converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
+
     # Return
     return converted
     #return output_filepath
@@ -167,6 +168,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 
     # Decompress and Flatten if Required
     filepath = compression.decompress(filepath)
+    filepath_before_flatten = filepath
     filepath = compression.flatten(filepath)
 
     # Construct Output Filepath
@@ -205,7 +207,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
     #compressed_filepath = compression.compress(output_filepath.parent)
 
     compressed_filepath = compression.compress(output_filepath.parent)
-    converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent}
+    converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent, "orignal_filepath": filepath, "filepath_before_flatten": filepath_before_flatten}
     # Return
     return converted
     #return compressed_filepath
