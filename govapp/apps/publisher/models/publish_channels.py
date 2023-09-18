@@ -161,6 +161,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         #     filepath=filepath,
         #     layer=self.publish_entry.catalogue_entry.metadata.name,
         # )
+
         publish_directory = function(
             filepath=filepath,
             layer=self.name,
@@ -183,13 +184,30 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
             if self.format == 3:
-                if os.path.isdir(new_output_path): 
-                    shutil.rmtree(new_output_path)
+                if len(new_output_path) > 0:
+                    if os.path.isdir(new_output_path): 
+                        shutil.rmtree(pathlib.Path(new_output_path))
+                    if os.path.isfile(new_output_path):                                            
+                        os.remove(new_output_path)   
+
             else:
                 if os.path.isfile(new_output_path):                    
                         os.remove(new_output_path)   
             shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)), file_name), output_path)
             
+        print ("HERE")
+        print (output_path)
+        if self.format == 3:
+            # Copy XML from orignal spatial archive.
+            xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
+            print (xml_file)
+            if os.path.isfile(xml_file):
+                print ("XML EXIST")
+                #shutil.copy(xml_file, )
+            else:
+                print ("XML NO EXIST")
+            
+
         # # Push to Azure
         # azure.azure_output().put(
         #     path=publish_path,
