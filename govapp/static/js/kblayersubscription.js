@@ -668,7 +668,11 @@ var kblayersubscription = {
                     let mapping = {};
                     mapping.name = kblayersubscription.var.mapping_names[i];
                     mapping.catalogue = mapping.name in response.results ? response.results[mapping.name].name : "";
-                    rows.push(mapping);
+                    if($('#has_edit_access').val() == "True"){
+                        rows.push(mapping);
+                    } else if($('#has_edit_access').val() == "False" && mapping.name in response.results){
+                        rows.push(mapping);
+                    }
                 }
                 table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
                 if(rows.length == 0){
