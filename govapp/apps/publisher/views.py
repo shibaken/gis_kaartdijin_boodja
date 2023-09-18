@@ -270,7 +270,16 @@ class PublishEntryViewSet(
             
             if cpc.published_at:
                  published_at = cpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')                 
-            cddp_list.append({"id": cpc.id, "name":cpc.name, "format": cpc.format, "path": cpc.path, "mode": cpc.mode, "frequency": cpc.frequency, "published_at": published_at})
+            cddp_list.append({
+                "id": cpc.id, 
+                "name":cpc.name, 
+                "format": cpc.format, 
+                "path": cpc.path, 
+                "mode": cpc.mode, 
+                "frequency": cpc.frequency, 
+                "published_at": published_at,
+                "xml_path":cpc.xml_path
+                })
 
         # Return Response
         return response.Response(cddp_list, status=status.HTTP_200_OK)
