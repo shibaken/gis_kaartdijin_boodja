@@ -270,14 +270,15 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
 
         if self.format == 3:
             # Copy XML from orignal spatial archive.
-            xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
-            print (xml_file)
-            if os.path.isfile(xml_file):
-                new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.xml_path,file_name)            
-                sharepoint.sharepoint_output().put(
-                    path=new_output_path,
-                    contents=pathlib.Path(os.path.join(xml_file)).read_bytes(),
-                )
+            if len(self.xml_path) > 1:
+                xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
+                print (xml_file)
+                if os.path.isfile(xml_file):
+                    new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.xml_path,self.name + ".xml")            
+                    sharepoint.sharepoint_output().put(
+                        path=new_output_path,
+                        contents=pathlib.Path(os.path.join(xml_file)).read_bytes(),
+                    )
 
                 
                        
