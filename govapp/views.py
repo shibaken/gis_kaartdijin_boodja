@@ -122,9 +122,11 @@ class PublishPage(base.TemplateView):
             if ce.id not in pe_list:
                 catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
                    
+        is_administrator = utils.is_administrator(request.user)
 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
+        context['is_administrator'] = is_administrator
         # context['catalogue_entry_list'] = []
 
         # Render Template and Return
@@ -468,4 +470,49 @@ class LayerSubscriptionsView(base.TemplateView):
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
     
+
+class GeoServerWeb(base.TemplateView):
+    """ GeoServer Web to show Geoserver Queue status """
     
+    # Template name
+    template_name = "govapp/geoserverweb.html"
+    
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """Provides the GET request endpoint for the GeoServer Queue status page.
+
+        Args:
+            request (http.HttpRequest): The incoming HTTP request.
+            *args (Any): Extra positional arguments.
+            **kwargs (Any): Extra keyword arguments.
+
+        Returns:
+            http.HttpResponse: The rendered template response.
+        """
+        
+        # pk = self.kwargs['pk']
+        # subscription_obj = catalogue_layer_subscription_models.LayerSubscription.objects.get(id=pk)
+        # LayerSubscriptionStatus = catalogue_layer_subscription_models.LayerSubscriptionStatus
+        # LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType
+        
+        # system_users_list = []
+        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        # for su in system_users_obj:
+        #     system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
+        # has_edit_access = False
+        # if utils.is_administrator(request.user) is True and request.user == subscription_obj.assigned_to:
+        #      if subscription_obj.status in (LayerSubscriptionStatus.DRAFT, LayerSubscriptionStatus.NEW_DRAFT, LayerSubscriptionStatus.PENDING):
+        #         has_edit_access = True
+        
+        # # Construct Context
+        context: dict[str, Any] = {}
+        # context['subscription_obj'] = subscription_obj
+        # context['status'] = catalogue_utils.find_enum_by_value(LayerSubscriptionStatus, subscription_obj.status).name.replace('_', ' ')
+        # context['system_users'] = system_users_list
+        # context['is_system_user'] = utils.is_administrator(request.user)
+        # context['has_edit_access'] = has_edit_access
+        # context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
+        # context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
+        # context['enabled_js'] = "true" if subscription_obj.enabled else "false"
+        
+        # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)  

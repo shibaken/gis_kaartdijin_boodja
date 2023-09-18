@@ -1004,9 +1004,11 @@ var kbpublish = {
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             html+= " <td class='text-end'>";
                             if (response.results[i].status == 1) {
-                                html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>&nbsp;";
-                                html+= " <button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>&nbsp;";
-                                html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>&nbsp;";                        
+                                if($('#is_administrator').val() == 'True'){
+                                    html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>&nbsp;";
+                                    html+= " <button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>&nbsp;";
+                                    html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>&nbsp;";                        
+                                }
                                 html+= " <button class='btn btn-primary btn-sm publish-table-button' id='publish-external-loading-"+response.results[i].id+"' type='button' disabled><span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span class='visually-hidden'>Loading...</span></button>&nbsp;";
                                 html+= " <button class='btn btn-success btn-sm publish-table-button' id='publish-external-success-"+response.results[i].id+"' type='button' disabled><i class='bi bi-check'></i></button>&nbsp;";
                                 html+= " <button class='btn btn-danger btn-sm publish-table-button' id='publish-external-error-"+response.results[i].id+"' type='button' disabled><i class='bi bi-x-lg'></i></button>&nbsp;";

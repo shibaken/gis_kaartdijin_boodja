@@ -6,6 +6,7 @@
       {% include "govapp/common_entity_modal.html" %}
 
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+      <input type="hidden" id="is_administrator" name="is_administrator" value="{{ is_administrator  }}">
 
       <div class="container" id="dashboard-table-container">
             
@@ -101,7 +102,9 @@
                                           &nbsp;
                                     </div>
                                     <div class='col-6 text-end'>
-                                          <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-btn'>New Publish Entry</button>
+                                          {% if is_administrator %}
+                                                <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-btn'>New Publish Entry</button>
+                                          {% endif %}
                                     </div>
                               </div>
                         </div>      
