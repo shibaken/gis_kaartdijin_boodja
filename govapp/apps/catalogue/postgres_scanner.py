@@ -163,10 +163,11 @@ class Scanner:
                 if generate_shp is True:  
                     try:
                         co = conversions.postgres_to_shapefile(ce.name,ce.layer_subscription.host,ce.layer_subscription.username,ce.layer_subscription.userpassword,ce.layer_subscription.database,ce.layer_subscription.port,ce.sql_query)
+                        shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
                     except Exception as e:
                         print ("ERROR Running POSTGIS to Shapefile conversation")
                         print (e)
-                    shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
+                    
                     row.last_job_run = now_dt
                     row.save()
                     
