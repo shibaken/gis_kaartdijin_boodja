@@ -44,6 +44,8 @@ var table={
                     row.append(this.make_switch_cell(obj[key]));
                 else if(columns[i][key] == 'text')
                     row.append(this.make_text_cell(obj[key]));
+                else if(columns[i][key] == 'boolean')
+                    row.append(this.make_boolean_cell(obj[key]));
             }
         }
         return row;
@@ -57,6 +59,17 @@ var table={
                     .prop("checked", checked).prop("disabled", disabled);
         div.append(input);
         return $('<td>').append(div);
+    },
+    make_boolean_cell: function(flag){
+        let i = $('<i>');
+        if(flag){
+            i.attr("class", "bi bi-check-circle-fill");
+            i.attr("style", "color: #08c508;");
+        }else{
+            i.attr("class", "bi bi-x-circle-fill");
+            i.attr("style", "color: #dd0508;");
+        }
+        return $('<td>').append(i);
     },
     make_button_cell: function(buttons, id_prefix, data){
         // e.g. : buttons={Update:callback(data)}

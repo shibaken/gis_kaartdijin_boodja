@@ -35,7 +35,7 @@ var kbgeoserverweb = {
                     {name:"text"}, 
                     {symbology_only:'text'}, 
                     {status:'text'}, 
-                    {success:'switch'}, 
+                    {success:'boolean'}, 
                     {started_at:'text'}, 
                     {completed_at:'text'}, 
                     {created_at:'text'}
