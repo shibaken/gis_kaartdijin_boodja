@@ -371,6 +371,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
     def save(self, *args, **kwargs):
         print ("HERE")
+        super(CatalogueEntry, self).save(*args, **kwargs)
+        
         from govapp.apps.catalogue.models import layer_metadata
         if self.type == 5:
            lm = layer_metadata.LayerMetadata.objects.filter(catalogue_entry=self)
@@ -380,4 +382,4 @@ class CatalogueEntry(mixins.RevisionedMixin):
                layer_metadata.LayerMetadata.objects.create(catalogue_entry=self,created_at=datetime.now())
 
 
-        super(CatalogueEntry, self).save(*args, **kwargs)
+        
