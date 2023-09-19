@@ -721,3 +721,14 @@ class FTPServerViewSet(
     filterset_class = filters.FTPServerFilter
     search_fields = ["id","name",]# "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]    
+    
+@drf_utils.extend_schema(tags=["Publisher - GeoServer Queues"])
+class GeoServerQueueViewSet(
+    viewsets.mixins.RetrieveModelMixin,
+    viewsets.mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """GeoServer Queue View Set."""
+    queryset = models.geoserver_queues.GeoServerQueue.objects.all().order_by('id')
+    serializer_class = serializers.publish_channels.GeoServerQueueSerializer
+    permission_classes = [accounts_permissions.IsInAdministratorsGroup]

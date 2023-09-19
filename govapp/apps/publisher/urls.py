@@ -17,6 +17,7 @@ router.register("channels/ftp-server", views.FTPServerViewSet)
 router.register("channels/geoserver", views.GeoServerPublishChannelViewSet)
 router.register("notifications/emails", views.EmailNotificationViewSet)
 router.register("workspaces", views.WorkspaceViewSet)
+router.register("geoserverweb", views.GeoServerQueueViewSet)
 
 
 # Catalogue URL Patterns

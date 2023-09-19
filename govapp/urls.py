@@ -67,6 +67,8 @@ urlpatterns = [
     urls.path("layer/subscriptions/", views.LayerSubscriptions.as_view()),
     urls.re_path("layer/subscriptions/(?P<pk>\d+)/", views.LayerSubscriptionsView.as_view()),
 
+    # GeoServerQueue
+    urls.path("geoserver/web/", views.GeoServerWeb.as_view()),
 
 
 

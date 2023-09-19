@@ -168,3 +168,19 @@ class FTPServerSerializer(serializers.ModelSerializer):
             "id",        
             "created"
         )
+        
+        
+class GeoServerQueueSerializer(serializers.ModelSerializer):
+    """GeoServer Queue Model Serializer."""
+    name = serializers.CharField(source='publish_entry.name')
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        """GeoServer Queue Model Serializer Metadata."""
+        model = models.geoserver_queues.GeoServerQueue
+        fields = "__all__"
+        
+    def get_status(self, obj):
+        for status in models.geoserver_queues.GeoServerQueueStatus:
+            if status == obj.status:
+                return status.name
