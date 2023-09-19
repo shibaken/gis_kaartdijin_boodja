@@ -166,9 +166,9 @@ class Scanner:
                     except Exception as e:
                         print ("ERROR Running POSTGIS to Shapefile conversation")
                         print (e)
-                        shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
-                        row.last_job_run = now_dt
-                        row.save()
+                    shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
+                    row.last_job_run = now_dt
+                    row.save()
                     
 
                         #row.last_job_run = datetime.now()
