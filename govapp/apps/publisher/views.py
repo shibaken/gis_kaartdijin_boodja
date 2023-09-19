@@ -729,6 +729,6 @@ class GeoServerQueueViewSet(
     viewsets.GenericViewSet,
 ):
     """GeoServer Queue View Set."""
-    queryset = models.geoserver_queues.GeoServerQueue.objects.all().order_by('id')
+    queryset = models.geoserver_queues.GeoServerQueue.objects.all().order_by('-id')
     serializer_class = serializers.publish_channels.GeoServerQueueSerializer
     permission_classes = [accounts_permissions.IsInAdministratorsGroup]
