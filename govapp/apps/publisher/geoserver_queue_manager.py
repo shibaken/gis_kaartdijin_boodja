@@ -43,8 +43,8 @@ class GeoServerQueueExcutor:
                 self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_info)
         
             self._update_result(queue_item=queue_item)
-            if self.result_success:
-                geoserver_queue_manager.push(publish_entry=queue_item.publish_entry, symbology_only=queue_item.symbology_only)
+            #if self.result_success:
+            #    geoserver_queue_manager.push(publish_entry=queue_item.publish_entry, symbology_only=queue_item.symbology_only)
 
     def _retrieve_target_items(self):
         """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """
