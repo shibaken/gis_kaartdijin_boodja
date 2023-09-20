@@ -37,7 +37,7 @@ var kbgeoserverweb = {
                     {status:'text'}, 
                     {success:'boolean'}, 
                     {started_at:'text'}, 
-                    {completed_at:'text'}, 
+                    {publishing_result:'text'}, 
                     {created_at:'text'}
                 ]);
                 if(response.results == 0){

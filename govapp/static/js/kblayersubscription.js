@@ -856,7 +856,7 @@ var kblayersubscription = {
         $('#'+add_freq_btn_id).click(()=>{
             if(frequency_type == 1 || frequency_type == 2)
             $('#'+add_freq_btn_id).prop("disabled", true);
-            div.append(kblayersubscription.create_freq_option(div, frequency_type, null, freq_option_ids, div.children().length))
+            div.append(kblayersubscription.create_freq_option(div, frequency_type, null, freq_option_ids, div.children().length));
         });
 
         const ids = {name_id:name_id, description_id:description_id, sql_query_id:sql_query_id, frequency_id:frequency_id, freq_option_ids:freq_option_ids};
@@ -871,6 +871,7 @@ var kblayersubscription = {
         row_div.attr('class', 'row');
         row_div.attr('class', 'row');
         const ids = {};
+        const labels_fields=[];
 
         const add_element = function(element, col=1, align_right=false){
             const div = common_entity_modal.maker.div();
@@ -885,35 +886,39 @@ var kblayersubscription = {
         const set_min_max = function(number_input, min, max){
             number_input.on('input', function() {
                 var val = $(this).val();
-                if (val == "") return
+                if (val == "") return;
                 else if (val < min) $(this).val(min);
                 else if (isNaN(val) || val > max) $(this).val(max);
             });
         }
         if(type == 1){ //every_minutes
-            add_element($('<label>').text("Every"));
+            const label = add_element($('<label>').text("Every"));
             const minutes_input = add_element(common_entity_modal.maker.number("minutes", value ? value.minutes : null));
             set_min_max(minutes_input, 1, 60);
             add_element($('<label>').text("Minutes"));
+            labels_fields.push({label:label, field:minutes_input});
             ids.minutes = minutes_input.attr('id');
         }else if(type == 2){    //every_hours
-            add_element($('<label>').text("Every"));
+            const label = add_element($('<label>').text("Every"));
             const hours_input = add_element(common_entity_modal.maker.number("hours", value ? value.hours : null));
             set_min_max(hours_input, 1, 24);
             add_element($('<label>').text("hours"));
+            labels_fields.push({label:label, field:hours_input});
             ids.hours = hours_input.attr('id');
         }else if(type == 3){    //daily
-            add_element($('<label>').text("Every day(HH:MM)"),2);
+            const label = add_element($('<label>').text("Every day(HH:MM)"),2);
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
             hour_input.attr('id', hour_input.attr('id')+'-'+seq);
             set_min_max(hour_input, 0, 23);
             minute_input.attr('id', minute_input.attr('id')+'-'+seq);
             set_min_max(minute_input, 0, 59);
+            labels_fields.push({label:label, field:hour_input});
+            labels_fields.push({label:label, field:minute_input});
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 4){    //weekly
-            add_element($('<label>').text("Every week(DAY:HH:MM)"),3);
+            const label = add_element($('<label>').text("Every week(DAY:HH:MM)"),3);
             const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
             const day_input = add_element(common_entity_modal.maker.select("day", value ? value.day : null, false, day_options), 2);
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
@@ -923,11 +928,14 @@ var kblayersubscription = {
             set_min_max(hour_input, 0, 23);
             minute_input.attr('id', minute_input.attr('id')+'-'+seq);
             set_min_max(minute_input, 0, 59);
+            labels_fields.push({label:label, field:day_input});
+            labels_fields.push({label:label, field:hour_input});
+            labels_fields.push({label:label, field:minute_input});
             ids.day = day_input.attr('id');
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 5){    //monthly
-            add_element($('<label>').text("Every week(DD:HH:MM)"),3);
+            const label = add_element($('<label>').text("Every week(DD:HH:MM)"),3);
             const date_input = add_element(common_entity_modal.maker.number("date", value ? value.date : null));
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));
@@ -937,6 +945,9 @@ var kblayersubscription = {
             set_min_max(hour_input, 0, 23);
             minute_input.attr('id', minute_input.attr('id')+'-'+seq);
             set_min_max(minute_input, 0, 59);
+            labels_fields.push({label:label, field:date_input});
+            labels_fields.push({label:label, field:hour_input});
+            labels_fields.push({label:label, field:minute_input});
             ids.date = date_input.attr('id');
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
@@ -948,10 +959,12 @@ var kblayersubscription = {
             option_ids.splice(option_ids.indexOf(ids), 1);
         });
         add_element(del_btn, 2, true);
+        labels_fields.push({label:del_btn, field:del_btn});
+        common_entity_modal.add_labels_fields(labels_fields);
         
         option_ids.push(ids);   
 
-        div.append(row_div)
+        div.append(row_div);
         return row_div;
     },
     write_custom_query: function(success_callback, error_callback, ids, prev){

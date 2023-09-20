@@ -56,7 +56,6 @@ var kbpublish = {
             communication_type:null,    // will be filled during initiation
             ftp_servers: []
     },
-    pagination: kbpublish_pagination,
     init_dashboard: function() {    
         $('#publish-custodian').select2({
             placeholder: 'Select an option',
