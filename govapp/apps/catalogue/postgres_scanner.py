@@ -67,6 +67,7 @@ class Scanner:
                     else:
                         dt_diff = now_dt - row.last_job_run.astimezone()
                         last_job_run_in_minutes = dt_diff.total_seconds() / 60
+                        print (last_job_run_in_minutes)
                         if last_job_run_in_minutes > row.every_minutes:
                             is_time_to_run = True
 
@@ -159,11 +160,17 @@ class Scanner:
 
                             if is_time_to_run is True:
                                 generate_shp = True
-                if generate_shp is True:
-                    co = conversions.postgres_to_shapefile(ce.name,ce.layer_subscription.host,ce.layer_subscription.username,ce.layer_subscription.userpassword,ce.layer_subscription.database,ce.layer_subscription.port,ce.sql_query)
-                    shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
+                if generate_shp is True:  
+                    try:
+                        co = conversions.postgres_to_shapefile(ce.name,ce.layer_subscription.host,ce.layer_subscription.username,ce.layer_subscription.userpassword,ce.layer_subscription.database,ce.layer_subscription.port,ce.sql_query)
+                        shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
+                    except Exception as e:
+                        print ("ERROR Running POSTGIS to Shapefile conversation")
+                        print (e)
+                    
                     row.last_job_run = now_dt
                     row.save()
+                    
 
                         #row.last_job_run = datetime.now()
                         #row.save()
