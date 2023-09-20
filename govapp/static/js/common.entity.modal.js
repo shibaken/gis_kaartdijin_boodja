@@ -41,9 +41,7 @@ var common_entity_modal = {
         disabled = common_entity_modal.var.type == "delete" ? true: disabled;
         let field = this.maker[type](label_str, value, disabled, option_map);
         contents.append(field);
-        // common_entity_modal.var.fields.push(field);
         const id = this.get_id(field, type);
-        // common_entity_modal.var.field_map[id] = {field:field, label:label};
         common_entity_modal.register_field(field, label, id);
         return id;
     },
