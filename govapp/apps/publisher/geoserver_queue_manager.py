@@ -6,6 +6,7 @@ import logging
 # Third-Party
 from django.db.models import Q
 from django.utils import timezone
+from django.contrib import auth
 
 # Local
 from govapp.apps.publisher.models import geoserver_queues
@@ -21,6 +22,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from govapp.apps.publisher.models.publish_entries import PublishEntry
     
+# Shortcuts
+UserModel = auth.get_user_model()
 # Logging
 log = logging.getLogger(__name__)
 
@@ -87,12 +90,13 @@ class GeoServerQueueExcutor:
         queue_item.publishing_result = self.publishing_log
         queue_item.save()
     
-def push(publish_entry: "PublishEntry", symbology_only: bool) -> bool:
+def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserModel=None) -> bool:
     if not hasattr(publish_entry, "geoserver_channel"):
         log.info(f"'{publish_entry}' has no GeoServer Publish Channel")
         return False
     
     geoserver_queues.GeoServerQueue.objects.create(
         publish_entry=publish_entry,
-        symbology_only=symbology_only)
+        symbology_only=symbology_only,
+        submitter=submitter)
     return True

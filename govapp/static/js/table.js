@@ -1,9 +1,23 @@
+/*** 
+ * This is a util to manage a bootstrap table
+ * Core public methods
+ *  - set_thead
+ *  - set_tbody
+ *  - message_body
+ *  - refresh
+***/
 var table={
-    // common_table.set_rows('#catalogue-detail-notification-tbody', response.results, {key:'active', type:'switch'},
-                //                         buttons={Update:kbcatalogue_detail.show_update_email_notification_modal, 
-                //                                 Delete:kbcatalogue_detail.show_delete_email_notification_modal});
-
-    // columns e.g. {Name:2, Email:4}
+    
+    
+    /*** 
+    * setting a table head
+    * Param
+    *  - thead : Jquery object of <thead>
+    *  - columns : An object to set columns of head
+    *               key - Name of column
+    *               value - number of bootstrap grid of column for width
+    *  - e.g. {Name:2, Email:4}
+    ***/
     set_thead: function (thead, columns){
         thead.empty();
 
@@ -16,13 +30,23 @@ var table={
         }
         thead.append(tr);
     },
+
+    /*** 
+    * setting a table body
+    * Param
+    *  - thead : Jquery object of <thead>
+    *  - columns : An object to set columns of head
+    *               key - Name of column
+    *               value - number of bootstrap grid of column for width
+    *  - e.g. {Name:2, Email:4}
+    ***/
     set_tbody: function (tbody, list, columns, buttons=null){
         tbody.empty();
 
         for(let i in list){
-            let row = this.make_row(list[i], columns);
+            let row = this._make_row(list[i], columns);
             if(buttons){
-                row.append(this.make_button_cell(buttons, tbody.attr("id")+'-row-'+i, list[i]));
+                row.append(this._make_button_cell(buttons, tbody.attr("id")+'-row-'+i, list[i]));
             }
             tbody.append(row);
         }
@@ -35,43 +59,46 @@ var table={
     //                                     buttons={Update:kbcatalogue_detail.show_update_email_notification_modal, 
     //                                             Delete:kbcatalogue_detail.show_delete_email_notification_modal});
 
-    make_row: function (obj, columns){
+    _make_row: function (obj, columns){
         let row = $('<tr>');
         for(let i in columns){
             let key = Object.keys(columns[i])[0];
             if(key in obj){
                 if(columns[i][key] == 'switch')
-                    row.append(this.make_switch_cell(obj[key]));
+                    row.append(this._make_switch_cell(obj[key]));
                 else if(columns[i][key] == 'text')
-                    row.append(this.make_text_cell(obj[key]));
+                    row.append(this._make_text_cell(obj[key]));
                 else if(columns[i][key] == 'boolean')
-                    row.append(this.make_boolean_cell(obj[key]));
+                    row.append(this._make_boolean_cell(obj[key]));
             }
         }
         return row;
     },
-    make_text_cell: function(text){
+    _make_text_cell: function(text){
         return $('<td>').text(text);
     },
-    make_switch_cell: function(checked, disabled=true){
+    _make_switch_cell: function(checked, disabled=true){
         let div = $('<div>').attr("class", "form-check form-switch");
         let input = $('<input>').attr("class", "form-check-input").attr("type", "checkbox").attr("role", "switch")
                     .prop("checked", checked).prop("disabled", disabled);
         div.append(input);
         return $('<td>').append(div);
     },
-    make_boolean_cell: function(flag){
+    _make_boolean_cell: function(flag){
         let i = $('<i>');
-        if(flag){
+        if(flag == true){
             i.attr("class", "bi bi-check-circle-fill");
             i.attr("style", "color: #08c508;");
-        }else{
+        }else if(flag == false){
             i.attr("class", "bi bi-x-circle-fill");
             i.attr("style", "color: #dd0508;");
+        }else{
+            i.attr("class", "bi bi-dash-circle-fill");
+            i.attr("style", "color: #fdbd1a;");
         }
         return $('<td>').append(i);
     },
-    make_button_cell: function(buttons, id_prefix, data){
+    _make_button_cell: function(buttons, id_prefix, data){
         // e.g. : buttons={Update:callback(data)}
         let td = $('<td>');
         td.attr("class", "text-end");

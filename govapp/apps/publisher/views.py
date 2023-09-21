@@ -182,7 +182,9 @@ class PublishEntryViewSet(
             return response.Response(status=status.HTTP_409_CONFLICT)
         else:
             # creating a queue item when it doesn't exist
-            res = geoserver_queue_manager.push(publish_entry=publish_entry, symbology_only=symbology_only)
+            res = geoserver_queue_manager.push(publish_entry=publish_entry, 
+                                               symbology_only=symbology_only, 
+                                               submitter=request.user)
         if res:
             return response.Response(status=status.HTTP_204_NO_CONTENT)
         else :

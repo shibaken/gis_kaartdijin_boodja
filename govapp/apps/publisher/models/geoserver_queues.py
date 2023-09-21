@@ -4,6 +4,7 @@
 # Third-Party
 from django.db import models
 from django.utils import timezone
+from django.contrib import auth
 import reversion
 
 # Local
@@ -15,6 +16,9 @@ from typing import TYPE_CHECKING
 # Type Checking
 if TYPE_CHECKING:
     from govapp.apps.publisher.models.publish_entries import PublishEntry
+
+# Shortcuts
+UserModel = auth.get_user_model()
 
 class GeoServerQueueStatus(models.IntegerChoices):
     READY = 0
@@ -34,6 +38,14 @@ class GeoServerQueue(mixins.RevisionedMixin):
     status = models.IntegerField(choices=GeoServerQueueStatus.choices, default=GeoServerQueueStatus.READY)
     publishing_result = models.TextField(null=True)
     success = models.BooleanField(null=True, default=False)
+    submitter = models.ForeignKey(
+        to=UserModel, 
+        related_name="geoserver_queues", 
+        on_delete=models.CASCADE,
+        null=True,
+        blank=None,
+        default=None
+        )
     started_at = models.DateTimeField(null=True)
     completed_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
