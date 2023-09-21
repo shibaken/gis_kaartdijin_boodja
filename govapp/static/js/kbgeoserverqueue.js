@@ -22,6 +22,7 @@ var kbgeoserverweb = {
         let url = kbgeoserverweb.var.geoserverqueue_list;
         url += "?limit="+$('#geoserver-queue-limit').val();
         url += "&offset="+0; 
+        
         $.ajax({
             url: kbgeoserverweb.var.geoserverqueue_list+"?"+params_str,
             method: 'GET',
@@ -29,11 +30,17 @@ var kbgeoserverweb = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
+                for(let i in response.results){
+                    if(response.results[i].status == 'FAILED') response.results[i].success = false;
+                    else if(response.results[i].status == 'PUBLISHED') response.results[i].success = true;
+                    else response.results[i].success = null;
+                }
+
                 const tbody = $('#geoserver-queue-tbody');
                 table.set_tbody(tbody, response.results, [
                     {id:"text"}, 
                     {name:"text"}, 
-                    {symbology_only:'text'}, 
+                    {submitter:'text'}, 
                     {status:'text'}, 
                     {success:'boolean'}, 
                     {started_at:'text'}, 
