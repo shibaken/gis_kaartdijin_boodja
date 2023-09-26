@@ -3,6 +3,7 @@ var kbmanagementcommands = {
         "scan_url" :"/api/management/commands/scan_dir/",
         "get_sharepoint_submission_url" :"/api/management/commands/get_sharepoint_submissions/",
         "geoserver_queue_cron_job" :"/api/management/commands/excute_geoserver_queue/",
+        "geoserver_queue_sync_job" : "/api/management/commands/excute_geoserver_sync/",
     },
     run_scanner: function() {
             console.log("RUNNING SCANNER")
@@ -79,6 +80,31 @@ var kbmanagementcommands = {
             },
         });
     },
+    run_geoserver_sync_cron_job: function() {
+        console.log("RUNNING GEOSERVER SYNC CRON JOB")
+        $('#geoserver-sync-job-response-success').html('');
+        $('#geoserver-sync-job-response-error').html('');
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        $('#run-geoserver-sync').attr('disabled','disabled');
+        $('#run-geoserver-sync-loader').show();
+        $.ajax({
+            url: kbmanagementcommands.var.geoserver_queue_sync_job,
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {                            
+                $('#geoserver-sync-job-response-success').html("Completed");                   
+                $('#run-geoserver-sync').removeAttr('disabled');
+                $('#run-geoserver-sync-loader').hide();
+                
+            },
+            error: function (error) {                    
+                $('#geoserver-queue-job-response-error').html("Error running job");
+                $('#run-geoserver-queue').removeAttr('disabled');
+                $('#run-geoserver-queue-loader').hide();
+            },
+        });
+    },
     init: function() {
         $( "#run-scanner" ).click(function() {
             console.log("Running Scanner");
@@ -92,13 +118,19 @@ var kbmanagementcommands = {
         });
 
         $( "#run-geoserver-queue" ).click(function() {
-            console.log("Running Scanner");
+            console.log("Running GeoServer Queue");
             
             kbmanagementcommands.run_geoserver_queue_cron_job();
+        });
+        $( "#run-geoserver-sync" ).click(function() {
+            console.log("Running GeoServer sync");
+            
+            kbmanagementcommands.run_geoserver_sync_cron_job();
         });
         $('#run-scanner-loader').hide();
         $('#run-sharepoint-scanner-loader').hide();
         $('#run-geoserver-queue-loader').hide();
+        $('#run-geoserver-sync-loader').hide();
     }
 
 }

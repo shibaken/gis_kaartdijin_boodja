@@ -16,7 +16,7 @@ from govapp.common import mixins
 from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.publisher import notifications as notifications_utils
 from govapp.apps.catalogue.models import catalogue_entries
-from govapp.apps.publisher import geoserver_queue_manager
+from govapp.apps.publisher import geoserver_manager
 
 # Typing
 from typing import Optional, Union, TYPE_CHECKING
@@ -213,7 +213,7 @@ class PublishEntry(mixins.RevisionedMixin):
         Args:
             symbology_only (bool): Flag to only publish symbology.
         """
-        geoserver_queue_manager.push(publish_entry=self, symbology_only=symbology_only)
+        geoserver_manager.push(publish_entry=self, symbology_only=symbology_only)
         
         
         # # Check for Publish Channel

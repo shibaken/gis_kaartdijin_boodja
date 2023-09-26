@@ -12,14 +12,17 @@ from typing import Any
 
 
 class Command(base.BaseCommand):
-    """Excute itemes in GeoServer Queue model."""
+    """Sync layers between Geoservers and GIS."""
+    
     # Help string
-    help = "Excute itemes that pushed in GeoServer Queue(DB table)." 
+    help = "Sync layers between Geoservers and GIS." 
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """Handles the management command functionality."""
         # Display information
-        self.stdout.write("Excuting items of geoserver queue")
+        self.stdout.write("Starting to sync layers between GeoServers and GIS")
 
         # Go!
-        geoserver_manager.GeoServerQueueExcutor().excute()
+        # geoserver_queue_manager.GeoServerQueueExcutor().excute()
+        geoserver_manager.GeoServerSyncExcutor().sync_based_on_gis()
+        

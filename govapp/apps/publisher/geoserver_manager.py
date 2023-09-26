@@ -13,7 +13,7 @@ from govapp.apps.publisher.models import geoserver_queues
 from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
-from govapp.apps.publisher import geoserver_queue_manager
+from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
 from govapp.gis import geoserver
 
 # Typing
@@ -100,3 +100,31 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
         symbology_only=symbology_only,
         submitter=submitter)
     return True
+
+
+class GeoServerSyncExcutor:
+    
+    def sync_based_on_gis(self):
+        """Remove all layers on Geoservers that have been removed on GIS."""
+        log.info(f"Remove all layers on Geoservers that have been removed on GIS.")
+        
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        for geoserver_info in geoserver_pool:
+            geoserver_obj = geoserver.geoserverWithCustomCreds(
+                geoserver_info.url, geoserver_info.username, geoserver_info.password)
+            
+            # Retrive layer names from geoserver
+            layers = geoserver_obj.get_layers()
+            layer_names = [layer['name'].split(':')[1] for layer in layers]
+            
+            # Retrive layer names from DB
+            synced_layer_names = CatalogueEntry.objects.filter(
+                name__in=[layer_name for layer_name in layer_names]).values('name')
+            synced_layer_names_set = set([layer['name'] for layer in synced_layer_names])
+            
+            # Compare layer names
+            purge_list = [layer_name for layer_name in layer_names if layer_name not in synced_layer_names_set]
+            
+            # Call a remove layer api
+            for purge in purge_list:
+                geoserver_obj.delete_layer(purge)

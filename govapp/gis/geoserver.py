@@ -649,6 +649,56 @@ class GeoServer:
         return None
 
 
+    def get_layers(self) -> Optional[list[dict[str, str]]]:
+        #return None
+        """Retreiving layers from GeoServer.
+
+        Returns:
+            Optional[list[dict[str, str]]]: A list of layer information
+        """
+        # Log
+        log.info("Retreiving layers from GeoServer")
+        
+        # Construct URL
+        url = "{0}/rest/layers".format(self.service_url)
+
+        # Perform Request
+        response = httpx.get(
+            url=url,
+            auth=(self.username, self.password),
+            headers={"content-type": "application/json","Accept": "application/json"},
+        )
+        
+        # Check Response
+        response.raise_for_status()
+        
+        json_response = response.json()
+        if (json_response == None or 
+            hasattr(json_response, 'layers') or 
+            hasattr(json_response, 'layer')):
+            log.error(f"The response of retrieving layers from a GeoServer was wrong. {json_response}")
+        # Return JSON
+        return json_response['layers']['layer']
+    
+    
+    def delete_layer(self, layer_name) -> None:
+        # Construct URL
+        url = "{0}/rest/layers/{1}".format(
+            self.service_url,
+            layer_name
+            )
+        
+        response = httpx.delete(
+                    url=url,
+                    auth=(self.username, self.password),
+                    #data=xml_data,
+                    headers={"content-type": "application/json","Accept": "application/json"}
+                )
+        
+        # Check Response
+        response.raise_for_status()
+        
+
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.
 
