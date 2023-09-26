@@ -23,7 +23,7 @@ from govapp.apps.publisher import filters
 from govapp.apps.publisher import models
 from govapp.apps.publisher import permissions
 from govapp.apps.publisher import serializers
-from govapp.apps.publisher import geoserver_queue_manager
+from govapp.apps.publisher import geoserver_manager
 from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.catalogue.models import catalogue_entries
 
@@ -182,7 +182,7 @@ class PublishEntryViewSet(
             return response.Response(status=status.HTTP_409_CONFLICT)
         else:
             # creating a queue item when it doesn't exist
-            res = geoserver_queue_manager.push(publish_entry=publish_entry, 
+            res = geoserver_manager.push(publish_entry=publish_entry, 
                                                symbology_only=symbology_only, 
                                                submitter=request.user)
         if res:
