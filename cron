@@ -1,5 +1,5 @@
 # Add crons below
 # Copied from https://github.com/dbca-wa/boranga/blob/main/cron
 */5 * * * * root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py runcrons >> /app/logs/cronjob.log 2>&1
-10 9 * * 0 root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py appmonitor_client >> /app/logs/appmonitor_client.log 2>&1
+10 9 * * 0 root eval $(grep -v '^#' /etc/.cronenv | xargs -d "\n" -I {} echo export \"{}\" ) && python3 /app/manage.py appmonitor_check >> /app/logs/appmonitor_check.log 2>&1
 
