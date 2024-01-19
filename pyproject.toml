@@ -6,12 +6,12 @@ authors = ["Gaia Resources <dev@gaiaresources.com.au>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-django = "^3.2.20"
+django = "^3.2.23"
 djangorestframework = "^3.14.0"
 python-decouple = "^3.6"
 dj-database-url = "^1.0.0"
 psycopg2 = "^2.9.4"
-gunicorn = "19.9.0"
+gunicorn = "21.2.0"
 whitenoise = "5.3.0"
 dbca-utils = {git = "https://github.com/dbca-wa/dbca-utils.git"}
 webtemplate_dbca = {git = "https://github.com/dbca-wa/webtemplate2.git"}
@@ -30,6 +30,12 @@ lxml = "^4.9.2"
 owslib = "0.29.2"
 numpy = "1.25.0"
 appmonitor_client = {git = "https://github.com/dbca-wa/appmonitor_client.git"}
+cryptography = "41.0.7"
+pillow = "10.2.0"
+pyjwt = "2.8.0"
+setuptools = "69.0.3"
+urllib3 = "2.1.0"
+wheel = "0.42.0"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.16.2"

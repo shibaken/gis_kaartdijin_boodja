@@ -40,9 +40,11 @@ RUN chmod +x install_node.sh && ./install_node.sh
 RUN apt-get install -y nodejs
 RUN ln -s /usr/bin/python3.10 /usr/bin/python
 RUN pip install --upgrade pip
-
+RUN wget -O /tmp/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl https://github.com/girder/large_image_wheels/raw/wheelhouse/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=e2fe6cfbab02d535bc52c77cdbe1e860304347f16d30a4708dc342a231412c57
+RUN pip install /tmp/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 # Install Python libs using pyproject.toml and poetry.lock
 FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
+
 WORKDIR /app
 ENV POETRY_VERSION=1.3.2
 RUN curl -sSL https://install.python-poetry.org | python -
