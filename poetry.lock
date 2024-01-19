@@ -1701,6 +1701,23 @@ files = [
 ]
 
 [[package]]
+name = "oauthlib"
+version = "3.2.2"
+description = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
+    {file = "oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918"},
+]
+
+[package.extras]
+rsa = ["cryptography (>=3.0.0)"]
+signals = ["blinker (>=1.4.0)"]
+signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
+
+[[package]]
 name = "owslib"
 version = "0.29.2"
 description = "OGC Web Service utility library"
@@ -3095,7 +3112,7 @@ resolved_reference = "2f1ad5f96eb945670046ccf20cfeea604ff866b3"
 
 [[package]]
 name = "webtemplate-dbca"
-version = "2.0.11"
+version = "2.0.14"
 description = "Base HTML templates for DBCA Django projects"
 category = "main"
 optional = false
@@ -3225,4 +3242,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1fc03b8b7a1efae783382dc6c8fac1946a65fce6dfefbfa38ceff0e963945ae9"
+content-hash = "cd6890dcca695b43d17a21d24357e5d195c8e729999d76053dbc18c356cd805b"
