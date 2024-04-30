@@ -19,6 +19,7 @@ from datetime import datetime
 
 # Local
 from govapp import gis
+from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
 from govapp.common import azure
 from govapp.common import mixins
 from govapp.common import sharepoint
@@ -330,6 +331,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     llb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
     llb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
     active = models.BooleanField(null=True, blank=True,)
+    geo_server_pool = models.ForeignKey(
+        GeoServerPool,
+        null=True, 
+        blank=True,
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         """GeoServer Publish Channel Model Metadata."""
