@@ -18,35 +18,46 @@
                     <div class='col-12 round-box px-3 ' id='publish-new-form'>
                          
                     <div class='row'>
-                           <div class='col-12'>
-                                <label for="" class="form-label">Name</label>
-                                <input type="text" readonly class="form-control-plaintext" id="new-publish-name" value="{{ publish_entry_obj.catalogue_entry.name }}" autocomplete="off">
-                           </div>
-                           <div class='col-12'>
-                                <label for="" class="form-label">Spatial Format</label>
-                                    <select type="text" class="form-control" id="new-publish-spatial-format" >                                        
-                                             <option value="" selected="">---------</option>                                           
-                                             <option value="1">Wms</option>                                           
-                                             <option value="2">Wms And Wfs</option>                            
-                                   </select>                  
-                           </div>
-                           <div class='col-12'>
-                                <label for="" class="form-label">Frequency Type</label>
-                                    <select type="text" class="form-control" id="new-publish-frequency-type" >
-                                        <option value="">Select One</option>   
-                                        <option value="1">On Change</option>                               
-                                    </select>                                            
-                            </div>
+                         <div class='col-12'>
+                              <label for="" class="form-label">Name</label>
+                              <input type="text" readonly class="form-control-plaintext" id="new-publish-name" value="{{ publish_entry_obj.catalogue_entry.name }}" autocomplete="off">
+                         </div>
 
-                            <div class='col-12'>
-                                <label for="" class="form-label">Workspace</label>
-                                   <select type="text" class="form-control" id="new-publish-workspace" >
-                                        <option value="">Select One</option>   
-                                        {% for pw in publish_workspaces %}                                        
-                                             <option value="{{ pw.id }}">{{ pw.name }}</option>
-                                        {% endfor %}                                                                      
-                                   </select>                                            
-                            </div>
+                          <div class='col-12'>
+                              <label for="" class="form-label">Geoserver</label>
+                              <select type="text" class="form-control" id="new-publish-geoserver" >
+                                   <option value="">Select One</option>   
+                                   {% for gs in geo_servers %}                                        
+                                        <option value="{{ gs.id }}">{{ gs.name }}</option>
+                                   {% endfor %}                                                                      
+                              </select>                                            
+                          </div>
+
+                         <div class='col-12'>
+                              <label for="" class="form-label">Spatial Format</label>
+                              <select type="text" class="form-control" id="new-publish-spatial-format" >                                        
+                                  <option value="" selected="">---------</option>                                           
+                                  <option value="1">Wms</option>                                           
+                                  <option value="2">Wms And Wfs</option>                            
+                              </select>                  
+                         </div>
+                         <div class='col-12'>
+                              <label for="" class="form-label">Frequency Type</label>
+                              <select type="text" class="form-control" id="new-publish-frequency-type" >
+                                  <option value="">Select One</option>   
+                                  <option value="1">On Change</option>                               
+                              </select>                                            
+                          </div>
+
+                          <div class='col-12'>
+                              <label for="" class="form-label">Workspace</label>
+                              <select type="text" class="form-control" id="new-publish-workspace" >
+                                  <option value="">Select One</option>   
+                                  {% for pw in publish_workspaces %}                                        
+                                      <option value="{{ pw.id }}">{{ pw.name }}</option>
+                                  {% endfor %}                                                                      
+                              </select>                                            
+                          </div>
       
                     </div>
                  
