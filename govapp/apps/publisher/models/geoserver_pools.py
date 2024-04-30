@@ -11,6 +11,7 @@ from govapp.common import mixins
 @reversion.register()
 class GeoServerPool(mixins.RevisionedMixin):
     """Model for an Geoserver Pool."""
+    name = models.CharField(max_length=200, null=True)
     url = models.URLField()
     username = models.TextField()
     password = models.TextField()
