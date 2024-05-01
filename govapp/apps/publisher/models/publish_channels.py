@@ -312,9 +312,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         related_name="publish_channels",
         on_delete=models.PROTECT,
     )
-    publish_entry = models.OneToOneField(
+    # publish_entry = models.OneToOneField(
+    publish_entry = models.ForeignKey(
         publish_entries.PublishEntry,
-        related_name="geoserver_channel",
+        # related_name="geoserver_channel",
+        related_name="geoserver_channels",
         on_delete=models.CASCADE,
     )
     srs = models.CharField(null=True, blank=True, max_length=500)
