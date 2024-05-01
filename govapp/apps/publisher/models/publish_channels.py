@@ -331,7 +331,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     llb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
     llb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
     active = models.BooleanField(null=True, blank=True,)
-    geo_server_pool = models.ForeignKey(
+    geoserver_pool = models.ForeignKey(
         GeoServerPool,
         null=True, 
         blank=True,
