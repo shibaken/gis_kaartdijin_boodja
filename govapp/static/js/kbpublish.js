@@ -565,8 +565,15 @@ var kbpublish = {
         var newpublishspatialformat = $('#new-publish-spatial-format').val();
         var newpublishfrequencytype = $('#new-publish-frequency-type').val();
         var newpublishworkspace = $('#new-publish-workspace').val();
+        var newpublishgeoserverpool = $('#new-publish-geoserver-pool').val();
 
-        var post_data = {"mode": newpublishspatialformat, "frequency": newpublishfrequencytype, "workspace": newpublishworkspace, "publish_entry": publish_id};
+        var post_data = {
+            "mode": newpublishspatialformat,
+            "frequency": newpublishfrequencytype,
+            "workspace": newpublishworkspace,
+            "publish_entry": publish_id,
+            "geoserver_pool": newpublishgeoserverpool
+        };
         var csrf_token = $("#csrfmiddlewaretoken").val();
        
         $('#new-publish-new-geoserver-popup-error').html("");
@@ -592,9 +599,16 @@ var kbpublish = {
             return false;
         }
        
+        if (newpublishgeoserverpool.length < 1) {
+            $('#new-publish-new-geoserver-popup-error').html("Please choose a geoserver pool.");
+            $('#new-publish-new-geoserver-popup-error').show();
+            return false;
+        }
+
         $('#new-publish-spatial-format').attr('disabled','disabled');
         $('#new-publish-frequency-type').attr('disabled','disabled');
         $('#new-publish-workspace').attr('disabled','disabled');
+        $('#new-publish-geoserver-pool').attr('disabled','disabled');
 
         
         $.ajax({
@@ -1418,11 +1432,13 @@ var kbpublish = {
         return [bbox_div, labels_fields, ids, ids_list];
     },
     show_update_geoserver_modal: function(prev){
-        common_entity_modal.init("Update Geoserver Notification", "submit");
+        console.log({prev})
+        common_entity_modal.init("Publish Update Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
         let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
         let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
-        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
+        // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
+        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
         
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.write_geoserver(success_callback, error_callback, format_id, frequency_id, workspace_id, prev.id),
