@@ -30,4 +30,4 @@ class GeoServerPool(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.id}"
+        return f"{self.id}: {self.name}" if self.name else f'{self.id}'
