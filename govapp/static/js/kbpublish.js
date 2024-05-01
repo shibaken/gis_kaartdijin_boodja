@@ -1418,7 +1418,7 @@ var kbpublish = {
         return [bbox_div, labels_fields, ids, ids_list];
     },
     show_update_geoserver_modal: function(prev){
-        common_entity_modal.init("Update Geoserver Notification", "submit");
+        common_entity_modal.init("Publish Update Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
         let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
         let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
