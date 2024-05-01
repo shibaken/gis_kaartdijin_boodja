@@ -1418,11 +1418,13 @@ var kbpublish = {
         return [bbox_div, labels_fields, ids, ids_list];
     },
     show_update_geoserver_modal: function(prev){
+        console.log({prev})
         common_entity_modal.init("Publish Update Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
         let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
         let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
-        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
+        // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
+        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
         
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
                                             this.write_geoserver(success_callback, error_callback, format_id, frequency_id, workspace_id, prev.id),
