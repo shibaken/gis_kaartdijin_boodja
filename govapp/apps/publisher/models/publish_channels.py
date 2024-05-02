@@ -344,6 +344,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         """GeoServer Publish Channel Model Metadata."""
         verbose_name = "GeoServer Publish Channel"
         verbose_name_plural = "GeoServer Publish Channels"
+        unique_together = ('publish_entry', 'geoserver_pool',)
 
     def clean(self):
         if not self.override_bbox:
