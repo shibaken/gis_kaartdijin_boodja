@@ -649,6 +649,7 @@ var kbpublish = {
                 $('#new-publish-spatial-format').removeAttr('disabled');
                 $('#new-publish-frequency-type').removeAttr('disabled');
                 $('#new-publish-workspace').removeAttr('disabled');  
+                $('#new-publish-geoserver-pool').removeAttr('disabled');  
             },
         });
 
@@ -1298,13 +1299,13 @@ var kbpublish = {
                     if (response.length > 0) {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
-                            console.log('aho')
+                            console.log({responsejson})
                             
                             button_json = '{"id": "'+responsejson[i].id+'"}'
 
                             html+= "<tr>";
                             html+= " <td>"+responsejson[i].id+"</td>";                        
-                            html+= " <td>"+responsejson[i].geoserver_pool+"</td>";                        
+                            html+= " <td>"+responsejson[i].geoserver_pool.name+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_format[responsejson[i].mode]+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_frequency[responsejson[i].frequency]+"</td>";                                                    
                             html+= " <td>"+responsejson[i].workspace_name+"</td>"; 
@@ -1329,11 +1330,20 @@ var kbpublish = {
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
                             });
                             $( ".publish-geoserver-update" ).click(function() {
+                                let data = $(this).data('json')
+                                let selected_id = parseInt(data.id)
+                                let selected_obj = null
+                                for(let response of responsejson){
+                                    if (response.id == selected_id){
+                                        selected_obj = response
+                                    }
+                                }
+
                                 if($('#catalogue-type').val() == '1'){
-                                    kbpublish.show_update_geoserver_modal(responsejson[i]);
+                                    kbpublish.show_update_geoserver_modal(selected_obj);
                                 }
                                 if($('#catalogue-type').val() == '2'){
-                                    kbpublish.show_write_geoserver_subscription_modal(responsejson[i]);
+                                    kbpublish.show_write_geoserver_subscription_modal(selected_obj);
                                 }
                             });
                         }
@@ -1437,7 +1447,7 @@ var kbpublish = {
         console.log({prev})
         common_entity_modal.init("Publish Update Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
-        let geoserver_pool_id = common_entity_modal.add_field(label="Geoserver Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
+        let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool.id, option_map=kbpublish.var.publish_geoserver_pools);
         let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
         let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
         // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
