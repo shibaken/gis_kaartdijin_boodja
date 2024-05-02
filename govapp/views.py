@@ -160,7 +160,7 @@ class PublishView(base.TemplateView):
         publish_entry_obj = publish_entries_models.PublishEntry.objects.get(id=self.kwargs['pk'])
         publish_workspaces = publish_workspaces_models.Workspace.objects.all()
         publish_workspace_list = [{'id': ws.id, 'name': ws.name} for ws in publish_workspaces]
-        geo_servers = GeoServerPool.objects.filter(enabled=True)
+        geoserver_pools = GeoServerPool.objects.filter(enabled=True)
 
         # START - To be improved later todo a reverse table join      
         ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
@@ -182,6 +182,10 @@ class PublishView(base.TemplateView):
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
         for su in system_users_obj:
             system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
+
+        geoserver_pool_list = {}
+        for gsp in geoserver_pools:
+            geoserver_pool_list[gsp.id] = gsp.name
                 
         is_administrator = utils.is_administrator(request.user)
         if is_administrator is True and  publish_entry_obj.status == 2 and request.user == publish_entry_obj.assigned_to:
@@ -195,7 +199,8 @@ class PublishView(base.TemplateView):
         context['has_edit_access'] = has_edit_access
         context['publish_workspaces'] = publish_workspaces
         context['publish_workspace_list'] = publish_workspace_list
-        context['geo_servers'] = geo_servers
+        context['geoserver_pools'] = geoserver_pools
+        context['geoserver_pool_list_json'] = json.dumps(geoserver_pool_list)
     
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
