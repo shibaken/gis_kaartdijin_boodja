@@ -27,6 +27,8 @@ from govapp.apps.accounts import utils
 # Typing
 from typing import Any
 
+from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
+
 UserModel = auth.get_user_model()
 
 
@@ -158,6 +160,7 @@ class PublishView(base.TemplateView):
         publish_entry_obj = publish_entries_models.PublishEntry.objects.get(id=self.kwargs['pk'])
         publish_workspaces = publish_workspaces_models.Workspace.objects.all()
         publish_workspace_list = [{'id': ws.id, 'name': ws.name} for ws in publish_workspaces]
+        geo_servers = GeoServerPool.objects.filter(enabled=True)
 
         # START - To be improved later todo a reverse table join      
         ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
@@ -192,6 +195,7 @@ class PublishView(base.TemplateView):
         context['has_edit_access'] = has_edit_access
         context['publish_workspaces'] = publish_workspaces
         context['publish_workspace_list'] = publish_workspace_list
+        context['geo_servers'] = geo_servers
     
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)

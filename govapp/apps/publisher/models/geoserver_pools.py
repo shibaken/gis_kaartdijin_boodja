@@ -11,6 +11,7 @@ from govapp.common import mixins
 @reversion.register()
 class GeoServerPool(mixins.RevisionedMixin):
     """Model for an Geoserver Pool."""
+    name = models.CharField(max_length=200, null=True)
     url = models.URLField()
     username = models.TextField()
     password = models.TextField()
@@ -29,4 +30,4 @@ class GeoServerPool(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.id}"
+        return f"{self.id}: {self.name}" if self.name else f'{self.id}'

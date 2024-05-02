@@ -19,6 +19,7 @@ from datetime import datetime
 
 # Local
 from govapp import gis
+from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
 from govapp.common import azure
 from govapp.common import mixins
 from govapp.common import sharepoint
@@ -311,9 +312,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         related_name="publish_channels",
         on_delete=models.PROTECT,
     )
-    publish_entry = models.OneToOneField(
+    # publish_entry = models.OneToOneField(
+    publish_entry = models.ForeignKey(  # We want 1toM relation between publish_entry and geoserver_pool.  That's why changing this relation from 1to1 to 1toM.
         publish_entries.PublishEntry,
-        related_name="geoserver_channel",
+        # related_name="geoserver_channel",
+        related_name="geoserver_channels",
         on_delete=models.CASCADE,
     )
     srs = models.CharField(null=True, blank=True, max_length=500)
@@ -330,11 +333,18 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     llb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
     llb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
     active = models.BooleanField(null=True, blank=True,)
+    geoserver_pool = models.ForeignKey(  # We want to select the destination geoserver_pools rather than sending the layers to all the geoserver_pools.
+        GeoServerPool,
+        null=True, 
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
 
     class Meta:
         """GeoServer Publish Channel Model Metadata."""
         verbose_name = "GeoServer Publish Channel"
         verbose_name_plural = "GeoServer Publish Channels"
+        # unique_together = ('publish_entry', 'geoserver_pool',)
 
     def clean(self):
         if not self.override_bbox:

@@ -65,7 +65,8 @@ INSTALLED_APPS = [
     "django_filters",
     "reversion",
     "django_cron",
-    "appmonitor_client"
+    "appmonitor_client",
+    "django_extensions",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
