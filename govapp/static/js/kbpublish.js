@@ -1295,11 +1295,13 @@ var kbpublish = {
                     if (response.length > 0) {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
+                            console.log('aho')
                             
                             button_json = '{"id": "'+responsejson[i].id+'"}'
 
                             html+= "<tr>";
                             html+= " <td>"+responsejson[i].id+"</td>";                        
+                            html+= " <td>"+responsejson[i].geoserver_pool+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_format[responsejson[i].mode]+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_frequency[responsejson[i].frequency]+"</td>";                                                    
                             html+= " <td>"+responsejson[i].workspace_name+"</td>"; 
