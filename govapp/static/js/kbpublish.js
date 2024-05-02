@@ -20,6 +20,9 @@ var kbpublish = {
                 1: "WMS",  
                 2: "WMS & WFS"
             },
+            publish_geoserver_pools: {
+
+            },
             publish_geoserver_frequency: {
                 1: "OnChange"
             },
@@ -1336,13 +1339,10 @@ var kbpublish = {
                         }
                     } else {
                         $('#publish-geoserver-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
-
                     }
                 } else {
                       $('#publish-geoserver-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
                 }
-
-       
             },
             error: function (error) {
                 $('#save-publish-popup-error').html("Error Loading publish data");
@@ -1437,6 +1437,7 @@ var kbpublish = {
         console.log({prev})
         common_entity_modal.init("Publish Update Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
+        let geoserver_pool_id = common_entity_modal.add_field(label="Geoserver Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
         let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
         let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
         // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);

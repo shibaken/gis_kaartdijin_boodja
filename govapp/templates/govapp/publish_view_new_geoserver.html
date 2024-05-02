@@ -24,10 +24,10 @@
                          </div>
 
                           <div class='col-12'>
-                              <label for="" class="form-label">GeoServer Pool</label>
+                              <label for="" class="form-label">GeoServer Pool1</label>
                               <select type="text" class="form-control" id="new-publish-geoserver-pool" >
                                    <option value="">Select One</option>   
-                                   {% for gs in geo_servers %}                                        
+                                   {% for gs in geoserver_pools %}                                        
                                         <option value="{{ gs.id }}">{{ gs.name }}</option>
                                    {% endfor %}                                                                      
                               </select>                                            
