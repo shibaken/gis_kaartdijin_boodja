@@ -1305,7 +1305,7 @@ var kbpublish = {
 
                             html+= "<tr>";
                             html+= " <td>"+responsejson[i].id+"</td>";                        
-                            html+= " <td>"+responsejson[i].geoserver_pool.name+"</td>";                        
+                            html+= " <td>"+responsejson[i].geoserver_pool_name+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_format[responsejson[i].mode]+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_frequency[responsejson[i].frequency]+"</td>";                                                    
                             html+= " <td>"+responsejson[i].workspace_name+"</td>"; 
@@ -1447,14 +1447,14 @@ var kbpublish = {
         console.log({prev})
         common_entity_modal.init("Publish Update Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
-        let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool.id, option_map=kbpublish.var.publish_geoserver_pools);
+        let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
         let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
         let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
         // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
         let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
         
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.write_geoserver(success_callback, error_callback, format_id, frequency_id, workspace_id, prev.id),
+                                            this.write_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
                                             success_callback=this.get_publish_geoservers);
         common_entity_modal.show();
     },
@@ -1503,14 +1503,16 @@ var kbpublish = {
             error: error_callback
         });
     },
-    write_geoserver: function(success_callback, error_callback, format_id, frequency_id, workspace_id, publish_id){
+    write_geoserver: function(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, publish_id){
         // get & validation check
         const mode = utils.validate_empty_input('format', $('#'+format_id).val());
         const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
         const workspace = utils.validate_empty_input('workspace', $('#'+workspace_id).val());
+        const geoserver_pool = utils.validate_empty_input('geoserver_pool', $('#'+geoserver_pool_id).val());
         
         // make data body
         var geoserver_data = {
+            geoserver_pool: geoserver_pool,
             mode:mode,
             frequency:frequency,
             workspace:workspace,

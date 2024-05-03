@@ -11,6 +11,3 @@ class GeoServerPoolSerializer(serializers.ModelSerializer):
             "id",
             "name",
         )
-        read_only_fields = (
-            "id",
-        )
