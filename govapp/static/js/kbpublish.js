@@ -1339,10 +1339,15 @@ var kbpublish = {
                                     }
                                 }
 
-                                if($('#catalogue-type').val() == '1'){
+                                const SPATIAL_FILE = '1'
+                                const SUBSCRIPTION_WFS = '2'
+                                const SUBSCRIPTION_WMS = '3'
+                                const SUBSCRIPTION_POSTGIS = '4'
+                                const SUBSCRIPTION_QUERY = '5'
+
+                                if($('#catalogue-type').val() == SPATIAL_FILE){
                                     kbpublish.show_update_geoserver_modal(selected_obj);
-                                }
-                                if($('#catalogue-type').val() == '2'){
+                                } else if([SUBSCRIPTION_WFS, SUBSCRIPTION_WMS, SUBSCRIPTION_POSTGIS, SUBSCRIPTION_QUERY].includes($('#catalogue-type').val())){
                                     kbpublish.show_write_geoserver_subscription_modal(selected_obj);
                                 }
                             });
@@ -1364,7 +1369,9 @@ var kbpublish = {
         });
     },
     show_write_geoserver_subscription_modal: function(prev){
+        console.log({prev})
         let workspace = prev ? prev.workspace : null;
+        let geoserver_pool = prev ? prev.geoserver_pool : null;
         let srs = prev ? prev.srs : null;
         let override_bbox = prev ? prev.override_bbox : false;
         let native_crs = prev ? prev.native_crs : null;
@@ -1388,6 +1395,7 @@ var kbpublish = {
 
         common_entity_modal.init("Publish New Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
+        ids.geoserver_pool = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
         ids.workspace = common_entity_modal.add_field(label="Workspace", type="select", value=workspace, option_map=kbpublish.var.publish_workspace_map);
         ids.srs = common_entity_modal.add_field(label="SRS", type="text", value=srs);
 
@@ -1444,7 +1452,6 @@ var kbpublish = {
         return [bbox_div, labels_fields, ids, ids_list];
     },
     show_update_geoserver_modal: function(prev){
-        console.log({prev})
         common_entity_modal.init("Publish Update Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
         let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
