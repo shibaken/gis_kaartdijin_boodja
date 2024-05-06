@@ -315,8 +315,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     # publish_entry = models.OneToOneField(
     publish_entry = models.ForeignKey(  # We want 1toM relation between publish_entry and geoserver_pool.  That's why changing this relation from 1to1 to 1toM.
         publish_entries.PublishEntry,
-        # related_name="geoserver_channel",
-        related_name="geoserver_channels",
+        related_name="geoserver_channel",
+        # related_name="geoserver_channels",
         on_delete=models.CASCADE,
     )
     srs = models.CharField(null=True, blank=True, max_length=500)
