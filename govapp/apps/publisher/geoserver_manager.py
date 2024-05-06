@@ -41,10 +41,19 @@ class GeoServerQueueExcutor:
         for queue_item in target_items:
             self._init_excuting(queue_item=queue_item)
         
+            ### Old
             geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+
+            ### New
+            # geoserver_pool = queue_item.publish_entry.geoserver_channel.value_list('geoserver_pool', flat=True)  # Somehow this doesnot work...
+            geoserver_pool = []
+            for geoserver_publish_channel in queue_item.publish_entry.geoserver_channel.all():
+                if geoserver_publish_channel.geoserver_pool.enabled:
+                    geoserver_pool.append(geoserver_publish_channel.geoserver_pool)
+
             for geoserver_info in geoserver_pool:
                 self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_info)
-        
+
             self._update_result(queue_item=queue_item)
             #if self.result_success:
             #    geoserver_queue_manager.push(publish_entry=queue_item.publish_entry, symbology_only=queue_item.symbology_only)
@@ -67,6 +76,7 @@ class GeoServerQueueExcutor:
         log.info(log_msg)
         self.publishing_log += log_msg
         return log_msg
+    
         
     def _publish_to_a_geoserver(self, publish_entry: "PublishEntry", geoserver_info: geoserver_pools.GeoServerPool):
         geoserver_obj = geoserver.geoserverWithCustomCreds(
