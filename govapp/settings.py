@@ -182,16 +182,37 @@ SPECTACULAR_SETTINGS = {
 # https://docs.djangoproject.com/en/3.2/topics/logging/
 LOGGING = {
     "version": 1,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+    },
     "disable_existing_loggers": False,
     "handlers": {
         "console": {
-            "class": "logging.StreamHandler",
+            'level': decouple.config('LOG_CONSOLE_LEVEL', default='INFO'),
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'ledger.log'),
+            'formatter': 'verbose',
+            'maxBytes': 5242880
         },
     },
     "root": {
         "handlers": ["console"],
         "level": "INFO",
     },
+    'loggers': {
+        '': {
+            'handlers': ['file', 'console'],
+            'level': decouple.config('LOG_CONSOLE_LEVEL', default='WARNING'),
+            'propagate': True
+        },
+    }
 }
 
 # Sharepoint Settings
