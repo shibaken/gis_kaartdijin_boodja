@@ -22,7 +22,7 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     # filter_horizontal = ["editors"]
-    list_display = ('id', 'name', 'status', 'created_at', 'updated_at')
+    list_display = ('id', 'name', 'status', 'type', 'created_at', 'updated_at')
     ordering = ('id',)
     inlines = [CatalogueEntryPermissionInline]
     raw_id_fields = ('custodian', 'assigned_to')
