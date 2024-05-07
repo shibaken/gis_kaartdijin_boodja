@@ -33,7 +33,7 @@ class PublishEntrySerializer(serializers.ModelSerializer):
             "assigned_to",
         #    "catalogue_entry",
             "cddp_channel",
-            "geoserver_channel",
+            "geoserver_channels",
             "first_name",
             "last_name",
             "email",
@@ -62,7 +62,7 @@ class PublishEntryCreateSerializer(serializers.ModelSerializer):
             "editors",
             "assigned_to",
             "cddp_channel",
-            "geoserver_channel",
+            "geoserver_channels",
         )
 
 
