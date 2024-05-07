@@ -42,7 +42,8 @@ class GeoServerQueueExcutor:
             self._init_excuting(queue_item=queue_item)
         
             ### Old
-            geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+            # geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+            ###
 
             ### New
             # geoserver_pool = queue_item.publish_entry.geoserver_channel.value_list('geoserver_pool', flat=True)  # Somehow this doesnot work...
@@ -50,6 +51,7 @@ class GeoServerQueueExcutor:
             for geoserver_publish_channel in queue_item.publish_entry.geoserver_channel.all():
                 if geoserver_publish_channel.geoserver_pool.enabled:
                     geoserver_pool.append(geoserver_publish_channel.geoserver_pool)
+            ###
 
             for geoserver_info in geoserver_pool:
                 self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_info)

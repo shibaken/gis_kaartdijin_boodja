@@ -46,7 +46,6 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbol
         # Publish!
         # for special file
         if publish_entry.catalogue_entry.type == CatalogueEntryType.SPATIAL_FILE:
-            print(publish_entry.geoserver_channel.all())
             for geoserver_publish_channel in publish_entry.geoserver_channel.all():
                 geoserver_publish_channel.publish(symbology_only, geoserver)
             # publish_entry.geoserver_channel.publish(symbology_only, geoserver)  # type: ignore[union-attr]
