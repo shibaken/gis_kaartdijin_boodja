@@ -195,7 +195,7 @@ class GeoServer:
             log.info(f"Uploading WMS Layer to GeoServer")
             
             xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
-            print (xml_data)
+            log.debug(xml_data)
             store_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}/wmslayers/{3}".format(
                 self.service_url,
                 workspace,
@@ -209,9 +209,9 @@ class GeoServer:
                 headers={"content-type": "application/json","Accept": "application/json"}
             )
 
-            print ("GET WMS LAYER")
-            print (response.text)
-            print (response.status_code)
+            log.info("GET WMS LAYER")
+            log.info(response.text)
+            log.info(response.status_code)
             # Construct URL
             url = "{0}/rest/workspaces/{1}/wmsstores/{2}/wmslayers/".format(
                 self.service_url,
@@ -220,7 +220,7 @@ class GeoServer:
 
             )
             if response.status_code == 200:
-                print ("deleting")
+                log.info("deleting")
                 response = httpx.delete(
                     url=store_get_url+"?recurse=true",
                     auth=(self.username, self.password),
@@ -235,8 +235,8 @@ class GeoServer:
                 headers={"content-type": "application/json","Accept": "application/json"},
                 timeout=3000
             )
-            print ("404")
-            print (response.text)
+            log.info("404")
+            log.info(response.text)
 
             # if response.status_code == 404: 
             #     # Perform Request
@@ -257,8 +257,8 @@ class GeoServer:
             #         headers={"content-type": "application/json","Accept": "application/json"}
             #     )
 
-            print ("WMS LAYER")
-            print (response.text)
+            log.info("WMS LAYER")
+            log.info(response.text)
             
             # Log
             log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")
