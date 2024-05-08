@@ -42,14 +42,16 @@ class GeoServerQueueExcutor:
             self._init_excuting(queue_item=queue_item)
         
             ### Old
-            geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+            # geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+            ###
 
             ### New
-            # geoserver_pool = queue_item.publish_entry.geoserver_channel.value_list('geoserver_pool', flat=True)  # Somehow this doesnot work...
+            # geoserver_pool = queue_item.publish_entry.geoserver_channels.value_list('geoserver_pool', flat=True)  # Somehow this doesnot work...
             geoserver_pool = []
-            for geoserver_publish_channel in queue_item.publish_entry.geoserver_channel.all():
+            for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
                 if geoserver_publish_channel.geoserver_pool.enabled:
                     geoserver_pool.append(geoserver_publish_channel.geoserver_pool)
+            ###
 
             for geoserver_info in geoserver_pool:
                 self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_info)
@@ -101,7 +103,7 @@ class GeoServerQueueExcutor:
         queue_item.save()
     
 def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserModel=None) -> bool:
-    if not hasattr(publish_entry, "geoserver_channel"):
+    if not hasattr(publish_entry, "geoserver_channels"):
         log.info(f"'{publish_entry}' has no GeoServer Publish Channel")
         return False
     

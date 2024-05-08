@@ -24,7 +24,7 @@ from typing import Optional, Union, TYPE_CHECKING
 # Type Checking
 if TYPE_CHECKING:
     from govapp.apps.publisher.models import notifications
-#    from govapp.apps.publisher.models import publish_channels
+    from govapp.apps.publisher.models import publish_channels
     from govapp.apps.publisher.models import geoserver_queues
 
 
@@ -71,7 +71,8 @@ class PublishEntry(mixins.RevisionedMixin):
     # These aren't exactly right, but are useful for catching simple mistakes.
     ftp_channel: "Optional[publish_channels.FTPPublishChannel]"
     cddp_channel: "Optional[publish_channels.CDDPPublishChannel]"
-    geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
+    # geoserver_channel: "Optional[publish_channels.GeoServerPublishChannel]"
+    geoserver_channels: "models.Manager[publish_channels.GeoServerPublishChannel]"
     email_notifications: "models.Manager[notifications.EmailNotification]"
     geoserver_queues: "models.Manager[geoserver_queues.GeoServerQueue]"
 
