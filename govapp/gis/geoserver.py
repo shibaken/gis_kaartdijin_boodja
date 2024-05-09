@@ -159,7 +159,7 @@ class GeoServer:
             # Perform Request
             log.info(f'Store does not exist.  Perform post request.')
             log.info(f'Post url: { url }')
-            log.info(f'xml_data: { xml_data }')
+            log.debug(f'xml_data: { xml_data }')
             response = httpx.post(
                 url=url,
                 auth=(self.username, self.password),
@@ -170,7 +170,7 @@ class GeoServer:
             # Perform Request
             log.info(f'Store exists.  Perform put request.')
             log.info(f'Put url: { store_get_url }')
-            log.info(f'xml_data: { xml_data }')
+            log.debug(f'xml_data: { xml_data }')
             response = httpx.put(
                 url=store_get_url,
                 auth=(self.username, self.password),
@@ -202,10 +202,10 @@ class GeoServer:
             """
             # Log
             log.info(f"Uploading WMS Layer to GeoServer...")
-            context['native_name'] = 'kaartdijin-boodja-public:CPT_DBCA_OFFICES'
+            # context['native_name'] = 'kaartdijin-boodja-public:CPT_DBCA_OFFICES'
             
             xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
-            log.info(f'xml_data: { xml_data }')
+            log.debug(f'xml_data: { xml_data }')
 
             layer_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}/wmslayers/{3}".format(
                 self.service_url,
@@ -326,7 +326,7 @@ class GeoServer:
             # Perform Request
             log.info(f'Store does not exist.  Perform post request.')
             log.info(f'Post url: { url }')
-            log.info(f'json_data: { json_data }')
+            log.debug(f'json_data: { json_data }')
             response = httpx.post(
                 url=url,
                 auth=(self.username, self.password),
@@ -337,7 +337,7 @@ class GeoServer:
             #Perform Request
             log.info(f'Store exists.  Perform put request.')
             log.info(f'Put url: { store_get_url }')
-            log.info(f'json_data: { json_data }')
+            log.debug(f'json_data: { json_data }')
             response = httpx.put(
                 url=store_get_url,
                 auth=(self.username, self.password),
@@ -432,7 +432,8 @@ class GeoServer:
             log.info(f"Uploading WFS Layer to GeoServer")
             
             xml_data = render_to_string('govapp/geoserver/wfs/wfs_layer.json', context)
-            print (xml_data)
+            log.debug(f'xml_data: {xml_data}')
+
             store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes/{3}".format(
                 self.service_url,
                 workspace,

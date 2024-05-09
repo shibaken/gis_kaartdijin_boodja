@@ -74,8 +74,9 @@ class GeoServerQueueExcutor:
         self._add_publishing_log("Start publishing..")
 
     def _add_publishing_log(self, msg):
+        log.info(msg)
         log_msg = f"[{timezone.now()}] {msg}\n"
-        log.info(log_msg)
+        # log.info(log_msg)
         self.publishing_log += log_msg
         return log_msg
     
