@@ -71,7 +71,7 @@ class GeoServerQueueExcutor:
         queue_item.change_status(GeoServerQueueStatus.ON_PUBLISHING)
         self.publishing_log = queue_item.publishing_result if queue_item.publishing_result is not None else ""
         self.result_status = GeoServerQueueStatus.PUBLISHED
-        self._add_publishing_log("Start publishg..")
+        self._add_publishing_log("Start publishing..")
 
     def _add_publishing_log(self, msg):
         log_msg = f"[{timezone.now()}] {msg}\n"

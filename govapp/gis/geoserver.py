@@ -133,7 +133,6 @@ class GeoServer:
         log.info(f"Uploading WMS Store to GeoServer...")
         
         xml_data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
-        log.info(f'xml_data: { xml_data }')
 
         store_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}".format(
             self.service_url,
@@ -158,8 +157,9 @@ class GeoServer:
 
         if response.status_code == 404: 
             # Perform Request
-            log.info(f'Store not exists.  Perform post request.')
+            log.info(f'Store does not exist.  Perform post request.')
             log.info(f'Post url: { url }')
+            log.info(f'xml_data: { xml_data }')
             response = httpx.post(
                 url=url,
                 auth=(self.username, self.password),
@@ -170,6 +170,7 @@ class GeoServer:
             # Perform Request
             log.info(f'Store exists.  Perform put request.')
             log.info(f'Put url: { store_get_url }')
+            log.info(f'xml_data: { xml_data }')
             response = httpx.put(
                 url=store_get_url,
                 auth=(self.username, self.password),
@@ -297,7 +298,7 @@ class GeoServer:
             filepath (pathlib.Path): Path to the Geopackage file to upload.
         """
         # Log
-        log.info(f"Uploading POSTGIS Store to GeoServer")
+        log.info(f"Uploading POSTGIS Store to GeoServer...")
         
         json_data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
 
@@ -306,6 +307,8 @@ class GeoServer:
             workspace,
             store_name
         )
+        log.info(f'Check if the store exists...')
+        log.info(f'GET url: { store_get_url }')
         # Check if Store Exists
         response = httpx.get(
             url=store_get_url,
@@ -321,6 +324,9 @@ class GeoServer:
 
         if response.status_code == 404: 
             # Perform Request
+            log.info(f'Store does not exist.  Perform post request.')
+            log.info(f'Post url: { url }')
+            log.info(f'json_data: { json_data }')
             response = httpx.post(
                 url=url,
                 auth=(self.username, self.password),
@@ -328,8 +334,10 @@ class GeoServer:
                 headers={"content-type": "application/json","Accept": "application/json"}
             )
         else:  
-            pass        
             #Perform Request
+            log.info(f'Store exists.  Perform put request.')
+            log.info(f'Put url: { store_get_url }')
+            log.info(f'json_data: { json_data }')
             response = httpx.put(
                 url=store_get_url,
                 auth=(self.username, self.password),
