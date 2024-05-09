@@ -22,8 +22,9 @@ if TYPE_CHECKING:
 # Logging
 log = logging.getLogger(__name__)
 
-"""Publish to GeoServers."""
-def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbology_only: bool = False) -> (bool, Exception):
+# """Publish to GeoServers."""
+# def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbology_only: bool = False) -> (bool, Exception):
+def publish(publish_entry: "PublishEntry", symbology_only: bool = False) -> (bool, Exception):
     # def publish_geoserver(self, symbology_only: bool = False) -> None:
     """Publishes to GeoServer channel if applicable.
 
@@ -47,11 +48,13 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbol
         # for special file
         if publish_entry.catalogue_entry.type == CatalogueEntryType.SPATIAL_FILE:
             for geoserver_publish_channel in publish_entry.geoserver_channels.all():
-                geoserver_publish_channel.publish(symbology_only, geoserver)
+                # geoserver_publish_channel.publish(symbology_only, geoserver)
+                geoserver_publish_channel.publish(symbology_only)
             # publish_entry.geoserver_channels.publish(symbology_only, geoserver)  # type: ignore[union-attr]
         # for layer subscription
         else:
-            _publish(publish_entry, geoserver)
+            # _publish(publish_entry, geoserver)
+            _publish(publish_entry)
 
     except Exception as exc:
         # Log
@@ -68,21 +71,26 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbol
         
     return True, None
 
-def _publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer):
+# def _publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer):
+def _publish(publish_entry: "PublishEntry"):
     catalogue_entry = publish_entry.catalogue_entry
     layer_subscription = catalogue_entry.layer_subscription
     
     if layer_subscription.type == layer_subscriptions.LayerSubscriptionType.WFS:
-        _publish_wfs(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        # _publish_wfs(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        _publish_wfs(publish_entry, catalogue_entry, layer_subscription)
     elif layer_subscription.type == layer_subscriptions.LayerSubscriptionType.WMS:
-        _publish_wms(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        # _publish_wms(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        _publish_wms(publish_entry, catalogue_entry, layer_subscription)
     elif layer_subscription.type == layer_subscriptions.LayerSubscriptionType.POST_GIS:
-        _publish_postgis(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        # _publish_postgis(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        _publish_postgis(publish_entry, catalogue_entry, layer_subscription)
 
 def _publish_wfs(publish_entry: "PublishEntry", 
                  catalogue_entry: "CatalogueEntry", 
                  layer_subscription: "layer_subscriptions.LayerSubscription",
-                 geoserver:geoserver.GeoServer):
+                #  geoserver:geoserver.GeoServer):
+                 ):
     context = {
       "name": layer_subscription.name,
       "description": layer_subscription.description,
@@ -91,8 +99,10 @@ def _publish_wfs(publish_entry: "PublishEntry",
       "username": layer_subscription.username,
       "password": layer_subscription.userpassword,
     }
-    geoserver.upload_store_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
+    # geoserver.upload_store_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
     for gc in publish_entry.geoserver_channels.all():
+        geoserver_obj = geoserver.geoserverWithCustomCreds(gc.geoserver_pool.url, gc.geoserver_pool.username, gc.geoserver_pool.password)
+        geoserver_obj.upload_store_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
         context = {
             "name": catalogue_entry.name,
             "description": catalogue_entry.description,
@@ -119,7 +129,7 @@ def _publish_wfs(publish_entry: "PublishEntry",
             "enabled": "true",
             # "keywords":, #?
         }
-        geoserver.upload_layer_wfs(workspace=layer_subscription.workspace.name, 
+        geoserver_obj.upload_layer_wfs(workspace=layer_subscription.workspace.name, 
                                 store_name=layer_subscription.name, 
                                 layer_name=catalogue_entry.name, 
                                 context=context)
@@ -127,7 +137,8 @@ def _publish_wfs(publish_entry: "PublishEntry",
 def _publish_wms(publish_entry: "PublishEntry", 
                  catalogue_entry: "CatalogueEntry", 
                  layer_subscription: "layer_subscriptions.LayerSubscription",
-                 geoserver:geoserver.GeoServer):
+                #  geoserver:geoserver.GeoServer):
+                 ):
     context = {
       "name": layer_subscription.name,
       "description": layer_subscription.description,
@@ -142,9 +153,11 @@ def _publish_wms(publish_entry: "PublishEntry",
       }
     }
     
-    geoserver.upload_store_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
+    # geoserver.upload_store_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
     
     for gc in publish_entry.geoserver_channels.all():
+        geoserver_obj = geoserver.geoserverWithCustomCreds(gc.geoserver_pool.url, gc.geoserver_pool.username, gc.geoserver_pool.password)
+        geoserver_obj.upload_store_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
         context = {
             "name": catalogue_entry.name,
             "description": catalogue_entry.description,
@@ -171,12 +184,13 @@ def _publish_wms(publish_entry: "PublishEntry",
             "enabled": layer_subscription.enabled,
             # "keywords":, #?
         }
-        geoserver.upload_layer_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
+        geoserver_obj.upload_layer_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
 
 def _publish_postgis(publish_entry: "PublishEntry", 
                      catalogue_entry: "CatalogueEntry", 
                      layer_subscription: "layer_subscriptions.LayerSubscription",
-                     geoserver:geoserver.GeoServer):
+                    #  geoserver:geoserver.GeoServer):
+                     ):
     context = {
       "name": layer_subscription.name,
       "description": layer_subscription.description,
@@ -203,10 +217,11 @@ def _publish_postgis(publish_entry: "PublishEntry",
       }
     }
     
-    geoserver.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
+    # geoserver.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
         
-    # TODO
-    # for gc in publish_entry.geoserver_channels.all():
+    for gc in publish_entry.geoserver_channels.all():
+        geoserver_obj = geoserver.geoserverWithCustomCreds(gc.geoserver_pool.url, gc.geoserver_pool.username, gc.geoserver_pool.password)
+        geoserver_obj.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
 
     #     context = {
     #         "name": self.publish_entry.catalogue_entry.metadata.name+"_wfs",

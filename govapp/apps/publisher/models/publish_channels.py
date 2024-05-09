@@ -25,6 +25,7 @@ from govapp.common import mixins
 from govapp.common import sharepoint
 from govapp.apps.publisher.models import publish_entries
 from govapp.apps.publisher.models import workspaces
+from govapp.gis.geoserver import geoserverWithCustomCreds
 
 
 # Logging
@@ -383,7 +384,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Retrieve and Return
         return self.publish_entry.name
 
-    def publish(self, symbology_only: bool = False, geoserver: gis.geoserver.GeoServer = None) -> None:
+    # def publish(self, symbology_only: bool = False, geoserver: gis.geoserver.GeoServer = None) -> None:
+    def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
@@ -396,7 +398,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         #     geoserver = gis.geoserver.geoserver()
 
         # Publish Symbology
-        self.publish_geoserver_symbology(geoserver=geoserver)
+        # self.publish_geoserver_symbology(geoserver=geoserver)
+        self.publish_geoserver_symbology()
 
         # Check Symbology Only Flag
         if symbology_only:
@@ -410,11 +413,13 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         match self.mode:
             case GeoServerPublishChannelMode.WMS:
                 # Publish to GeoServer (WMS Only)
-                self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver)
+                # self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver)
+                self.publish_geoserver_layer(wms=True, wfs=False)
 
             case GeoServerPublishChannelMode.WMS_AND_WFS:
                 # Publish to GeoServer (WMS and WFS)
-                self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver)
+                # self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver)
+                self.publish_geoserver_layer(wms=True, wfs=True)
 
         # Update Published At
         publish_time = timezone.now()
@@ -423,20 +428,24 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         self.published_at = publish_time
         self.save()
 
-    def publish_geoserver_symbology(self, geoserver: gis.geoserver.GeoServer) -> None:
+    # def publish_geoserver_symbology(self, geoserver: gis.geoserver.GeoServer) -> None:
+    def publish_geoserver_symbology(self) -> None:
         """Publishes the Symbology to GeoServer if applicable."""
         # Log
         log.info(f"Publishing '{self}' (Symbology) to GeoServer")
 
+        geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
+
         # Publish Style to GeoServer
-        geoserver.upload_style(
+        geoserver_obj.upload_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,
             sld=self.publish_entry.catalogue_entry.symbology.sld,
         )
 
-    def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
+    # def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
+    def publish_geoserver_layer(self, wms: bool, wfs: bool) -> None:
         """Publishes the Catalogue Entry to GeoServer if applicable.
 
         Args:
@@ -445,6 +454,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         """
         # Log
         log.info(f"Publishing '{self}' (Layer) to GeoServer")
+
+        geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
 
         # Retrieve the Layer File from Storage
         # filepath = sharepoint.sharepoint_input().get_from_url(
@@ -461,14 +472,14 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         )
             
         # Push Layer to GeoServer
-        geoserver.upload_geopackage(
+        geoserver_obj.upload_geopackage(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             filepath=geopackage['full_filepath'],
         )
 
         # Set Default Style
-        geoserver.set_default_style(
+        geoserver_obj.set_default_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=self.publish_entry.catalogue_entry.symbology.name,
