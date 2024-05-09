@@ -204,3 +204,19 @@ def _publish_postgis(publish_entry: "PublishEntry",
     }
     
     geoserver.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
+        
+    # TODO
+    # for gc in publish_entry.geoserver_channels.all():
+
+    #     context = {
+    #         "name": self.publish_entry.catalogue_entry.metadata.name+"_wfs",
+    #         "description": "TES",
+    #         "enabled": 'true',
+    #         "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
+    #     }
+ 
+    #     gis.geoserver.geoserver().upload_store_wfs(
+    #         self.workspace.name,
+    #         self.publish_entry.catalogue_entry.metadata.name+"_wfs",
+    #         context=context
+    #     )

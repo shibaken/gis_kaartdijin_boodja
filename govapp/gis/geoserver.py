@@ -205,7 +205,7 @@ class GeoServer:
             # context['native_name'] = 'kaartdijin-boodja-public:CPT_DBCA_OFFICES'
             
             xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
-            log.debug(f'xml_data: { xml_data }')
+            log.info(f'xml_data: { xml_data }')
 
             layer_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}/wmslayers/{3}".format(
                 self.service_url,
@@ -273,6 +273,7 @@ class GeoServer:
             # log.info(response.text)
             
             # Log
+            log.info(f'{xml_data}')
             log.info(f'Response of the create: { response.status_code }: { response.text }')
             # log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")
             
