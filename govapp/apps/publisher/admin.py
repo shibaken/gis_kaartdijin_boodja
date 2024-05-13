@@ -21,11 +21,16 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
-    list_display = ('id', 'name', 'url', 'username', 'enabled', 'created_at')
+    list_display = ('id', 'name', 'url', 'num_of_layers', 'username', 'enabled', 'created_at')
     ordering = ('id', 'name')
 
+    def num_of_layers(self, obj):
+        return f'{obj.total_active_layers} ({obj.total_layers})'
+
+    num_of_layers.short_description = 'active layers (total layers)'
+
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'publish_entry', 'geoserver_pool', 'mode', 'frequency', 'workspace', )
+    list_display = ('id', 'publish_entry', 'geoserver_pool', 'mode', 'frequency', 'workspace', 'active',)
     
 class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Queue."""
