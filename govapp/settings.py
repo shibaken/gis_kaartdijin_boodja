@@ -182,16 +182,43 @@ SPECTACULAR_SETTINGS = {
 # https://docs.djangoproject.com/en/3.2/topics/logging/
 LOGGING = {
     "version": 1,
+    'formatters': {
+        # 'verbose': {
+        #     'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        # },
+        'verbose2': {
+            "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(funcName)s] %(message)s"
+        }
+    },
     "disable_existing_loggers": False,
     "handlers": {
         "console": {
-            "class": "logging.StreamHandler",
+            # 'level': decouple.config('LOG_CONSOLE_LEVEL', default='INFO'),
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose2',
+        },
+        'file': {
+            # 'level': 'INFO',
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'kaartdijin_boodja.log'),
+            'formatter': 'verbose2',
+            'maxBytes': 5242880
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
+    # "root": {
+    #     "handlers": ["console"],
+    #     "level": "INFO",
+    # },
+    'loggers': {
+        '': {
+            'handlers': ['file', 'console'],
+            # 'level': decouple.config('LOG_CONSOLE_LEVEL', default='WARNING'),
+            'level': 'DEBUG',
+            'propagate': True
+        },
+    }
 }
 
 # Sharepoint Settings

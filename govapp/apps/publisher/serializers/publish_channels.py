@@ -50,6 +50,8 @@ class CDDPPublishChannelCreateSerializer(serializers.ModelSerializer):
 class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
     """GeoServer Publish Channel Model Serializer."""
     workspace_name = serializers.ReadOnlyField(source='workspace.name')
+    # geoserver_pool = GeoServerPoolSerializer()
+    geoserver_pool_name = serializers.ReadOnlyField(source='geoserver_pool.name')
     
     class Meta:
         """GeoServer Publish Channel Model Serializer Metadata."""
@@ -73,7 +75,8 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
             "publish_entry",
             "workspace_name",
             "name",
-            "description"
+            "description",
+            "geoserver_pool_name",
         )
         
     def validate(self, data):

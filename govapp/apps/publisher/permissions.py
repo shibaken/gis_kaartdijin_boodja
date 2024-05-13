@@ -1,5 +1,6 @@
 """Kaartdijin Boodja Publisher Django Application Permissions."""
 
+import logging
 
 # Third-Party
 from rest_framework import permissions
@@ -13,6 +14,9 @@ from govapp.apps.publisher import models
 
 # Typing
 from typing import Any
+
+# Logging
+log = logging.getLogger(__name__)
 
 
 class IsPublishEntryPermissions(permissions.BasePermission):
@@ -54,8 +58,7 @@ class IsPublishEntryPermissions(permissions.BasePermission):
             # Locking, Unlocking and Declining might be allowed, but we delegate it to `has_object_permission`
             # Assigning and Unassigning also might be allowed, again we delegate it to `has_object_permission`
             # Manually publishing might be allowed, again we delegate it to `has_object_permission`
-            print ("ACTION")
-            print (view.action)
+            log.info(f"ACTION: {view.action}")
             
             allowed = True
         else:

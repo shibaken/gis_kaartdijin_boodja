@@ -250,6 +250,7 @@
                                                       <thead class='table-dark'>
                                                       <tr>
                                                             <th>ID</th>
+                                                            <th>GeoServer Pool</th>
                                                             <th>Spatial Format</th>
                                                             <th>Frequency Type</th>
                                                             <th>Workspace</th>
@@ -497,6 +498,9 @@
 
             <script>
                   kbpublish.init_publish_item();
+                  // kbpublish.var.publish_geoserver_pools = { 1: "test1", 2: "test2" };
+                  kbpublish.var.publish_geoserver_pools = {{ geoserver_pool_list_json|safe }};
+                  // kbpublish.var.publish_geoserver_pools = JSON.load("{{ geoserver_pool_list }}");
             </script>
       {% else %}
             <div class="container" id="dashboard-table-container">

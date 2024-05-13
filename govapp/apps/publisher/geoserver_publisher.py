@@ -10,20 +10,21 @@ from govapp.apps.publisher import notifications as notifications_utils
 from govapp.gis import geoserver
 from govapp.apps.catalogue.models import layer_subscriptions
 from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntryType
+from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 
 # Typing
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from govapp.apps.publisher.models.publish_entries import PublishEntry
-    from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
     from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry
 
 # Logging
 log = logging.getLogger(__name__)
 
-"""Publish to GeoServers."""
-def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbology_only: bool = False) -> (bool, Exception):
+# """Publish to GeoServers."""
+def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoserver_info:GeoServerPublishChannel , symbology_only: bool = False) -> (bool, Exception):
+# def publish(publish_entry: "PublishEntry", symbology_only: bool = False) -> (bool, Exception):
     # def publish_geoserver(self, symbology_only: bool = False) -> None:
     """Publishes to GeoServer channel if applicable.
 
@@ -31,25 +32,32 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbol
         symbology_only (bool): Flag to only publish symbology.
     """
     # Check for Publish Channel
-    if not hasattr(publish_entry, "geoserver_channel"):
+    if not hasattr(publish_entry, "geoserver_channels"):
         # Log
-        log.info(f"'{publish_entry}' has no GeoServer Publish Channel")
+        log.info(f"'{publish_entry}' has no GeoServer1 Publish Channel")
 
         # Exit Early
         return
 
     # Log
-    log.info(f"Publishing '{publish_entry.catalogue_entry}' - '{publish_entry.geoserver_channel}' ({symbology_only=})")
+    log.info(f"Publishing '{publish_entry.catalogue_entry}' - '{publish_entry.geoserver_channels}' ({symbology_only=})")
 
     # Handle Errors
     try:
         # Publish!
         # for special file
         if publish_entry.catalogue_entry.type == CatalogueEntryType.SPATIAL_FILE:
-            publish_entry.geoserver_channel.publish(symbology_only, geoserver)  # type: ignore[union-attr]
+            # for geoserver_publish_channel in publish_entry.geoserver_channels.all():
+            geoserver_info.publish(symbology_only, geoserver)
+                # geoserver_publish_channel.publish(symbology_only)
+            # publish_entry.geoserver_channels.publish(symbology_only, geoserver)  # type: ignore[union-attr]
         # for layer subscription
         else:
-            _publish(publish_entry, geoserver)
+            if publish_entry.catalogue_entry.type == CatalogueEntryType.SUBSCRIPTION_QUERY:
+                geoserver_info.publish(symbology_only, geoserver)
+            else:
+                _publish(publish_entry, geoserver, geoserver_info)
+            # _publish(publish_entry)
 
     except Exception as exc:
         # Log
@@ -66,21 +74,28 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, symbol
         
     return True, None
 
-def _publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer):
+def _publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoserver_info:GeoServerPublishChannel):
+# def _publish(publish_entry: "PublishEntry"):
     catalogue_entry = publish_entry.catalogue_entry
     layer_subscription = catalogue_entry.layer_subscription
     
     if layer_subscription.type == layer_subscriptions.LayerSubscriptionType.WFS:
-        _publish_wfs(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        _publish_wfs(publish_entry, catalogue_entry, layer_subscription, geoserver, geoserver_info)
+        # _publish_wfs(publish_entry, catalogue_entry, layer_subscription)
     elif layer_subscription.type == layer_subscriptions.LayerSubscriptionType.WMS:
-        _publish_wms(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        _publish_wms(publish_entry, catalogue_entry, layer_subscription, geoserver, geoserver_info)
+        # _publish_wms(publish_entry, catalogue_entry, layer_subscription)
     elif layer_subscription.type == layer_subscriptions.LayerSubscriptionType.POST_GIS:
-        _publish_postgis(publish_entry, catalogue_entry, layer_subscription, geoserver)
+        _publish_postgis(publish_entry, catalogue_entry, layer_subscription, geoserver, geoserver_info)
+        # _publish_postgis(publish_entry, catalogue_entry, layer_subscription)
 
-def _publish_wfs(publish_entry: "PublishEntry", 
-                 catalogue_entry: "CatalogueEntry", 
-                 layer_subscription: "layer_subscriptions.LayerSubscription",
-                 geoserver:geoserver.GeoServer):
+def _publish_wfs(
+        publish_entry: "PublishEntry", 
+        catalogue_entry: "CatalogueEntry", 
+        layer_subscription: "layer_subscriptions.LayerSubscription",
+        geoserver:geoserver.GeoServer,
+        geoserver_info:GeoServerPublishChannel
+    ):
     context = {
       "name": layer_subscription.name,
       "description": layer_subscription.description,
@@ -90,41 +105,42 @@ def _publish_wfs(publish_entry: "PublishEntry",
       "password": layer_subscription.userpassword,
     }
     geoserver.upload_store_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
+
     context = {
         "name": catalogue_entry.name,
         "description": catalogue_entry.description,
         "native_name":catalogue_entry.mapping_name,
         "title":catalogue_entry.name,
         "abstract": None,
-        "override_bbox": publish_entry.geoserver_channel.override_bbox,
-        "native_crs":publish_entry.geoserver_channel.native_crs,
-        "crs": publish_entry.geoserver_channel.srs,
+        "override_bbox": geoserver_info.override_bbox,
+        "native_crs":geoserver_info.native_crs,
+        "crs": geoserver_info.srs,
         "nativeBoundingBox": {
-            "minx": publish_entry.geoserver_channel.nbb_minx,
-            "maxx": publish_entry.geoserver_channel.nbb_maxx,
-            "miny": publish_entry.geoserver_channel.nbb_miny,
-            "maxy": publish_entry.geoserver_channel.nbb_maxy,
-            "crs": publish_entry.geoserver_channel.nbb_crs,
+            "minx": geoserver_info.nbb_minx,
+            "maxx": geoserver_info.nbb_maxx,
+            "miny": geoserver_info.nbb_miny,
+            "maxy": geoserver_info.nbb_maxy,
+            "crs": geoserver_info.nbb_crs,
         },
         "latLonBoundingBox": {
-            "minx": publish_entry.geoserver_channel.llb_minx,
-            "maxx": publish_entry.geoserver_channel.llb_maxx,
-            "miny": publish_entry.geoserver_channel.llb_miny,
-            "maxy": publish_entry.geoserver_channel.llb_maxy,
-            "crs": publish_entry.geoserver_channel.llb_crs,
+            "minx": geoserver_info.llb_minx,
+            "maxx": geoserver_info.llb_maxx,
+            "miny": geoserver_info.llb_miny,
+            "maxy": geoserver_info.llb_maxy,
+            "crs": geoserver_info.llb_crs,
         },
         "enabled": "true",
         # "keywords":, #?
     }
-    geoserver.upload_layer_wfs(workspace=layer_subscription.workspace.name, 
-                               store_name=layer_subscription.name, 
-                               layer_name=catalogue_entry.name, 
-                               context=context)
+    geoserver.upload_layer_wfs(workspace=layer_subscription.workspace.name, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
     
-def _publish_wms(publish_entry: "PublishEntry", 
-                 catalogue_entry: "CatalogueEntry", 
-                 layer_subscription: "layer_subscriptions.LayerSubscription",
-                 geoserver:geoserver.GeoServer):
+def _publish_wms(
+        publish_entry: "PublishEntry", 
+        catalogue_entry: "CatalogueEntry", 
+        layer_subscription: "layer_subscriptions.LayerSubscription",
+        geoserver:geoserver.GeoServer,
+        geoserver_info:GeoServerPublishChannel
+    ):
     context = {
       "name": layer_subscription.name,
       "description": layer_subscription.description,
@@ -138,7 +154,6 @@ def _publish_wms(publish_entry: "PublishEntry",
           "connect_timeout": layer_subscription.connection_timeout,
       }
     }
-    
     geoserver.upload_store_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
     
     context = {
@@ -147,32 +162,35 @@ def _publish_wms(publish_entry: "PublishEntry",
         "native_name": catalogue_entry.mapping_name,
         "title": catalogue_entry.name,
         "abstract": None,
-        "override_bbox": publish_entry.geoserver_channel.override_bbox,
-        "native_crs": publish_entry.geoserver_channel.native_crs,
-        "crs": publish_entry.geoserver_channel.srs,
+        "override_bbox": geoserver_info.override_bbox,
+        "native_crs": geoserver_info.native_crs,
+        "crs": geoserver_info.srs,
         "nativeBoundingBox": {
-            "minx": publish_entry.geoserver_channel.nbb_minx,
-            "maxx": publish_entry.geoserver_channel.nbb_maxx,
-            "miny": publish_entry.geoserver_channel.nbb_miny,
-            "maxy": publish_entry.geoserver_channel.nbb_maxy,
-            "crs": publish_entry.geoserver_channel.nbb_crs,
+            "minx": geoserver_info.nbb_minx,
+            "maxx": geoserver_info.nbb_maxx,
+            "miny": geoserver_info.nbb_miny,
+            "maxy": geoserver_info.nbb_maxy,
+            "crs": geoserver_info.nbb_crs,
         },
         "latLonBoundingBox": {
-            "minx": publish_entry.geoserver_channel.llb_minx,
-            "maxx": publish_entry.geoserver_channel.llb_maxx,
-            "miny": publish_entry.geoserver_channel.llb_miny,
-            "maxy": publish_entry.geoserver_channel.llb_maxy,
-            "crs": publish_entry.geoserver_channel.llb_crs,
+            "minx": geoserver_info.llb_minx,
+            "maxx": geoserver_info.llb_maxx,
+            "miny": geoserver_info.llb_miny,
+            "maxy": geoserver_info.llb_maxy,
+            "crs": geoserver_info.llb_crs,
         },
         "enabled": layer_subscription.enabled,
         # "keywords":, #?
     }
     geoserver.upload_layer_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
 
-def _publish_postgis(publish_entry: "PublishEntry", 
-                     catalogue_entry: "CatalogueEntry", 
-                     layer_subscription: "layer_subscriptions.LayerSubscription",
-                     geoserver:geoserver.GeoServer):
+def _publish_postgis(
+        publish_entry: "PublishEntry", 
+        catalogue_entry: "CatalogueEntry", 
+        layer_subscription: "layer_subscriptions.LayerSubscription",
+        geoserver:geoserver.GeoServer,
+        geoserver_info:GeoServerPublishChannel
+    ):
     context = {
       "name": layer_subscription.name,
       "description": layer_subscription.description,
@@ -198,5 +216,40 @@ def _publish_postgis(publish_entry: "PublishEntry",
         #   "ssl_mode":, #?
       }
     }
-    
     geoserver.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
+        
+    # context = {
+    #     "name": catalogue_entry.name,
+    #     "description": catalogue_entry.description,
+    #     "title": catalogue_entry.name,
+    #     "native_name": catalogue_entry.mapping_name,
+    #     "crs": geoserver_info.srs,
+    #     "native_crs":geoserver_info.native_crs,
+    #     "override_bbox": geoserver_info.override_bbox,
+    #     "nativeBoundingBox": {
+    #         "minx": geoserver_info.nbb_minx,
+    #         "maxx": geoserver_info.nbb_maxx,
+    #         "miny": geoserver_info.nbb_miny,
+    #         "maxy": geoserver_info.nbb_maxy,
+    #         "crs": geoserver_info.nbb_crs,
+    #     },
+    #     "latLonBoundingBox": {
+    #         "minx": geoserver_info.llb_minx,
+    #         "maxx": geoserver_info.llb_maxx,
+    #         "miny": geoserver_info.llb_miny,
+    #         "maxy": geoserver_info.llb_maxy,
+    #         "crs": geoserver_info.llb_crs,
+    #     },
+    #     "enabled": layer_subscription.enabled,
+    #     # "attributes": catalogue_entry.attributes.all()
+    #     # "description": "TES",
+    #     # "enabled": 'true',
+    #     # "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
+    # }
+    #     #     context = {
+    #     #     "name": self.publish_entry.catalogue_entry.metadata.name+"_wfs",
+    #     #     "description": "TES",
+    #     #     "enabled": 'true',
+    #     #     "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
+    #     # }
+    # geoserver.upload_layer_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)  # We can use ths function for postgis, too.

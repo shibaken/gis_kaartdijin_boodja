@@ -70,6 +70,7 @@ class GeoServer:
             content=filepath.read_bytes(),
             params={"filename": filepath.name, "update": "overwrite"},
             auth=(self.username, self.password),
+            timeout=120.0
         )
 
         # Log
@@ -107,6 +108,7 @@ class GeoServer:
             content=filepath.read_bytes(),
             params={"filename": filepath.name, "update": "overwrite"},
             auth=(self.username, self.password),
+            timeout=3000.0
         )
 
         # Log
@@ -114,7 +116,6 @@ class GeoServer:
 
         # Check Response
         response.raise_for_status()
-
 
     def upload_store_wms(
         self,
@@ -130,7 +131,7 @@ class GeoServer:
             filepath (pathlib.Path): Path to the Geopackage file to upload.
         """
         # Log
-        log.info(f"Uploading WMS Store to GeoServer")
+        log.info(f"Uploading WMS Store to GeoServer...")
         
         xml_data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
 
@@ -139,11 +140,15 @@ class GeoServer:
             workspace,
             store_name
         )
+        log.info(f'store_get_url: {store_get_url}')
+
         # Check if Store Exists
+        log.info(f'Checking if the store exists...')
         response = httpx.get(
             url=store_get_url,
             auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"}
+            headers={"content-type": "application/json","Accept": "application/json"},
+            timeout=120.0
         )
 
         # Construct URL
@@ -154,19 +159,27 @@ class GeoServer:
 
         if response.status_code == 404: 
             # Perform Request
+            log.info(f'Store does not exist.  Perform post request.')
+            log.info(f'Post url: { url }')
+            log.debug(f'xml_data: { xml_data }')
             response = httpx.post(
                 url=url,
                 auth=(self.username, self.password),
                 data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=120.0
             )
         else:          
             # Perform Request
+            log.info(f'Store exists.  Perform put request.')
+            log.info(f'Put url: { store_get_url }')
+            log.debug(f'xml_data: { xml_data }')
             response = httpx.put(
                 url=store_get_url,
                 auth=(self.username, self.password),
                 data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=120.0
             )
 
         
@@ -175,7 +188,6 @@ class GeoServer:
         
         # Check Response
         response.raise_for_status()
-
 
     def upload_layer_wms(
             self,
@@ -192,42 +204,52 @@ class GeoServer:
                 filepath (pathlib.Path): Path to the Geopackage file to upload.
             """
             # Log
-            log.info(f"Uploading WMS Layer to GeoServer")
+            log.info(f"Uploading WMS Layer to GeoServer...")
             
             xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
-            print (xml_data)
-            store_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}/wmslayers/{3}".format(
+            log.info(f'xml_data: { xml_data }')
+
+            layer_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}/wmslayers/{3}".format(
                 self.service_url,
                 workspace,
                 store_name,
                 layer_name
             )
-            # Check if Store Exists
+            log.info(f'layer_get_url: {layer_get_url}')
+
+            # Check if Layer Exists
+            log.info(f'Checking if the layer exists...')
             response = httpx.get(
-                url=store_get_url+"",
+                url=layer_get_url+"",
                 auth=(self.username, self.password),
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=120.0
             )
 
-            print ("GET WMS LAYER")
-            print (response.text)
-            print (response.status_code)
+            log.info(f'Response of the check: { response.status_code }: { response.text }')
+
+            if response.status_code == 200:
+                log.info("Layer exists.  Delete it...")
+                response = httpx.delete(
+                    url=layer_get_url+"?recurse=true",
+                    auth=(self.username, self.password),
+                    #data=xml_data,
+                    headers={"content-type": "application/json","Accept": "application/json"},
+                    timeout=120.0
+                )
+            else:
+                log.info(f'Layer does not exist.')
+
             # Construct URL
             url = "{0}/rest/workspaces/{1}/wmsstores/{2}/wmslayers/".format(
                 self.service_url,
                 workspace,
                 store_name
-
             )
-            if response.status_code == 200:
-                print ("deleting")
-                response = httpx.delete(
-                    url=store_get_url+"?recurse=true",
-                    auth=(self.username, self.password),
-                    #data=xml_data,
-                    headers={"content-type": "application/json","Accept": "application/json"}
-                )
 
+            log.info(f'Creat the layer by post request...')
+            log.info(f'Post url: { url }')
+            log.info(f'data: {xml_data}')
             response = httpx.post(
                 url=url,
                 auth=(self.username, self.password),
@@ -235,8 +257,6 @@ class GeoServer:
                 headers={"content-type": "application/json","Accept": "application/json"},
                 timeout=3000
             )
-            print ("404")
-            print (response.text)
 
             # if response.status_code == 404: 
             #     # Perform Request
@@ -257,19 +277,13 @@ class GeoServer:
             #         headers={"content-type": "application/json","Accept": "application/json"}
             #     )
 
-            print ("WMS LAYER")
-            print (response.text)
+            # log.info(response.text)
             
             # Log
-            log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")
+            log.info(f'Response of the create: { response.status_code }: { response.text }')
             
             # Check Response
             response.raise_for_status()        
-
-
-
-
-
 
     def upload_store_postgis(
         self,
@@ -285,7 +299,7 @@ class GeoServer:
             filepath (pathlib.Path): Path to the Geopackage file to upload.
         """
         # Log
-        log.info(f"Uploading POSTGIS Store to GeoServer")
+        log.info(f"Uploading POSTGIS Store to GeoServer...")
         
         json_data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
 
@@ -294,11 +308,14 @@ class GeoServer:
             workspace,
             store_name
         )
+        log.info(f'Check if the store exists...')
+        log.info(f'GET url: { store_get_url }')
         # Check if Store Exists
         response = httpx.get(
             url=store_get_url,
             auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"}
+            headers={"content-type": "application/json","Accept": "application/json"},
+            timeout=120.0
         )
 
         # Construct URL
@@ -309,30 +326,34 @@ class GeoServer:
 
         if response.status_code == 404: 
             # Perform Request
+            log.info(f'Store does not exist.  Perform post request.')
+            log.info(f'Post url: { url }')
+            log.debug(f'json_data: { json_data }')
             response = httpx.post(
                 url=url,
                 auth=(self.username, self.password),
                 data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=120.0
             )
         else:  
-            pass        
             #Perform Request
+            log.info(f'Store exists.  Perform put request.')
+            log.info(f'Put url: { store_get_url }')
+            log.debug(f'json_data: { json_data }')
             response = httpx.put(
                 url=store_get_url,
                 auth=(self.username, self.password),
                 data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=120.0
             )
 
-        
         # Log
         log.info(f"GeoServer POSTGIS response: '{response.status_code}: {response.text}'")
         
         # Check Response
         response.raise_for_status()     
-
-
 
     def upload_store_wfs(
         self,
@@ -361,7 +382,8 @@ class GeoServer:
         response = httpx.get(
             url=store_get_url,
             auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"}
+            headers={"content-type": "application/json","Accept": "application/json"},
+            timeout=120.0
         )
         # Construct URL
         url = "{0}/rest/workspaces/{1}/datastores".format(
@@ -375,7 +397,8 @@ class GeoServer:
                 url=url,
                 auth=(self.username, self.password),
                 data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=120.0
             )
         else:  
             pass        
@@ -384,7 +407,8 @@ class GeoServer:
                 url=store_get_url,
                 auth=(self.username, self.password),
                 data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"}
+                headers={"content-type": "application/json","Accept": "application/json"},
+                timeout=120.0
             )
         
         # Log
@@ -393,7 +417,6 @@ class GeoServer:
         # Check Response
         response.raise_for_status()    
 
-
     def upload_layer_wfs(
             self,
             workspace,
@@ -401,65 +424,68 @@ class GeoServer:
             layer_name,
             context
         ) -> None:
-            """Uploads a Geopackage file to the GeoServer.
+        """Uploads a Geopackage file to the GeoServer.
 
-            Args:
-                workspace (str): Workspace to upload files to.
-                layer (str): Name of the layer to upload GeoPackage for.
-                filepath (pathlib.Path): Path to the Geopackage file to upload.
-            """
-            # Log
-            log.info(f"Uploading WFS Layer to GeoServer")
-            
-            xml_data = render_to_string('govapp/geoserver/wfs/wfs_layer.json', context)
-            print (xml_data)
-            store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes/{3}".format(
-                self.service_url,
-                workspace,
-                store_name,
-                layer_name
-            )
-            # Check if Store Exists
-            response = httpx.get(
-                url=store_get_url+"",
+        Args:
+            workspace (str): Workspace to upload files to.
+            layer (str): Name of the layer to upload GeoPackage for.
+            filepath (pathlib.Path): Path to the Geopackage file to upload.
+        """
+        # Log
+        log.info(f"Uploading WFS/Postgis Layer to GeoServer...")
+        
+        xml_data = render_to_string('govapp/geoserver/wfs/wfs_layer.json', context)
+
+        layer_get_url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes/{3}".format(
+            self.service_url,
+            workspace,
+            store_name,
+            layer_name
+        )
+
+        # Check if Layer Exists
+        response = httpx.get(
+            url=layer_get_url,
+            auth=(self.username, self.password),
+            headers={"content-type": "application/json","Accept": "application/json"},
+            timeout=120.0
+        )
+        if response.status_code == 200:
+            log.info(f'Layer exists.  Perform delete request.')
+            response = httpx.delete(
+                url=layer_get_url+"?recurse=true",
                 auth=(self.username, self.password),
-                headers={"content-type": "application/json","Accept": "application/json"}
-            )
-
-            print ("GET WFS LAYER")
-            print (response.text)
-            print (response.status_code)
-            # Construct URL
-            url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes".format(
-                self.service_url,
-                workspace,
-                store_name
-            )
-            if response.status_code == 200:
-                print ("deleting")
-                response = httpx.delete(
-                    url=store_get_url+"?recurse=true",
-                    auth=(self.username, self.password),
-                    #data=xml_data,
-                    headers={"content-type": "application/json","Accept": "application/json"}
-                )
-
-            response = httpx.post(
-                url=url,
-                auth=(self.username, self.password),
-                data=xml_data,
-                # data=request_body,
+                #data=xml_data,
                 headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=300.0
+                timeout=120.0
             )
-            print ("404")
-            print (response.text)
-            
-            # Log
-            log.info(f"GeoServer WFS response: '{response.status_code}: {response.text}'")
-            
-            # Check Response
-            response.raise_for_status()        
+        else:
+            log.info(f'Layer does not exist.')
+
+
+        # Create the layer
+        url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes".format(
+            self.service_url,
+            workspace,
+            store_name
+        )
+        log.info(f'Creat the layer by post request...')
+        log.info(f'Post url: { url }')
+        log.info(f'Post data: {xml_data}')
+        response = httpx.post(
+            url=url,
+            auth=(self.username, self.password),
+            data=xml_data,
+            # data=request_body,
+            headers={"content-type": "application/json","Accept": "application/json"},
+            timeout=300.0
+        )
+        
+        # Log
+        log.info(f"GeoServer WFS response: '{response.status_code}: {response.text}'")
+        
+        # Check Response
+        response.raise_for_status()        
 
     def upload_style(
         self,
@@ -500,6 +526,7 @@ class GeoServer:
                     }
                 },
                 auth=(self.username, self.password),
+                timeout=120.0
             )
 
             # Log
@@ -524,6 +551,7 @@ class GeoServer:
             content=sld,
             headers={"Content-Type": "application/vnd.ogc.se+xml"},
             auth=(self.username, self.password),
+            timeout=120.0
         )
 
         # Log
@@ -560,6 +588,7 @@ class GeoServer:
         response = httpx.get(
             url=url,
             auth=(self.username, self.password),
+            timeout=120.0
         )
 
         # Log
@@ -603,6 +632,7 @@ class GeoServer:
             content=f"<layer><defaultStyle><name>{name}</name></defaultStyle></layer>",
             headers={"Content-Type": "application/xml"},
             auth=(self.username, self.password),
+            timeout=120.0
         )
 
         # Log
@@ -635,6 +665,7 @@ class GeoServer:
             content=sld,
             params={"validate": "only"},
             headers={"Content-Type": "application/vnd.ogc.se+xml"},
+            timeout=120.0
         )
 
         # Log
@@ -647,7 +678,6 @@ class GeoServer:
 
         # Return None
         return None
-
 
     def get_layers(self) -> Optional[list[dict[str, str]]]:
         #return None
@@ -667,6 +697,7 @@ class GeoServer:
             url=url,
             auth=(self.username, self.password),
             headers={"content-type": "application/json","Accept": "application/json"},
+            timeout=120.0
         )
         
         # Check Response
@@ -680,7 +711,6 @@ class GeoServer:
         # Return JSON
         return json_response['layers']['layer']
     
-    
     def delete_layer(self, layer_name) -> None:
         # Construct URL
         url = "{0}/rest/layers/{1}".format(
@@ -692,13 +722,13 @@ class GeoServer:
                     url=url,
                     auth=(self.username, self.password),
                     #data=xml_data,
-                    headers={"content-type": "application/json","Accept": "application/json"}
+                    headers={"content-type": "application/json","Accept": "application/json"},
+                    timeout=120.0
                 )
         
         # Check Response
         response.raise_for_status()
         
-
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.
 
