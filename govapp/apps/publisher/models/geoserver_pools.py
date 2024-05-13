@@ -33,5 +33,13 @@ class GeoServerPool(mixins.RevisionedMixin):
         return f"{self.id}: {self.name}" if self.name else f'{self.id}'
 
     @property
+    def total_active_layers(self):
+        return self.geoserverpublishchannel_set.filter(active=True).count()
+
+    @property
+    def total_inactive_layers(self):
+        return self.geoserverpublishchannel_set.exclude(active=True).count()
+
+    @property
     def total_layers(self):
-        return 3
+        return self.total_active_layers + self.total_inactive_layers
