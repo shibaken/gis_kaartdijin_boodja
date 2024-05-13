@@ -31,3 +31,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.id}: {self.name}" if self.name else f'{self.id}'
+
+    @property
+    def total_layers(self):
+        return 3
