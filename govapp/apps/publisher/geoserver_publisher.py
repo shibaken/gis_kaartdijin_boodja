@@ -53,7 +53,10 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoser
             # publish_entry.geoserver_channels.publish(symbology_only, geoserver)  # type: ignore[union-attr]
         # for layer subscription
         else:
-            _publish(publish_entry, geoserver, geoserver_info)
+            if publish_entry.catalogue_entry.type == CatalogueEntryType.SUBSCRIPTION_QUERY:
+                geoserver_info.publish(symbology_only, geoserver)
+            else:
+                _publish(publish_entry, geoserver, geoserver_info)
             # _publish(publish_entry)
 
     except Exception as exc:
@@ -215,31 +218,38 @@ def _publish_postgis(
     }
     geoserver.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
         
-    context = {
-        "name": catalogue_entry.name,
-        "description": catalogue_entry.description,
-        "title": catalogue_entry.name,
-        "native_name": catalogue_entry.mapping_name,
-        "crs": geoserver_info.srs,
-        "native_crs":geoserver_info.native_crs,
-        "override_bbox": geoserver_info.override_bbox,
-        "nativeBoundingBox": {
-            "minx": geoserver_info.nbb_minx,
-            "maxx": geoserver_info.nbb_maxx,
-            "miny": geoserver_info.nbb_miny,
-            "maxy": geoserver_info.nbb_maxy,
-            "crs": geoserver_info.nbb_crs,
-        },
-        "latLonBoundingBox": {
-            "minx": geoserver_info.llb_minx,
-            "maxx": geoserver_info.llb_maxx,
-            "miny": geoserver_info.llb_miny,
-            "maxy": geoserver_info.llb_maxy,
-            "crs": geoserver_info.llb_crs,
-        },
-        "enabled": layer_subscription.enabled,
-        # "description": "TES",
-        # "enabled": 'true',
-        # "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
-    }
-    geoserver.upload_layer_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
+    # context = {
+    #     "name": catalogue_entry.name,
+    #     "description": catalogue_entry.description,
+    #     "title": catalogue_entry.name,
+    #     "native_name": catalogue_entry.mapping_name,
+    #     "crs": geoserver_info.srs,
+    #     "native_crs":geoserver_info.native_crs,
+    #     "override_bbox": geoserver_info.override_bbox,
+    #     "nativeBoundingBox": {
+    #         "minx": geoserver_info.nbb_minx,
+    #         "maxx": geoserver_info.nbb_maxx,
+    #         "miny": geoserver_info.nbb_miny,
+    #         "maxy": geoserver_info.nbb_maxy,
+    #         "crs": geoserver_info.nbb_crs,
+    #     },
+    #     "latLonBoundingBox": {
+    #         "minx": geoserver_info.llb_minx,
+    #         "maxx": geoserver_info.llb_maxx,
+    #         "miny": geoserver_info.llb_miny,
+    #         "maxy": geoserver_info.llb_maxy,
+    #         "crs": geoserver_info.llb_crs,
+    #     },
+    #     "enabled": layer_subscription.enabled,
+    #     # "attributes": catalogue_entry.attributes.all()
+    #     # "description": "TES",
+    #     # "enabled": 'true',
+    #     # "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
+    # }
+    #     #     context = {
+    #     #     "name": self.publish_entry.catalogue_entry.metadata.name+"_wfs",
+    #     #     "description": "TES",
+    #     #     "enabled": 'true',
+    #     #     "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
+    #     # }
+    # geoserver.upload_layer_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)  # We can use ths function for postgis, too.
