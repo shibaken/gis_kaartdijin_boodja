@@ -178,6 +178,9 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
+if not os.path.exists(os.path.join(BASE_DIR, 'logs')):
+    os.mkdir(os.path.join(BASE_DIR, 'logs'))
+
 # Logging
 # https://docs.djangoproject.com/en/3.2/topics/logging/
 LOGGING = {
