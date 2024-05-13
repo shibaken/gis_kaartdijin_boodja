@@ -25,6 +25,7 @@ from govapp.common import mixins
 from govapp.common import sharepoint
 from govapp.apps.publisher.models import publish_entries
 from govapp.apps.publisher.models import workspaces
+from govapp.gis.geoserver import geoserverWithCustomCreds
 
 
 # Logging
@@ -69,7 +70,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
     path = models.TextField()
     xml_path = models.TextField(blank=True, null=True)
     publish_entry = models.ForeignKey(
-        publish_entries.PublishEntry,
+        # publish_entries.PublishEntry,
+        'PublishEntry',
         related_name="cddp_channel",
         on_delete=models.CASCADE,
     )
@@ -292,6 +294,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         # Delete local temporary copy of file if we can
         #shutil.rmtree(filepath.parent, ignore_errors=True)
 
+
 class GeoServerPublishChannelMode(models.IntegerChoices):
     """Enumeration for a GeoServer Publish Channel Mode."""
     WMS = 1
@@ -314,7 +317,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     )
     # publish_entry = models.OneToOneField(
     publish_entry = models.ForeignKey(  # We want 1toM relation between publish_entry and geoserver_pool.  That's why changing this relation from 1to1 to 1toM.
-        publish_entries.PublishEntry,
+        # publish_entries.PublishEntry,
+        'PublishEntry',
         # related_name="geoserver_channel",
         related_name="geoserver_channels",
         on_delete=models.CASCADE,
@@ -384,6 +388,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False, geoserver: gis.geoserver.GeoServer = None) -> None:
+    # def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
@@ -397,6 +402,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Publish Symbology
         self.publish_geoserver_symbology(geoserver=geoserver)
+        # self.publish_geoserver_symbology()
 
         # Check Symbology Only Flag
         if symbology_only:
@@ -411,10 +417,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             case GeoServerPublishChannelMode.WMS:
                 # Publish to GeoServer (WMS Only)
                 self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver)
+                # self.publish_geoserver_layer(wms=True, wfs=False)
 
             case GeoServerPublishChannelMode.WMS_AND_WFS:
                 # Publish to GeoServer (WMS and WFS)
                 self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver)
+                # self.publish_geoserver_layer(wms=True, wfs=True)
 
         # Update Published At
         publish_time = timezone.now()
@@ -424,9 +432,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         self.save()
 
     def publish_geoserver_symbology(self, geoserver: gis.geoserver.GeoServer) -> None:
+    # def publish_geoserver_symbology(self) -> None:
         """Publishes the Symbology to GeoServer if applicable."""
         # Log
         log.info(f"Publishing '{self}' (Symbology) to GeoServer")
+
+        # geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
 
         # Publish Style to GeoServer
         geoserver.upload_style(
@@ -437,6 +448,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         )
 
     def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
+    # def publish_geoserver_layer(self, wms: bool, wfs: bool) -> None:
         """Publishes the Catalogue Entry to GeoServer if applicable.
 
         Args:
@@ -445,6 +457,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         """
         # Log
         log.info(f"Publishing '{self}' (Layer) to GeoServer")
+
+        # geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
 
         # Retrieve the Layer File from Storage
         # filepath = sharepoint.sharepoint_input().get_from_url(
@@ -506,7 +520,8 @@ class FTPPublishChannel(mixins.RevisionedMixin):
         blank=True,
     )  
     publish_entry = models.ForeignKey(
-        publish_entries.PublishEntry,
+        # publish_entries.PublishEntry,
+        'PublishEntry',
         related_name="ftp_channel",
         on_delete=models.CASCADE,
         null=True, 

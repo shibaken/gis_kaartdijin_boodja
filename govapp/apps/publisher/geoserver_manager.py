@@ -14,6 +14,7 @@ from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
 from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
+from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 from govapp.gis import geoserver
 
 # Typing
@@ -47,14 +48,15 @@ class GeoServerQueueExcutor:
 
             ### New
             # geoserver_pool = queue_item.publish_entry.geoserver_channels.value_list('geoserver_pool', flat=True)  # Somehow this doesnot work...
-            geoserver_pool = []
+            # geoserver_pool = []
             for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
                 if geoserver_publish_channel.geoserver_pool.enabled:
-                    geoserver_pool.append(geoserver_publish_channel.geoserver_pool)
+                    # geoserver_pool.append(geoserver_publish_channel.geoserver_pool)
+                    # self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel.geoserver_pool)
+                    self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
             ###
 
-            for geoserver_info in geoserver_pool:
-                self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_info)
+            # self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry)
 
             self._update_result(queue_item=queue_item)
             #if self.result_success:
@@ -74,27 +76,33 @@ class GeoServerQueueExcutor:
         self._add_publishing_log("Start publishing..")
 
     def _add_publishing_log(self, msg):
+        log.info(msg)
         log_msg = f"[{timezone.now()}] {msg}\n"
-        log.info(log_msg)
+        # log.info(log_msg)
         self.publishing_log += log_msg
         return log_msg
     
         
-    def _publish_to_a_geoserver(self, publish_entry: "PublishEntry", geoserver_info: geoserver_pools.GeoServerPool):
-        geoserver_obj = geoserver.geoserverWithCustomCreds(
-            geoserver_info.url, geoserver_info.username, geoserver_info.password)
+    # def _publish_to_a_geoserver(self, publish_entry: "PublishEntry", geoserver_info: geoserver_pools.GeoServerPool):
+    def _publish_to_a_geoserver(self, publish_entry: "PublishEntry", geoserver_info: GeoServerPublishChannel):
+    # def _publish_to_a_geoserver(self, publish_entry: "PublishEntry"):
+        geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.geoserver_pool.url, geoserver_info.geoserver_pool.username, geoserver_info.geoserver_pool.password)
         
         # Publish here
-        res, exc = geoserver_publisher.publish(publish_entry, geoserver_obj)
+        res, exc = geoserver_publisher.publish(publish_entry, geoserver_obj, geoserver_info)
+        # res, exc = geoserver_publisher.publish(publish_entry)
         
         if res:
-            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.url}] Publishing succeed.")
+            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.geoserver_pool.url}] Publishing succeed.")
+            # self._add_publishing_log(f"[{publish_entry.name}] Publishing succeed.")
             
         else :
             self.result_status = GeoServerQueueStatus.FAILED
             self.result_success = False
-            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.url}] Publishing failed.")
-            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.url}] {exc}")
+            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.geoserver_pool.url}] Publishing failed.")
+            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.geoserver_pool.url}] {exc}")
+            # self._add_publishing_log(f"[{publish_entry.name}] Publishing failed.")
+            # self._add_publishing_log(f"[{publish_entry.name}] {exc}")
             
     def _update_result(self, queue_item: geoserver_queues.GeoServerQueue):
         queue_item.status = self.result_status
