@@ -28,9 +28,12 @@
             {% for k in keywords %}
                 {
                     "string": "{{ k }}"
+                {% if forloop.last %}
                 }
+                {% else %}
+                },
+                {% endif %}
             {% endfor %}
         ]
-        
     }
 }

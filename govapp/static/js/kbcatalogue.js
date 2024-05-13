@@ -111,11 +111,9 @@ var kbcatalogue = {
 
     init_catalogue_item: function() { 
         $( "#catalogue-entry-symbology-btn-save" ).click(function() {
-            console.log("Save Publish Table");
             kbcatalogue.save_symbology('save');
         });
         $( "#ccatalogue-entry-symbology-btn-save-exit" ).click(function() {
-            console.log("Save Publish Table");
             kbcatalogue.save_symbology('save-and-exit');
         });           
 
@@ -248,18 +246,15 @@ var kbcatalogue = {
 
         $.ajax({
             url: kbcatalogue.var.catalogue_layer_symbology_url+layer_symbology_id+"/",
-            //method: 'POST',
             type: 'PUT',
-            //dataType: 'json',
             headers: {'X-CSRFToken' : csrf_token},
-            data: JSON.stringify(post_data),
-            contentType: 'application/json',
+            data: post_data,
             success: function (response) {
-
+                console.log({response})
                 if (save_status == 'save-and-exit') {
                     window.location = '/catalogue/entries/';
                 } else {
-                   window.location = "/catalogue/entries/"+catalogue_id+"/"+pagetab+"/"; 
+                    window.location = "/catalogue/entries/"+catalogue_id+"/"+pagetab+"/"; 
                 }
             },
             error: function (error) {
