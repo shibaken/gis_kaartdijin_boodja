@@ -257,10 +257,19 @@ EMAIL_DELIVERY = decouple.config("EMAIL_DELIVERY", default="off")
 
 # Group Settings
 # This must match what is in the database
-GROUP_ADMINISTRATOR_ID = 1
-GROUP_ADMINISTRATOR_NAME = "Administrators"
-GROUP_CATALOGUE_EDITOR_ID = 2
-GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
+# GROUP_ADMINISTRATOR_ID = 1
+# GROUP_ADMINISTRATOR_NAME = "Administrators"
+# GROUP_CATALOGUE_EDITOR_ID = 2
+# GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
+GROUP_ADMINISTRATORS = 'Administrators'
+GROUP_CATALOGUE_EDITORS = 'Catalogue Editors'
+GROUP_CATALOGUE_ADMIN = 'Catalogue Admin'
+CUSTOM_GROUPS = [
+    # Groups in this list are created automatically if not exist.
+    GROUP_ADMINISTRATORS,
+    GROUP_CATALOGUE_EDITORS,
+    GROUP_CATALOGUE_ADMIN,
+]
 
 # Cron Jobs
 # https://django-cron.readthedocs.io/en/latest/installation.html
@@ -300,13 +309,3 @@ WFS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
 WFS_CACHE_KEY = "wfs native layer names"
 POST_GIS_CACHE_KEY = "post gis table names"
 SUBSCRIPTION_CACHE_TTL = 3600
-
-
-# Custom Groups
-GROUP_ADMINISTRATORS = 'Administrators'
-GROUP_CATALOGUE_ADMIN = 'Catalogue Admin'
-CUSTOM_GROUPS = [
-    # Groups in this list are created automatically if not exist.
-    GROUP_ADMINISTRATORS,
-    GROUP_CATALOGUE_ADMIN,
-]
