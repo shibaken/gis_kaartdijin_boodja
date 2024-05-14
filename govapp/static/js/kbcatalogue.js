@@ -93,6 +93,9 @@ var kbcatalogue = {
         $( "#catalogue-filter-btn" ).click(function() {
             kbcatalogue.get_catalogue();
         });
+        $( "#upload-catalogue-btn" ).click(function() {
+            kbcatalogue.upload_catalogue();
+        });
         $( "#catalogue-limit" ).change(function() {
             common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
@@ -261,6 +264,10 @@ var kbcatalogue = {
                 common_entity_modal.show_alert("ERROR Saving."); 
             },
         });
+    },
+
+    upload_catalogue: function(){
+        $('#modal_upload_catalogue').modal('show');
     },
 
     get_catalogue: function(params_str) {

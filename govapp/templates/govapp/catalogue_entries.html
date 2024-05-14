@@ -3,6 +3,7 @@
 {% block content %}
 
 {% if request.user.is_authenticated is True %}
+      {% include "govapp/catalogue_entries_modal_upload_catalogue.html" %}
       
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
 
