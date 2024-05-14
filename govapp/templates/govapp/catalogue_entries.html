@@ -97,10 +97,16 @@
                                     </div>
                               </div>                        
                         </div>                  
-                        <div class='col-12 pt-2 pb-2 '>
-                              <BR>
-                        </div>
 
+                        <div class='col-12 pt-2 pb-2 '>
+                              {% if True %}  
+                              <div class='col-3'>
+                                    <button class="btn btn-primary btn-sm" aria-current="page" id='upload-catalogue-btn'>Upload Catalogue</button>
+                              </div>
+                              {% else %}
+                              <br/>
+                              {% endif %}
+                        </div>
 
                         <div class='col-12 pt-2 pb-2 '>
                               <div class='row'>
