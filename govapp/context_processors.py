@@ -35,7 +35,7 @@ def variables(request: http.HttpRequest) -> dict[str, Any]:
         
         is_django_admin = cache.get('is_django_admin'+ str(request.session.session_key))
         is_admin = cache.get('is_admin'+ str(request.session.session_key))
-        is_catalogue_admin =  cache.get('is_catalogue_admin' + str(request.session.session_key))
+        is_catalogue_admin = cache.get('is_catalogue_admin' + str(request.session.session_key))
         
         if is_django_admin is None:
             is_django_admin = request.user.groups.filter(name="Django Admin").exists()

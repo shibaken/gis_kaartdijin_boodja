@@ -46,8 +46,8 @@ def test_flow(
     group_catalogue_editor = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
     # entry.assigned_to.groups.add(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
     # entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
-    entry.assigned_to.groups.add(group_catalogue_editor)
-    entry.assigned_to.groups.remove(group_administrators)
+    entry.assigned_to.groups.add(group_catalogue_editor.id)
+    entry.assigned_to.groups.remove(group_administrators.id)
     entry.editors.add(entry.assigned_to)
     entry.save()
 
@@ -56,7 +56,7 @@ def test_flow(
     user = user_factory.create()
     assert isinstance(user, auth_models.User)
     # user.groups.add(conf.settings.GROUP_ADMINISTRATOR_ID)
-    user.groups.add(group_administrators)
+    user.groups.add(group_administrators.id)
     user.save()
 
     # Authenticate
