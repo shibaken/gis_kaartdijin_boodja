@@ -2,12 +2,13 @@
 
 
 # Third-Party
+import logging
 from django import conf
 from django import shortcuts
 from django.contrib import auth
 from django.db import connection
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -24,6 +25,7 @@ import json
 import os
 
 # Local
+from govapp import settings
 from govapp.common import mixins
 from govapp.apps.accounts import permissions as accounts_permissions
 from govapp.apps.catalogue import filters
@@ -47,6 +49,8 @@ from typing import Any
 # Shortcuts
 UserModel = auth.get_user_model()
 
+logger = logging.getLogger(__name__)
+
 
 @drf_utils.extend_schema(tags=["Catalogue - Catalogue Entries"])
 class CatalogueEntryViewSet(
@@ -65,6 +69,26 @@ class CatalogueEntryViewSet(
     filterset_class = filters.CatalogueEntryFilter
     search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]    
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+
+    @decorators.action(detail=False, methods=["POST"])
+    def upload_file(self, request: request.Request):
+        logger.info(f'{request}')
+
+        if request.method == 'POST' and request.FILES:
+            uploaded_files = []  # Multiple files might be uploaded
+            for i in range(len(request.FILES)):
+                file_key = 'file{}'.format(i)
+                if file_key in request.FILES:
+                    uploaded_files.append(request.FILES[file_key])
+            
+            for uploaded_file in uploaded_files:
+                save_path = os.path.join(settings.PENDING_IMPORT_PATH,  uploaded_file.name)
+                with open(save_path, 'wb+') as destination:
+                    for chunk in uploaded_file.chunks():
+                        destination.write(chunk)
+            return JsonResponse({'message': 'File(s) uploaded successfully.'})
+        else:
+            return JsonResponse({'error': 'No file(s) were uploaded.'}, status=400)
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])

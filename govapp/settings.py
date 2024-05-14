@@ -178,8 +178,9 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
-if not os.path.exists(os.path.join(BASE_DIR, 'logs')):
-    os.mkdir(os.path.join(BASE_DIR, 'logs'))
+path_to_logs = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(path_to_logs):
+    os.mkdir(path_to_logs)
 
 # Logging
 # https://docs.djangoproject.com/en/3.2/topics/logging/
@@ -297,6 +298,8 @@ if platform.machine() == "arm64":
 
 # Local Storage Paths
 PENDING_IMPORT_PATH=decouple.config("PENDING_IMPORT_PATH", default="./pending_imports/")
+if not os.path.exists(PENDING_IMPORT_PATH):
+    os.mkdir(PENDING_IMPORT_PATH)
 DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
 # Django Timezone

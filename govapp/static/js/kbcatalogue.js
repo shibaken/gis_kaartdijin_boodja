@@ -93,9 +93,7 @@ var kbcatalogue = {
         $( "#catalogue-filter-btn" ).click(function() {
             kbcatalogue.get_catalogue();
         });
-        $( "#upload-catalogue-btn" ).click(function() {
-            kbcatalogue.upload_catalogue();
-        });
+
         $( "#catalogue-limit" ).change(function() {
             common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
@@ -110,6 +108,30 @@ var kbcatalogue = {
         utils.enter_keyup($('#catalogue-number'), kbcatalogue.get_catalogue);
         
         kbcatalogue.get_catalogue();
+        
+        // *** Upload Catalogue ***
+        $( "#upload-catalogue-btn" ).click(function() {
+            $('#modal_upload_catalogue').modal('show');
+        });
+        // Start uploading
+        $("#fileInput").change(function(){
+            kbcatalogue.uploadFiles($("#fileInput")[0].files);
+        });
+        // Select by drag-and-drop
+        $("#modal_upload_catalogue").on('dragover', function(event) {
+            event.preventDefault();
+            $(this).addClass('dragover');
+        });
+        $("#modal_upload_catalogue").on('dragleave drop', function(event) {
+            event.preventDefault();
+            $(this).removeClass('dragover');
+        });
+        $("#modal_upload_catalogue").on('drop', function(event) {
+            event.preventDefault();
+            $(this).removeClass('dragover');
+            var files = event.originalEvent.dataTransfer.files;
+            kbcatalogue.uploadFiles(files);
+        });
     },
 
     init_catalogue_item: function() { 
@@ -266,8 +288,38 @@ var kbcatalogue = {
         });
     },
 
-    upload_catalogue: function(){
-        $('#modal_upload_catalogue').modal('show');
+    // Function for uploading files
+    uploadFiles: function(files) {
+        var formData = new FormData();
+        $.each(files, function(i, file) {
+            formData.append('file' + i, file);
+        });
+
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        $.ajax({
+            //url: "{% url 'upload_file' %}",  // URL for uploading the file to
+            url: kbcatalogue.var.catalogue_data_url + "upload_file/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function(evt) {
+                    if (evt.lengthComputable) {
+                        var percentComplete = (evt.loaded / evt.total) * 100;
+                        $(".progress-bar").width(percentComplete + '%');
+                        $(".progress-bar").attr('aria-valuenow', percentComplete);
+                    }
+                }, false);
+                return xhr;
+            },
+            success: function(data){
+                // TODO: close the modal etc
+            }
+        });
     },
 
     get_catalogue: function(params_str) {

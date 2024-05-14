@@ -1,16 +1,20 @@
-<div class="modal fade" id="modal_upload_catalogue" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="modal_upload_catalogue" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <h5 class="modal-title" id="uploadModalLabel">Upload Catalogue</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="fileInput" class="form-label">Select File(s)</label>
+            <input type="file" class="form-control" id="fileInput" multiple>
+          </div>
+        </form>
+        <div class="progress" style="display: none;">
+          <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
       </div>
     </div>
   </div>
