@@ -302,3 +302,11 @@ POST_GIS_CACHE_KEY = "post gis table names"
 SUBSCRIPTION_CACHE_TTL = 3600
 
 
+# Custom Groups
+GROUP_ADMINISTRATORS = 'Administrators'
+GROUP_CATALOGUE_ADMIN = 'Catalogue Admin'
+CUSTOM_GROUPS = [
+    # Groups in this list are created automatically if not exist.
+    GROUP_ADMINISTRATORS,
+    GROUP_CATALOGUE_ADMIN,
+]

@@ -10,6 +10,8 @@ from django.db.models import query
 # Typing
 from typing import Iterable, Union
 
+from govapp import settings
+
 
 # Shortcuts
 UserModel = auth.get_user_model()
@@ -70,6 +72,12 @@ def is_catalogue_editor(user: Union[models.User, models.AnonymousUser]) -> bool:
         and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
     )
 
+def is_catalogue_admin(user: Union[models.User, models.AnonymousUser]) -> bool:
+    # Check and Return
+    return (
+        not isinstance(user, models.AnonymousUser)  # Must be logged in
+        and user.groups.filter(name=settings.GROUP_CATALOGUE_ADMIN).exists()  # Must be in group
+    )
 
 def limit_to_administrators() -> query.Q:
     """Limits a fields choice to only objects in the Administrators group.
