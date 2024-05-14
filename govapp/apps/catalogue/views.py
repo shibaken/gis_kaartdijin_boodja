@@ -72,15 +72,22 @@ class CatalogueEntryViewSet(
 
     @decorators.action(detail=False, methods=["POST"])
     def upload_file(self, request: request.Request):
-        logger.info(f'{request}')
-
         if request.method == 'POST' and request.FILES:
             uploaded_files = []  # Multiple files might be uploaded
+            allowed_extensions = ['.zip', '.7z',]
+
             for i in range(len(request.FILES)):
                 file_key = 'file{}'.format(i)
                 if file_key in request.FILES:
                     uploaded_files.append(request.FILES[file_key])
-            
+
+            # Check file extensions
+            for uploaded_file in uploaded_files:
+                _, file_extension = os.path.splitext(uploaded_file.name)
+                if file_extension.lower() not in allowed_extensions:
+                    return JsonResponse({'error': 'Invalid file type. Only .zip and .7z files are allowed.'}, status=400)
+
+            # Save files
             for uploaded_file in uploaded_files:
                 save_path = os.path.join(settings.PENDING_IMPORT_PATH,  uploaded_file.name)
                 with open(save_path, 'wb+') as destination:
