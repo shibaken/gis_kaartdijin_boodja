@@ -24,15 +24,9 @@ def variables(request: http.HttpRequest) -> dict[str, Any]:
     # Construct and return context  
     is_django_admin = False
     is_admin = False
+    is_catalogue_admin = False
 
     if request.session.session_key is not None:
-        # is_django_admin = cache.get_or_set('is_django_admin'+ str(request.session.session_key), 
-        #                                     request.user.groups.filter(name="Django Admin").exists, 
-        #                                     timeout=86400)
-        # is_admin = cache.get_or_set('is_admin'+ str(request.session.session_key), 
-        #                             request.user.groups.filter(name="Administrators").exists, 
-        #                             timeout=86400)
-        
         is_django_admin = cache.get('is_django_admin'+ str(request.session.session_key))
         is_admin = cache.get('is_admin'+ str(request.session.session_key))
         is_catalogue_admin = cache.get('is_catalogue_admin' + str(request.session.session_key))
