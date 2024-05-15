@@ -74,6 +74,8 @@ urlpatterns = [
 
     urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
 
+    # sentry
+    urls.path("sentry-debug/", trigger_error),
 ]
 
 # DBCA Template URLs
