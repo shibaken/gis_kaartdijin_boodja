@@ -110,12 +110,18 @@ var kbcatalogue = {
         kbcatalogue.get_catalogue();
         
         // *** Upload Catalogue ***
+        // Show modal
         $( "#upload-catalogue-btn" ).click(function() {
             $('#modal_upload_catalogue').modal('show');
         });
         // Start uploading
         $("#fileInput").change(function(){
-            kbcatalogue.uploadFiles($("#fileInput")[0].files);
+            var files = $("#fileInput")[0].files;
+            for (var i = 0; i < files.length; i++) {
+                // Show progress bar
+                $("#progressBars").append('<div class="progress mt-2"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+            }
+            kbcatalogue.uploadFiles(files);
         });
         // Select by drag-and-drop
         $("#modal_upload_catalogue").on('dragover', function(event) {
@@ -130,6 +136,9 @@ var kbcatalogue = {
             event.preventDefault();
             $(this).removeClass('dragover');
             var files = event.originalEvent.dataTransfer.files;
+            // for (var i = 0; i < files.length; i++) {
+            //     $("#progressBars").append('<div class="progress mt-2"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+            // }
             kbcatalogue.uploadFiles(files);
         });
     },
@@ -289,37 +298,137 @@ var kbcatalogue = {
     },
 
     // Function for uploading files
-    uploadFiles: function(files) {
-        var formData = new FormData();
-        $.each(files, function(i, file) {
-            formData.append('file' + i, file);
-        });
+    // uploadFiles: function(files) {
+    //     console.log({files})
+    //     for (var i = 0; i < files.length; i++) {
+    //         var formData = new FormData();
+    //         formData.append('file', files[i]);
+    //         var csrf_token = $("#csrfmiddlewaretoken").val();
+    
+    //         // Generate progressbar
+    //         var fileName = files[i].name;
+    //         var progressBarContainer = $('<div class="progress-container mt-2"></div>');
+    //         var progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+    //         var fileNameElement = $('<p class="file-name">' + fileName + '</p>');
+    //         var deleteIcon = $('<span class="">DELETE</span>');
+    //         progressBarContainer.append(fileNameElement);
+    //         progressBarContainer.append(deleteIcon);
+    //         progressBarContainer.append(progressBar);
+    //         $("#progressBars").append(progressBarContainer);
 
-        var csrf_token = $("#csrfmiddlewaretoken").val();
-        $.ajax({
-            //url: "{% url 'upload_file' %}",  // URL for uploading the file to
-            url: kbcatalogue.var.catalogue_data_url + "upload_file/",
-            type: 'POST',
-            headers: {'X-CSRFToken' : csrf_token},
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            xhr: function() {
-                var xhr = new window.XMLHttpRequest();
-                xhr.upload.addEventListener("progress", function(evt) {
-                    if (evt.lengthComputable) {
-                        var percentComplete = (evt.loaded / evt.total) * 100;
-                        $(".progress-bar").width(percentComplete + '%');
-                        $(".progress-bar").attr('aria-valuenow', percentComplete);
+    //         (function(progressBar) {  // Closure to handle a certain progressBar
+    //             // Upload file
+    //             $.ajax({
+    //                 url: kbcatalogue.var.catalogue_data_url + "upload_file/",
+    //                 type: 'POST',
+    //                 headers: {'X-CSRFToken' : csrf_token},
+    //                 data: formData,
+    //                 cache: false,
+    //                 contentType: false,
+    //                 processData: false,
+    //                 xhr: function() {
+    //                     console.log('5');
+    //                     var xhr = new window.XMLHttpRequest();
+    //                     xhr.upload.addEventListener("progress", function(evt) {
+    //                         if (evt.lengthComputable) {
+    //                             var percentComplete = (evt.loaded / evt.total) * 100;
+    //                             console.log('percentage: ' + percentComplete)
+    //                             // Update the progressBar
+    //                             progressBar.find(".progress-bar").width(percentComplete + '%');
+    //                             progressBar.find(".progress-bar").attr('aria-valuenow', percentComplete);
+    //                         }
+    //                     }, false);
+    //                     return xhr;
+    //                 },
+    //                 success: function(data){
+    
+    //                 }
+    //             });
+    //         })(progressBar);
+    //     }
+    // }, 
+    uploadFiles: function(files) {
+        // プログレスバーのコンテナをクリアする
+        // $("#progressBars").empty();
+        var xhrList = []
+    
+        for (var i = 0; i < files.length; i++) {
+            // ファイル名を取得
+            var fileName = files[i].name;
+    
+            // Generate progressbar
+            var progressBarContainer = $('<div class="progress-container mt-2"></div>');
+            var progressBarRow = $('<div class="row"></div>'); // Bootstrapのrowクラスを追加
+            var fileNameColumn = $('<div class="col-6"></div>'); // Bootstrapのcolクラスを追加
+            var progressBarColumn = $('<div class="col-5"></div>'); // Bootstrapのcolクラスを追加
+            var deleteIconColumn = $('<div class="col-1"></div>'); // Bootstrapのcolクラスを追加
+            
+            var progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+            var fileNameElement = $('<p class="file-name">' + fileName + '</p>');
+            var deleteIcon = $('<div class="cross-sign"></div>');
+            
+            fileNameColumn.append(fileNameElement); // fileNameElementをfileNameColumnに追加
+            progressBarColumn.append(progressBar); // progressBarをprogressBarColumnに追加
+            deleteIconColumn.append(deleteIcon); // deleteIconをprogressBarColumnに追加
+            
+            progressBarRow.append(fileNameColumn); // fileNameColumnをprogressBarRowに追加
+            progressBarRow.append(progressBarColumn); // progressBarColumnをprogressBarRowに追加
+            progressBarRow.append(deleteIconColumn); // progressBarColumnをprogressBarRowに追加
+            
+            progressBarContainer.append(progressBarRow); // progressBarRowをprogressBarContainerに追加
+            $("#progressBars").append(progressBarContainer); // progressBarContainerをprogressBarsに追加
+            
+            (function(index, progressBar, progressBarContainer) {
+                var formData = new FormData();
+                formData.append('file', files[index]);
+                var csrf_token = $("#csrfmiddlewaretoken").val();
+    
+                console.log('Uploading file i:' + index)
+    
+                // Delete 
+                deleteIcon.on('click', function() {
+                    // Abort uploading
+                    if (xhrList[index] && xhrList[index].readyState !== 4) {
+                        xhrList[index].abort();
                     }
-                }, false);
-                return xhr;
-            },
-            success: function(data){
-                // TODO: close the modal etc
-            }
-        });
+                    // Delete uploaded file from the server
+                    else {
+                        console.log('Delete file:', files[index]);
+                        // TODO
+                    }
+                    // Delete progressbar
+                    progressBarContainer.remove();
+                });
+    
+                // Upload
+                var xhr = $.ajax({
+                    url: kbcatalogue.var.catalogue_data_url + "upload_file/",
+                    type: 'POST',
+                    headers: {'X-CSRFToken' : csrf_token},
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function(evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = (evt.loaded / evt.total) * 100;
+                                console.log('i: ' + index + ' percentage: ' + percentComplete)
+                                // Update progressbar
+                                progressBar.find(".progress-bar").width(percentComplete + '%');
+                                progressBar.find(".progress-bar").attr('aria-valuenow', percentComplete);
+                            }
+                        }, false);
+                        return xhr;
+                    },
+                    success: function(data){
+    
+                    }
+                });
+                xhrList.push(xhr);
+            })(i, progressBar, progressBarContainer);
+        }
     },
 
     get_catalogue: function(params_str) {

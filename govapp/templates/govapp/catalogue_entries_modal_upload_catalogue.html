@@ -1,3 +1,34 @@
+<style>
+  .cross-sign {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #666;
+    position: relative;
+  }
+
+  /* lines */
+  .cross-sign::before,
+  .cross-sign::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background-color: #666;
+    top: 50%;
+    left: 0;
+  }
+
+  /* Left */
+  .cross-sign::before {
+    transform: rotate(45deg);
+  }
+
+  /* Right */
+  .cross-sign::after {
+    transform: rotate(-45deg);
+  }
+</style>
 <div class="modal fade" id="modal_upload_catalogue" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -9,12 +40,15 @@
         <form id="uploadForm" enctype="multipart/form-data">
           <div class="mb-3">
             <label for="fileInput" class="form-label">Select File(s)</label>
-            <input type="file" class="form-control" id="fileInput" accept=".zip,.7z" multiple>
+            <input type="file" class="form-control" id="fileInput" multiple>
           </div>
         </form>
-        <div class="progress" style="display: none;">
-          <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        <div id="progressBars">
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="submitUpload">Submit</button>
       </div>
     </div>
   </div>

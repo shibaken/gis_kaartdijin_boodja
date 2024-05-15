@@ -73,13 +73,11 @@ class CatalogueEntryViewSet(
     @decorators.action(detail=False, methods=["POST"])
     def upload_file(self, request: request.Request):
         if request.method == 'POST' and request.FILES:
-            uploaded_files = []  # Multiple files might be uploaded
-            allowed_extensions = ['.zip', '.7z',]
+            # uploaded_files = []  # Multiple files might be uploaded
+            allowed_extensions = ['.zip', '.7z', '.jpg']
+            uploaded_files = request.FILES.getlist('file')  # Probably always single file, not multiple files because request is sent per file.
 
-            for i in range(len(request.FILES)):
-                file_key = 'file{}'.format(i)
-                if file_key in request.FILES:
-                    uploaded_files.append(request.FILES[file_key])
+            logger.info(f'Files uploaded: {uploaded_files}')
 
             # Check file extensions
             for uploaded_file in uploaded_files:
