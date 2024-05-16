@@ -423,7 +423,7 @@ var kbcatalogue = {
                         return xhr;
                     },
                     success: function(data){
-    
+                        console.log({data})
                     }
                 });
                 xhrList.push(xhr);
