@@ -13,6 +13,7 @@ import psycopg2
 import json
 
 # Internal
+from govapp import settings
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
@@ -179,7 +180,8 @@ class PublishView(base.TemplateView):
         # END - To be improved later todo a reverse table join     
 
         system_users_list = []
-        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
             system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
 
@@ -296,7 +298,8 @@ class CatalogueEntriesView(base.TemplateView):
         # # END - To be improved later todo a reverse table join     
 
         system_users_dict = {}
-        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
              system_users_dict[su.id] = {'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email}
         
@@ -457,7 +460,8 @@ class LayerSubscriptionsView(base.TemplateView):
         LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType
         
         system_users_list = []
-        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
             system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
         has_edit_access = False

@@ -3,12 +3,15 @@
 
 # Third-Party
 from django import conf
+import django
 from django.contrib import auth
 from django.contrib.auth import models
 from django.db.models import query
 
 # Typing
 from typing import Iterable, Union
+
+from govapp import settings
 
 
 # Shortcuts
@@ -22,8 +25,10 @@ def all_administrators() -> Iterable[models.User]:
         models.User: Users in the administrator group.
     """
     # Retrieve and Yield
+    group = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
     yield from UserModel.objects.filter(
-        groups__id=conf.settings.GROUP_ADMINISTRATOR_ID
+        # groups__id=conf.settings.GROUP_ADMINISTRATOR_ID
+        groups__id=group.id
     )
 
 
@@ -34,8 +39,10 @@ def all_catalogue_editors() -> Iterable[models.User]:
         models.User: Users in the administrator group.
     """
     # Retrieve and Yield
+    group = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
     yield from UserModel.objects.filter(
-        groups__id=conf.settings.GROUP_CATALOGUE_EDITOR_ID
+        # groups__id=conf.settings.GROUP_CATALOGUE_EDITOR_ID
+        groups__id=group.id
     )
 
 
@@ -49,9 +56,11 @@ def is_administrator(user: Union[models.User, models.AnonymousUser]) -> bool:
         bool: Whether the user is in the Administrator group.
     """
     # Check and Return
+    group = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
     return (
         not isinstance(user, models.AnonymousUser)  # Must be logged in
-        and user.groups.filter(id=conf.settings.GROUP_ADMINISTRATOR_ID).exists()  # Must be in group
+        # and user.groups.filter(id=conf.settings.GROUP_ADMINISTRATOR_ID).exists()  # Must be in group
+        and user.groups.filter(id=group.id).exists()  # Must be in group
     )
 
 
@@ -65,11 +74,19 @@ def is_catalogue_editor(user: Union[models.User, models.AnonymousUser]) -> bool:
         bool: Whether the user is in the Catalogue Editor group.
     """
     # Check and Return
+    group = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
     return (
         not isinstance(user, models.AnonymousUser)  # Must be logged in
-        and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
+        # and user.groups.filter(id=conf.settings.GROUP_CATALOGUE_EDITOR_ID).exists()  # Must be in group
+        and user.groups.filter(id=group.id).exists()  # Must be in group
     )
 
+def is_catalogue_admin(user: Union[models.User, models.AnonymousUser]) -> bool:
+    # Check and Return
+    return (
+        not isinstance(user, models.AnonymousUser)  # Must be logged in
+        and user.groups.filter(name=settings.GROUP_CATALOGUE_ADMIN).exists()  # Must be in group
+    )
 
 def limit_to_administrators() -> query.Q:
     """Limits a fields choice to only objects in the Administrators group.
@@ -78,7 +95,9 @@ def limit_to_administrators() -> query.Q:
         query.Q: Query to limit object to those in the Administrators group.
     """
     # Construct Query and Return
-    return query.Q(groups__pk=conf.settings.GROUP_ADMINISTRATOR_ID)
+    group = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
+    # return query.Q(groups__pk=conf.settings.GROUP_ADMINISTRATOR_ID)
+    return query.Q(groups__pk=group.id)
 
 
 def limit_to_catalogue_editors() -> query.Q:
@@ -88,4 +107,6 @@ def limit_to_catalogue_editors() -> query.Q:
         query.Q: Query to limit object to those in the Catalogue Editors group.
     """
     # Construct Query and Return
-    return query.Q(groups__pk=conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    group = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
+    # return query.Q(groups__pk=conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    return query.Q(groups__pk=group.id)

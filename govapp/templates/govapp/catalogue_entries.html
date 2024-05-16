@@ -3,6 +3,7 @@
 {% block content %}
 
 {% if request.user.is_authenticated is True %}
+      {% include "govapp/catalogue_entries_modal_upload_catalogue.html" %}
       
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
 
@@ -97,10 +98,14 @@
                                     </div>
                               </div>                        
                         </div>                  
-                        <div class='col-12 pt-2 pb-2 '>
-                              <BR>
-                        </div>
 
+                        <div class='col-12 pt-2 pb-2 text-end'>
+                              {% if is_catalogue_admin %}
+                              <button class="btn btn-primary btn-sm" aria-current="page" id='upload-catalogue-btn'>Upload Catalogue</button>
+                              {% else %}
+                              <br/>
+                              {% endif %}
+                        </div>
 
                         <div class='col-12 pt-2 pb-2 '>
                               <div class='row'>
