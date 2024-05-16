@@ -15,6 +15,7 @@ import os
 import pathlib
 import platform
 import json 
+import sys
 
 # Third-Party
 import decouple
@@ -302,3 +303,21 @@ POST_GIS_CACHE_KEY = "post gis table names"
 SUBSCRIPTION_CACHE_TTL = 3600
 
 
+APPLICATION_VERSION = decouple.config("APPLICATION_VERSION", default="1.0.0" + "-" + GIT_COMMIT_HASH[:7])
+RUNNING_DEVSERVER = len(sys.argv) > 1 and sys.argv[1] == "runserver"
+
+# Sentry settings
+SENTRY_DSN = decouple.config("SENTRY_DSN", default=None)
+SENTRY_SAMPLE_RATE = decouple.config("SENTRY_SAMPLE_RATE", default=1.0)  # Error sampling rate
+SENTRY_TRANSACTION_SAMPLE_RATE = decouple.config("SENTRY_TRANSACTION_SAMPLE_RATE", default=0.0)  # Transaction sampling
+
+if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        sample_rate=SENTRY_SAMPLE_RATE,
+        traces_sample_rate=SENTRY_TRANSACTION_SAMPLE_RATE,
+        environment=EMAIL_INSTANCE.lower(),
+        release=APPLICATION_VERSION,
+    )

@@ -38,6 +38,7 @@ setuptools = "69.0.3"
 urllib3 = "2.1.0"
 wheel = "0.42.0"
 oauthlib = "3.2.2"
+sentry-sdk = "1.44"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.16.2"
