@@ -79,6 +79,17 @@ class OldCatalogueVue(base.TemplateView):
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
 
+
+class PendingImportsView(base.TemplateView):
+    """Home page view."""
+
+    # Template name
+    template_name = "govapp/pending_imports.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        context = {}
+        return shortcuts.render(request, self.template_name, context)
+
 class ManagementCommandsView(base.TemplateView):
     """Home page view."""
 
