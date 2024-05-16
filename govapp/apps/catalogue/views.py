@@ -70,7 +70,7 @@ class CatalogueEntryViewSet(
     search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]    
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
-    @decorators.action(detail=False, methods=["POST"])
+    @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
     def delete_file(self, request: request.Request):
         filenameToDelete = request.POST.get('newFileName', '')
         if filenameToDelete:
@@ -85,7 +85,7 @@ class CatalogueEntryViewSet(
         else:
             return JsonResponse({'message': 'No file specified.'})
 
-    @decorators.action(detail=False, methods=["POST"])
+    @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
     def upload_file(self, request: request.Request):
         if request.FILES:
             # uploaded_files = []  # Multiple files might be uploaded

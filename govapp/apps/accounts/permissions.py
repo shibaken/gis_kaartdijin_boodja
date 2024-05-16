@@ -13,6 +13,11 @@ from govapp.apps.accounts import utils
 from typing import Any
 
 
+class IsInCatalogueAdminGroup(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return utils.is_catalogue_admin(request.user)
+
+
 class IsInAdministratorsGroup(permissions.BasePermission):
     """Permissions for the a user in the Administrators group."""
 
