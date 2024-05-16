@@ -4,8 +4,10 @@
 # Third-Party
 from django import conf
 from django import test
+import django
 from django.contrib.auth import models as auth_models
 import freezegun
+from govapp import settings
 import pytest
 from rest_framework import status
 
@@ -37,8 +39,12 @@ def test_flow(
     # Ensure the user is not in any groups, so it has no special permissions.
     user = user_factory.create()
     assert isinstance(user, auth_models.User)
-    user.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
-    user.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    group_administrators = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
+    group_catalogue_editor = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
+    # user.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    # user.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    user.groups.remove(group_administrators.id)
+    user.groups.remove(group_catalogue_editor.id)
     user.save()
 
     # Authenticate
@@ -104,8 +110,12 @@ def test_flow(
     # Ensure the user is not in any groups, so it has no special permissions.
     user = user_factory.create()
     assert isinstance(user, auth_models.User)
-    user.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
-    user.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    group_administrators = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
+    group_catalogue_editor = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
+    # user.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    # user.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    user.groups.remove(group_administrators.id)
+    user.groups.remove(group_catalogue_editor.id)
     user.save()
 
     # Authenticate

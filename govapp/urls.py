@@ -24,7 +24,8 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
 # Local
-from govapp import views
+from govapp import are_migrations_running, views
+from govapp.default_data_manager import DefaultDataManager
 
 
 # Admin Site Settings
@@ -32,6 +33,9 @@ admin.site.site_header = conf.settings.PROJECT_TITLE
 admin.site.index_title = conf.settings.PROJECT_TITLE
 admin.site.site_title = conf.settings.PROJECT_TITLE
 
+# To test sentry
+def trigger_error(request):
+    division_by_zero = 1 / 0  # noqa
 
 # Django URL Patterns
 urlpatterns = [
@@ -74,9 +78,14 @@ urlpatterns = [
 
     urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
 
+    # sentry
+    urls.path("sentry-debug/", trigger_error),
 ]
 
 # DBCA Template URLs
 urlpatterns.append(urls.path("logout/", auth_views.LogoutView.as_view(), {"next_page": "/"}, name="logout"))
 if conf.settings.ENABLE_DJANGO_LOGIN:
     urlpatterns.append(urls.re_path(r"^ssologin/", auth_views.LoginView.as_view(), name="ssologin"))
+
+if not are_migrations_running():
+    DefaultDataManager()

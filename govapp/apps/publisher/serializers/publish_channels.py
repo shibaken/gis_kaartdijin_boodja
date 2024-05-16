@@ -52,6 +52,7 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
     workspace_name = serializers.ReadOnlyField(source='workspace.name')
     # geoserver_pool = GeoServerPoolSerializer()
     geoserver_pool_name = serializers.ReadOnlyField(source='geoserver_pool.name')
+    geoserver_pool_url = serializers.SerializerMethodField()
     
     class Meta:
         """GeoServer Publish Channel Model Serializer Metadata."""
@@ -77,7 +78,14 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "geoserver_pool_name",
+            "geoserver_pool_url",
         )
+
+    def get_geoserver_pool_url(self, obj):
+        url = ''
+        if obj.geoserver_pool:
+            url = f'{obj.geoserver_pool.url}/web/'
+        return url
         
     def validate(self, data):
         _validate_bbox(data)

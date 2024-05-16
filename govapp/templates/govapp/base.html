@@ -97,7 +97,34 @@
     </div>
 </div>
 {% endblock %}
+
 {% block custom_js %}
+<script>
+    $(document).ready(function(){
+        let menuItemCatalogue = $('#primary-menu-item-catalogue');
+        let menuItemPublish = $('#primary-menu-item-publish');
+        let arrCatalogue = ['/catalogue', '/layer'];
+        let arrPublish = ['/publish'];
+
+        let currentUrl = window.location.href;
+        toggleActiveClassForMenuItem(currentUrl);
+
+        function toggleActiveClassForMenuItem(url){
+            if (arrCatalogue.some(element => url.includes(element))){
+                menuItemCatalogue.addClass('active');
+                menuItemPublish.removeClass('active');
+            } else if (arrPublish.some(element => url.includes(element))){
+                menuItemCatalogue.removeClass('active');
+                menuItemPublish.addClass('active');
+            }
+        }
+
+        $(window).on('hashchange', function(){
+            let currentUrl = window.location.href;
+            toggleActiveClassForMenuItem(currentUrl)
+        });
+    });
+</script>
 {% endblock %}
 
 {% block page_footer %}
@@ -105,7 +132,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col">
-                <small class="float-right">&copy; Department of Biodiversity, Conservation and Attractions</small>
+                <small class="float-right">&copy; Department of Biodiversity, Conservation and Attractions2</small>
             </div>
         </div>
     </div>

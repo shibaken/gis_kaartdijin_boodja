@@ -15,6 +15,7 @@ import os
 import pathlib
 import platform
 import json 
+import sys
 
 # Third-Party
 import decouple
@@ -178,8 +179,9 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
-if not os.path.exists(os.path.join(BASE_DIR, 'logs')):
-    os.mkdir(os.path.join(BASE_DIR, 'logs'))
+path_to_logs = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(path_to_logs):
+    os.mkdir(path_to_logs)
 
 # Logging
 # https://docs.djangoproject.com/en/3.2/topics/logging/
@@ -257,10 +259,19 @@ EMAIL_DELIVERY = decouple.config("EMAIL_DELIVERY", default="off")
 
 # Group Settings
 # This must match what is in the database
-GROUP_ADMINISTRATOR_ID = 1
-GROUP_ADMINISTRATOR_NAME = "Administrators"
-GROUP_CATALOGUE_EDITOR_ID = 2
-GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
+# GROUP_ADMINISTRATOR_ID = 1
+# GROUP_ADMINISTRATOR_NAME = "Administrators"
+# GROUP_CATALOGUE_EDITOR_ID = 2
+# GROUP_CATALOGUE_EDITOR_NAME = "Catalogue Editors"
+GROUP_ADMINISTRATORS = 'Administrators'
+GROUP_CATALOGUE_EDITORS = 'Catalogue Editors'
+GROUP_CATALOGUE_ADMIN = 'Catalogue Admin'
+CUSTOM_GROUPS = [
+    # Groups in this list are created automatically if not exist.
+    GROUP_ADMINISTRATORS,
+    GROUP_CATALOGUE_EDITORS,
+    GROUP_CATALOGUE_ADMIN,
+]
 
 # Cron Jobs
 # https://django-cron.readthedocs.io/en/latest/installation.html
@@ -288,6 +299,8 @@ if platform.machine() == "arm64":
 
 # Local Storage Paths
 PENDING_IMPORT_PATH=decouple.config("PENDING_IMPORT_PATH", default="./pending_imports/")
+if not os.path.exists(PENDING_IMPORT_PATH):
+    os.mkdir(PENDING_IMPORT_PATH)
 DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
 # Django Timezone
@@ -301,4 +314,21 @@ WFS_CACHE_KEY = "wfs native layer names"
 POST_GIS_CACHE_KEY = "post gis table names"
 SUBSCRIPTION_CACHE_TTL = 3600
 
+APPLICATION_VERSION = decouple.config("APPLICATION_VERSION", default="1.0.0" + "-" + GIT_COMMIT_HASH[:7])
+RUNNING_DEVSERVER = len(sys.argv) > 1 and sys.argv[1] == "runserver"
 
+# Sentry settings
+SENTRY_DSN = decouple.config("SENTRY_DSN", default=None)
+SENTRY_SAMPLE_RATE = decouple.config("SENTRY_SAMPLE_RATE", default=1.0)  # Error sampling rate
+SENTRY_TRANSACTION_SAMPLE_RATE = decouple.config("SENTRY_TRANSACTION_SAMPLE_RATE", default=0.0)  # Transaction sampling
+
+if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        sample_rate=SENTRY_SAMPLE_RATE,
+        traces_sample_rate=SENTRY_TRANSACTION_SAMPLE_RATE,
+        environment=EMAIL_INSTANCE.lower(),
+        release=APPLICATION_VERSION,
+    )
