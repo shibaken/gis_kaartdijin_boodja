@@ -71,28 +71,44 @@ class CatalogueEntryViewSet(
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     @decorators.action(detail=False, methods=["POST"])
-    def upload_file(self, request: request.Request):
-        if request.method == 'POST' and request.FILES:
-            # uploaded_files = []  # Multiple files might be uploaded
-            allowed_extensions = ['.zip', '.7z', '.jpg']
-            uploaded_files = request.FILES.getlist('file')  # Probably always single file, not multiple files because request is sent per file.
+    def delete_file(self, request: request.Request):
+        filenameToDelete = request.POST.get('newFileName', '')
+        if filenameToDelete:
+            pathToFile = os.path.join(settings.PENDING_IMPORT_PATH,  filenameToDelete)
+            if os.path.exists(pathToFile):
+                os.remove(pathToFile)
+                logger.info(f"File: [{pathToFile}] deleted successfully.")
+                return JsonResponse({'message': 'File deleted successfully.'})
+            else:
+                logger.info(f"File: [{pathToFile}] doesn't exist.")
+                return JsonResponse({'message': 'File does not exist.'})
+        else:
+            return JsonResponse({'message': 'No file specified.'})
 
-            logger.info(f'Files uploaded: {uploaded_files}')
+    @decorators.action(detail=False, methods=["POST"])
+    def upload_file(self, request: request.Request):
+        if request.FILES:
+            # uploaded_files = []  # Multiple files might be uploaded
+            allowed_extensions = ['.zip', '.7z',]
+            uploaded_file = request.FILES.getlist('file')[0]
+            newFileName = request.POST.get('newFileName', '')
+
+            logger.info(f'File: [{uploaded_file.name}] is being uploaded...')
 
             # Check file extensions
-            for uploaded_file in uploaded_files:
-                _, file_extension = os.path.splitext(uploaded_file.name)
-                if file_extension.lower() not in allowed_extensions:
-                    return JsonResponse({'error': 'Invalid file type. Only .zip and .7z files are allowed.'}, status=400)
+            _, file_extension = os.path.splitext(uploaded_file.name)
+            if file_extension.lower() not in allowed_extensions:
+                return JsonResponse({'error': 'Invalid file type. Only .zip and .7z files are allowed.'}, status=400)
 
             # Save files
-            for uploaded_file in uploaded_files:
-                save_path = os.path.join(settings.PENDING_IMPORT_PATH,  uploaded_file.name)
-                with open(save_path, 'wb+') as destination:
-                    for chunk in uploaded_file.chunks():
-                        destination.write(chunk)
+            save_path = os.path.join(settings.PENDING_IMPORT_PATH,  newFileName)
+            with open(save_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+            logger.info(f"File: [{uploaded_file.name}] has been successfully saved.")
             return JsonResponse({'message': 'File(s) uploaded successfully.'})
         else:
+            logger.info(f"No file(s) were uploaded.")
             return JsonResponse({'error': 'No file(s) were uploaded.'}, status=400)
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})

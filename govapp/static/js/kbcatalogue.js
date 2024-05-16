@@ -124,23 +124,29 @@ var kbcatalogue = {
             kbcatalogue.uploadFiles(files);
         });
         // Select by drag-and-drop
-        $("#modal_upload_catalogue").on('dragover', function(event) {
+        $("#modalContent").on('dragover', function(event) {
             event.preventDefault();
-            $(this).addClass('dragover');
+            $("#modalContent").addClass('dragover');
         });
-        $("#modal_upload_catalogue").on('dragleave drop', function(event) {
+        $("#modalContent").on('dragleave drop', function(event) {
             event.preventDefault();
-            $(this).removeClass('dragover');
+            $("#modalContent").removeClass('dragover');
         });
-        $("#modal_upload_catalogue").on('drop', function(event) {
+        $("#modalContent").on('drop', function(event) {
             event.preventDefault();
-            $(this).removeClass('dragover');
+            $("#modalContent").removeClass('dragover');
             var files = event.originalEvent.dataTransfer.files;
-            // for (var i = 0; i < files.length; i++) {
-            //     $("#progressBars").append('<div class="progress mt-2"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
-            // }
             kbcatalogue.uploadFiles(files);
         });
+        $("#cancel_upload_catalogue_btn").on('click', function(event){
+            kbcatalogue.cancelUploadCatalogue();
+        }),
+        $("#submit_upload_catalogue_btn").on('click', function(event){
+            kbcatalogue.submitUploadCatalogue();
+        })
+        $('#modal_upload_catalogue').on('hidden.bs.modal', function (e) {
+            kbcatalogue.modalClosed()
+          });
     },
 
     init_catalogue_item: function() { 
@@ -297,93 +303,102 @@ var kbcatalogue = {
         });
     },
 
-    // Function for uploading files
-    // uploadFiles: function(files) {
-    //     console.log({files})
-    //     for (var i = 0; i < files.length; i++) {
-    //         var formData = new FormData();
-    //         formData.append('file', files[i]);
-    //         var csrf_token = $("#csrfmiddlewaretoken").val();
+    addDateTimeToFilename: function(filename) {
+        // Get current date and time
+        const currentDate = new Date();
     
-    //         // Generate progressbar
-    //         var fileName = files[i].name;
-    //         var progressBarContainer = $('<div class="progress-container mt-2"></div>');
-    //         var progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
-    //         var fileNameElement = $('<p class="file-name">' + fileName + '</p>');
-    //         var deleteIcon = $('<span class="">DELETE</span>');
-    //         progressBarContainer.append(fileNameElement);
-    //         progressBarContainer.append(deleteIcon);
-    //         progressBarContainer.append(progressBar);
-    //         $("#progressBars").append(progressBarContainer);
+        // Format date
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Pad month with leading zero
+        const day = String(currentDate.getDate()).padStart(2, '0'); // Pad day with leading zero
+        const hours = String(currentDate.getHours()).padStart(2, '0'); // Pad hours with leading zero
+        const minutes = String(currentDate.getMinutes()).padStart(2, '0'); // Pad minutes with leading zero
+        const seconds = String(currentDate.getSeconds()).padStart(2, '0'); // Pad seconds with leading zero
+    
+        // Insert date and time between filename and extension
+        const extensionIndex = filename.lastIndexOf('.');
+        const newFilename = filename.slice(0, extensionIndex) + '.' + year + month + day + '_' + hours + minutes + seconds + filename.slice(extensionIndex);
+    
+        return newFilename;
+    },
 
-    //         (function(progressBar) {  // Closure to handle a certain progressBar
-    //             // Upload file
-    //             $.ajax({
-    //                 url: kbcatalogue.var.catalogue_data_url + "upload_file/",
-    //                 type: 'POST',
-    //                 headers: {'X-CSRFToken' : csrf_token},
-    //                 data: formData,
-    //                 cache: false,
-    //                 contentType: false,
-    //                 processData: false,
-    //                 xhr: function() {
-    //                     console.log('5');
-    //                     var xhr = new window.XMLHttpRequest();
-    //                     xhr.upload.addEventListener("progress", function(evt) {
-    //                         if (evt.lengthComputable) {
-    //                             var percentComplete = (evt.loaded / evt.total) * 100;
-    //                             console.log('percentage: ' + percentComplete)
-    //                             // Update the progressBar
-    //                             progressBar.find(".progress-bar").width(percentComplete + '%');
-    //                             progressBar.find(".progress-bar").attr('aria-valuenow', percentComplete);
-    //                         }
-    //                     }, false);
-    //                     return xhr;
-    //                 },
-    //                 success: function(data){
+    createProgressBar: function(fileName, newFileName) {
+        var progressBarContainer = $('<div class="progress-container mt-2"></div>');
+        var progressBarRow = $('<div class="row"></div>');
+        var fileNameColumn = $('<div class="col-6"></div>');
+        var progressBarColumn = $('<div class="col-5"></div>');
+        var deleteIconColumn = $('<div class="col-1"></div>');
     
-    //                 }
-    //             });
-    //         })(progressBar);
-    //     }
-    // }, 
+        var progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+        var fileNameElement = $('<p class="file-name">' + fileName + '</p>');
+        var deleteIcon = $('<div class="cross-sign" data-newFileName="' + newFileName + '"></div>');
+    
+        fileNameColumn.append(fileNameElement);
+        progressBarColumn.append(progressBar);
+        deleteIconColumn.append(deleteIcon);
+    
+        progressBarRow.append(fileNameColumn);
+        progressBarRow.append(progressBarColumn);
+        progressBarRow.append(deleteIconColumn);
+    
+        progressBarContainer.append(progressBarRow);
+    
+        return {
+            progressBar: progressBar,
+            progressBarContainer: progressBarContainer,
+            deleteIcon: deleteIcon
+        };
+    },
+    
+    deleteFile: function(fileName) {
+        // Make an AJAX request to delete the file
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        var xhr = $.ajax({
+            url: kbcatalogue.var.catalogue_data_url + "delete_file/", // Change the URL to your delete file endpoint
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token}, // Include CSRF token in headers
+            data: {'newFileName': fileName},
+            success: function(data){
+
+            },
+            error: function(xhr, status, error) {
+                console.error("Error deleting file:", error);
+            }
+        });
+    },
+    modalClosed: function(){
+        kbcatalogue.cancelUploadCatalogue();
+    },
+    submitUploadCatalogue: function(){
+        var progressBarContainer = $('#progressBars')
+        progressBarContainer.empty();
+    },
+    cancelUploadCatalogue: function(){
+        $(".cross-sign").each(function() {
+            var newFilename = $(this).data("newfilename");
+            kbcatalogue.deleteFile(newFilename);
+        });
+        var progressBarContainer = $('#progressBars')
+        progressBarContainer.empty();
+    },
+
+    // Function for uploading files
     uploadFiles: function(files) {
-        // プログレスバーのコンテナをクリアする
-        // $("#progressBars").empty();
         var xhrList = []
+        var csrf_token = $("#csrfmiddlewaretoken").val();
     
         for (var i = 0; i < files.length; i++) {
-            // ファイル名を取得
             var fileName = files[i].name;
+            var newFileName = kbcatalogue.addDateTimeToFilename(fileName)
     
-            // Generate progressbar
-            var progressBarContainer = $('<div class="progress-container mt-2"></div>');
-            var progressBarRow = $('<div class="row"></div>'); // Bootstrapのrowクラスを追加
-            var fileNameColumn = $('<div class="col-6"></div>'); // Bootstrapのcolクラスを追加
-            var progressBarColumn = $('<div class="col-5"></div>'); // Bootstrapのcolクラスを追加
-            var deleteIconColumn = $('<div class="col-1"></div>'); // Bootstrapのcolクラスを追加
-            
-            var progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
-            var fileNameElement = $('<p class="file-name">' + fileName + '</p>');
-            var deleteIcon = $('<div class="cross-sign"></div>');
-            
-            fileNameColumn.append(fileNameElement); // fileNameElementをfileNameColumnに追加
-            progressBarColumn.append(progressBar); // progressBarをprogressBarColumnに追加
-            deleteIconColumn.append(deleteIcon); // deleteIconをprogressBarColumnに追加
-            
-            progressBarRow.append(fileNameColumn); // fileNameColumnをprogressBarRowに追加
-            progressBarRow.append(progressBarColumn); // progressBarColumnをprogressBarRowに追加
-            progressBarRow.append(deleteIconColumn); // progressBarColumnをprogressBarRowに追加
-            
-            progressBarContainer.append(progressBarRow); // progressBarRowをprogressBarContainerに追加
-            $("#progressBars").append(progressBarContainer); // progressBarContainerをprogressBarsに追加
+            // Generate progressbar per file
+            var { progressBar, progressBarContainer, deleteIcon } = kbcatalogue.createProgressBar(fileName, newFileName);
+            $("#progressBars").append(progressBarContainer);
             
             (function(index, progressBar, progressBarContainer) {
                 var formData = new FormData();
                 formData.append('file', files[index]);
-                var csrf_token = $("#csrfmiddlewaretoken").val();
-    
-                console.log('Uploading file i:' + index)
+                formData.append('newFileName', newFileName)
     
                 // Delete 
                 deleteIcon.on('click', function() {
@@ -393,11 +408,13 @@ var kbcatalogue = {
                     }
                     // Delete uploaded file from the server
                     else {
-                        console.log('Delete file:', files[index]);
-                        // TODO
+                        var newFileName = $(this).attr("data-newfilename");
+                        kbcatalogue.deleteFile(newFileName)
                     }
                     // Delete progressbar
-                    progressBarContainer.remove();
+                    progressBarContainer.fadeOut('slow', function(){
+                        $(this).remove();
+                    })
                 });
     
                 // Upload
@@ -414,7 +431,6 @@ var kbcatalogue = {
                         xhr.upload.addEventListener("progress", function(evt) {
                             if (evt.lengthComputable) {
                                 var percentComplete = (evt.loaded / evt.total) * 100;
-                                console.log('i: ' + index + ' percentage: ' + percentComplete)
                                 // Update progressbar
                                 progressBar.find(".progress-bar").width(percentComplete + '%');
                                 progressBar.find(".progress-bar").attr('aria-valuenow', percentComplete);
@@ -422,8 +438,14 @@ var kbcatalogue = {
                         }, false);
                         return xhr;
                     },
-                    success: function(data){
-                        console.log({data})
+                    success: function(response){
+
+                    },
+                    error: function(xhr, status, error){
+                        var errorResponse = JSON.parse(xhr.responseText);
+                        progressBar.fadeOut('slow', function(){
+                            progressBar.replaceWith($('<span class="error-message">' + errorResponse.error + '</span>'))
+                        });
                     }
                 });
                 xhrList.push(xhr);
