@@ -32,6 +32,9 @@ admin.site.site_header = conf.settings.PROJECT_TITLE
 admin.site.index_title = conf.settings.PROJECT_TITLE
 admin.site.site_title = conf.settings.PROJECT_TITLE
 
+# To test sentry
+def trigger_error(request):
+    division_by_zero = 1 / 0  # noqa
 
 # Django URL Patterns
 urlpatterns = [
@@ -74,6 +77,8 @@ urlpatterns = [
 
     urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
 
+    # sentry
+    urls.path("sentry-debug/", trigger_error),
 ]
 
 # DBCA Template URLs
