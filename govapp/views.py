@@ -2,6 +2,7 @@
 
 
 # Third-Party
+import os
 from django import http
 from django import shortcuts
 from django.views.generic import base
@@ -77,6 +78,17 @@ class OldCatalogueVue(base.TemplateView):
         context: dict[str, Any] = {}
 
         # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)
+
+
+class PendingImportsView(base.TemplateView):
+    template_name = "govapp/pending_imports.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        pathToFolder = settings.PENDING_IMPORT_PATH
+        file_list = os.listdir(pathToFolder)
+
+        context = {'file_list': file_list}
         return shortcuts.render(request, self.template_name, context)
 
 class ManagementCommandsView(base.TemplateView):
