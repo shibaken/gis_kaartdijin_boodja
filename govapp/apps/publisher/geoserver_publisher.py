@@ -24,8 +24,6 @@ log = logging.getLogger(__name__)
 
 # """Publish to GeoServers."""
 def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoserver_info:GeoServerPublishChannel , symbology_only: bool = False) -> (bool, Exception):
-# def publish(publish_entry: "PublishEntry", symbology_only: bool = False) -> (bool, Exception):
-    # def publish_geoserver(self, symbology_only: bool = False) -> None:
     """Publishes to GeoServer channel if applicable.
 
     Args:
@@ -70,19 +68,15 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoser
     return True, None
 
 def _publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoserver_info:GeoServerPublishChannel):
-# def _publish(publish_entry: "PublishEntry"):
     catalogue_entry = publish_entry.catalogue_entry
     layer_subscription = catalogue_entry.layer_subscription
     
     if layer_subscription.type == layer_subscriptions.LayerSubscriptionType.WFS:
         _publish_wfs(publish_entry, catalogue_entry, layer_subscription, geoserver, geoserver_info)
-        # _publish_wfs(publish_entry, catalogue_entry, layer_subscription)
     elif layer_subscription.type == layer_subscriptions.LayerSubscriptionType.WMS:
         _publish_wms(publish_entry, catalogue_entry, layer_subscription, geoserver, geoserver_info)
-        # _publish_wms(publish_entry, catalogue_entry, layer_subscription)
     elif layer_subscription.type == layer_subscriptions.LayerSubscriptionType.POST_GIS:
         _publish_postgis(publish_entry, catalogue_entry, layer_subscription, geoserver, geoserver_info)
-        # _publish_postgis(publish_entry, catalogue_entry, layer_subscription)
 
 def _publish_wfs(
         publish_entry: "PublishEntry", 
@@ -213,38 +207,39 @@ def _publish_postgis(
     }
     geoserver.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
         
-    # context = {
-    #     "name": catalogue_entry.name,
-    #     "description": catalogue_entry.description,
-    #     "title": catalogue_entry.name,
-    #     "native_name": catalogue_entry.mapping_name,
-    #     "crs": geoserver_info.srs,
-    #     "native_crs":geoserver_info.native_crs,
-    #     "override_bbox": geoserver_info.override_bbox,
-    #     "nativeBoundingBox": {
-    #         "minx": geoserver_info.nbb_minx,
-    #         "maxx": geoserver_info.nbb_maxx,
-    #         "miny": geoserver_info.nbb_miny,
-    #         "maxy": geoserver_info.nbb_maxy,
-    #         "crs": geoserver_info.nbb_crs,
-    #     },
-    #     "latLonBoundingBox": {
-    #         "minx": geoserver_info.llb_minx,
-    #         "maxx": geoserver_info.llb_maxx,
-    #         "miny": geoserver_info.llb_miny,
-    #         "maxy": geoserver_info.llb_maxy,
-    #         "crs": geoserver_info.llb_crs,
-    #     },
-    #     "enabled": layer_subscription.enabled,
-    #     # "attributes": catalogue_entry.attributes.all()
-    #     # "description": "TES",
-    #     # "enabled": 'true',
-    #     # "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
-    # }
-    #     #     context = {
-    #     #     "name": self.publish_entry.catalogue_entry.metadata.name+"_wfs",
-    #     #     "description": "TES",
-    #     #     "enabled": 'true',
-    #     #     "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
-    #     # }
-    # geoserver.upload_layer_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)  # We can use ths function for postgis, too.
+    context = {
+        "name": catalogue_entry.name,
+        "description": catalogue_entry.description,
+        "title": catalogue_entry.name,
+        "abstract": None,
+        "native_name": catalogue_entry.mapping_name,
+        "crs": geoserver_info.srs,
+        "native_crs":geoserver_info.native_crs,
+        "override_bbox": geoserver_info.override_bbox,
+        "nativeBoundingBox": {
+            "minx": geoserver_info.nbb_minx,
+            "maxx": geoserver_info.nbb_maxx,
+            "miny": geoserver_info.nbb_miny,
+            "maxy": geoserver_info.nbb_maxy,
+            "crs": geoserver_info.nbb_crs,
+        },
+        "latLonBoundingBox": {
+            "minx": geoserver_info.llb_minx,
+            "maxx": geoserver_info.llb_maxx,
+            "miny": geoserver_info.llb_miny,
+            "maxy": geoserver_info.llb_maxy,
+            "crs": geoserver_info.llb_crs,
+        },
+        "enabled": layer_subscription.enabled,
+        # "attributes": catalogue_entry.attributes.all()
+        # "description": "TES",
+        # "enabled": 'true',
+        # "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
+    }
+        #     context = {
+        #     "name": self.publish_entry.catalogue_entry.metadata.name+"_wfs",
+        #     "description": "TES",
+        #     "enabled": 'true',
+        #     "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
+        # }
+    geoserver.upload_layer_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)  # We can use ths function for postgis, too.

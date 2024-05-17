@@ -176,8 +176,6 @@ class GeoServer:
         
         xml_data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
 
-        self.create_workspace_if_not_exists(workspace)
-
         store_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}".format(
             self.service_url,
             workspace,
@@ -397,44 +395,6 @@ class GeoServer:
         
         # Check Response
         response.raise_for_status()     
-
-    # async def create_workspace_if_not_exists(self, workspace_name, geoserver_url, username, password):
-    #     # URL to check the existence of the workspace
-    #     workspace_url = f"{geoserver_url}/rest/workspaces/{workspace_name}.json"
-
-    #     # Headers with authentication information
-    #     headers = {'Content-Type': 'application/json'}
-
-    #     async with httpx.AsyncClient(auth=(username, password)) as client:
-    #         # Send a GET request to check the existence of the workspace
-    #         response = await client.get(workspace_url, headers=headers)
-
-    #     # Create the workspace only if it doesn't exist
-    #     if response.status_code == 404:
-    #         log.info(f"Workspace '{workspace_name}' does not exist. Creating...")
-
-    #         # URL to create the workspace
-    #         create_workspace_url = f"{geoserver_url}/rest/workspaces"
-
-    #         # JSON data required to create the workspace
-    #         workspace_data = {
-    #             "workspace": {
-    #                 "name": workspace_name
-    #             }
-    #         }
-
-    #         async with httpx.AsyncClient(auth=(username, password)) as client:
-    #             # Send a POST request to create the workspace
-    #             create_response = await client.post(create_workspace_url, headers=headers, json=workspace_data)
-
-    #         # Check the status code to determine if the creation was successful
-    #         if create_response.status_code == 201:
-    #             log.info(f"Workspace '{workspace_name}' created successfully.")
-    #         else:
-    #             log.info("Failed to create workspace.")
-    #             log.info(create_response.text)
-    #     else:
-    #         log.info(f"Workspace '{workspace_name}' already exists.")
 
     def upload_store_wfs(
         self,
