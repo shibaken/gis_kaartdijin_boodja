@@ -2,6 +2,7 @@
 
 
 # Standard
+import asyncio
 import logging
 import pathlib
 
@@ -15,6 +16,8 @@ from django.template.loader import render_to_string
 
 # Logging
 log = logging.getLogger(__name__)
+
+
 
 
 class GeoServer:
@@ -40,6 +43,44 @@ class GeoServer:
 
         # Strip Trailing Slash from Service URL
         self.service_url = self.service_url.rstrip("/")
+
+    def create_workspace_if_not_exists(self, workspace_name):
+        # URL to check the existence of the workspace
+        workspace_url = f"{self.service_url}/rest/workspaces/{workspace_name}.json"
+
+        # Headers with authentication information
+        headers = {'Content-Type': 'application/json'}
+
+        with httpx.Client(auth=(self.username, self.password)) as client:
+            # Send a GET request to check the existence of the workspace
+            response = client.get(workspace_url, headers=headers)
+
+        # Create the workspace only if it doesn't exist
+        if response.status_code == 404:
+            log.info(f"Workspace '{workspace_name}' does not exist. Creating...")
+
+            # URL to create the workspace
+            create_workspace_url = f"{self.service_url}/rest/workspaces"
+
+            # JSON data required to create the workspace
+            workspace_data = {
+                "workspace": {
+                    "name": workspace_name
+                }
+            }
+
+            with httpx.Client(auth=(self.username, self.password)) as client:
+                # Send a POST request to create the workspace
+                create_response = client.post(create_workspace_url, headers=headers, json=workspace_data)
+
+            # Check the status code to determine if the creation was successful
+            if create_response.status_code == 201:
+                log.info(f"Workspace '{workspace_name}' created successfully.")
+            else:
+                log.info("Failed to create workspace.")
+                log.info(create_response.text)
+        else:
+            log.info(f"Workspace '{workspace_name}' already exists.")
 
     def upload_geopackage(
         self,
@@ -372,7 +413,7 @@ class GeoServer:
         log.info(f"Uploading WFS Store to GeoServer")
         
         json_data = render_to_string('govapp/geoserver/wfs/wfs_store.json', context)
-
+        
         store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
             self.service_url,
             workspace,
