@@ -44,20 +44,15 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoser
 
     # Handle Errors
     try:
-        # Publish!
+        ### Publish! ###
+        # Make sure workspace exists
+        geoserver.create_workspace_if_not_exists(geoserver_info.workspace.name)
         # for special file
-        if publish_entry.catalogue_entry.type == CatalogueEntryType.SPATIAL_FILE:
-            # for geoserver_publish_channel in publish_entry.geoserver_channels.all():
+        if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE, CatalogueEntryType.SUBSCRIPTION_QUERY]:
             geoserver_info.publish(symbology_only, geoserver)
-                # geoserver_publish_channel.publish(symbology_only)
-            # publish_entry.geoserver_channels.publish(symbology_only, geoserver)  # type: ignore[union-attr]
         # for layer subscription
         else:
-            if publish_entry.catalogue_entry.type == CatalogueEntryType.SUBSCRIPTION_QUERY:
-                geoserver_info.publish(symbology_only, geoserver)
-            else:
-                _publish(publish_entry, geoserver, geoserver_info)
-            # _publish(publish_entry)
+            _publish(publish_entry, geoserver, geoserver_info)
 
     except Exception as exc:
         # Log
