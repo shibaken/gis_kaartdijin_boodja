@@ -1,6 +1,7 @@
 """Kaartdijin Boodja Publisher GeoServer Queue Excutor."""
 
 # Standard
+import asyncio
 import logging
 
 # Third-Party
@@ -15,6 +16,7 @@ from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
 from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
+from govapp.apps.publisher.models.workspaces import Workspace
 from govapp.gis import geoserver
 
 # Typing
@@ -39,28 +41,40 @@ class GeoServerQueueExcutor:
     def excute(self) -> None:
         target_items = self._retrieve_target_items()
         log.info(f"Start publishing for {target_items.count()} geoserver queue items.")
+
         for queue_item in target_items:
             self._init_excuting(queue_item=queue_item)
         
-            ### Old
-            # geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
-            ###
-
-            ### New
-            # geoserver_pool = queue_item.publish_entry.geoserver_channels.value_list('geoserver_pool', flat=True)  # Somehow this doesnot work...
-            # geoserver_pool = []
             for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
                 if geoserver_publish_channel.geoserver_pool.enabled:
-                    # geoserver_pool.append(geoserver_publish_channel.geoserver_pool)
-                    # self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel.geoserver_pool)
-                    self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
-            ###
+                    geoserver_obj = geoserver.geoserverWithCustomCreds(  # We want GeoServer obj
+                        geoserver_publish_channel.geoserver_pool.url,
+                        geoserver_publish_channel.geoserver_pool.username,
+                        geoserver_publish_channel.geoserver_pool.password
+                    )
 
-            # self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry)
+                    # Make sure all the workspace exist in the geoserver
+                    workspaces = Workspace.objects.all()
+                    for workspace in workspaces:
+                        geoserver_obj.create_workspace_if_not_exists(workspace.name)
+
+                    # asyncio.run(self._create_workspaces(geoserver_obj, workspaces))
+
+                    self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
 
             self._update_result(queue_item=queue_item)
-            #if self.result_success:
-            #    geoserver_queue_manager.push(publish_entry=queue_item.publish_entry, symbology_only=queue_item.symbology_only)
+
+    # async def _create_workspaces(geoserver_obj, workspaces):
+    #     # Create an asynchronous task for each workspace and add it to the list.
+    #     for workspace in workspaces:
+    #         # Execute geoserver_obj.create_workspace_if_not_exists2(workspace.name) as an asynchronous task.
+    #         task = asyncio.create_task(geoserver_obj.create_workspace_if_not_exists(workspace.name))
+    #         # Append the task to the list.
+    #         tasks.append(task)
+        
+    #     # Wait for all tasks to complete.
+    #     for task in tasks:
+    #         await task
 
     def _retrieve_target_items(self):
         """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """

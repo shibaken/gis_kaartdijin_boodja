@@ -43,8 +43,6 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoser
     # Handle Errors
     try:
         ### Publish! ###
-        # Make sure workspace exists
-        geoserver.create_workspace_if_not_exists(geoserver_info.workspace.name)
         # for special file
         if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE, CatalogueEntryType.SUBSCRIPTION_QUERY]:
             geoserver_info.publish(symbology_only, geoserver)
