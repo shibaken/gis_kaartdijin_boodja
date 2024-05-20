@@ -130,6 +130,7 @@ class Absorber:
             name=metadata.name,
             description=metadata.description,
         )
+        log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
 
         # Create Layer Submission
         models.layer_submissions.LayerSubmission.objects.create(

@@ -242,6 +242,8 @@ class CatalogueEntriesPage(base.TemplateView):
         pe_list = []
         catalogue_entry_list = []
 
+        debug = request.GET.get('debug', False)
+
         # START - To be improved later todo a reverse table join      
         ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
         pe_obj = publish_entries_models.PublishEntry.objects.all()
@@ -250,8 +252,11 @@ class CatalogueEntriesPage(base.TemplateView):
             pe_list.append(pe.catalogue_entry.id)
 
         for ce in ce_obj:
-            if ce.id not in pe_list:
+            if debug == 'true':
                 catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+            else:
+                if ce.id not in pe_list:
+                    catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
                 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list

@@ -158,6 +158,7 @@ class Absorber:
             name=metadata.name,
             description=metadata.description,
         )
+        log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
 
         # Convert to a Geojson text
         geojson_path = self.convert_to_geojson(archive, catalogue_entry)

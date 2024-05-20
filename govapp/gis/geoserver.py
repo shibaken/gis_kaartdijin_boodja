@@ -18,8 +18,6 @@ from django.template.loader import render_to_string
 log = logging.getLogger(__name__)
 
 
-
-
 class GeoServer:
     """GeoServer Abstraction."""
 
@@ -81,6 +79,76 @@ class GeoServer:
                 log.info(create_response.text)
         else:
             log.info(f"Workspace '{workspace_name}' already exists.")
+
+    async def create_workspace_if_not_exists2(self, workspace_name):
+        # Headers with authentication information
+        headers = {'Content-Type': 'application/json'}
+
+        async with httpx.AsyncClient(auth=(self.username, self.password)) as client:
+            # Send a GET request to check the existence of the workspace
+            response = await client.get(f"{self.service_url}/rest/workspaces/{workspace_name}", headers=headers)
+
+        # Create the workspace only if it doesn't exist
+        if response.status_code == 404:
+            log.info(f"Workspace '{workspace_name}' does not exist. Creating...")
+
+            # URL to create the workspace
+            create_workspace_url = f"{self.service_url}/rest/workspaces"
+
+            # JSON data required to create the workspace
+            workspace_data = {
+                "workspace": {
+                    "name": workspace_name
+                }
+            }
+
+            async with httpx.AsyncClient(auth=(self.username, self.password)) as client:
+                # Send a POST request to create the workspace
+                create_response = await client.post(create_workspace_url, headers=headers, json=workspace_data)
+
+            # Check the status code to determine if the creation was successful
+            if create_response.status_code == 201:
+                log.info(f"Workspace '{workspace_name}' created successfully.")
+            else:
+                log.info("Failed to create workspace.")
+                log.info(create_response.text)
+        else:
+            log.info(f"Workspace '{workspace_name}' already exists.")
+
+    def create_store_if_not_exists(self, workspace_name, store_name, data):
+        # URL to check the existence of the store
+        store_get_url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores/{store_name}"
+        log.info(f'store_get_url: {store_get_url}')
+
+        # Headers with authentication information
+        headers = {'Content-Type': 'application/json'}
+
+        # Check if Store Exists
+        log.info(f'Checking if the store exists...')
+        with httpx.Client(auth=(self.username, self.password)) as client:
+            response = client.get(store_get_url, headers=headers)
+
+        # Construct URL
+        url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores"
+
+        # Decide whether to perform a POST or PUT request based on the existence of the store
+        if response.status_code == 404: 
+            # Store does not exist, perform a POST request
+            log.info(f'Store does not exist. Performing POST request.')
+            log.info(f'POST url: {url}')
+            log.debug(f'data: {data}')
+            with httpx.Client(auth=(self.username, self.password)) as client:
+                response = client.post(url=url, headers=headers, json=data)
+
+        else:          
+            # Store exists, perform a PUT request
+            log.info(f'Store exists. Performing PUT request.')
+            log.info(f'PUT url: {store_get_url}')
+            log.debug(f'data: {data}')
+            with httpx.Client(auth=(self.username, self.password)) as client:
+                response = client.put(url=store_get_url, headers=headers, json=data)
+            
+        return response
 
     def upload_geopackage(
         self,
@@ -158,12 +226,7 @@ class GeoServer:
         # Check Response
         response.raise_for_status()
 
-    def upload_store_wms(
-        self,
-        workspace,
-        store_name,
-        context
-    ) -> None:
+    def upload_store_wms(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
@@ -174,55 +237,9 @@ class GeoServer:
         # Log
         log.info(f"Uploading WMS Store to GeoServer...")
         
-        xml_data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
+        data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
 
-        store_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}".format(
-            self.service_url,
-            workspace,
-            store_name
-        )
-        log.info(f'store_get_url: {store_get_url}')
-
-        # Check if Store Exists
-        log.info(f'Checking if the store exists...')
-        response = httpx.get(
-            url=store_get_url,
-            auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"},
-            timeout=120.0
-        )
-
-        # Construct URL
-        url = "{0}/rest/workspaces/{1}/wmsstores".format(
-            self.service_url,
-            workspace
-        )
-
-        if response.status_code == 404: 
-            # Perform Request
-            log.info(f'Store does not exist.  Perform post request.')
-            log.info(f'Post url: { url }')
-            log.debug(f'xml_data: { xml_data }')
-            response = httpx.post(
-                url=url,
-                auth=(self.username, self.password),
-                data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-        else:          
-            # Perform Request
-            log.info(f'Store exists.  Perform put request.')
-            log.info(f'Put url: { store_get_url }')
-            log.debug(f'xml_data: { xml_data }')
-            response = httpx.put(
-                url=store_get_url,
-                auth=(self.username, self.password),
-                data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-
+        response = self.create_store_if_not_exists(workspace, store_name, data)
         
         # Log
         log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")
@@ -326,12 +343,7 @@ class GeoServer:
             # Check Response
             response.raise_for_status()        
 
-    def upload_store_postgis(
-        self,
-        workspace,
-        store_name,
-        context
-    ) -> None:
+    def upload_store_postgis(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
@@ -342,53 +354,54 @@ class GeoServer:
         # Log
         log.info(f"Uploading POSTGIS Store to GeoServer...")
         
-        json_data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
+        data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
 
-        store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
-            self.service_url,
-            workspace,
-            store_name
-        )
-        log.info(f'Check if the store exists...')
-        log.info(f'GET url: { store_get_url }')
-        # Check if Store Exists
-        response = httpx.get(
-            url=store_get_url,
-            auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"},
-            timeout=120.0
-        )
+        response = self.create_store_if_not_exists(workspace, store_name, data)
+        # store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+        #     self.service_url,
+        #     workspace,
+        #     store_name
+        # )
+        # log.info(f'Check if the store exists...')
+        # log.info(f'GET url: { store_get_url }')
+        # # Check if Store Exists
+        # response = httpx.get(
+        #     url=store_get_url,
+        #     auth=(self.username, self.password),
+        #     headers={"content-type": "application/json","Accept": "application/json"},
+        #     timeout=120.0
+        # )
 
-        # Construct URL
-        url = "{0}/rest/workspaces/{1}/datastores".format(
-            self.service_url,
-            workspace
-        )
+        # # Construct URL
+        # url = "{0}/rest/workspaces/{1}/datastores".format(
+        #     self.service_url,
+        #     workspace
+        # )
 
-        if response.status_code == 404: 
-            # Perform Request
-            log.info(f'Store does not exist.  Perform post request.')
-            log.info(f'Post url: { url }')
-            log.debug(f'json_data: { json_data }')
-            response = httpx.post(
-                url=url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-        else:  
-            #Perform Request
-            log.info(f'Store exists.  Perform put request.')
-            log.info(f'Put url: { store_get_url }')
-            log.debug(f'json_data: { json_data }')
-            response = httpx.put(
-                url=store_get_url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
+        # if response.status_code == 404: 
+        #     # Perform Request
+        #     log.info(f'Store does not exist.  Perform post request.')
+        #     log.info(f'Post url: { url }')
+        #     log.debug(f'json_data: { json_data }')
+        #     response = httpx.post(
+        #         url=url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
+        # else:  
+        #     #Perform Request
+        #     log.info(f'Store exists.  Perform put request.')
+        #     log.info(f'Put url: { store_get_url }')
+        #     log.debug(f'json_data: { json_data }')
+        #     response = httpx.put(
+        #         url=store_get_url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
 
         # Log
         log.info(f"GeoServer POSTGIS response: '{response.status_code}: {response.text}'")
@@ -396,12 +409,7 @@ class GeoServer:
         # Check Response
         response.raise_for_status()     
 
-    def upload_store_wfs(
-        self,
-        workspace,
-        store_name,
-        context
-    ) -> None:
+    def upload_store_wfs(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
@@ -412,45 +420,46 @@ class GeoServer:
         # Log
         log.info(f"Uploading WFS Store to GeoServer")
         
-        json_data = render_to_string('govapp/geoserver/wfs/wfs_store.json', context)
+        data = render_to_string('govapp/geoserver/wfs/wfs_store.json', context)
         
-        store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
-            self.service_url,
-            workspace,
-            store_name
-        )
-        #Check if Store Exists
-        response = httpx.get(
-            url=store_get_url,
-            auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"},
-            timeout=120.0
-        )
-        # Construct URL
-        url = "{0}/rest/workspaces/{1}/datastores".format(
-            self.service_url,
-            workspace
-        )
+        response = self.create_store_if_not_exists(workspace, store_name, data)
+        # store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+        #     self.service_url,
+        #     workspace,
+        #     store_name
+        # )
+        # #Check if Store Exists
+        # response = httpx.get(
+        #     url=store_get_url,
+        #     auth=(self.username, self.password),
+        #     headers={"content-type": "application/json","Accept": "application/json"},
+        #     timeout=120.0
+        # )
+        # # Construct URL
+        # url = "{0}/rest/workspaces/{1}/datastores".format(
+        #     self.service_url,
+        #     workspace
+        # )
 
-        if response.status_code == 404: 
-            # Perform Request
-            response = httpx.post(
-                url=url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-        else:  
-            pass        
-            #Perform Request
-            response = httpx.put(
-                url=store_get_url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
+        # if response.status_code == 404: 
+        #     # Perform Request
+        #     response = httpx.post(
+        #         url=url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
+        # else:  
+        #     pass        
+        #     #Perform Request
+        #     response = httpx.put(
+        #         url=store_get_url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
         
         # Log
         log.info(f"GeoServer WFS response: '{response.status_code}: {response.text}'")
