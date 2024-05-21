@@ -48,6 +48,9 @@ class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
     ordering = ('id',)
     raw_id_fields = ('ftp_server','publish_entry')
 
+class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'name', 'active', 'created_at',)
+
 
 # Register Models
 
@@ -60,3 +63,4 @@ admin.site.register(models.notifications.EmailNotification, reversion.admin.Vers
 admin.site.register(models.workspaces.Workspace, reversion.admin.VersionAdmin)
 admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
+admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
