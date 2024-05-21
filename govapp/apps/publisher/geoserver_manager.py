@@ -164,12 +164,12 @@ class GeoServerSyncExcutor:
             ).values_list('publish_entry__catalogue_entry__name', flat=True)
             synced_layer_names_set = set(name_list)
 
-            log.info(f'Layers on the KB: [{synced_layer_names_set}]')
+            log.info(f'Layers on the KB: [{synced_layer_names_set}] for the geoserver: [{geoserver_info.url}]')
             
             # Compare layer names
             purge_list = [layer_name for layer_name in layer_names if layer_name not in synced_layer_names_set]
 
-            log.info(f'Layers to be deleted: [{purge_list}]')
+            log.info(f'Layers to be deleted: [{purge_list}] from the geoserver: [{geoserver_info.url}]')
             
             # Call a remove layer api
             for purge in purge_list:

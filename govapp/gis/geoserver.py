@@ -737,7 +737,7 @@ class GeoServer:
             Optional[list[dict[str, str]]]: A list of layer information
         """
         # Log
-        log.info('Retreiving layers from GeoServer: [{self.service_url}]')
+        log.info(f'Retreiving layers from GeoServer: [{self.service_url}]')
         
         # Construct URL
         url = "{0}/rest/layers".format(self.service_url)
@@ -762,6 +762,7 @@ class GeoServer:
         if json_response['layers']:
             return json_response['layers']['layer']
         else:
+            # No layers
             return []
     
     def delete_layer(self, layer_name) -> None:
@@ -783,7 +784,7 @@ class GeoServer:
             # Check Response
             response.raise_for_status()
             if response.status_code == 200:
-                log.info(f'Layer: [{layer_name}] deleted successfully.')
+                log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
             else:
                 log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
         except httpx.HTTPError as e:
