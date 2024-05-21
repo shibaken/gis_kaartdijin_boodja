@@ -771,16 +771,23 @@ class GeoServer:
             layer_name
             )
         
-        response = httpx.delete(
-                    url=url,
-                    auth=(self.username, self.password),
-                    #data=xml_data,
-                    headers={"content-type": "application/json","Accept": "application/json"},
-                    timeout=120.0
-                )
-        
-        # Check Response
-        response.raise_for_status()
+        try:
+            response = httpx.delete(
+                        url=url,
+                        auth=(self.username, self.password),
+                        #data=xml_data,
+                        headers={"content-type": "application/json","Accept": "application/json"},
+                        timeout=120.0
+                    )
+            
+            # Check Response
+            response.raise_for_status()
+            if response.status_code == 200:
+                log.info(f'Layer: [{layer_name}] deleted successfully.')
+            else:
+                log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
+        except httpx.HTTPError as e:
+            log.error(f'Error deleting layer: [{e}]')
         
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.
