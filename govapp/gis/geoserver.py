@@ -737,7 +737,7 @@ class GeoServer:
             Optional[list[dict[str, str]]]: A list of layer information
         """
         # Log
-        log.info("Retreiving layers from GeoServer")
+        log.info(f'Retreiving layers from GeoServer: [{self.service_url}]')
         
         # Construct URL
         url = "{0}/rest/layers".format(self.service_url)
@@ -759,7 +759,11 @@ class GeoServer:
             hasattr(json_response, 'layer')):
             log.error(f"The response of retrieving layers from a GeoServer was wrong. {json_response}")
         # Return JSON
-        return json_response['layers']['layer']
+        if json_response['layers']:
+            return json_response['layers']['layer']
+        else:
+            # No layers
+            return []
     
     def delete_layer(self, layer_name) -> None:
         # Construct URL
@@ -768,16 +772,23 @@ class GeoServer:
             layer_name
             )
         
-        response = httpx.delete(
-                    url=url,
-                    auth=(self.username, self.password),
-                    #data=xml_data,
-                    headers={"content-type": "application/json","Accept": "application/json"},
-                    timeout=120.0
-                )
-        
-        # Check Response
-        response.raise_for_status()
+        try:
+            response = httpx.delete(
+                        url=url,
+                        auth=(self.username, self.password),
+                        #data=xml_data,
+                        headers={"content-type": "application/json","Accept": "application/json"},
+                        timeout=120.0
+                    )
+            
+            # Check Response
+            response.raise_for_status()
+            if response.status_code == 200:
+                log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
+            else:
+                log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
+        except httpx.HTTPError as e:
+            log.error(f'Error deleting layer: [{e}]')
         
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.

@@ -140,24 +140,36 @@ class GeoServerSyncExcutor:
     
     def sync_based_on_gis(self):
         """Remove all layers on Geoservers that have been removed on GIS."""
-        log.info(f"Remove all layers on Geoservers that have been removed on GIS.")
+        log.info(f"Remove all layers on Geoservers that have been removed from KB...")
         
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
         for geoserver_info in geoserver_pool:
-            geoserver_obj = geoserver.geoserverWithCustomCreds(
-                geoserver_info.url, geoserver_info.username, geoserver_info.password)
+            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
             
             # Retrive layer names from geoserver
             layers = geoserver_obj.get_layers()
             layer_names = [layer['name'].split(':')[1] for layer in layers]
+
+            log.info(f'Layers on the geoserver: [{geoserver_info.url}: [{layer_names}]]')
             
             # Retrive layer names from DB
-            synced_layer_names = CatalogueEntry.objects.filter(
-                name__in=[layer_name for layer_name in layer_names]).values('name')
-            synced_layer_names_set = set([layer['name'] for layer in synced_layer_names])
+            # synced_layer_names = CatalogueEntry.objects.filter(
+            #     name__in=[layer_name for layer_name in layer_names]).values('name')
+            # synced_layer_names_set = set([layer['name'] for layer in synced_layer_names])
+
+            # Retrive layer names from DB for this geoserver
+            name_list = GeoServerPublishChannel.objects.filter(
+                geoserver_pool=geoserver_info,
+                publish_entry__catalogue_entry__name__in=[layer_name for layer_name in layer_names]
+            ).values_list('publish_entry__catalogue_entry__name', flat=True)
+            synced_layer_names_set = set(name_list)
+
+            log.info(f'Layers on the KB: [{synced_layer_names_set}] for the geoserver: [{geoserver_info.url}]')
             
             # Compare layer names
             purge_list = [layer_name for layer_name in layer_names if layer_name not in synced_layer_names_set]
+
+            log.info(f'Layers to be deleted: [{purge_list}] from the geoserver: [{geoserver_info.url}]')
             
             # Call a remove layer api
             for purge in purge_list:
