@@ -737,7 +737,7 @@ class GeoServer:
             Optional[list[dict[str, str]]]: A list of layer information
         """
         # Log
-        log.info("Retreiving layers from GeoServer")
+        log.info('Retreiving layers from GeoServer: [{self.service_url}]')
         
         # Construct URL
         url = "{0}/rest/layers".format(self.service_url)
@@ -759,7 +759,10 @@ class GeoServer:
             hasattr(json_response, 'layer')):
             log.error(f"The response of retrieving layers from a GeoServer was wrong. {json_response}")
         # Return JSON
-        return json_response['layers']['layer']
+        if json_response['layers']:
+            return json_response['layers']['layer']
+        else:
+            return []
     
     def delete_layer(self, layer_name) -> None:
         # Construct URL
