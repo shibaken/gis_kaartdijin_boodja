@@ -6,3 +6,4 @@ from . import publish_entries
 from . import workspaces
 from . import geoserver_pools
 from . import geoserver_queues
+from . import geoserver_role
