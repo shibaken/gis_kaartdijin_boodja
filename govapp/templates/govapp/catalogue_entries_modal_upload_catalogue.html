@@ -1,23 +1,4 @@
 <style>
-  .cross-sign {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #f33;
-    position: relative;
-  }
-
-  /* lines */
-  .cross-sign::before,
-  .cross-sign::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 3px;
-    background-color: #f33;
-    top: 50%;
-    left: 0;
-  }
   .error-message {
     color: #f33;
   }
@@ -28,17 +9,17 @@
   .modal-content.dragover {
     border-color: #cff4fc;
   }
-
-  /* Left */
-  .cross-sign::before {
-    transform: rotate(45deg);
+  .delete-icon {
+    display: inline-block;
+    cursor: pointer;
+    stroke: darkgray;
   }
-
-  /* Right */
-  .cross-sign::after {
-    transform: rotate(-45deg);
+  .delete-icon:hover svg path{
+    stroke: coral;
+    /* background-color: red; */
   }
 </style>
+
 <div class="modal fade" id="modal_upload_catalogue" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" id="modalContent">
