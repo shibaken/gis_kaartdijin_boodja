@@ -3,6 +3,7 @@ import reversion
 
 from django.db import models
 
+from govapp.apps.publisher.models.workspaces import Workspace
 from govapp.common import mixins
 
 
@@ -21,6 +22,9 @@ class GeoServerRole(mixins.RevisionedMixin):
         verbose_name = "GeoServer Role"
         verbose_name_plural = "GeoServer Roles"
 
+    def __str__(self) -> str:
+        return self.name
+
 
 @reversion.register()
 class GeoServerGroup(mixins.RevisionedMixin):
@@ -34,6 +38,9 @@ class GeoServerGroup(mixins.RevisionedMixin):
         verbose_name = "GeoServer Group"
         verbose_name_plural = "GeoServer Groups"
 
+    def __str__(self) -> str:
+        return self.name
+
 
 @reversion.register()
 class GeoServerGroupRole(mixins.RevisionedMixin):
@@ -44,7 +51,21 @@ class GeoServerGroupRole(mixins.RevisionedMixin):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "GeoServer Role"
-        verbose_name_plural = "GeoServer Roles"
+        verbose_name = "GeoServer GroupRole"
+        verbose_name_plural = "GeoServer GroupRoles"
+    
 
+@reversion.register()
+class GeoServerRolePermission(mixins.RevisionedMixin):
+    geoserver_role = models.ForeignKey(GeoServerRole, null=True, blank=True, on_delete=models.CASCADE)
+    workspace = models.ForeignKey(Workspace, null=True, blank=True, on_delete=models.CASCADE)
+    read = models.BooleanField(default=False)
+    write = models.BooleanField(default=False)
+    admin = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "GeoServer RolePermission"
+        verbose_name_plural = "GeoServer RolePermissions"

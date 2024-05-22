@@ -137,9 +137,17 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
 
 
 class GeoServerSyncExcutor:
-    
+    def sync_roles_on_gis(self):
+        log.info(f"Sync roles...")
+        
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+        for geoserver_info in geoserver_pool:
+            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+
+            geoserver_obj.create_role_if_not_exists('Role20240521')
+
+
     def sync_based_on_gis(self):
-        """Remove all layers on Geoservers that have been removed on GIS."""
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")
         
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?

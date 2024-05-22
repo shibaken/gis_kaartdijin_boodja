@@ -790,6 +790,43 @@ class GeoServer:
         except httpx.HTTPError as e:
             log.error(f'Error deleting layer: [{e}]')
         
+    def create_role_if_not_exists(self, role_name: str) -> bool:
+        log.info(f'Creating role: [{role_name}] on the geoserver: [{self.service_url}]...')
+
+        # Check if the role already exists
+        if self._role_exists(role_name):
+            log.info(f'Role: [{role_name}] already exists on the geoserver: [{self.service_url}]')
+            return True
+
+        # Create the new role
+        return self._create_role(role_name)
+
+    def _role_exists(self, role_name: str) -> bool:
+        # url = f"{self.service_url}/rest/security/roles/roles/{role_name}"
+        url = f"{self.service_url}/rest/roles/roles/{role_name}"
+        response = httpx.get(url, auth=(self.username, self.password))
+        return response.status_code == 200
+
+    def _create_role(self, role_name: str) -> bool:
+        url = f"{self.service_url}/rest/security/roles/roles"
+        headers = {"Content-Type": "application/json"}
+        data = {
+            "roleServiceName": "default",
+            "roleName": role_name
+        }
+        try:
+            response = httpx.post(url, json=data, headers=headers, auth=(self.username, self.password))
+            if response.status_code == 201:
+                log.info(f'Role "{role_name}" created successfully on the geoserver: [{self.service_url}].')
+                return True
+            else:
+                log.error(f'Failed to create role "{role_name}" on the geoserver: [{self.service_url}]. Status code: {response.status_code}, Response: {response.text}')
+                return False
+        except Exception as e:
+            log.error(f'Error occurred while creating role "{role_name}" on the geoserver: [{self.service_url}]: {e}')
+            return False
+        
+
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.
 
