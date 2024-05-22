@@ -138,15 +138,17 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
 
 
 class GeoServerSyncExcutor:
-    def sync_roles_on_gis(self):
-        log.info(f"Sync roles...")
+    def sync_roles_groups_on_gis(self):
+        log.info(f"Sync roles and groups...")
         
         geoserver_role_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
+        geoserver_group_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
         for geoserver_info in geoserver_pool:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
 
-            geoserver_obj.synchronize_roles(geoserver_role_names)
+            # geoserver_obj.synchronize_roles(geoserver_role_names)
+            geoserver_obj.synchronize_groups(geoserver_group_names)
 
 
     def sync_based_on_gis(self):
@@ -162,11 +164,6 @@ class GeoServerSyncExcutor:
 
             log.info(f'Layers on the geoserver: [{geoserver_info.url}: [{layer_names}]]')
             
-            # Retrive layer names from DB
-            # synced_layer_names = CatalogueEntry.objects.filter(
-            #     name__in=[layer_name for layer_name in layer_names]).values('name')
-            # synced_layer_names_set = set([layer['name'] for layer in synced_layer_names])
-
             # Retrive layer names from DB for this geoserver
             name_list = GeoServerPublishChannel.objects.filter(
                 geoserver_pool=geoserver_info,
