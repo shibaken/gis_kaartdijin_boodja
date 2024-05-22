@@ -776,7 +776,6 @@ class GeoServer:
             response = httpx.delete(
                         url=url,
                         auth=(self.username, self.password),
-                        #data=xml_data,
                         headers={"content-type": "application/json","Accept": "application/json"},
                         timeout=120.0
                     )
@@ -789,42 +788,68 @@ class GeoServer:
                 log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
         except httpx.HTTPError as e:
             log.error(f'Error deleting layer: [{e}]')
-        
-    def create_role_if_not_exists(self, role_name: str) -> bool:
-        log.info(f'Creating role: [{role_name}] on the geoserver: [{self.service_url}]...')
 
-        # Check if the role already exists
-        if self._role_exists(role_name):
-            log.info(f'Role: [{role_name}] already exists on the geoserver: [{self.service_url}]')
-            return True
-
-        # Create the new role
-        return self._create_role(role_name)
-
-    def _role_exists(self, role_name: str) -> bool:
-        # url = f"{self.service_url}/rest/security/roles/roles/{role_name}"
-        url = f"{self.service_url}/rest/roles/roles/{role_name}"
-        response = httpx.get(url, auth=(self.username, self.password))
-        return response.status_code == 200
-
-    def _create_role(self, role_name: str) -> bool:
-        url = f"{self.service_url}/rest/security/roles/roles"
-        headers = {"Content-Type": "application/json"}
-        data = {
-            "roleServiceName": "default",
-            "roleName": role_name
-        }
+    def synchronize_roles(self, role_name_list):
         try:
-            response = httpx.post(url, json=data, headers=headers, auth=(self.username, self.password))
-            if response.status_code == 201:
-                log.info(f'Role "{role_name}" created successfully on the geoserver: [{self.service_url}].')
-                return True
-            else:
-                log.error(f'Failed to create role "{role_name}" on the geoserver: [{self.service_url}]. Status code: {response.status_code}, Response: {response.text}')
-                return False
+            # Fetch existing roles from GeoServer
+            existing_roles = self.fetch_geoserver_roles()
+
+            # Determine roles to delete (existing roles not in role_name_list)
+            roles_to_delete = set(existing_roles) - set(role_name_list)
+            for role in roles_to_delete:
+                self.delete_geoserver_role(role)
+
+            # Determine roles to create (roles in role_name_list not in existing roles)
+            roles_to_create = set(role_name_list) - set(existing_roles)
+            for role in roles_to_create:
+                self.create_geoserver_role(role)
         except Exception as e:
-            log.error(f'Error occurred while creating role "{role_name}" on the geoserver: [{self.service_url}]: {e}')
-            return False
+            log.error(f'An error occurred during synchronization: {e}')
+
+    # Function to fetch existing roles from GeoServer
+    def fetch_geoserver_roles(self):
+        try:
+            url = f"{self.service_url}/rest/security/roles.json"
+            response = httpx.get(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            roles_data = response.json()
+            existing_roles = roles_data['roles']
+            log.info(f"Fetched roles: [{existing_roles}] from the geoserver: [{self.service_url}] ")
+            return existing_roles
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to fetch roles from the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to create a new role in GeoServer
+    def create_geoserver_role(self, role_name):
+        try:
+            url = f"{self.service_url}/rest/security/roles/role/{role_name}"
+            response = httpx.post(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Created role: {role_name} on the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to create role '{role_name} on the geoserver: [{self.service_url}]': {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to delete an existing role in GeoServer
+    def delete_geoserver_role(self, role_name):
+        try:
+            url = f"{self.service_url}/rest/security/roles/role/{role_name}"
+            response = httpx.delete(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Deleted role: {role_name} from the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to delete role '{role_name} from the geoserver: [{self.service_url}]': {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
         
 
 def geoserver() -> GeoServer:

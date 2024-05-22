@@ -5,7 +5,7 @@
 from typing import Any
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.contrib import admin
+from django.contrib import admin, auth
 import reversion.admin
 
 # Local
@@ -20,6 +20,7 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'catalogue_entry', 'status', 'published_at')
     ordering = ('-id',)
     
+
 class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
     # This provides a better interface for `ManyToMany` fields
@@ -32,9 +33,11 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
 
     num_of_layers.short_description = 'active layers (total layers)'
 
+
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'publish_entry', 'geoserver_pool', 'mode', 'frequency', 'workspace', 'active',)
     
+
 class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Queue."""
     # This provides a better interface for `ManyToMany` fields
@@ -42,6 +45,7 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'publish_entry', 'symbology_only', 'status', 'success', 'submitter','started_at', 'completed_at', 'created_at')
     ordering = ('-id',)
     raw_id_fields = ('submitter',)
+
 
 class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
@@ -89,14 +93,6 @@ class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
     inlines = [GeoServerGroupRoleInline,]
 
 
-class GeoServerGroupRoleAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'geoserver_group', 'geoserver_role',)
-
-
-
-
-
-
 admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_channels.FTPPublishChannel, FTPPublishChannelAdmin)
 admin.site.register(models.publish_channels.CDDPPublishChannel, reversion.admin.VersionAdmin)
@@ -108,4 +104,4 @@ admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
-admin.site.register(models.geoserver_roles_groups.GeoServerGroupRole, GeoServerGroupRoleAdmin)
+# admin.site.register(models.geoserver_roles_groups.GeoServerGroupRole, GeoServerGroupRoleAdmin)

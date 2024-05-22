@@ -15,6 +15,7 @@ from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
 from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRole
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 from govapp.apps.publisher.models.workspaces import Workspace
 from govapp.gis import geoserver
@@ -140,11 +141,12 @@ class GeoServerSyncExcutor:
     def sync_roles_on_gis(self):
         log.info(f"Sync roles...")
         
+        geoserver_role_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
         for geoserver_info in geoserver_pool:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
 
-            geoserver_obj.create_role_if_not_exists('Role20240521')
+            geoserver_obj.synchronize_roles(geoserver_role_names)
 
 
     def sync_based_on_gis(self):
