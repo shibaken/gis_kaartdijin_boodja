@@ -70,6 +70,7 @@ class GeoServerGroupRoleInline(admin.TabularInline):
 
 class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'active', 'created_at',)
+    list_display_links = ('id', 'name')
     inlines = [GeoServerRolePermissionInline,]
 
 
@@ -88,10 +89,14 @@ class GeoServerGroupForm(forms.ModelForm):
 
 
 class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'name', 'active', 'created_at',)
+    list_display = ('id', 'name', 'get_geoserver_roles', 'active', 'created_at',)
+    list_display_links = ('id', 'name')
     # form = GeoServerGroupForm  # <== This line adds the FilteredSelectMultiple widget.
     inlines = [GeoServerGroupRoleInline,]
 
+    def get_geoserver_roles(self, obj):
+        return ','.join([role.name for role in obj.geoserver_roles.all()])
+    get_geoserver_roles.short_description = 'roles'
 
 admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_channels.FTPPublishChannel, FTPPublishChannelAdmin)
