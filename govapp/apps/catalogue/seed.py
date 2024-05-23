@@ -25,13 +25,13 @@ def add_groups(
     Group = apps.get_model("auth", "Group")
 
     # Create Administrators Group
-    Group.objects.create(
-        id=conf.settings.GROUP_ADMINISTRATOR_ID,
-        name=conf.settings.GROUP_ADMINISTRATOR_NAME,
-    )
+    # Group.objects.create(
+    #     id=conf.settings.GROUP_ADMINISTRATOR_ID,
+    #     name=conf.settings.GROUP_ADMINISTRATOR_NAME,
+    # )
 
     # Create Catalogue Editors Group
-    Group.objects.create(
-        id=conf.settings.GROUP_CATALOGUE_EDITOR_ID,
-        name=conf.settings.GROUP_CATALOGUE_EDITOR_NAME,
-    )
+    # Group.objects.create(
+    #     id=conf.settings.GROUP_CATALOGUE_EDITOR_ID,
+    #     name=conf.settings.GROUP_CATALOGUE_EDITOR_NAME,
+    # )

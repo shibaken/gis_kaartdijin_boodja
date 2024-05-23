@@ -1305,7 +1305,7 @@ var kbpublish = {
 
                             html+= "<tr>";
                             html+= " <td>"+responsejson[i].id+"</td>";                        
-                            html+= " <td>"+responsejson[i].geoserver_pool_name+"</td>";                        
+                            html+= " <td><a href='"+responsejson[i].geoserver_pool_url+"'>"+responsejson[i].geoserver_pool_name+"</a></td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_format[responsejson[i].mode]+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_frequency[responsejson[i].frequency]+"</td>";                                                    
                             html+= " <td>"+responsejson[i].workspace_name+"</td>"; 

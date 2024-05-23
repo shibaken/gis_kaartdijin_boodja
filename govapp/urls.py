@@ -24,7 +24,8 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
 # Local
-from govapp import views
+from govapp import are_migrations_running, views
+from govapp.default_data_manager import DefaultDataManager
 
 
 # Admin Site Settings
@@ -56,6 +57,7 @@ urlpatterns = [
     
     # Templates Pages
     urls.re_path("management-commands/", views.ManagementCommandsView.as_view()),
+    urls.path("pending-imports/", views.PendingImportsView.as_view()),
     # Publish
     urls.path("publish/", views.PublishPage.as_view()),
     urls.re_path("publish/(?P<pk>\d+)/", views.PublishView.as_view()),
@@ -85,3 +87,6 @@ urlpatterns = [
 urlpatterns.append(urls.path("logout/", auth_views.LogoutView.as_view(), {"next_page": "/"}, name="logout"))
 if conf.settings.ENABLE_DJANGO_LOGIN:
     urlpatterns.append(urls.re_path(r"^ssologin/", auth_views.LoginView.as_view(), name="ssologin"))
+
+if not are_migrations_running():
+    DefaultDataManager()

@@ -4,7 +4,9 @@
 # Third-Party
 from django import conf
 from django import test
+import django
 from django.contrib.auth import models as auth_models
+from govapp import settings
 import pytest
 from rest_framework import status
 
@@ -36,8 +38,12 @@ def test_flow_not_catalogue_editor(
     # Ensure the Assigned To User is NOT in the Catalogue Editors or
     # Administrators Groups
     assert isinstance(entry.assigned_to, auth_models.User)
-    entry.assigned_to.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
-    entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    group_administrators = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
+    group_catalogue_editor = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
+    # entry.assigned_to.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    # entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    entry.assigned_to.groups.remove(group_catalogue_editor.id)
+    entry.assigned_to.groups.remove(group_administrators.id)
     entry.save()
 
     # Authenticate
@@ -143,8 +149,12 @@ def test_flow_not_assigned_to(
     # Ensure the User is in the Catalogue Editors Group but NOT the
     # Administrators Group
     assert isinstance(entry.assigned_to, auth_models.User)
-    entry.assigned_to.groups.add(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
-    entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    group_administrators = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
+    group_catalogue_editor = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
+    # entry.assigned_to.groups.add(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    # entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    entry.assigned_to.groups.add(group_catalogue_editor.id)
+    entry.assigned_to.groups.remove(group_administrators.id)
 
     # Authenticate
     client.force_login(entry.assigned_to)
@@ -254,8 +264,12 @@ def test_flow_catalogue_editor_and_assigned(
     # Administrators Group. Also ensure the Assigned To User is also in the
     # Catalogue Entry's editors
     assert isinstance(entry.assigned_to, auth_models.User)
-    entry.assigned_to.groups.add(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
-    entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    group_administrators = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
+    group_catalogue_editor = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
+    # entry.assigned_to.groups.add(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    # entry.assigned_to.groups.remove(conf.settings.GROUP_ADMINISTRATOR_ID)
+    entry.assigned_to.groups.add(group_catalogue_editor.id)
+    entry.assigned_to.groups.remove(group_administrators.id)
     entry.editors.add(entry.assigned_to)
     entry.save()
 
@@ -407,8 +421,12 @@ def test_flow_administrator(
     # unassign it
     user = entry.assigned_to
     assert isinstance(user, auth_models.User)
-    user.groups.add(conf.settings.GROUP_ADMINISTRATOR_ID)
-    user.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    group_administrators = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_ADMINISTRATORS)
+    group_catalogue_editor = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
+    # user.groups.add(conf.settings.GROUP_ADMINISTRATOR_ID)
+    # user.groups.remove(conf.settings.GROUP_CATALOGUE_EDITOR_ID)
+    user.groups.add(group_administrators.id)
+    user.groups.remove(group_catalogue_editor.id)
     entry.editors.remove(user)
     entry.assigned_to = None
     entry.save()

@@ -2,6 +2,7 @@
 
 
 # Third-Party
+import os
 from django import http
 from django import shortcuts
 from django.views.generic import base
@@ -13,6 +14,7 @@ import psycopg2
 import json
 
 # Internal
+from govapp import settings
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
@@ -76,6 +78,17 @@ class OldCatalogueVue(base.TemplateView):
         context: dict[str, Any] = {}
 
         # Render Template and Return
+        return shortcuts.render(request, self.template_name, context)
+
+
+class PendingImportsView(base.TemplateView):
+    template_name = "govapp/pending_imports.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        pathToFolder = settings.PENDING_IMPORT_PATH
+        file_list = os.listdir(pathToFolder)
+
+        context = {'file_list': file_list}
         return shortcuts.render(request, self.template_name, context)
 
 class ManagementCommandsView(base.TemplateView):
@@ -179,7 +192,8 @@ class PublishView(base.TemplateView):
         # END - To be improved later todo a reverse table join     
 
         system_users_list = []
-        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
             system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
 
@@ -228,6 +242,8 @@ class CatalogueEntriesPage(base.TemplateView):
         pe_list = []
         catalogue_entry_list = []
 
+        debug = request.GET.get('debug', False)
+
         # START - To be improved later todo a reverse table join      
         ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
         pe_obj = publish_entries_models.PublishEntry.objects.all()
@@ -236,8 +252,11 @@ class CatalogueEntriesPage(base.TemplateView):
             pe_list.append(pe.catalogue_entry.id)
 
         for ce in ce_obj:
-            if ce.id not in pe_list:
+            if debug == 'true':
                 catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+            else:
+                if ce.id not in pe_list:
+                    catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
                 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
@@ -296,7 +315,8 @@ class CatalogueEntriesView(base.TemplateView):
         # # END - To be improved later todo a reverse table join     
 
         system_users_dict = {}
-        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
              system_users_dict[su.id] = {'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email}
         
@@ -457,7 +477,8 @@ class LayerSubscriptionsView(base.TemplateView):
         LayerSubscriptionType = catalogue_layer_subscription_models.LayerSubscriptionType
         
         system_users_list = []
-        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
+        system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
             system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
         has_edit_access = False

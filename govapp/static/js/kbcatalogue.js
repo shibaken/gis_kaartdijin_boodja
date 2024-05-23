@@ -93,6 +93,7 @@ var kbcatalogue = {
         $( "#catalogue-filter-btn" ).click(function() {
             kbcatalogue.get_catalogue();
         });
+
         $( "#catalogue-limit" ).change(function() {
             common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
@@ -107,6 +108,45 @@ var kbcatalogue = {
         utils.enter_keyup($('#catalogue-number'), kbcatalogue.get_catalogue);
         
         kbcatalogue.get_catalogue();
+        
+        // *** Upload Catalogue ***
+        // Show modal
+        $( "#upload-catalogue-btn" ).click(function() {
+            $('#modal_upload_catalogue').modal('show');
+        });
+        // Start uploading
+        $("#fileInput").change(function(){
+            var files = $("#fileInput")[0].files;
+            for (var i = 0; i < files.length; i++) {
+                // Show progress bar
+                $("#progressBars").append('<div class="progress mt-2"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+            }
+            kbcatalogue.uploadFiles(files);
+        });
+        // Select by drag-and-drop
+        $("#modalContent").on('dragover', function(event) {
+            event.preventDefault();
+            $("#modalContent").addClass('dragover');
+        });
+        $("#modalContent").on('dragleave drop', function(event) {
+            event.preventDefault();
+            $("#modalContent").removeClass('dragover');
+        });
+        $("#modalContent").on('drop', function(event) {
+            event.preventDefault();
+            $("#modalContent").removeClass('dragover');
+            var files = event.originalEvent.dataTransfer.files;
+            kbcatalogue.uploadFiles(files);
+        });
+        $("#cancel_upload_catalogue_btn").on('click', function(event){
+            kbcatalogue.cancelUploadCatalogue();
+        }),
+        $("#submit_upload_catalogue_btn").on('click', function(event){
+            kbcatalogue.submitUploadCatalogue();
+        })
+        $('#modal_upload_catalogue').on('hidden.bs.modal', function (e) {
+            kbcatalogue.modalClosed()
+          });
     },
 
     init_catalogue_item: function() { 
@@ -261,6 +301,157 @@ var kbcatalogue = {
                 common_entity_modal.show_alert("ERROR Saving."); 
             },
         });
+    },
+
+    addDateTimeToFilename: function(filename) {
+        // Get current date and time
+        const currentDate = new Date();
+    
+        // Format date
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Pad month with leading zero
+        const day = String(currentDate.getDate()).padStart(2, '0'); // Pad day with leading zero
+        const hours = String(currentDate.getHours()).padStart(2, '0'); // Pad hours with leading zero
+        const minutes = String(currentDate.getMinutes()).padStart(2, '0'); // Pad minutes with leading zero
+        const seconds = String(currentDate.getSeconds()).padStart(2, '0'); // Pad seconds with leading zero
+    
+        // Insert date and time between filename and extension
+        const extensionIndex = filename.lastIndexOf('.');
+        const newFilename = filename.slice(0, extensionIndex) + '.' + year + month + day + '_' + hours + minutes + seconds + filename.slice(extensionIndex);
+    
+        return newFilename;
+    },
+
+    createProgressBar: function(fileName, newFileName) {
+        var progressBarContainer = $('<div class="progress-container mt-2"></div>');
+        var progressBarRow = $('<div class="row  d-flex align-items-center"></div>');
+        var fileNameColumn = $('<div class="col-6"></div>');
+        var progressBarColumn = $('<div class="col-5"></div>');
+        var deleteIconColumn = $('<div class="col-1"></div>');
+    
+        var progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+        var fileNameElement = $('<div class="file-name">' + fileName + '</div>');
+        // var deleteIcon = $('<div class="cross-sign" data-newFileName="' + newFileName + '"></div>');
+        var deleteIcon = $('<span class="delete-icon" data-newFileName="' + newFileName + '"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12L4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>')
+    
+        fileNameColumn.append(fileNameElement);
+        progressBarColumn.append(progressBar);
+        deleteIconColumn.append(deleteIcon);
+    
+        progressBarRow.append(fileNameColumn);
+        progressBarRow.append(progressBarColumn);
+        progressBarRow.append(deleteIconColumn);
+    
+        progressBarContainer.append(progressBarRow);
+    
+        return {
+            progressBar: progressBar,
+            progressBarContainer: progressBarContainer,
+            deleteIcon: deleteIcon
+        };
+    },
+    
+    deleteFile: function(fileName) {
+        // Make an AJAX request to delete the file
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        var xhr = $.ajax({
+            url: kbcatalogue.var.catalogue_data_url + "delete_file/", // Change the URL to your delete file endpoint
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token}, // Include CSRF token in headers
+            data: {'newFileName': fileName},
+            success: function(data){
+
+            },
+            error: function(xhr, status, error) {
+                console.error("Error deleting file:", error);
+            }
+        });
+    },
+    modalClosed: function(){
+        kbcatalogue.cancelUploadCatalogue();
+    },
+    submitUploadCatalogue: function(){
+        var progressBarContainer = $('#progressBars')
+        progressBarContainer.empty();
+    },
+    cancelUploadCatalogue: function(){
+        $(".cross-sign").each(function() {
+            var newFilename = $(this).data("newfilename");
+            kbcatalogue.deleteFile(newFilename);
+        });
+        var progressBarContainer = $('#progressBars')
+        progressBarContainer.empty();
+    },
+
+    // Function for uploading files
+    uploadFiles: function(files) {
+        var xhrList = []
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+    
+        for (var i = 0; i < files.length; i++) {
+            var fileName = files[i].name;
+            var newFileName = kbcatalogue.addDateTimeToFilename(fileName)
+    
+            // Generate progressbar per file
+            var { progressBar, progressBarContainer, deleteIcon } = kbcatalogue.createProgressBar(fileName, newFileName);
+            $("#progressBars").append(progressBarContainer);
+            
+            (function(index, progressBar, progressBarContainer) {
+                var formData = new FormData();
+                formData.append('file', files[index]);
+                formData.append('newFileName', newFileName)
+    
+                // Delete 
+                deleteIcon.on('click', function() {
+                    // Abort uploading
+                    if (xhrList[index] && xhrList[index].readyState !== 4) {
+                        xhrList[index].abort();
+                    }
+                    // Delete uploaded file from the server
+                    else {
+                        var newFileName = $(this).attr("data-newfilename");
+                        kbcatalogue.deleteFile(newFileName)
+                    }
+                    // Delete progressbar
+                    progressBarContainer.fadeOut('slow', function(){
+                        $(this).remove();
+                    })
+                });
+    
+                // Upload
+                var xhr = $.ajax({
+                    url: kbcatalogue.var.catalogue_data_url + "upload_file/",
+                    type: 'POST',
+                    headers: {'X-CSRFToken' : csrf_token},
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function(evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = (evt.loaded / evt.total) * 100;
+                                // Update progressbar
+                                progressBar.find(".progress-bar").width(percentComplete + '%');
+                                progressBar.find(".progress-bar").attr('aria-valuenow', percentComplete);
+                            }
+                        }, false);
+                        return xhr;
+                    },
+                    success: function(response){
+
+                    },
+                    error: function(xhr, status, error){
+                        var errorResponse = JSON.parse(xhr.responseText);
+                        progressBar.fadeOut('slow', function(){
+                            progressBar.replaceWith($('<span class="error-message">' + errorResponse.error + '</span>'))
+                        });
+                    }
+                });
+                xhrList.push(xhr);
+            })(i, progressBar, progressBarContainer);
+        }
     },
 
     get_catalogue: function(params_str) {

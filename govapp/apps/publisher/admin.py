@@ -2,7 +2,10 @@
 
 
 # Third-Party
-from django.contrib import admin
+from typing import Any
+from django import forms
+from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.contrib import admin, auth
 import reversion.admin
 
 # Local
@@ -17,16 +20,24 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'catalogue_entry', 'status', 'published_at')
     ordering = ('-id',)
     
+
 class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
-    list_display = ('id', 'name', 'url', 'username', 'enabled', 'created_at')
+    list_display = ('id', 'name', 'url', 'num_of_layers', 'username', 'enabled', 'created_at')
     ordering = ('id', 'name')
 
+    def num_of_layers(self, obj):
+        return f'{obj.total_active_layers} ({obj.total_layers})'
+
+    num_of_layers.short_description = 'active layers (total layers)'
+
+
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'publish_entry', 'geoserver_pool', 'mode', 'frequency', 'workspace', )
+    list_display = ('id', 'publish_entry', 'geoserver_pool', 'mode', 'frequency', 'workspace', 'active',)
     
+
 class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Queue."""
     # This provides a better interface for `ManyToMany` fields
@@ -34,6 +45,7 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'publish_entry', 'symbology_only', 'status', 'success', 'submitter','started_at', 'completed_at', 'created_at')
     ordering = ('-id',)
     raw_id_fields = ('submitter',)
+
 
 class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
@@ -44,7 +56,47 @@ class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
     raw_id_fields = ('ftp_server','publish_entry')
 
 
-# Register Models
+class GeoServerRolePermissionInline(admin.TabularInline):
+    model = models.geoserver_roles_groups.GeoServerRolePermission
+    extra = 1  # Number of empty forms to display
+    fields = ['workspace', 'read', 'write', 'admin', 'active']
+
+
+class GeoServerGroupRoleInline(admin.TabularInline):
+    model = models.geoserver_roles_groups.GeoServerGroupRole
+    extra = 1  # Number of empty forms to display
+    fields = ['geoserver_role', 'active',]
+
+
+class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'name', 'active', 'created_at',)
+    list_display_links = ('id', 'name')
+    inlines = [GeoServerRolePermissionInline,]
+
+
+class GeoServerGroupForm(forms.ModelForm):
+    # Meta class to specify the model and fields to include in the form
+    class Meta:
+        model = models.geoserver_roles_groups.GeoServerGroup  # The model associated with this form
+        fields = '__all__'  # Include all fields from the GeoServerGroup model
+
+    # A field for selecting multiple GeoServerRole instances
+    geoserver_roles = forms.ModelMultipleChoiceField(
+        queryset=models.geoserver_roles_groups.GeoServerRole.objects.all(),  # Queryset of GeoServerRole objects to choose from
+        required=False,  # This field is optional
+        widget=FilteredSelectMultiple(verbose_name='GeoServer Roles', is_stacked=False)  # Use a widget with a filterable multiple select interface
+    )
+
+
+class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'name', 'get_geoserver_roles', 'active', 'created_at',)
+    list_display_links = ('id', 'name')
+    # form = GeoServerGroupForm  # <== This line adds the FilteredSelectMultiple widget.
+    inlines = [GeoServerGroupRoleInline,]
+
+    def get_geoserver_roles(self, obj):
+        return ','.join([role.name for role in obj.geoserver_roles.all()])
+    get_geoserver_roles.short_description = 'roles'
 
 admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_channels.FTPPublishChannel, FTPPublishChannelAdmin)
@@ -55,3 +107,6 @@ admin.site.register(models.notifications.EmailNotification, reversion.admin.Vers
 admin.site.register(models.workspaces.Workspace, reversion.admin.VersionAdmin)
 admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
+admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
+admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
+# admin.site.register(models.geoserver_roles_groups.GeoServerGroupRole, GeoServerGroupRoleAdmin)

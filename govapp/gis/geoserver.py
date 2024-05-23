@@ -2,6 +2,7 @@
 
 
 # Standard
+import asyncio
 import logging
 import pathlib
 
@@ -12,6 +13,8 @@ import httpx
 # Typing
 from typing import Any, Optional
 from django.template.loader import render_to_string
+
+from govapp import settings
 
 # Logging
 log = logging.getLogger(__name__)
@@ -40,6 +43,114 @@ class GeoServer:
 
         # Strip Trailing Slash from Service URL
         self.service_url = self.service_url.rstrip("/")
+
+    def create_workspace_if_not_exists(self, workspace_name):
+        # URL to check the existence of the workspace
+        workspace_url = f"{self.service_url}/rest/workspaces/{workspace_name}.json"
+
+        # Headers with authentication information
+        headers = {'Content-Type': 'application/json'}
+
+        with httpx.Client(auth=(self.username, self.password)) as client:
+            # Send a GET request to check the existence of the workspace
+            response = client.get(workspace_url, headers=headers)
+
+        # Create the workspace only if it doesn't exist
+        if response.status_code == 404:
+            log.info(f"Workspace '{workspace_name}' does not exist. Creating...")
+
+            # URL to create the workspace
+            create_workspace_url = f"{self.service_url}/rest/workspaces"
+
+            # JSON data required to create the workspace
+            workspace_data = {
+                "workspace": {
+                    "name": workspace_name
+                }
+            }
+
+            with httpx.Client(auth=(self.username, self.password)) as client:
+                # Send a POST request to create the workspace
+                create_response = client.post(create_workspace_url, headers=headers, json=workspace_data)
+
+            # Check the status code to determine if the creation was successful
+            if create_response.status_code == 201:
+                log.info(f"Workspace '{workspace_name}' created successfully.")
+            else:
+                log.info("Failed to create workspace.")
+                log.info(create_response.text)
+        else:
+            log.info(f"Workspace '{workspace_name}' already exists.")
+
+    async def create_workspace_if_not_exists2(self, workspace_name):
+        # Headers with authentication information
+        headers = {'Content-Type': 'application/json'}
+
+        async with httpx.AsyncClient(auth=(self.username, self.password)) as client:
+            # Send a GET request to check the existence of the workspace
+            response = await client.get(f"{self.service_url}/rest/workspaces/{workspace_name}", headers=headers)
+
+        # Create the workspace only if it doesn't exist
+        if response.status_code == 404:
+            log.info(f"Workspace '{workspace_name}' does not exist. Creating...")
+
+            # URL to create the workspace
+            create_workspace_url = f"{self.service_url}/rest/workspaces"
+
+            # JSON data required to create the workspace
+            workspace_data = {
+                "workspace": {
+                    "name": workspace_name
+                }
+            }
+
+            async with httpx.AsyncClient(auth=(self.username, self.password)) as client:
+                # Send a POST request to create the workspace
+                create_response = await client.post(create_workspace_url, headers=headers, json=workspace_data)
+
+            # Check the status code to determine if the creation was successful
+            if create_response.status_code == 201:
+                log.info(f"Workspace '{workspace_name}' created successfully.")
+            else:
+                log.info("Failed to create workspace.")
+                log.info(create_response.text)
+        else:
+            log.info(f"Workspace '{workspace_name}' already exists.")
+
+    def create_store_if_not_exists(self, workspace_name, store_name, data):
+        # URL to check the existence of the store
+        store_get_url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores/{store_name}"
+        log.info(f'store_get_url: {store_get_url}')
+
+        # Headers with authentication information
+        headers = {'Content-Type': 'application/json'}
+
+        # Check if Store Exists
+        log.info(f'Checking if the store exists...')
+        with httpx.Client(auth=(self.username, self.password)) as client:
+            response = client.get(store_get_url, headers=headers)
+
+        # Construct URL
+        url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores"
+
+        # Decide whether to perform a POST or PUT request based on the existence of the store
+        if response.status_code == 404: 
+            # Store does not exist, perform a POST request
+            log.info(f'Store does not exist. Performing POST request.')
+            log.info(f'POST url: {url}')
+            log.debug(f'data: {data}')
+            with httpx.Client(auth=(self.username, self.password)) as client:
+                response = client.post(url=url, headers=headers, json=data)
+
+        else:          
+            # Store exists, perform a PUT request
+            log.info(f'Store exists. Performing PUT request.')
+            log.info(f'PUT url: {store_get_url}')
+            log.debug(f'data: {data}')
+            with httpx.Client(auth=(self.username, self.password)) as client:
+                response = client.put(url=store_get_url, headers=headers, json=data)
+            
+        return response
 
     def upload_geopackage(
         self,
@@ -117,12 +228,7 @@ class GeoServer:
         # Check Response
         response.raise_for_status()
 
-    def upload_store_wms(
-        self,
-        workspace,
-        store_name,
-        context
-    ) -> None:
+    def upload_store_wms(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
@@ -133,55 +239,9 @@ class GeoServer:
         # Log
         log.info(f"Uploading WMS Store to GeoServer...")
         
-        xml_data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
+        data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
 
-        store_get_url = "{0}/rest/workspaces/{1}/wmsstores/{2}".format(
-            self.service_url,
-            workspace,
-            store_name
-        )
-        log.info(f'store_get_url: {store_get_url}')
-
-        # Check if Store Exists
-        log.info(f'Checking if the store exists...')
-        response = httpx.get(
-            url=store_get_url,
-            auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"},
-            timeout=120.0
-        )
-
-        # Construct URL
-        url = "{0}/rest/workspaces/{1}/wmsstores".format(
-            self.service_url,
-            workspace
-        )
-
-        if response.status_code == 404: 
-            # Perform Request
-            log.info(f'Store does not exist.  Perform post request.')
-            log.info(f'Post url: { url }')
-            log.debug(f'xml_data: { xml_data }')
-            response = httpx.post(
-                url=url,
-                auth=(self.username, self.password),
-                data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-        else:          
-            # Perform Request
-            log.info(f'Store exists.  Perform put request.')
-            log.info(f'Put url: { store_get_url }')
-            log.debug(f'xml_data: { xml_data }')
-            response = httpx.put(
-                url=store_get_url,
-                auth=(self.username, self.password),
-                data=xml_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-
+        response = self.create_store_if_not_exists(workspace, store_name, data)
         
         # Log
         log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")
@@ -285,12 +345,7 @@ class GeoServer:
             # Check Response
             response.raise_for_status()        
 
-    def upload_store_postgis(
-        self,
-        workspace,
-        store_name,
-        context
-    ) -> None:
+    def upload_store_postgis(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
@@ -301,53 +356,54 @@ class GeoServer:
         # Log
         log.info(f"Uploading POSTGIS Store to GeoServer...")
         
-        json_data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
+        data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
 
-        store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
-            self.service_url,
-            workspace,
-            store_name
-        )
-        log.info(f'Check if the store exists...')
-        log.info(f'GET url: { store_get_url }')
-        # Check if Store Exists
-        response = httpx.get(
-            url=store_get_url,
-            auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"},
-            timeout=120.0
-        )
+        response = self.create_store_if_not_exists(workspace, store_name, data)
+        # store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+        #     self.service_url,
+        #     workspace,
+        #     store_name
+        # )
+        # log.info(f'Check if the store exists...')
+        # log.info(f'GET url: { store_get_url }')
+        # # Check if Store Exists
+        # response = httpx.get(
+        #     url=store_get_url,
+        #     auth=(self.username, self.password),
+        #     headers={"content-type": "application/json","Accept": "application/json"},
+        #     timeout=120.0
+        # )
 
-        # Construct URL
-        url = "{0}/rest/workspaces/{1}/datastores".format(
-            self.service_url,
-            workspace
-        )
+        # # Construct URL
+        # url = "{0}/rest/workspaces/{1}/datastores".format(
+        #     self.service_url,
+        #     workspace
+        # )
 
-        if response.status_code == 404: 
-            # Perform Request
-            log.info(f'Store does not exist.  Perform post request.')
-            log.info(f'Post url: { url }')
-            log.debug(f'json_data: { json_data }')
-            response = httpx.post(
-                url=url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-        else:  
-            #Perform Request
-            log.info(f'Store exists.  Perform put request.')
-            log.info(f'Put url: { store_get_url }')
-            log.debug(f'json_data: { json_data }')
-            response = httpx.put(
-                url=store_get_url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
+        # if response.status_code == 404: 
+        #     # Perform Request
+        #     log.info(f'Store does not exist.  Perform post request.')
+        #     log.info(f'Post url: { url }')
+        #     log.debug(f'json_data: { json_data }')
+        #     response = httpx.post(
+        #         url=url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
+        # else:  
+        #     #Perform Request
+        #     log.info(f'Store exists.  Perform put request.')
+        #     log.info(f'Put url: { store_get_url }')
+        #     log.debug(f'json_data: { json_data }')
+        #     response = httpx.put(
+        #         url=store_get_url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
 
         # Log
         log.info(f"GeoServer POSTGIS response: '{response.status_code}: {response.text}'")
@@ -355,12 +411,7 @@ class GeoServer:
         # Check Response
         response.raise_for_status()     
 
-    def upload_store_wfs(
-        self,
-        workspace,
-        store_name,
-        context
-    ) -> None:
+    def upload_store_wfs(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
@@ -371,45 +422,46 @@ class GeoServer:
         # Log
         log.info(f"Uploading WFS Store to GeoServer")
         
-        json_data = render_to_string('govapp/geoserver/wfs/wfs_store.json', context)
+        data = render_to_string('govapp/geoserver/wfs/wfs_store.json', context)
+        
+        response = self.create_store_if_not_exists(workspace, store_name, data)
+        # store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
+        #     self.service_url,
+        #     workspace,
+        #     store_name
+        # )
+        # #Check if Store Exists
+        # response = httpx.get(
+        #     url=store_get_url,
+        #     auth=(self.username, self.password),
+        #     headers={"content-type": "application/json","Accept": "application/json"},
+        #     timeout=120.0
+        # )
+        # # Construct URL
+        # url = "{0}/rest/workspaces/{1}/datastores".format(
+        #     self.service_url,
+        #     workspace
+        # )
 
-        store_get_url = "{0}/rest/workspaces/{1}/datastores/{2}".format(
-            self.service_url,
-            workspace,
-            store_name
-        )
-        #Check if Store Exists
-        response = httpx.get(
-            url=store_get_url,
-            auth=(self.username, self.password),
-            headers={"content-type": "application/json","Accept": "application/json"},
-            timeout=120.0
-        )
-        # Construct URL
-        url = "{0}/rest/workspaces/{1}/datastores".format(
-            self.service_url,
-            workspace
-        )
-
-        if response.status_code == 404: 
-            # Perform Request
-            response = httpx.post(
-                url=url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
-        else:  
-            pass        
-            #Perform Request
-            response = httpx.put(
-                url=store_get_url,
-                auth=(self.username, self.password),
-                data=json_data,
-                headers={"content-type": "application/json","Accept": "application/json"},
-                timeout=120.0
-            )
+        # if response.status_code == 404: 
+        #     # Perform Request
+        #     response = httpx.post(
+        #         url=url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
+        # else:  
+        #     pass        
+        #     #Perform Request
+        #     response = httpx.put(
+        #         url=store_get_url,
+        #         auth=(self.username, self.password),
+        #         data=json_data,
+        #         headers={"content-type": "application/json","Accept": "application/json"},
+        #         timeout=120.0
+        #     )
         
         # Log
         log.info(f"GeoServer WFS response: '{response.status_code}: {response.text}'")
@@ -687,7 +739,7 @@ class GeoServer:
             Optional[list[dict[str, str]]]: A list of layer information
         """
         # Log
-        log.info("Retreiving layers from GeoServer")
+        log.info(f'Retreiving layers from GeoServer: [{self.service_url}]')
         
         # Construct URL
         url = "{0}/rest/layers".format(self.service_url)
@@ -709,7 +761,11 @@ class GeoServer:
             hasattr(json_response, 'layer')):
             log.error(f"The response of retrieving layers from a GeoServer was wrong. {json_response}")
         # Return JSON
-        return json_response['layers']['layer']
+        if json_response['layers']:
+            return json_response['layers']['layer']
+        else:
+            # No layers
+            return []
     
     def delete_layer(self, layer_name) -> None:
         # Construct URL
@@ -718,17 +774,152 @@ class GeoServer:
             layer_name
             )
         
-        response = httpx.delete(
-                    url=url,
-                    auth=(self.username, self.password),
-                    #data=xml_data,
-                    headers={"content-type": "application/json","Accept": "application/json"},
-                    timeout=120.0
-                )
+        try:
+            response = httpx.delete(
+                        url=url,
+                        auth=(self.username, self.password),
+                        headers={"content-type": "application/json","Accept": "application/json"},
+                        timeout=120.0
+                    )
+            
+            # Check Response
+            response.raise_for_status()
+            if response.status_code == 200:
+                log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
+            else:
+                log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
+        except httpx.HTTPError as e:
+            log.error(f'Error deleting layer: [{e}]')
+
+    def synchronize_groups(self, group_name_list):
+        existing_groups = self.fetch_geoserver_groups()
+
+        # Determine groups to delete (existing groups not in group_name_list)
+        groups_to_delete = set(existing_groups) - set(group_name_list)
+        for group in groups_to_delete:
+            self.delete_geoserver_group(group)
+
+        # Determine groups to create (groups in group_name_list not in existing groups)
+        groups_to_create = set(group_name_list) - set(existing_groups)
+        for group in groups_to_create:
+            self.create_geoserver_group(group)
+
+    def synchronize_roles(self, role_name_list):
+        try:
+            # Fetch existing roles from GeoServer
+            existing_roles = self.fetch_geoserver_roles()
+
+            # Determine roles to delete (existing roles not in role_name_list)
+            roles_to_delete = set(existing_roles) - set(role_name_list)
+            for role in roles_to_delete:
+                self.delete_geoserver_role(role)
+
+            # Determine roles to create (roles in role_name_list not in existing roles)
+            roles_to_create = set(role_name_list) - set(existing_roles)
+            for role in roles_to_create:
+                self.create_geoserver_role(role)
+        except Exception as e:
+            log.error(f'An error occurred during synchronization: {e}')
+
+    # Function to fetch existing groups from GeoServer
+    def fetch_geoserver_groups(self):
+        url = f"{self.service_url}/rest/security/usergroup/groups.json"
+        try:
+            response = httpx.get(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            groups_data = response.json()
+            existing_groups = groups_data['groups']
+            log.info(f"Fetched groups: {existing_groups} from the geoserver: [{self.service_url}]")
+            return existing_groups
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to fetch groups from the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to create a new group in GeoServer
+    def create_geoserver_group(self, group_name):
+        url = f"{self.service_url}/rest/security/usergroup/group/{group_name}"
+        try:
+            response = httpx.post(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Created group: {group_name} on the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failded to create group: {group_name} on the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to delete an existing group in GeoServer
+    def delete_geoserver_group(self, group_name):
+        if group_name in settings.USERGROUPS_TO_KEEP:
+            log.info(f'Group: [{group_name}] cannot be deleted. (USERGROUPS_TO_KEEP: [{settings.USERGROUPS_TO_KEEP}])')
+            return
+
+        url = f"{self.service_url}/rest/security/usergroup/group/{group_name}"
+        try:
+            response = httpx.delete(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Deleted group: {group_name} from the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to delete group {group_name} from the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to fetch existing roles from GeoServer
+    def fetch_geoserver_roles(self):
+        url = f"{self.service_url}/rest/security/roles.json"
+        try:
+            response = httpx.get(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            roles_data = response.json()
+            existing_roles = roles_data['roles']
+            log.info(f"Fetched roles: [{existing_roles}] from the geoserver: [{self.service_url}] ")
+            return existing_roles
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to fetch roles from the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to create a new role in GeoServer
+    def create_geoserver_role(self, role_name):
+        url = f"{self.service_url}/rest/security/roles/role/{role_name}"
+        try:
+            response = httpx.post(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Created role: {role_name} on the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to create role: {role_name} on the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to delete an existing role in GeoServer
+    def delete_geoserver_role(self, role_name):
+        if role_name in settings.ROLES_TO_KEEP:  # We don't want to delete the default group 'ADMIN'
+            log.info(f'Role: [{role_name}] cannot be deleted. (ROLES_TO_KEEP: [{settings.ROLES_TO_KEEP}])')
+            return
+
+        url = f"{self.service_url}/rest/security/roles/role/{role_name}"
+        try:
+            response = httpx.delete(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Deleted role: {role_name} from the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to delete role '{role_name} from the geoserver: [{self.service_url}]': {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
         
-        # Check Response
-        response.raise_for_status()
-        
+
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.
 

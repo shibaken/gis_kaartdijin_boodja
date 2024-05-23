@@ -10,6 +10,7 @@ node_modules/
 cache/
 data/
 data_storage/
+pending_imports/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

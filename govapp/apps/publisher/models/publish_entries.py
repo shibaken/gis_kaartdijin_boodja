@@ -216,34 +216,6 @@ class PublishEntry(mixins.RevisionedMixin):
         """
         geoserver_manager.push(publish_entry=self, symbology_only=symbology_only)
         
-        
-        # # Check for Publish Channel
-        # if not hasattr(self, "geoserver_channel"):
-        #     # Log
-        #     log.info(f"'{self}' has no GeoServer Publish Channel")
-
-        #     # Exit Early
-        #     return
-
-        # # Log
-        # log.info(f"Publishing '{self.catalogue_entry}' - '{self.geoserver_channel}' ({symbology_only=})")
-
-        # # Handle Errors
-        # try:
-        #     # Publish!
-        #     self.geoserver_channel.publish(symbology_only)  # type: ignore[union-attr]
-
-        # except Exception as exc:
-        #     # Log
-        #     log.error(f"Unable to publish to GeoServer Publish Channel: {exc}")
-
-        #     # Send Failure Emails
-        #     notifications_utils.publish_entry_publish_failure(self)
-
-        # else:
-        #     # Send Success Emails
-        #     notifications_utils.publish_entry_publish_success(self)
-
     def is_locked(self) -> bool:
         """Determines whether the Publish Entry is locked.
 

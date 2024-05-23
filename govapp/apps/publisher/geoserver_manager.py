@@ -1,6 +1,7 @@
 """Kaartdijin Boodja Publisher GeoServer Queue Excutor."""
 
 # Standard
+import asyncio
 import logging
 
 # Third-Party
@@ -14,7 +15,9 @@ from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
 from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerRole
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
+from govapp.apps.publisher.models.workspaces import Workspace
 from govapp.gis import geoserver
 
 # Typing
@@ -39,28 +42,40 @@ class GeoServerQueueExcutor:
     def excute(self) -> None:
         target_items = self._retrieve_target_items()
         log.info(f"Start publishing for {target_items.count()} geoserver queue items.")
+
         for queue_item in target_items:
             self._init_excuting(queue_item=queue_item)
         
-            ### Old
-            # geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
-            ###
-
-            ### New
-            # geoserver_pool = queue_item.publish_entry.geoserver_channels.value_list('geoserver_pool', flat=True)  # Somehow this doesnot work...
-            # geoserver_pool = []
             for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
                 if geoserver_publish_channel.geoserver_pool.enabled:
-                    # geoserver_pool.append(geoserver_publish_channel.geoserver_pool)
-                    # self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel.geoserver_pool)
-                    self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
-            ###
+                    geoserver_obj = geoserver.geoserverWithCustomCreds(  # We want GeoServer obj
+                        geoserver_publish_channel.geoserver_pool.url,
+                        geoserver_publish_channel.geoserver_pool.username,
+                        geoserver_publish_channel.geoserver_pool.password
+                    )
 
-            # self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry)
+                    # Make sure all the workspace exist in the geoserver
+                    workspaces = Workspace.objects.all()
+                    for workspace in workspaces:
+                        geoserver_obj.create_workspace_if_not_exists(workspace.name)
+
+                    # asyncio.run(self._create_workspaces(geoserver_obj, workspaces))
+
+                    self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
 
             self._update_result(queue_item=queue_item)
-            #if self.result_success:
-            #    geoserver_queue_manager.push(publish_entry=queue_item.publish_entry, symbology_only=queue_item.symbology_only)
+
+    # async def _create_workspaces(geoserver_obj, workspaces):
+    #     # Create an asynchronous task for each workspace and add it to the list.
+    #     for workspace in workspaces:
+    #         # Execute geoserver_obj.create_workspace_if_not_exists2(workspace.name) as an asynchronous task.
+    #         task = asyncio.create_task(geoserver_obj.create_workspace_if_not_exists(workspace.name))
+    #         # Append the task to the list.
+    #         tasks.append(task)
+        
+    #     # Wait for all tasks to complete.
+    #     for task in tasks:
+    #         await task
 
     def _retrieve_target_items(self):
         """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """
@@ -123,27 +138,55 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
 
 
 class GeoServerSyncExcutor:
-    
-    def sync_based_on_gis(self):
-        """Remove all layers on Geoservers that have been removed on GIS."""
-        log.info(f"Remove all layers on Geoservers that have been removed on GIS.")
+    def sync_roles_groups_on_gis(self):
+        log.info(f"Sync roles and groups...")
         
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        # List of the active role names in the KB
+        geoserver_role_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
+        log.info(f'Roles in KB: [{geoserver_role_names}]')
+
+        # List of the active group names in the KB
+        geoserver_group_names = GeoServerGroup.objects.filter(active=True).values_list('name', flat=True)
+        log.info(f'Groups in KB: [{geoserver_group_names}]')
+
+        # List of the active geoservers in the KB
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this enabled filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+
+        for geoserver_info in geoserver_pool:  # Perform per geoserver
+            # Get GeoServer obj
+            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+
+            # Sync
+            geoserver_obj.synchronize_roles(geoserver_role_names)
+            geoserver_obj.synchronize_groups(geoserver_group_names)
+
+
+    def sync_based_on_gis(self):
+        log.info(f"Remove all layers on Geoservers that have been removed from KB...")
+        
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
         for geoserver_info in geoserver_pool:
-            geoserver_obj = geoserver.geoserverWithCustomCreds(
-                geoserver_info.url, geoserver_info.username, geoserver_info.password)
+            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
             
             # Retrive layer names from geoserver
             layers = geoserver_obj.get_layers()
             layer_names = [layer['name'].split(':')[1] for layer in layers]
+
+            log.info(f'Layers on the geoserver: [{geoserver_info.url}: [{layer_names}]]')
             
-            # Retrive layer names from DB
-            synced_layer_names = CatalogueEntry.objects.filter(
-                name__in=[layer_name for layer_name in layer_names]).values('name')
-            synced_layer_names_set = set([layer['name'] for layer in synced_layer_names])
+            # Retrive layer names from DB for this geoserver
+            name_list = GeoServerPublishChannel.objects.filter(
+                geoserver_pool=geoserver_info,
+                publish_entry__catalogue_entry__name__in=[layer_name for layer_name in layer_names]
+            ).values_list('publish_entry__catalogue_entry__name', flat=True)
+            synced_layer_names_set = set(name_list)
+
+            log.info(f'Layers on the KB: [{synced_layer_names_set}] for the geoserver: [{geoserver_info.url}]')
             
             # Compare layer names
             purge_list = [layer_name for layer_name in layer_names if layer_name not in synced_layer_names_set]
+
+            log.info(f'Layers to be deleted: [{purge_list}] from the geoserver: [{geoserver_info.url}]')
             
             # Call a remove layer api
             for purge in purge_list:
