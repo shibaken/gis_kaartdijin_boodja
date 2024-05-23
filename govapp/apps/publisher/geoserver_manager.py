@@ -141,13 +141,21 @@ class GeoServerSyncExcutor:
     def sync_roles_groups_on_gis(self):
         log.info(f"Sync roles and groups...")
         
+        # List of the active role names in the KB
         geoserver_role_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
+
+        # List of the active group names in the KB
         geoserver_group_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
-        for geoserver_info in geoserver_pool:
+
+        # List of the active geoservers in the KB
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this enabled filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+
+        for geoserver_info in geoserver_pool:  # Perform per geoserver
+            # Get GeoServer obj
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
 
-            # geoserver_obj.synchronize_roles(geoserver_role_names)
+            # Sync
+            geoserver_obj.synchronize_roles(geoserver_role_names)
             geoserver_obj.synchronize_groups(geoserver_group_names)
 
 
