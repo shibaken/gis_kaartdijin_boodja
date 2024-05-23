@@ -143,9 +143,11 @@ class GeoServerSyncExcutor:
         
         # List of the active role names in the KB
         geoserver_role_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
+        log.info(f'Roles in KB: [{geoserver_role_names}]')
 
         # List of the active group names in the KB
         geoserver_group_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
+        log.info(f'Groups in KB: [{geoserver_group_names}]')
 
         # List of the active geoservers in the KB
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this enabled filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
