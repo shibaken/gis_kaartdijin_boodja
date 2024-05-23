@@ -244,6 +244,8 @@ SHAREPOINT_OUTPUT_PUBLISH_AREA = decouple.config("SHAREPOINT_OUTPUT_PUBLISH_AREA
 # Azure Settings
 # Azure Output settings are for the Publisher (Output)
 AZURE_OUTPUT_SYNC_DIRECTORY = decouple.config("AZURE_OUTPUT_SYNC_DIRECTORY", default="sync")
+if not os.path.exists(AZURE_OUTPUT_SYNC_DIRECTORY):
+    os.mkdir(AZURE_OUTPUT_SYNC_DIRECTORY)
 
 # Email
 #DISABLE_EMAIL = decouple.config("DISABLE_EMAIL", default=False, cast=bool)
