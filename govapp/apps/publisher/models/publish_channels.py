@@ -139,7 +139,6 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         """Publishes the Catalogue Entry to Azure if applicable."""
         # Log
         log.info(f"Publishing '{self}' to Azure")
-        print ('publish_azure')
         print (self.publish_entry.catalogue_entry.active_layer.file)
        
         # Retrieve the Layer File from Storage
@@ -301,6 +300,11 @@ class GeoServerPublishChannelMode(models.IntegerChoices):
     WMS_AND_WFS = 2
 
 
+class GeoServerPublishChannelManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('workspace', 'publish_entry', 'geoserver_pool')
+
+
 @reversion.register()
 class GeoServerPublishChannel(mixins.RevisionedMixin):
     """Model for a GeoServer Publish Channel."""
@@ -343,6 +347,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         blank=True,
         on_delete=models.SET_NULL,
     )
+    objects = GeoServerPublishChannelManager()
 
     class Meta:
         """GeoServer Publish Channel Model Metadata."""

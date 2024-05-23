@@ -188,9 +188,6 @@ if not os.path.exists(path_to_logs):
 LOGGING = {
     "version": 1,
     'formatters': {
-        # 'verbose': {
-        #     'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
-        # },
         'verbose2': {
             "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(funcName)s] %(message)s"
         }
@@ -198,30 +195,36 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "console": {
-            # 'level': decouple.config('LOG_CONSOLE_LEVEL', default='INFO'),
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose2',
         },
         'file': {
-            # 'level': 'INFO',
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'kaartdijin_boodja.log'),
             'formatter': 'verbose2',
             'maxBytes': 5242880
         },
+        'file_for_sql': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'kaartdijin_boodja_sql.log'),
+            'formatter': 'verbose2',
+            'maxBytes': 5242880
+        },
     },
-    # "root": {
-    #     "handlers": ["console"],
-    #     "level": "INFO",
-    # },
     'loggers': {
         '': {
             'handlers': ['file', 'console'],
-            # 'level': decouple.config('LOG_CONSOLE_LEVEL', default='WARNING'),
             'level': 'DEBUG',
             'propagate': True
+        },
+        # Log SQL
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file_for_sql'],
+            'propagate': False,
         },
     }
 }
