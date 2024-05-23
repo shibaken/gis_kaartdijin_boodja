@@ -14,6 +14,8 @@ import httpx
 from typing import Any, Optional
 from django.template.loader import render_to_string
 
+from govapp import settings
+
 # Logging
 log = logging.getLogger(__name__)
 
@@ -776,7 +778,6 @@ class GeoServer:
             response = httpx.delete(
                         url=url,
                         auth=(self.username, self.password),
-                        #data=xml_data,
                         headers={"content-type": "application/json","Accept": "application/json"},
                         timeout=120.0
                     )
@@ -789,7 +790,136 @@ class GeoServer:
                 log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
         except httpx.HTTPError as e:
             log.error(f'Error deleting layer: [{e}]')
+
+    def synchronize_groups(self, group_name_list):
+        existing_groups = self.fetch_geoserver_groups()
+
+        # Determine groups to delete (existing groups not in group_name_list)
+        groups_to_delete = set(existing_groups) - set(group_name_list)
+        for group in groups_to_delete:
+            self.delete_geoserver_group(group)
+
+        # Determine groups to create (groups in group_name_list not in existing groups)
+        groups_to_create = set(group_name_list) - set(existing_groups)
+        for group in groups_to_create:
+            self.create_geoserver_group(group)
+
+    def synchronize_roles(self, role_name_list):
+        try:
+            # Fetch existing roles from GeoServer
+            existing_roles = self.fetch_geoserver_roles()
+
+            # Determine roles to delete (existing roles not in role_name_list)
+            roles_to_delete = set(existing_roles) - set(role_name_list)
+            for role in roles_to_delete:
+                self.delete_geoserver_role(role)
+
+            # Determine roles to create (roles in role_name_list not in existing roles)
+            roles_to_create = set(role_name_list) - set(existing_roles)
+            for role in roles_to_create:
+                self.create_geoserver_role(role)
+        except Exception as e:
+            log.error(f'An error occurred during synchronization: {e}')
+
+    # Function to fetch existing groups from GeoServer
+    def fetch_geoserver_groups(self):
+        url = f"{self.service_url}/rest/security/usergroup/groups.json"
+        try:
+            response = httpx.get(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            groups_data = response.json()
+            existing_groups = groups_data['groups']
+            log.info(f"Fetched groups: {existing_groups} from the geoserver: [{self.service_url}]")
+            return existing_groups
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to fetch groups from the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to create a new group in GeoServer
+    def create_geoserver_group(self, group_name):
+        url = f"{self.service_url}/rest/security/usergroup/group/{group_name}"
+        try:
+            response = httpx.post(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Created group: {group_name} on the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failded to create group: {group_name} on the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to delete an existing group in GeoServer
+    def delete_geoserver_group(self, group_name):
+        if group_name in settings.USERGROUPS_TO_KEEP:
+            log.info(f'Group: [{group_name}] cannot be deleted. (USERGROUPS_TO_KEEP: [{settings.USERGROUPS_TO_KEEP}])')
+            return
+
+        url = f"{self.service_url}/rest/security/usergroup/group/{group_name}"
+        try:
+            response = httpx.delete(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Deleted group: {group_name} from the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to delete group {group_name} from the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to fetch existing roles from GeoServer
+    def fetch_geoserver_roles(self):
+        url = f"{self.service_url}/rest/security/roles.json"
+        try:
+            response = httpx.get(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            roles_data = response.json()
+            existing_roles = roles_data['roles']
+            log.info(f"Fetched roles: [{existing_roles}] from the geoserver: [{self.service_url}] ")
+            return existing_roles
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to fetch roles from the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to create a new role in GeoServer
+    def create_geoserver_role(self, role_name):
+        url = f"{self.service_url}/rest/security/roles/role/{role_name}"
+        try:
+            response = httpx.post(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Created role: {role_name} on the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to create role: {role_name} on the geoserver: [{self.service_url}]: {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
+
+    # Function to delete an existing role in GeoServer
+    def delete_geoserver_role(self, role_name):
+        if role_name in settings.ROLES_TO_KEEP:  # We don't want to delete the default group 'ADMIN'
+            log.info(f'Role: [{role_name}] cannot be deleted. (ROLES_TO_KEEP: [{settings.ROLES_TO_KEEP}])')
+            return
+
+        url = f"{self.service_url}/rest/security/roles/role/{role_name}"
+        try:
+            response = httpx.delete(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f"Deleted role: {role_name} from the geoserver: [{self.service_url}]")
+        except httpx.HTTPStatusError as e:
+            log.error(f"Failed to delete role '{role_name} from the geoserver: [{self.service_url}]': {e}")
+            raise
+        except Exception as e:
+            log.error(f"An error occurred ({self.service_url}): {e}")
+            raise
         
+
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.
 

@@ -290,6 +290,8 @@ CRON_CLASSES = [
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
 GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
 GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
+ROLES_TO_KEEP = decouple.config("ROLES_TO_KEEP", default='ADMIN,GROUP_ADMIN').split(',')  # env example: ROLES_TO_KEEP=ADMIN,GROUP_ADMIN,ROLE1
+USERGROUPS_TO_KEEP = decouple.config("USERGRUPS_TO_KEEP", default='').split(',')  # env example: USERGROUPS_TO_KEEP=ADMIN_GROUP,GROUP1,GROUP2
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":

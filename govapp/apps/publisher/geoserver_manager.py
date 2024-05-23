@@ -15,6 +15,7 @@ from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
 from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerRole
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 from govapp.apps.publisher.models.workspaces import Workspace
 from govapp.gis import geoserver
@@ -137,9 +138,30 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
 
 
 class GeoServerSyncExcutor:
-    
+    def sync_roles_groups_on_gis(self):
+        log.info(f"Sync roles and groups...")
+        
+        # List of the active role names in the KB
+        geoserver_role_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
+        log.info(f'Roles in KB: [{geoserver_role_names}]')
+
+        # List of the active group names in the KB
+        geoserver_group_names = GeoServerGroup.objects.filter(active=True).values_list('name', flat=True)
+        log.info(f'Groups in KB: [{geoserver_group_names}]')
+
+        # List of the active geoservers in the KB
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this enabled filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+
+        for geoserver_info in geoserver_pool:  # Perform per geoserver
+            # Get GeoServer obj
+            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+
+            # Sync
+            geoserver_obj.synchronize_roles(geoserver_role_names)
+            geoserver_obj.synchronize_groups(geoserver_group_names)
+
+
     def sync_based_on_gis(self):
-        """Remove all layers on Geoservers that have been removed on GIS."""
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")
         
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
@@ -152,11 +174,6 @@ class GeoServerSyncExcutor:
 
             log.info(f'Layers on the geoserver: [{geoserver_info.url}: [{layer_names}]]')
             
-            # Retrive layer names from DB
-            # synced_layer_names = CatalogueEntry.objects.filter(
-            #     name__in=[layer_name for layer_name in layer_names]).values('name')
-            # synced_layer_names_set = set([layer['name'] for layer in synced_layer_names])
-
             # Retrive layer names from DB for this geoserver
             name_list = GeoServerPublishChannel.objects.filter(
                 geoserver_pool=geoserver_info,
