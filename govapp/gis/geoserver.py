@@ -14,6 +14,8 @@ import httpx
 from typing import Any, Optional
 from django.template.loader import render_to_string
 
+from govapp import settings
+
 # Logging
 log = logging.getLogger(__name__)
 
@@ -852,6 +854,10 @@ class GeoServer:
 
     # Function to delete an existing group in GeoServer
     def delete_geoserver_group(self, group_name):
+        if group_name in settings.USERGROUPS_TO_KEEP:
+            log.info(f'Group: [{group_name}] cannot be deleted. (USERGROUPS_TO_KEEP: [{settings.USERGROUPS_TO_KEEP}])')
+            return
+
         url = f"{self.service_url}/rest/security/usergroup/group/{group_name}"
         try:
             response = httpx.delete(url, auth=(self.username, self.password))
@@ -897,9 +903,8 @@ class GeoServer:
 
     # Function to delete an existing role in GeoServer
     def delete_geoserver_role(self, role_name):
-        if role_name == 'ADMIN':
-            # We don't want to delete the default group 'ADMIN'
-            log.info(f"Default role: ADMIN cannot be deleted.")
+        if role_name in settings.ROLES_TO_KEEP:  # We don't want to delete the default group 'ADMIN'
+            log.info(f'Role: [{role_name}] cannot be deleted. (ROLES_TO_KEEP: [{settings.ROLES_TO_KEEP}])')
             return
 
         url = f"{self.service_url}/rest/security/roles/role/{role_name}"

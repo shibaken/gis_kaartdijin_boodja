@@ -15,7 +15,7 @@ from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
 from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
-from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRole
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerRole
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 from govapp.apps.publisher.models.workspaces import Workspace
 from govapp.gis import geoserver
@@ -146,7 +146,7 @@ class GeoServerSyncExcutor:
         log.info(f'Roles in KB: [{geoserver_role_names}]')
 
         # List of the active group names in the KB
-        geoserver_group_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
+        geoserver_group_names = GeoServerGroup.objects.filter(active=True).values_list('name', flat=True)
         log.info(f'Groups in KB: [{geoserver_group_names}]')
 
         # List of the active geoservers in the KB
