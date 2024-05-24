@@ -1,3 +1,10 @@
+let catalogue_entry_type = {
+    SPATIAL_FILE: 1,
+    SUBSCRIPTION_WFS: 2,
+    SUBSCRIPTION_WMS: 3,
+    SUBSCRIPTION_POSTGIS: 4,
+    SUBSCRIPTION_QUERY: 5
+}
 var kbpublish = {
     var: {
             publish_data_url: "/api/publish/entries/",
@@ -53,6 +60,14 @@ var kbpublish = {
             },
             catalogue_entry_list: null,
             catalogue_entry_map: {},
+            catalogue_entry_type_allowed_for_cddp: [
+                catalogue_entry_type.SPATIAL_FILE,
+                catalogue_entry_type.SUBSCRIPTION_QUERY
+            ],
+            catalogue_entry_type_allowed_for_ftp: [
+                catalogue_entry_type.SPATIAL_FILE,
+                catalogue_entry_type.SUBSCRIPTION_QUERY
+            ],
             publish_date_format: "dd/mm/yyyy",
             publish_table_date_format: "DD MMM YYYY HH:mm:ss",
             publish_email_notification_type:null,    // will be filled during initiation
@@ -1048,9 +1063,11 @@ var kbpublish = {
                             html+= " <td class='text-end'>";
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
-                                    html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>&nbsp;";
+                                    if (kbpublish.var.catalogue_entry_type_allowed_for_ftp.includes(response.results[i].catalogue_type))
+                                        html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>&nbsp;";
                                     html+= " <button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>&nbsp;";
-                                    html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>&nbsp;";                        
+                                    if (kbpublish.var.catalogue_entry_type_allowed_for_cddp.includes(response.results[i].catalogue_type))
+                                        html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>&nbsp;";                        
                                 }
                                 html+= " <button class='btn btn-primary btn-sm publish-table-button' id='publish-external-loading-"+response.results[i].id+"' type='button' disabled><span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span class='visually-hidden'>Loading...</span></button>&nbsp;";
                                 html+= " <button class='btn btn-success btn-sm publish-table-button' id='publish-external-success-"+response.results[i].id+"' type='button' disabled><i class='bi bi-check'></i></button>&nbsp;";
@@ -1074,8 +1091,6 @@ var kbpublish = {
                 }
 
                 $( ".publish-to-geoserver-btn" ).click(function() {
-                    console.log("Publish Geoserver");
-                    console.log($(this).attr('data-json'));
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
 
@@ -1083,16 +1098,12 @@ var kbpublish = {
                 });     
                 
                 $( ".publish-to-cddp-btn" ).click(function() {
-                    console.log("Publish Geoserver");
-                    console.log($(this).attr('data-json'));
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
                     kbpublish.publish_to_cddp(btndata.id);
                 });    
                 
                 $( ".publish-to-ftp-btn" ).click(function() {
-                    console.log("Publish FTP");
-                    console.log($(this).attr('data-json'));
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
                     kbpublish.publish_to_ftp(btndata.id);
@@ -1339,15 +1350,9 @@ var kbpublish = {
                                     }
                                 }
 
-                                const SPATIAL_FILE = '1'
-                                const SUBSCRIPTION_WFS = '2'
-                                const SUBSCRIPTION_WMS = '3'
-                                const SUBSCRIPTION_POSTGIS = '4'
-                                const SUBSCRIPTION_QUERY = '5'
-
-                                if($('#catalogue-type').val() == SPATIAL_FILE){
+                                if($('#catalogue-type').val() == catalogue_entry_type.SPATIAL_FILE){
                                     kbpublish.show_update_geoserver_modal(selected_obj);
-                                } else if([SUBSCRIPTION_WFS, SUBSCRIPTION_WMS, SUBSCRIPTION_POSTGIS, SUBSCRIPTION_QUERY].includes($('#catalogue-type').val())){
+                                } else if([catalogue_entry_type.SUBSCRIPTION_WFS, catalogue_entry_type.SUBSCRIPTION_WMS, catalogue_entry_type.SUBSCRIPTION_POSTGIS, catalogue_entry_type.SUBSCRIPTION_QUERY].includes($('#catalogue-type').val())){
                                     kbpublish.show_write_geoserver_subscription_modal(selected_obj);
                                 }
                             });
