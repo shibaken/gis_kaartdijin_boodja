@@ -2,6 +2,7 @@
 
 
 # Third-Party
+from math import ceil
 import os
 import logging
 from datetime import datetime
@@ -777,12 +778,14 @@ class CDDPContentsViewSet(viewsets.ViewSet):
                     last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime(datetime_format)
                     last_modify_time = datetime.fromtimestamp(file_stat.st_mtime).strftime(datetime_format)
                     size_bytes = file_stat.st_size
+                    size_kb = ceil(file_stat.st_size / 1024)
                     file_list.append({
                         'filepath': filepath,
                         'created_at': creation_time,
                         'last_accessed_at': last_access_time,
                         'last_modified_at': last_modify_time,
-                        'size_bytes': size_bytes
+                        'size_bytes': size_bytes,
+                        'size_kb': size_kb
                     })
         except Exception as e:
             raise RuntimeError(f"Error while retrieving file metadata: {str(e)}")

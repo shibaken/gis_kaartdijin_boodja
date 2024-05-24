@@ -505,3 +505,10 @@ class GeoServerQueue(base.TemplateView):
     
     # Template name
     template_name = "govapp/geoserverqueue.html"
+
+
+class CDDPQueueView(base.TemplateView):
+    """ Show CDDP Queue status """
+    
+    # Template name
+    template_name = "govapp/cddpqueue.html"
