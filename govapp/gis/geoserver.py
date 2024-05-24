@@ -918,7 +918,52 @@ class GeoServer:
         except Exception as e:
             log.error(f"An error occurred ({self.service_url}): {e}")
             raise
+
+    def update_workspace_security(self, workspace_name, role_to_modify, read_permission, write_permission, admin_permission):
+        """
+        Update security settings for a specific workspace in GeoServer.
+
+        :param workspace_name: The name of the workspace to update.
+        :param role_to_modify: The role to modify.
+        :param read_permission: Boolean value for read permission.
+        :param write_permission: Boolean value for write permission.
+        :param admin_permission: Boolean value for admin permission.
+        """
+        security_url = f"{self.service_url}/rest/security/acl/workspaces/{workspace_name}.json"
         
+        # Construct the security settings JSON payload
+        security_settings = {
+            "rules": [
+                {
+                    "role": role_to_modify,
+                    "workspace": workspace_name,
+                    "access": {
+                        "read": read_permission,
+                        "write": write_permission,
+                        "admin": admin_permission
+                    }
+                }
+            ]
+        }
+        
+        try:
+            with httpx.AsyncClient() as client:
+                response = client.put(
+                    security_url,
+                    json=security_settings,
+                    auth=(self.username, self.password),
+                    headers={'Content-Type': 'application/json'}
+                )
+            
+            if response.status_code == 200:
+                log.info(f"Security settings updated successfully for workspace '{workspace_name}' and role '{role_to_modify}'.")
+            else:
+                log.error(f"Failed to update security settings: {response.status_code}, Response: {response.text}")
+        
+        except httpx.RequestError as exc:
+            log.error(f"An error occurred while requesting {exc.request.url!r}: {exc}")
+        except Exception as e:
+            log.error(f"An unexpected error occurred: {e}")
 
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.
