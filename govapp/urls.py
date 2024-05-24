@@ -75,7 +75,8 @@ urlpatterns = [
     # GeoServerQueue
     urls.path("geoserver/queue/", views.GeoServerQueue.as_view()),
 
-
+    # CDDPQueue
+    urls.path("cddp/queue/", views.CDDPQueueView.as_view()),
 
     urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
 

@@ -26,6 +26,11 @@ class GeoServerRole(mixins.RevisionedMixin):
         return self.name
 
 
+class GeoServerGroupManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('geoserver_roles')
+
+
 @reversion.register()
 class GeoServerGroup(mixins.RevisionedMixin):
     name = models.CharField(max_length=255, unique=True)
@@ -33,6 +38,7 @@ class GeoServerGroup(mixins.RevisionedMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     geoserver_roles = models.ManyToManyField(GeoServerRole, through='GeoServerGroupRole', related_name='geoserver_groups')
+    objects = GeoServerGroupManager()
 
     class Meta:
         verbose_name = "GeoServer Group"
