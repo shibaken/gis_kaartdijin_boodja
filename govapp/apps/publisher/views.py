@@ -3,6 +3,7 @@
 
 # Third-Party
 import os
+import logging
 from datetime import datetime
 from django import shortcuts
 from django.db import transaction
@@ -37,6 +38,9 @@ from typing import cast, Any
 
 # Shortcuts
 UserModel = auth.get_user_model()
+
+# Log
+logger = logging.getLogger('__name__')
 
 
 @drf_utils.extend_schema(tags=["Publisher - Publish Entries"])
@@ -745,6 +749,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
     ViewSet for handling files within a specified directory.
     Provides list, retrieve, and delete functionalities.
     """
+    permission_classes=[accounts_permissions.IsAuthenticated]
     pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
 
     def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
@@ -789,16 +794,22 @@ class CDDPContentsViewSet(viewsets.ViewSet):
         Retrieve the specified file's content.
         """
         filepath = request.query_params.get('filepath')
+        logger.info(f'Retrieving file: [{filepath}]')
+
         if not filepath:
+            logger.error('Filepath query parameter is required')
             return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         if os.path.exists(filepath):
             try:
                 with open(filepath, 'rb') as file:
+                    logger.info(f'File [{filepath}] retrieved successfully')
                     return http.HttpResponse(file.read(), content_type='application/octet-stream')
             except Exception as e:
+                logger.error(f'Error retrieving file [{filepath}]: [{str(e)}]')
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
+            logger.error(f'File does not exist: [{filepath}]')
             raise http.Http404("File does not exist")
 
     @decorators.action(detail=False, methods=['delete'], url_path='delete-file')
@@ -807,49 +818,22 @@ class CDDPContentsViewSet(viewsets.ViewSet):
         Delete the specified file.
         """
         filepath = request.query_params.get('filepath')
+        logger.info(f'Deleting file: [{filepath}]')
+
         if not filepath:
+            logger.error('Filepath query parameter is required')
             return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         if os.path.exists(filepath):
             try:
                 os.remove(filepath)
+                logger.info(f'File [{filepath}] deleted successfully')
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Exception as e:
+                logger.error(f'Error deleting file [{filepath}]: {str(e)}')
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
+            logger.error(f'File does not exist: [{filepath}]')
             raise http.Http404("File does not exist")
 
-###############################
-
-# class CDDPQueueView(base.TemplateView):
 #     template_name = "govapp/cddp_queue.html"
-
-#     def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
-#         pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
-
-#         file_list = self.get_files_with_metadata(pathToFolder)
-
-#         context = {'file_list': file_list}
-#         return shortcuts.render(request, self.template_name, context)
-
-#     def get_files_with_metadata(self, directory):
-#         """
-#         Function to retrieve file paths and metadata for files within the specified directory.
-#         """
-#         file_list = []
-#         for dirpath, _, filenames in os.walk(directory):
-#             for filename in filenames:
-#                 filepath = os.path.join(dirpath, filename)
-#                 file_stat = os.stat(filepath)
-#                 creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime('%d-%m-%Y %H:%M:%S')
-#                 last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime('%d-%m-%Y %H:%M:%S')
-#                 last_modify_time = datetime.fromtimestamp(file_stat.st_mtime).strftime('%d-%m-%Y %H:%M:%S')
-#                 size_bytes = file_stat.st_size
-#                 file_list.append({
-#                     'filepath': filepath,
-#                     'created_at': creation_time,
-#                     'last_accessed_at': last_access_time,
-#                     'last_modified_at': last_modify_time,
-#                     'size_bytes': size_bytes
-#                 })
-#         return file_list
