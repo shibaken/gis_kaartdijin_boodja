@@ -10,7 +10,6 @@ from django.contrib import auth
 from django import conf
 from django.core.cache import cache
 from owslib.wms import WebMapService
-import psycopg2
 import json
 
 # Internal
@@ -506,3 +505,10 @@ class GeoServerQueue(base.TemplateView):
     
     # Template name
     template_name = "govapp/geoserverqueue.html"
+
+
+class CDDPQueueView(base.TemplateView):
+    """ Show CDDP Queue status """
+    
+    # Template name
+    template_name = "govapp/cddpqueue.html"
