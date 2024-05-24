@@ -59,7 +59,8 @@ class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
 class GeoServerRolePermissionInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerRolePermission
     extra = 1  # Number of empty forms to display
-    fields = ['workspace', 'read', 'write', 'admin', 'active']
+    # fields = ['workspace', 'read', 'write', 'admin', 'active']
+    fields = ['geoserver_role', 'read', 'write', 'admin', 'active']
 
 
 class GeoServerGroupRoleInline(admin.TabularInline):
@@ -71,6 +72,11 @@ class GeoServerGroupRoleInline(admin.TabularInline):
 class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'active', 'created_at',)
     list_display_links = ('id', 'name')
+    # inlines = [GeoServerRolePermissionInline,]
+
+
+class WorkspaceAdmin(reversion.admin.VersionAdmin):
+
     inlines = [GeoServerRolePermissionInline,]
 
 
@@ -104,9 +110,8 @@ admin.site.register(models.publish_channels.CDDPPublishChannel, reversion.admin.
 admin.site.register(models.publish_channels.GeoServerPublishChannel, GeoServerPublishChannelAdmin)
 admin.site.register(models.publish_entries.PublishEntry, PublishEntryAdmin)
 admin.site.register(models.notifications.EmailNotification, reversion.admin.VersionAdmin)
-admin.site.register(models.workspaces.Workspace, reversion.admin.VersionAdmin)
+admin.site.register(models.workspaces.Workspace, WorkspaceAdmin)
 admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
-# admin.site.register(models.geoserver_roles_groups.GeoServerGroupRole, GeoServerGroupRoleAdmin)
