@@ -11,6 +11,7 @@ cache/
 data/
 data_storage/
 pending_imports/*
+sync/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

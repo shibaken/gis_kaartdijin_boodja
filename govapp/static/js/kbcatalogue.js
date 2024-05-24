@@ -545,8 +545,6 @@ var kbcatalogue = {
                 }
 
                 $( ".publish-to-geoserver-btn" ).click(function() {
-                    console.log("Publish Geoserver");
-                    console.log($(this).attr('data-json'));
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
 
@@ -554,8 +552,6 @@ var kbcatalogue = {
                 });     
                 
                 $( ".publish-to-cddp-btn" ).click(function() {
-                    console.log("Publish Geoserver");
-                    console.log($(this).attr('data-json'));
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
                     kbpublish.publish_to_cddp(btndata.id);
@@ -565,8 +561,6 @@ var kbcatalogue = {
                 $('#save-publish-popup-error').html("Error Loading publish data");
                 $('#save-publish-popup-error').show();
                 $('#save-publish-tbody').html('');
-
-                console.log('Error Loading publish data');
             },
         });    
     },
