@@ -2,7 +2,6 @@
 
 
 # Third-Party
-from datetime import datetime
 import os
 from django import http
 from django import shortcuts
@@ -11,7 +10,6 @@ from django.contrib import auth
 from django import conf
 from django.core.cache import cache
 from owslib.wms import WebMapService
-import psycopg2
 import json
 
 # Internal
@@ -80,40 +78,6 @@ class OldCatalogueVue(base.TemplateView):
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
-
-
-class CDDPQueueView(base.TemplateView):
-    template_name = "govapp/cddp_queue.html"
-
-    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
-        pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
-
-        file_list = self.get_files_with_metadata(pathToFolder)
-
-        context = {'file_list': file_list}
-        return shortcuts.render(request, self.template_name, context)
-
-    def get_files_with_metadata(self, directory):
-        """
-        Function to retrieve file paths and metadata for files within the specified directory.
-        """
-        file_list = []
-        for dirpath, _, filenames in os.walk(directory):
-            for filename in filenames:
-                filepath = os.path.join(dirpath, filename)
-                file_stat = os.stat(filepath)
-                creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime('%d-%m-%Y %H:%M:%S')
-                last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime('%d-%m-%Y %H:%M:%S')
-                last_modify_time = datetime.fromtimestamp(file_stat.st_mtime).strftime('%d-%m-%Y %H:%M:%S')
-                size_bytes = file_stat.st_size
-                file_list.append({
-                    'filepath': filepath,
-                    'created_at': creation_time,
-                    'last_accessed_at': last_access_time,
-                    'last_modified_at': last_modify_time,
-                    'size_bytes': size_bytes
-                })
-        return file_list
 
 
 class PendingImportsView(base.TemplateView):

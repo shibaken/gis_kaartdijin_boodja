@@ -2,18 +2,22 @@
 
 
 # Third-Party
+import os
 from datetime import datetime
 from django import shortcuts
 from django.db import transaction
 from django.contrib import auth
+from django import http
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 # Local
+from govapp import settings
 from govapp.common import mixins
 from govapp.common import utils
 from govapp.apps.accounts import permissions as accounts_permissions
@@ -28,7 +32,7 @@ from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.catalogue.models import catalogue_entries
 
 # Typing
-from typing import cast
+from typing import cast, Any
 
 
 # Shortcuts
@@ -734,3 +738,118 @@ class GeoServerQueueViewSet(
     queryset = models.geoserver_queues.GeoServerQueue.objects.all().order_by('-id')
     serializer_class = serializers.publish_channels.GeoServerQueueSerializer
     permission_classes = [accounts_permissions.IsInAdministratorsGroup]
+
+
+class CDDPContentsViewSet(viewsets.ViewSet):
+    """
+    ViewSet for handling files within a specified directory.
+    Provides list, retrieve, and delete functionalities.
+    """
+    pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
+
+    def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        """
+        List all files within the directory along with their metadata.
+        """
+        try:
+            file_list = self._get_files_with_metadata(self.pathToFolder)
+            return Response(file_list)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _get_files_with_metadata(self, directory: str) -> list:
+        """
+        Retrieve file paths and metadata for files within the specified directory.
+        """
+        file_list = []
+        datetime_format = '%d-%m-%Y %H:%M:%S'
+        try:
+            for dirpath, _, filenames in os.walk(directory):
+                for filename in filenames:
+                    filepath = os.path.join(dirpath, filename)
+                    file_stat = os.stat(filepath)
+                    creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime(datetime_format)
+                    last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime(datetime_format)
+                    last_modify_time = datetime.fromtimestamp(file_stat.st_mtime).strftime(datetime_format)
+                    size_bytes = file_stat.st_size
+                    file_list.append({
+                        'filepath': filepath,
+                        'created_at': creation_time,
+                        'last_accessed_at': last_access_time,
+                        'last_modified_at': last_modify_time,
+                        'size_bytes': size_bytes
+                    })
+        except Exception as e:
+            raise RuntimeError(f"Error while retrieving file metadata: {str(e)}")
+        return file_list
+
+    @decorators.action(detail=False, methods=['get'], url_path='retrieve-file')
+    def retrieve_file(self, request: http.HttpRequest) -> http.HttpResponse:
+        """
+        Retrieve the specified file's content.
+        """
+        filepath = request.query_params.get('filepath')
+        if not filepath:
+            return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'rb') as file:
+                    return http.HttpResponse(file.read(), content_type='application/octet-stream')
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            raise http.Http404("File does not exist")
+
+    @decorators.action(detail=False, methods=['delete'], url_path='delete-file')
+    def destroy_file(self, request: http.HttpRequest) -> http.HttpResponse:
+        """
+        Delete the specified file.
+        """
+        filepath = request.query_params.get('filepath')
+        if not filepath:
+            return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            raise http.Http404("File does not exist")
+
+###############################
+
+# class CDDPQueueView(base.TemplateView):
+#     template_name = "govapp/cddp_queue.html"
+
+#     def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+#         pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
+
+#         file_list = self.get_files_with_metadata(pathToFolder)
+
+#         context = {'file_list': file_list}
+#         return shortcuts.render(request, self.template_name, context)
+
+#     def get_files_with_metadata(self, directory):
+#         """
+#         Function to retrieve file paths and metadata for files within the specified directory.
+#         """
+#         file_list = []
+#         for dirpath, _, filenames in os.walk(directory):
+#             for filename in filenames:
+#                 filepath = os.path.join(dirpath, filename)
+#                 file_stat = os.stat(filepath)
+#                 creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime('%d-%m-%Y %H:%M:%S')
+#                 last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime('%d-%m-%Y %H:%M:%S')
+#                 last_modify_time = datetime.fromtimestamp(file_stat.st_mtime).strftime('%d-%m-%Y %H:%M:%S')
+#                 size_bytes = file_stat.st_size
+#                 file_list.append({
+#                     'filepath': filepath,
+#                     'created_at': creation_time,
+#                     'last_accessed_at': last_access_time,
+#                     'last_modified_at': last_modify_time,
+#                     'size_bytes': size_bytes
+#                 })
+#         return file_list
