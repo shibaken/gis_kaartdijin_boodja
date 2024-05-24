@@ -174,7 +174,8 @@ class PublishView(base.TemplateView):
         publish_workspace_list = [{'id': ws.id, 'name': ws.name} for ws in publish_workspaces]
         geoserver_pools = GeoServerPool.objects.filter(enabled=True)
 
-        # START - To be improved later todo a reverse table join      
+        ### START - To be improved later todo a reverse table join      
+        # This code lists CatalogueEntries not associated with any PublishEntry, along with CatalogueEntries associated with a specific PublishEntry.
         ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
         pe_obj = publish_entries_models.PublishEntry.objects.all()
 
@@ -188,7 +189,7 @@ class PublishView(base.TemplateView):
             if publish_entry_obj.catalogue_entry:  
                 if ce.id == publish_entry_obj.catalogue_entry.id:
                     catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
-        # END - To be improved later todo a reverse table join     
+        ### END - To be improved later todo a reverse table join     
 
         system_users_list = []
         # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
@@ -206,6 +207,8 @@ class PublishView(base.TemplateView):
 
         context['catalogue_entry_list'] = catalogue_entry_list
         context['publish_entry_obj'] = publish_entry_obj
+        context['publishable_to_cddp'] = publish_entry_obj.publishable_to_cddp
+        context['publishable_to_ftp'] = publish_entry_obj.publishable_to_ftp
         context['custodians_obj'] = custodians_obj
         context['system_users'] = system_users_list
         context['publish_id'] = self.kwargs['pk']

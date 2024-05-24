@@ -100,6 +100,14 @@ class PublishEntry(mixins.RevisionedMixin):
         # Retrieve and Return
         return self.catalogue_entry.name
 
+    @property
+    def publishable_to_cddp(self):
+        return True if self.catalogue_entry.type in catalogue_entries.CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_CDDP else False
+
+    @property
+    def publishable_to_ftp(self):
+        return True if self.catalogue_entry.type in catalogue_entries.CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP else False
+
     @classmethod
     def from_request(cls, request: request.Request) -> Optional["PublishEntry"]:
         """Retrieves a possible Publish Entry from request data.
@@ -169,7 +177,6 @@ class PublishEntry(mixins.RevisionedMixin):
         else:
             # Send Success Emails
             notifications_utils.publish_entry_publish_success(self)
-
 
     def publish_ftp(self, symbology_only: bool = False) -> None:
         """Publishes to FTP channel if applicable.

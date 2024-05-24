@@ -55,6 +55,17 @@ class CatalogueEntryType(models.IntegerChoices):
     SUBSCRIPTION_WMS = 3
     SUBSCRIPTION_POSTGIS = 4
     SUBSCRIPTION_QUERY = 5
+    
+CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_CDDP = [
+    CatalogueEntryType.SPATIAL_FILE,
+    CatalogueEntryType.SUBSCRIPTION_QUERY,
+]
+
+CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP = [
+    CatalogueEntryType.SPATIAL_FILE,
+    CatalogueEntryType.SUBSCRIPTION_QUERY,
+]
+
 
 @reversion.register(
     follow=(
