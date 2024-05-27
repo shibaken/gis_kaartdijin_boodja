@@ -159,6 +159,7 @@ class GeoServerSyncExcutor:
             # Sync
             geoserver_obj.synchronize_roles(geoserver_role_names)
             geoserver_obj.synchronize_groups(geoserver_group_names)
+            geoserver_obj.synchronize_rules()
 
 
     def sync_based_on_gis(self):

@@ -2,10 +2,13 @@
 
 
 # Third-Party
+from functools import wraps
 from django.db import models
 
 # Typing
 from typing import Any, Optional
+
+import httpx
 
 
 def filtered_manager(**kwargs: Any) -> models.manager.BaseManager:
@@ -34,3 +37,23 @@ def string_to_boolean(value: Optional[str]) -> bool:
     """
     # Parse and Return
     return True if value and value.lower() == "true" else False
+
+
+def handle_http_exceptions(logger):
+    """Decorator factory to handle HTTP exceptions and log them with the given logger."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except httpx.HTTPStatusError as e:
+                logger.error(f'HTTP status error in {func.__name__}: {e.response.status_code} {e.response.text}')
+                raise
+            except httpx.RequestError as exc:
+                logger.error(f"An error occurred while requesting {exc.request.url!r}: {exc}")
+                raise
+            except httpx.RequestError as e:
+                logger.error(f'Request error in {func.__name__}: {e}')
+                raise
+        return wrapper
+    return decorator
