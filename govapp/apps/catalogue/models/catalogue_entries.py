@@ -391,6 +391,3 @@ class CatalogueEntry(mixins.RevisionedMixin):
                pass
            else:
                layer_metadata.LayerMetadata.objects.create(catalogue_entry=self,created_at=datetime.now())
-
-
-        

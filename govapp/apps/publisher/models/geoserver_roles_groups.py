@@ -1,3 +1,4 @@
+import json
 import logging
 import reversion
 
@@ -75,3 +76,30 @@ class GeoServerRolePermission(mixins.RevisionedMixin):
     class Meta:
         verbose_name = "GeoServer RolePermission"
         verbose_name_plural = "GeoServer RolePermissions"
+
+    @staticmethod
+    def get_rules():
+        from django.db.models import Prefetch
+
+        # Prefetch related data to minimize database hits
+        permissions = GeoServerRolePermission.objects.filter(active=True).select_related(
+            'geoserver_role',
+            'workspace'
+        ).prefetch_related(
+            Prefetch('workspace__publish_channels__publish_entry__catalogue_entry')
+        )
+        
+        rules = {}
+        for perm in permissions:
+            if perm.workspace:
+                # Since we're fetching related objects, ensure they exist
+                catalogue_entry = perm.workspace.publish_channels.first().publish_entry.catalogue_entry if perm.workspace.publish_channels.exists() else None
+                if catalogue_entry:
+                    if perm.read:
+                        rules[f'{perm.workspace.name}.{catalogue_entry.name}.r'] = perm.geoserver_role.name
+                    if perm.write:
+                        rules[f'{perm.workspace.name}.{catalogue_entry.name}.w'] = perm.geoserver_role.name
+                    if perm.admin:
+                        rules[f'{perm.workspace.name}.{catalogue_entry.name}.a'] = perm.geoserver_role.name
+        log.info(f'Rules set in the database: {json.dumps(rules, indent=4)}')
+        return rules

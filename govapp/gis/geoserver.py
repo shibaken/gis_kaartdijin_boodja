@@ -820,10 +820,12 @@ class GeoServer:
             log.error(f"Failed to update security settings: {response.status_code}, Response: {response.text}")
 
     def synchronize_rules(self):
+        from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRolePermission
+
+        new_rules = GeoServerRolePermission.get_rules()
         existing_rules = self.fetch_rules()
-        rules = {
-        }
-        updated_rules = self.add_rules(rules)
+
+        # updated_rules = self.add_rules(rules)
 
     @handle_http_exceptions(log)
     def fetch_rules(self):
@@ -832,8 +834,8 @@ class GeoServer:
         response = httpx.get(url, auth=(self.username, self.password))
         response.raise_for_status()
         rules_data = response.json()
-        log.info(f'Successfully fetched ACL rules: [{rules_data}] from the geoserver: [{self.service_url}].')
-        return response.json()
+        log.info(f'Successfully fetched ACL rules: [{json.dumps(rules_data, indent=4)}] from the geoserver: [{self.service_url}].')
+        return rules_data
 
     @handle_http_exceptions(log)
     def add_rules(self, rules):
@@ -843,18 +845,19 @@ class GeoServer:
         headers = {'Content-Type': 'application/json'}
         response = httpx.post(url, json=rules, headers=headers, auth=(self.username, self.password))
         response.raise_for_status()
-        log.info(f'Successfully added ACL rules: [{rules}].')
-        return response.json()
+        log.info(f'Successfully added ACL rules: [{json.dumps(rules)}].')
+        return {}
 
     @handle_http_exceptions(log)
     def update_rules(self, rules):
         """Modify a set of access control rules."""
-        url = f"{self.service_url}/rest/security/acl/layers.json"
+        # url = f"{self.service_url}/rest/security/acl/layers.json"
+        url = f"{self.service_url}/rest/security/acl/layers"
         headers = {'Content-Type': 'application/json'}
         response = httpx.put(url, json=rules, headers=headers, auth=(self.username, self.password))
         response.raise_for_status()
-        log.info(f'Successfully updated ACL rules: [{rules}].')
-        return response.json()
+        log.info(f'Successfully updated ACL rules: [{json.dumps(rules)}].')
+        return {}
 
     @handle_http_exceptions(log)
     def delete_rule(self, rule):
@@ -865,7 +868,7 @@ class GeoServer:
         response = httpx.delete(url, auth=(self.username, self.password))
         response.raise_for_status()
         log.info(f'Successfully deleted ACL rule: [{rule}].')
-        return response.json()
+        return {}
 
 # Example usage:
 # geoserver_acl = GeoServerACL('http://example.com/geoserver', 'admin', 'password')
