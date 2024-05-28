@@ -822,27 +822,24 @@ class GeoServer:
     def synchronize_rules(self):
         existing_rules = self.fetch_rules()
         rules = {
-            # "*.*:POST": "*"
-            # "/**:GET": 'ROLE_ADMINISTRATOR'
-            # "/**:GET": 'Role2'
         }
         updated_rules = self.add_rules(rules)
 
     @handle_http_exceptions(log)
     def fetch_rules(self):
         """Fetch all access control rules."""
-        url = f"{self.service_url}/rest/security/acl/rest.json"
+        url = f"{self.service_url}/rest/security/acl/layers.json"
         response = httpx.get(url, auth=(self.username, self.password))
         response.raise_for_status()
         rules_data = response.json()
-        log.info(f'Successfully fetched ACL rules: [{rules_data}].')
+        log.info(f'Successfully fetched ACL rules: [{rules_data}] from the geoserver: [{self.service_url}].')
         return response.json()
 
     @handle_http_exceptions(log)
     def add_rules(self, rules):
         """Add a set of access control rules."""
         # url = f"{self.service_url}/rest/security/acl/rest.json"
-        url = f"{self.service_url}/rest/security/acl/rest"
+        url = f"{self.service_url}/rest/security/acl/layers"
         headers = {'Content-Type': 'application/json'}
         response = httpx.post(url, json=rules, headers=headers, auth=(self.username, self.password))
         response.raise_for_status()
@@ -852,7 +849,7 @@ class GeoServer:
     @handle_http_exceptions(log)
     def update_rules(self, rules):
         """Modify a set of access control rules."""
-        url = f"{self.service_url}/rest/security/acl/rest.json"
+        url = f"{self.service_url}/rest/security/acl/layers.json"
         headers = {'Content-Type': 'application/json'}
         response = httpx.put(url, json=rules, headers=headers, auth=(self.username, self.password))
         response.raise_for_status()

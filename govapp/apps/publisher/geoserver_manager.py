@@ -138,13 +138,26 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
 
 
 class GeoServerSyncExcutor:
-    def sync_roles_groups_on_gis(self):
-        log.info(f"Sync roles and groups...")
+    def sync_roles_on_gis(self):
+        log.info(f"Sync roles...")
         
         # List of the active role names in the KB
         geoserver_role_names = GeoServerRole.objects.filter(active=True).values_list('name', flat=True)
         log.info(f'Roles in KB: [{geoserver_role_names}]')
 
+        # List of the active geoservers in the KB
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this enabled filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+
+        for geoserver_info in geoserver_pool:  # Perform per geoserver
+            # Get GeoServer obj
+            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+
+            # Sync
+            geoserver_obj.synchronize_roles(geoserver_role_names)
+
+    def sync_groups_on_gis(self):
+        log.info(f"Sync groups...")
+        
         # List of the active group names in the KB
         geoserver_group_names = GeoServerGroup.objects.filter(active=True).values_list('name', flat=True)
         log.info(f'Groups in KB: [{geoserver_group_names}]')
@@ -157,12 +170,23 @@ class GeoServerSyncExcutor:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
 
             # Sync
-            geoserver_obj.synchronize_roles(geoserver_role_names)
             geoserver_obj.synchronize_groups(geoserver_group_names)
+
+    def sync_rules_on_gis(self):
+        log.info(f"Sync rules...")
+
+        # List of the active geoservers in the KB
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this enabled filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+
+        for geoserver_info in geoserver_pool:  # Perform per geoserver
+            # Get GeoServer obj
+            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+
+            # Sync
             geoserver_obj.synchronize_rules()
 
 
-    def sync_based_on_gis(self):
+    def sync_layers(self):
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")
         
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
