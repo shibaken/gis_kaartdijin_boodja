@@ -186,6 +186,8 @@ class GeoServerSyncExcutor:
             # Sync
             geoserver_obj.synchronize_rules(new_rules)
 
+            break
+
 
     def sync_layers(self):
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")

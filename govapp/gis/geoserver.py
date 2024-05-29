@@ -830,11 +830,19 @@ class GeoServer:
         log.info(f'rules to create: {dict1_only_items}')
         log.info(f'rules to delete: {dict2_only_items}')
 
-        # TODO: add, update and delete rules
-        temp_rule = {"private.SPATIAL_TEST.w": "Role4"}
-        self.delete_rule(temp_rule)
+        # self.update_rules({"private.SPATIAL_TEST.r": "Role2,Role4"})
+        # self.create_rules({'workspace20240521.*.w': "Role4,Role2,ROLE_ANONYMOUS"})
+        # self.delete_rule("public.*.r")
 
-        # updated_rules = self.add_rules(rules)
+        # Create
+        self.create_rules(dict1_only_items)
+
+        # Update
+        # self.create_rules(common_items)
+
+        # Delete
+        # for key in dict2_only_items.keys():
+        #     self.delete_rule(key)
 
     @handle_http_exceptions(log)
     def fetch_rules(self):
@@ -849,7 +857,6 @@ class GeoServer:
     @handle_http_exceptions(log)
     def create_rules(self, rules):
         """Add a set of access control rules."""
-        # url = f"{self.service_url}/rest/security/acl/rest.json"
         url = f"{self.service_url}/rest/security/acl/layers"
         headers = {'Content-Type': 'application/json'}
         response = httpx.post(url, json=rules, headers=headers, auth=(self.username, self.password))
@@ -860,7 +867,6 @@ class GeoServer:
     @handle_http_exceptions(log)
     def update_rules(self, rules):
         """Modify a set of access control rules."""
-        # url = f"{self.service_url}/rest/security/acl/layers.json"
         url = f"{self.service_url}/rest/security/acl/layers"
         headers = {'Content-Type': 'application/json'}
         response = httpx.put(url, json=rules, headers=headers, auth=(self.username, self.password))
@@ -869,13 +875,12 @@ class GeoServer:
         return {}
 
     @handle_http_exceptions(log)
-    def delete_rule(self, rules):
+    def delete_rule(self, key):
         """Delete a specific access control rule."""
-        for key in rules.keys():
-            url = f"{self.service_url}/rest/security/acl/layers/{key}"
-            response = httpx.delete(url, auth=(self.username, self.password))
-            response.raise_for_status()
-            log.info(f'Successfully deleted ACL rule: key=[{key}].')
+        url = f"{self.service_url}/rest/security/acl/layers/{key}"
+        response = httpx.delete(url, auth=(self.username, self.password))
+        response.raise_for_status()
+        log.info(f'Successfully deleted ACL rule: key=[{key}].')
         return {}
 
 # Example usage:
