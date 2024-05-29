@@ -57,3 +57,28 @@ def handle_http_exceptions(logger):
                 raise
         return wrapper
     return decorator
+
+
+def calculate_dict_differences(dict1, dict2):
+    """
+    Calculate items that are common to both dictionaries (with the same values)
+    and items that are only contained in one of the dictionaries.
+
+    :param dict1: First dictionary
+    :param dict2: Second dictionary
+    :return: Tuple of three dictionaries: common_items, dict1_only_items, dict2_only_items
+    """
+    
+    # Calculate common keys between both dictionaries
+    common_keys = set(dict1.keys()) & set(dict2.keys())
+
+    # Calculate common items (with the same values in both dictionaries)
+    common_items = {key: dict1[key] for key in common_keys if dict1[key] == dict2[key]}
+
+    # Calculate items present only in dict1
+    dict1_only_items = {key: dict1[key] for key in set(dict1.keys()) - set(dict2.keys())}
+
+    # Calculate items present only in dict2
+    dict2_only_items = {key: dict2[key] for key in set(dict2.keys()) - set(dict1.keys())}
+
+    return common_items, dict1_only_items, dict2_only_items

@@ -16,7 +16,7 @@ from typing import Any, Optional
 from django.template.loader import render_to_string
 
 from govapp import settings
-from govapp.common.utils import handle_http_exceptions
+from govapp.common.utils import calculate_dict_differences, handle_http_exceptions
 
 # Logging
 log = logging.getLogger(__name__)
@@ -819,11 +819,20 @@ class GeoServer:
         else:
             log.error(f"Failed to update security settings: {response.status_code}, Response: {response.text}")
 
-    def synchronize_rules(self):
+    def synchronize_rules(self, new_rules):
         from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRolePermission
 
-        new_rules = GeoServerRolePermission.get_rules()
         existing_rules = self.fetch_rules()
+
+        common_items, dict1_only_items, dict2_only_items = calculate_dict_differences(new_rules, existing_rules)
+
+        log.info(f'rules to update: {common_items}')
+        log.info(f'rules to create: {dict1_only_items}')
+        log.info(f'rules to delete: {dict2_only_items}')
+
+        # TODO: add, update and delete rules
+        temp_rule = {"private.SPATIAL_TEST.w": "Role4"}
+        self.delete_rule(temp_rule)
 
         # updated_rules = self.add_rules(rules)
 
@@ -838,7 +847,7 @@ class GeoServer:
         return rules_data
 
     @handle_http_exceptions(log)
-    def add_rules(self, rules):
+    def create_rules(self, rules):
         """Add a set of access control rules."""
         # url = f"{self.service_url}/rest/security/acl/rest.json"
         url = f"{self.service_url}/rest/security/acl/layers"
@@ -860,14 +869,13 @@ class GeoServer:
         return {}
 
     @handle_http_exceptions(log)
-    def delete_rule(self, rule):
+    def delete_rule(self, rules):
         """Delete a specific access control rule."""
-        # Encode slashes in the rule name
-        encoded_rule = rule.replace('/', '%2F')
-        url = f"{self.service_url}/rest/security/acl/layers/{encoded_rule}"
-        response = httpx.delete(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f'Successfully deleted ACL rule: [{rule}].')
+        for key in rules.keys():
+            url = f"{self.service_url}/rest/security/acl/layers/{key}"
+            response = httpx.delete(url, auth=(self.username, self.password))
+            response.raise_for_status()
+            log.info(f'Successfully deleted ACL rule: key=[{key}].')
         return {}
 
 # Example usage:

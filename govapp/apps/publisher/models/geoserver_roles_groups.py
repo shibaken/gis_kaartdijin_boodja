@@ -78,6 +78,25 @@ class GeoServerRolePermission(mixins.RevisionedMixin):
         verbose_name_plural = "GeoServer RolePermissions"
 
     @staticmethod
+    def _add_or_update_rule(rules, key, value):
+        """
+        Add a new key-value pair to the dictionary. If the key already exists,
+        append the new value to the existing value, separated by a comma.
+
+        :param rules: Dictionary to update
+        :param key: Key to add or update
+        :param value: Value to add or append
+        """
+        if key in rules:
+            # Append the new value to the existing value, separated by a comma
+            rules[key] = f"{rules[key]},{value}"
+        else:
+            # Add the new key-value pair to the dictionary
+            rules[key] = value
+        
+        return rules
+
+    @staticmethod
     def get_rules():
         from django.db.models import Prefetch
 
@@ -96,10 +115,10 @@ class GeoServerRolePermission(mixins.RevisionedMixin):
                 catalogue_entry = perm.workspace.publish_channels.first().publish_entry.catalogue_entry if perm.workspace.publish_channels.exists() else None
                 if catalogue_entry:
                     if perm.read:
-                        rules[f'{perm.workspace.name}.{catalogue_entry.name}.r'] = perm.geoserver_role.name
+                        rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.{catalogue_entry.name}.r", perm.geoserver_role.name)
                     if perm.write:
-                        rules[f'{perm.workspace.name}.{catalogue_entry.name}.w'] = perm.geoserver_role.name
+                        rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.{catalogue_entry.name}.w", perm.geoserver_role.name)
                     if perm.admin:
-                        rules[f'{perm.workspace.name}.{catalogue_entry.name}.a'] = perm.geoserver_role.name
+                        rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.{catalogue_entry.name}.a", perm.geoserver_role.name)
         log.info(f'Rules set in the database: {json.dumps(rules, indent=4)}')
         return rules

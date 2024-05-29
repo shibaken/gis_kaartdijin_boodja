@@ -11,10 +11,10 @@ from django.contrib import auth
 
 # Local
 from govapp.apps.publisher.models import geoserver_queues
+from govapp.apps.publisher.models import geoserver_roles_groups
 from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models import geoserver_pools
 from govapp.apps.publisher import geoserver_publisher
-from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntry 
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerRole
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 from govapp.apps.publisher.models.workspaces import Workspace
@@ -177,13 +177,14 @@ class GeoServerSyncExcutor:
 
         # List of the active geoservers in the KB
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)  # Do we need this enabled filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+        new_rules = geoserver_roles_groups.GeoServerRolePermission.get_rules()
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             # Get GeoServer obj
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
 
             # Sync
-            geoserver_obj.synchronize_rules()
+            geoserver_obj.synchronize_rules(new_rules)
 
 
     def sync_layers(self):
