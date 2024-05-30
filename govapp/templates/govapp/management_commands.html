@@ -63,25 +63,67 @@
                                      </td>
                               </tr>        
                               <tr>
-                                    <td>Run Sync between GeoServers and GIS</td>
-                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync'>RUN</button>
-                                      <button class="btn btn-primary btn-sm" type="button" id='run-geoserver-sync-loader' disabled>
+                                    <td>Run Sync Layers</td>
+                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-layers'>RUN</button>
+                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-layers-loader' disabled>
                                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                           <span class="visually-hidden">Loading...</span>
-                                        </button>
-
-
-                                     </td>
-                                     <td>
-                                      <span id='geoserver-sync-job-response-success' class='text-success'></span>
-                                      <span id='geoserver-sync-job-response-error' class='text-danger'></span>
-                                     </td>
+                                          </button>
+                                    </td>
+                                    <td>
+                                          <span id='geoserver-sync-layers-job-response-success' class='text-success'></span>
+                                          <span id='geoserver-sync-layers-job-response-error' class='text-danger'></span>
+                                    </td>
+                              </tr>                        
+                              <tr>
+                                    <td>Run Sync Roles</td>
+                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-roles'>RUN</button>
+                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-roles-loader' disabled>
+                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                          <span class="visually-hidden">Loading...</span>
+                                          </button>
+                                    </td>
+                                    <td>
+                                          <span id='geoserver-sync-roles-job-response-success' class='text-success'></span>
+                                          <span id='geoserver-sync-roles-job-response-error' class='text-danger'></span>
+                                    </td>
+                              </tr>                        
+                              <tr>
+                                    <td>Run Sync Groups</td>
+                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-groups'>RUN</button>
+                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-groups-loader' disabled>
+                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                          <span class="visually-hidden">Loading...</span>
+                                          </button>
+                                    </td>
+                                    <td>
+                                          <span id='geoserver-sync-groups-job-response-success' class='text-success'></span>
+                                          <span id='geoserver-sync-groups-job-response-error' class='text-danger'></span>
+                                    </td>
+                              </tr>                        
+                              <tr>
+                                    <td>Run Sync Rules</td>
+                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-rules'>RUN</button>
+                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-rules-loader' disabled>
+                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                          <span class="visually-hidden">Loading...</span>
+                                          </button>
+                                    </td>
+                                    <td>
+                                          <span id='geoserver-sync-rules-job-response-success' class='text-success'></span>
+                                          <span id='geoserver-sync-rules-job-response-error' class='text-danger'></span>
+                                    </td>
                               </tr>                        
                                 </tbody>
                           </table>                                  
                     </div>      
               </div>
             </div>
+            <style>
+                  .spinner-btn {
+                        display: none;
+                  }
+            </style>
             <script>
                 kbmanagementcommands.init();
             </script>

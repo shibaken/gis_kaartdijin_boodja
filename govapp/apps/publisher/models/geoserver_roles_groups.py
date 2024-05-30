@@ -1,3 +1,4 @@
+import json
 import logging
 import reversion
 
@@ -75,3 +76,66 @@ class GeoServerRolePermission(mixins.RevisionedMixin):
     class Meta:
         verbose_name = "GeoServer RolePermission"
         verbose_name_plural = "GeoServer RolePermissions"
+    
+    def __str__(self) -> str:
+        return f'{self.workspace},{self.geoserver_role}, r:{self.read}, w:{self.write}, a:{self.admin}'
+
+    @staticmethod
+    def _add_or_update_rule(rules, key, value):
+        """
+        Add a new key-value pair to the dictionary. If the key already exists,
+        append the new value to the existing value, separated by a comma.
+
+        :param rules: Dictionary to update
+        :param key: Key to add or update
+        :param value: Value to add or append
+        """
+        if key in rules:
+            # Append the new value to the existing value, separated by a comma
+            rules[key] = f"{rules[key]},{value}"
+        else:
+            # Add the new key-value pair to the dictionary
+            rules[key] = value
+        
+        return rules
+
+    @staticmethod
+    def get_rules():
+        from django.db.models import Prefetch
+        CREATE_PERMISSION_FOR_LAYER = False  # Considering the relationship from the current GeoServerRole model to other models, it seems that layer permission is not being taken into account.
+
+        # Prefetch related data to minimize database hits
+        permissions = GeoServerRolePermission.objects.filter(active=True).select_related(
+            'geoserver_role',
+            'workspace'
+        ).prefetch_related(
+            Prefetch('workspace__publish_channels__publish_entry__catalogue_entry')
+        )
+        
+        rules = {}
+        log.info(f'Permissions in the database: [{permissions}]')
+        for perm in permissions:
+            if perm.workspace:
+                # Rules for workspaces
+                if perm.read:
+                    rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.*.r", perm.geoserver_role.name)
+                if perm.write:
+                    rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.*.w", perm.geoserver_role.name)
+                if perm.admin:
+                    rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.*.a", perm.geoserver_role.name)
+
+                if CREATE_PERMISSION_FOR_LAYER:
+                    # Rules for layers
+                    for geoserver_publish_channel in perm.workspace.publish_channels.all():
+                        catalogue_entry = geoserver_publish_channel.publish_entry.catalogue_entry if geoserver_publish_channel.publish_entry and geoserver_publish_channel.publish_entry.catalogue_entry else None
+                        if catalogue_entry:
+                            log.info(f'Catalogue entry (layer): [{catalogue_entry}] found for the publish_channel: [{geoserver_publish_channel}] under the workspace: [{perm.workspace}].')
+                            if perm.read:
+                                rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.{catalogue_entry.name}.r", perm.geoserver_role.name)
+                            if perm.write:
+                                rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.{catalogue_entry.name}.w", perm.geoserver_role.name)
+                            # if perm.admin:  # <== No admin type for the layer acl
+                            #     rules = GeoServerRolePermission._add_or_update_rule(rules, f"{perm.workspace.name}.{catalogue_entry.name}.a", perm.geoserver_role.name)
+
+        log.info(f'Rules in the database: {json.dumps(rules, indent=4)}')
+        return rules
