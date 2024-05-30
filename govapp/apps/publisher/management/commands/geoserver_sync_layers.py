@@ -24,5 +24,5 @@ class Command(base.BaseCommand):
 
         # Go!
         # geoserver_queue_manager.GeoServerQueueExcutor().excute()
-        geoserver_manager.GeoServerSyncExcutor().sync_layers()
+        geoserver_manager.GeoServerSyncExcutor().sync_deleted_layers()
         

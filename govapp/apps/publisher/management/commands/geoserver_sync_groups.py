@@ -24,5 +24,5 @@ class Command(base.BaseCommand):
 
         # Go!
         # geoserver_queue_manager.GeoServerQueueExcutor().excute()
-        geoserver_manager.GeoServerSyncExcutor().sync_groups_on_gis()
+        geoserver_manager.GeoServerSyncExcutor().sync_geoserver_groups()
         

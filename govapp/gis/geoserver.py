@@ -761,7 +761,6 @@ class GeoServer:
         response = httpx.post(url, auth=(self.username, self.password))
         response.raise_for_status()
         log.info(f"Created role: {role_name} on the geoserver: [{self.service_url}]")
-        raise
 
     # Function to delete an existing role in GeoServer
     @handle_http_exceptions(log)
@@ -826,23 +825,22 @@ class GeoServer:
 
         common_items, dict1_only_items, dict2_only_items = calculate_dict_differences(new_rules, existing_rules)
 
-        log.info(f'rules to update: {common_items}')
-        log.info(f'rules to create: {dict1_only_items}')
-        log.info(f'rules to delete: {dict2_only_items}')
+        log.info(f'Rules to update: {common_items}')
+        log.info(f'Rules to create: {dict1_only_items}')
+        log.info(f'Rules to delete: {dict2_only_items}')
 
-        # self.update_rules({"private.SPATIAL_TEST.r": "Role2,Role4"})
-        # self.create_rules({'workspace20240521.*.w': "Role4,Role2,ROLE_ANONYMOUS"})
-        # self.delete_rule("public.*.r")
+        # Create new rules
+        if dict1_only_items:
+            self.create_rules(dict1_only_items)
 
-        # Create
-        self.create_rules(dict1_only_items)
+        # Update existing rules
+        if common_items:
+            self.update_rules(common_items)
 
-        # Update
-        # self.create_rules(common_items)
-
-        # Delete
-        # for key in dict2_only_items.keys():
-        #     self.delete_rule(key)
+        # Delete existing rules
+        if dict2_only_items:
+            for key in dict2_only_items.keys():
+                self.delete_rule(key)
 
     @handle_http_exceptions(log)
     def fetch_rules(self):

@@ -6,6 +6,7 @@ from typing import Any
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib import admin, auth
+from django.utils.safestring import mark_safe
 import reversion.admin
 
 # Local
@@ -76,9 +77,41 @@ class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
 
 
 class WorkspaceAdmin(reversion.admin.VersionAdmin):
-
+    list_display = ('id', 'name', 'display_geoserver_roles')
+    list_display_links = ('id', 'name')
     inlines = [GeoServerRolePermissionInline,]
 
+    # def get_geoserver_roles(self, obj):
+    #     geoserver_role_permissions = models.geoserver_roles_groups.GeoServerRolePermission.objects.filter(workspace=obj)
+    #     lines = []
+    #     for perm in geoserver_role_permissions:
+    #         perm_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+    #         role_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.geoserver_role.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+    #         role_name = perm.geoserver_role.name
+    #         read_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.read else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+    #         write_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.write else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+    #         admin_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.admin else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+    #         lines.append(f'{perm_active_icon}: {role_active_icon}{role_name} r{read_icon} w{write_icon} a{admin_icon}')
+    #     return mark_safe('<br />'.join(lines))
+    # get_geoserver_roles.short_description = 'roles'
+
+    def display_geoserver_roles(self, obj):
+        geoserver_role_permissions = models.geoserver_roles_groups.GeoServerRolePermission.objects.filter(workspace=obj)
+        table_rows = []
+        for index, perm in enumerate(geoserver_role_permissions):
+            if index == 0:
+                table_rows.append('<tr><th style="width: 20%;text-align: center;">Permission Active</th><th style="width: 20%;text-align: center;">Role Active</th><th style="width: 30%;">Role Name</th><th style="width: 10%;text-align: center;">Read</th><th style="width: 10%;text-align: center;">Write</th><th style="width: 10%;text-align: center;">Admin</th></tr>')
+            perm_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+            role_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.geoserver_role.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+            role_name = perm.geoserver_role.name
+            read_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.read else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+            write_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.write else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+            admin_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.admin else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+            table_row = f'<tr><td style="text-align: center;">{perm_active_icon}</td><td style="text-align: center;">{role_active_icon}</td><td>{role_name}</td><td style="text-align: center;">{read_icon}</td><td style="text-align: center;">{write_icon}</td><td style="text-align: center;">{admin_icon}</td></tr>'
+            table_rows.append(table_row)
+        table_html = f'<table>{"".join(table_rows)}</table>'
+        return mark_safe(table_html)
+    display_geoserver_roles.short_description = 'Geoserver Roles and Permissions'
 
 class GeoServerGroupForm(forms.ModelForm):
     # Meta class to specify the model and fields to include in the form

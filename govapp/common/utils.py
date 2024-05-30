@@ -1,5 +1,6 @@
 """Kaartdijin Boodja Django Application Utility Functions."""
 
+import re
 
 # Third-Party
 from functools import wraps
@@ -9,6 +10,11 @@ from django.db import models
 from typing import Any, Optional
 
 import httpx
+
+def remove_html_tags(text):
+    clean_text = re.sub('<style.*?</style>', '', clean_text)
+    clean_text = re.sub('<.*?>', '', text)
+    return clean_text
 
 
 def filtered_manager(**kwargs: Any) -> models.manager.BaseManager:
@@ -47,13 +53,10 @@ def handle_http_exceptions(logger):
             try:
                 return func(*args, **kwargs)
             except httpx.HTTPStatusError as e:
-                logger.error(f'HTTP status error in {func.__name__}: {e.response.status_code} {e.response.text}')
+                logger.error(f'HTTP status error in {func.__name__}: {e.response.status_code} {(e.response.text)}')
                 raise
             except httpx.RequestError as exc:
-                logger.error(f"An error occurred while requesting {exc.request.url!r}: {exc}")
-                raise
-            except httpx.RequestError as e:
-                logger.error(f'Request error in {func.__name__}: {e}')
+                logger.error(f"An error occurred while requesting {exc.request.url!r}: {(exc)}")
                 raise
         return wrapper
     return decorator
