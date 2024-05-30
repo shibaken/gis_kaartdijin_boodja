@@ -223,7 +223,7 @@ LOGGING = {
         # Log SQL
         'django.db.backends': {
             'level': 'DEBUG',
-            'handlers': ['console', 'file_for_sql'],
+            'handlers': ['file_for_sql'],
             'propagate': False,
         },
     }
