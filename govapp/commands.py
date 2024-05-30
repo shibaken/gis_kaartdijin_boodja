@@ -2,6 +2,7 @@
 
 
 # Standard
+import json
 import logging
 
 # Third-Party
@@ -14,6 +15,7 @@ from rest_framework import response
 from rest_framework import routers
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 
 # Local
 from govapp.apps.accounts import permissions
@@ -150,7 +152,18 @@ class ManagementCommands(viewsets.ViewSet):
         # Handle Errors
         try:
             # Run Management Command
-            management.call_command("geoserver_sync")
+            if 'items_to_sync' not in request.data:
+                raise ValidationError("frequency_type is required")
+
+            items_to_sync = request.data.get('items_to_sync')
+            if items_to_sync == 'layers':
+                management.call_command("geoserver_sync_layers")
+            elif items_to_sync == 'roles':
+                management.call_command("geoserver_sync_roles")
+            elif items_to_sync == 'groups':
+                management.call_command("geoserver_sync_groups")
+            elif items_to_sync == 'rules':
+                management.call_command("geoserver_sync_rules")
 
         except Exception as exc:
             # Log
@@ -158,6 +171,7 @@ class ManagementCommands(viewsets.ViewSet):
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+
     
 # Router
 router = routers.DefaultRouter()

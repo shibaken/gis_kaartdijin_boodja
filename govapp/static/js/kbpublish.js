@@ -1060,21 +1060,39 @@ var kbpublish = {
                             html+= " <td>"+kbpublish.var.publish_status[response.results[i].status]+"</td>";
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";
-                            html+= " <td class='text-end'>";
+                            // html+= " <td class='text-end'>";
+                            html+= " <td>";
+                            html+= "<div class='row  d-flex justify-content-center align-items-center'>";
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
+                                    html+= '<div class="col-sm-2">'
                                     if (kbpublish.var.catalogue_entry_type_allowed_for_ftp.includes(response.results[i].catalogue_type))
-                                        html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>&nbsp;";
-                                    html+= " <button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>&nbsp;";
+                                        html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>";
+                                    html += '</div>'
+
+                                    html+= '<div class="col-sm-3">'
+                                    html+= " <button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>";
+                                    html += '</div>'
+
+                                    html+= '<div class="col-sm-3">'
                                     if (kbpublish.var.catalogue_entry_type_allowed_for_cddp.includes(response.results[i].catalogue_type))
-                                        html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>&nbsp;";                        
+                                        html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>";                        
+                                    html += '</div>'
                                 }
-                                html+= " <button class='btn btn-primary btn-sm publish-table-button' id='publish-external-loading-"+response.results[i].id+"' type='button' disabled><span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span class='visually-hidden'>Loading...</span></button>&nbsp;";
-                                html+= " <button class='btn btn-success btn-sm publish-table-button' id='publish-external-success-"+response.results[i].id+"' type='button' disabled><i class='bi bi-check'></i></button>&nbsp;";
-                                html+= " <button class='btn btn-danger btn-sm publish-table-button' id='publish-external-error-"+response.results[i].id+"' type='button' disabled><i class='bi bi-x-lg'></i></button>&nbsp;";
+                                html+= " <button class='btn btn-primary btn-sm publish-table-button col-sm-1' id='publish-external-loading-"+response.results[i].id+"' type='button' disabled><span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span class='visually-hidden'>Loading...</span></button>";
+                                html+= " <button class='btn btn-success btn-sm publish-table-button col-sm-1' id='publish-external-success-"+response.results[i].id+"' type='button' disabled><i class='bi bi-check'></i></button>";
+                                html+= " <button class='btn btn-danger btn-sm publish-table-button col-sm-1' id='publish-external-error-"+response.results[i].id+"' type='button' disabled><i class='bi bi-x-lg'></i></button>";
                             }
+                            html+= '<div class="col-sm-1">'
                             html+="  <a class='btn btn-primary btn-sm' href='/publish/"+response.results[i].id+"'>View</a>";
+                            html += '</div>'
+
+                            html+= '<div class="col-sm-1">'
                             html+="  <button class='btn btn-secondary btn-sm'>History</button>";
+                            html += '</div>'
+
+
+                            html+="</div>";
                             html+="  </td>";
                             html+= "<tr>";
                         }
