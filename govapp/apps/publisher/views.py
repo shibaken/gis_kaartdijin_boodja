@@ -750,7 +750,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
     ViewSet for handling files within a specified directory.
     Provides list, retrieve, and delete functionalities.
     """
-    permission_classes=[accounts_permissions.IsAuthenticated]
+    permission_classes=[accounts_permissions.IsAuthenticated, accounts_permissions.IsApiUserGroup]
     pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
 
     def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
@@ -795,6 +795,13 @@ class CDDPContentsViewSet(viewsets.ViewSet):
     def retrieve_file(self, request: http.HttpRequest) -> http.HttpResponse:
         """
         Retrieve the specified file's content.
+
+        Usage:
+        Make a GET request to the '/retrieve-file' endpoint and provide the 'filepath' as a query parameter.
+        Example: /api/publish/cddp-contents/retrieve-file?filepath=/path/to/file.txt
+
+        Parameters:
+        - filepath: The path of the file to retrieve.
         """
         filepath = request.query_params.get('filepath')
         logger.info(f'Retrieving file: [{filepath}]')
@@ -819,6 +826,13 @@ class CDDPContentsViewSet(viewsets.ViewSet):
     def destroy_file(self, request: http.HttpRequest) -> http.HttpResponse:
         """
         Delete the specified file.
+
+        Usage:
+        Make a DELETE request to the '/destroy-file' endpoint and provide the 'filepath' as a query parameter.
+        Example: /api/publish/cddp-contents/destroy-file?filepath=/path/to/file.txt
+
+        Parameters:
+        - filepath: The path of the file to delete.
         """
         filepath = request.query_params.get('filepath')
         logger.info(f'Deleting file: [{filepath}]')
