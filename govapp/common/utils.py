@@ -72,13 +72,16 @@ def calculate_dict_differences(new_rules, existing_rules):
     :return: Tuple of three dictionaries: common_items, dict1_only_items, dict2_only_items
     """
     
-    # Calculate common items (with the same values in both dictionaries)
-    common_items = {key: new_rules[key] for key in set(new_rules.keys()) & set(existing_rules.keys())}
+    # Calculate common keys between both dictionaries
+    common_keys = set(new_rules.keys()) & set(existing_rules.keys())
+
+    # We want to overwrite the common key values by new rules
+    items_to_update = {key: new_rules[key] for key in common_keys}
 
     # Calculate items present only in dict1
-    dict1_only_items = {key: new_rules[key] for key in set(new_rules.keys()) - set(existing_rules.keys())}
+    items_to_create = {key: new_rules[key] for key in set(new_rules.keys()) - set(existing_rules.keys())}
 
     # Calculate items present only in dict2
-    dict2_only_items = {key: existing_rules[key] for key in set(existing_rules.keys()) - set(new_rules.keys())}
+    items_to_delete = {key: existing_rules[key] for key in set(existing_rules.keys()) - set(new_rules.keys())}
 
-    return common_items, dict1_only_items, dict2_only_items
+    return items_to_update, items_to_create, items_to_delete

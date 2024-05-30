@@ -10,6 +10,17 @@ var kbcddpweb = {
 
         kbcddpweb.get_cddpqueue();
     },
+    set_tbody: function (tbody, list, columns, buttons=null){
+        tbody.empty();
+
+        for(let i in list){
+            let row = this._make_row(list[i], columns);
+            if(buttons){
+                row.append(this._make_button_cell(buttons, tbody.attr("id")+'-row-'+i, list[i]));
+            }
+            tbody.append(row);
+        }
+    },
     get_cddpqueue: function(params_str){
         if (!params_str){
             params = {
@@ -38,12 +49,15 @@ var kbcddpweb = {
                     else response.results[i].success = null;
                 }
 
-                // table.set_tbody(tbody, response.results, [
-                table.set_tbody(tbody, response, [
-                    {filepath:"text"}, 
-                    {created_at:'text'},
-                    {size_kb:'text'}
-                ]);
+                tbody.empty()
+                for(let i in response){
+                    let filepath_html = '<td class="fielpath">' + response[i]['filepath'] + '</td>'
+                    let created_at_html = '<td class="created_at">' + response[i]['created_at'] + '</td>'
+                    let size_html = '<td>' + response[i]['size_kb'] + '</td>'
+                    let row = '<tr data-filepath="' + response[i]['filepath'] + '">' + filepath_html + created_at_html + size_html + '</tr>'
+                    tbody.append(row)
+                }
+
                 if(response.results == 0){
                     table.message_tbody(tbody, "No results found");
                 }

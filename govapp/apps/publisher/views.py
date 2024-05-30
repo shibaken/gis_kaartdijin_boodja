@@ -750,7 +750,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
     ViewSet for handling files within a specified directory.
     Provides list, retrieve, and delete functionalities.
     """
-    permission_classes=[accounts_permissions.IsAuthenticated]
+    permission_classes=[accounts_permissions.IsAuthenticated, accounts_permissions.IsApiUserGroup]
     pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
 
     def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
@@ -758,21 +758,22 @@ class CDDPContentsViewSet(viewsets.ViewSet):
         List all files within the directory along with their metadata.
         """
         try:
-            file_list = self._get_files_with_metadata(self.pathToFolder)
+            file_list = self._get_files_with_metadata()
             return Response(file_list)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def _get_files_with_metadata(self, directory: str) -> list:
+    def _get_files_with_metadata(self) -> list:
         """
         Retrieve file paths and metadata for files within the specified directory.
         """
         file_list = []
         datetime_format = '%d-%m-%Y %H:%M:%S'
         try:
-            for dirpath, _, filenames in os.walk(directory):
+            for dirpath, _, filenames in os.walk(self.pathToFolder):
                 for filename in filenames:
                     filepath = os.path.join(dirpath, filename)
+                    dirpath_removed = filepath.replace(self.pathToFolder + '/', '')
                     file_stat = os.stat(filepath)
                     creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime(datetime_format)
                     last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime(datetime_format)
@@ -780,7 +781,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
                     size_bytes = file_stat.st_size
                     size_kb = ceil(file_stat.st_size / 1024)
                     file_list.append({
-                        'filepath': filepath,
+                        'filepath': dirpath_removed,
                         'created_at': creation_time,
                         'last_accessed_at': last_access_time,
                         'last_modified_at': last_modify_time,
@@ -795,6 +796,13 @@ class CDDPContentsViewSet(viewsets.ViewSet):
     def retrieve_file(self, request: http.HttpRequest) -> http.HttpResponse:
         """
         Retrieve the specified file's content.
+
+        Usage:
+        Make a GET request to the '/retrieve-file' endpoint and provide the 'filepath' as a query parameter.
+        Example: /api/publish/cddp-contents/retrieve-file?filepath=/path/to/file.txt
+
+        Parameters:
+        - filepath: The path of the file to retrieve.
         """
         filepath = request.query_params.get('filepath')
         logger.info(f'Retrieving file: [{filepath}]')
@@ -803,6 +811,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
             logger.error('Filepath query parameter is required')
             return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+        filepath = os.path.join(self.pathToFolder, filepath)
         if os.path.exists(filepath):
             try:
                 with open(filepath, 'rb') as file:
@@ -819,6 +828,13 @@ class CDDPContentsViewSet(viewsets.ViewSet):
     def destroy_file(self, request: http.HttpRequest) -> http.HttpResponse:
         """
         Delete the specified file.
+
+        Usage:
+        Make a DELETE request to the '/destroy-file' endpoint and provide the 'filepath' as a query parameter.
+        Example: /api/publish/cddp-contents/destroy-file?filepath=/path/to/file.txt
+
+        Parameters:
+        - filepath: The path of the file to delete.
         """
         filepath = request.query_params.get('filepath')
         logger.info(f'Deleting file: [{filepath}]')
@@ -827,6 +843,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
             logger.error('Filepath query parameter is required')
             return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+        filepath = os.path.join(self.pathToFolder, filepath)
         if os.path.exists(filepath):
             try:
                 os.remove(filepath)
@@ -838,5 +855,3 @@ class CDDPContentsViewSet(viewsets.ViewSet):
         else:
             logger.error(f'File does not exist: [{filepath}]')
             raise http.Http404("File does not exist")
-
-#     template_name = "govapp/cddp_queue.html"
