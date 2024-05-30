@@ -51,7 +51,7 @@ var kbcddpweb = {
 
                 tbody.empty()
                 for(let i in response){
-                    let filepath_html = '<td class="fielpath">' + response[i]['filepath'] + '</td>'
+                    let filepath_html = '<td class="fielpath"><a style="text-decoration: none;" href="/api/publish/cddp-contents/retrieve-file/?filepath=' + response[i]['filepath'] + '">' + response[i]['filepath'] + '</a></td>'
                     let created_at_html = '<td class="created_at">' + response[i]['created_at'] + '</td>'
                     let size_html = '<td>' + response[i]['size_kb'] + '</td>'
                     let row = '<tr data-filepath="' + response[i]['filepath'] + '">' + filepath_html + created_at_html + size_html + '</tr>'
