@@ -838,5 +838,3 @@ class CDDPContentsViewSet(viewsets.ViewSet):
         else:
             logger.error(f'File does not exist: [{filepath}]')
             raise http.Http404("File does not exist")
-
-#     template_name = "govapp/cddp_queue.html"
