@@ -62,7 +62,7 @@ def handle_http_exceptions(logger):
     return decorator
 
 
-def calculate_dict_differences(dict1, dict2):
+def calculate_dict_differences(new_rules, existing_rules):
     """
     Calculate items that are common to both dictionaries (with the same values)
     and items that are only contained in one of the dictionaries.
@@ -72,16 +72,13 @@ def calculate_dict_differences(dict1, dict2):
     :return: Tuple of three dictionaries: common_items, dict1_only_items, dict2_only_items
     """
     
-    # Calculate common keys between both dictionaries
-    common_keys = set(dict1.keys()) & set(dict2.keys())
-
     # Calculate common items (with the same values in both dictionaries)
-    common_items = {key: dict1[key] for key in common_keys if dict1[key] == dict2[key]}
+    common_items = {key: new_rules[key] for key in set(new_rules.keys()) & set(existing_rules.keys())}
 
     # Calculate items present only in dict1
-    dict1_only_items = {key: dict1[key] for key in set(dict1.keys()) - set(dict2.keys())}
+    dict1_only_items = {key: new_rules[key] for key in set(new_rules.keys()) - set(existing_rules.keys())}
 
     # Calculate items present only in dict2
-    dict2_only_items = {key: dict2[key] for key in set(dict2.keys()) - set(dict1.keys())}
+    dict2_only_items = {key: existing_rules[key] for key in set(existing_rules.keys()) - set(new_rules.keys())}
 
     return common_items, dict1_only_items, dict2_only_items

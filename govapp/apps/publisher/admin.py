@@ -61,7 +61,7 @@ class GeoServerRolePermissionInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerRolePermission
     extra = 1  # Number of empty forms to display
     # fields = ['workspace', 'read', 'write', 'admin', 'active']
-    fields = ['geoserver_role', 'read', 'write', 'admin', 'active']
+    fields = ['geoserver_role', 'active', 'read', 'write', 'admin']
 
 
 class GeoServerGroupRoleInline(admin.TabularInline):
@@ -81,33 +81,24 @@ class WorkspaceAdmin(reversion.admin.VersionAdmin):
     list_display_links = ('id', 'name')
     inlines = [GeoServerRolePermissionInline,]
 
-    # def get_geoserver_roles(self, obj):
-    #     geoserver_role_permissions = models.geoserver_roles_groups.GeoServerRolePermission.objects.filter(workspace=obj)
-    #     lines = []
-    #     for perm in geoserver_role_permissions:
-    #         perm_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-    #         role_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.geoserver_role.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-    #         role_name = perm.geoserver_role.name
-    #         read_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.read else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-    #         write_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.write else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-    #         admin_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.admin else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-    #         lines.append(f'{perm_active_icon}: {role_active_icon}{role_name} r{read_icon} w{write_icon} a{admin_icon}')
-    #     return mark_safe('<br />'.join(lines))
-    # get_geoserver_roles.short_description = 'roles'
-
     def display_geoserver_roles(self, obj):
         geoserver_role_permissions = models.geoserver_roles_groups.GeoServerRolePermission.objects.filter(workspace=obj)
         table_rows = []
+        true_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">'
+        false_icon = '<img src="/static/admin/img/icon-no.svg" alt="False">'
+        if not geoserver_role_permissions:
+            return 'No related geoserver roles found.'
         for index, perm in enumerate(geoserver_role_permissions):
             if index == 0:
-                table_rows.append('<tr><th style="width: 20%;text-align: center;">Permission Active</th><th style="width: 20%;text-align: center;">Role Active</th><th style="width: 30%;">Role Name</th><th style="width: 10%;text-align: center;">Read</th><th style="width: 10%;text-align: center;">Write</th><th style="width: 10%;text-align: center;">Admin</th></tr>')
-            perm_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-            role_active_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.geoserver_role.active else '<img src="/static/admin/img/icon-no.svg" alt="False">'
+                table_rows.append('<tr><th style="width: 25%;text-align: center;">Permission Active</th><th style="">Role Status and Name</th><th style="width: 10%;text-align: center;">Read</th><th style="width: 10%;text-align: center;">Write</th><th style="width: 10%;text-align: center;">Admin</th></tr>')
+            perm_active_icon = true_icon if perm.active else false_icon
+            role_active_icon = true_icon if perm.geoserver_role.active else false_icon
             role_name = perm.geoserver_role.name
-            read_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.read else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-            write_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.write else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-            admin_icon = '<img src="/static/admin/img/icon-yes.svg" alt="True">' if perm.admin else '<img src="/static/admin/img/icon-no.svg" alt="False">'
-            table_row = f'<tr><td style="text-align: center;">{perm_active_icon}</td><td style="text-align: center;">{role_active_icon}</td><td>{role_name}</td><td style="text-align: center;">{read_icon}</td><td style="text-align: center;">{write_icon}</td><td style="text-align: center;">{admin_icon}</td></tr>'
+            role_id = perm.geoserver_role.id
+            read_icon = true_icon if perm.read else false_icon
+            write_icon = true_icon if perm.write else false_icon
+            admin_icon = true_icon if perm.admin else false_icon
+            table_row = f'<tr><td style="text-align: center;">{perm_active_icon}</td><td>{role_active_icon} <a href="/admin/publisher/geoserverrole/{role_id}/change">{role_name}</a></td><td style="text-align: center;">{read_icon}</td><td style="text-align: center;">{write_icon}</td><td style="text-align: center;">{admin_icon}</td></tr>'
             table_rows.append(table_row)
         table_html = f'<table>{"".join(table_rows)}</table>'
         return mark_safe(table_html)

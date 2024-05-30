@@ -823,23 +823,23 @@ class GeoServer:
 
         existing_rules = self.fetch_rules()
 
-        common_items, dict1_only_items, dict2_only_items = calculate_dict_differences(new_rules, existing_rules)
+        items_to_update, items_to_create, items_to_delete = calculate_dict_differences(new_rules, existing_rules)
 
-        log.info(f'Rules to update: {common_items}')
-        log.info(f'Rules to create: {dict1_only_items}')
-        log.info(f'Rules to delete: {dict2_only_items}')
+        log.info(f'Rules to update: {json.dumps(items_to_update, indent=4)}')
+        log.info(f'Rules to create: {json.dumps(items_to_create, indent=4)}')
+        log.info(f'Rules to delete: {json.dumps(items_to_delete, indent=4)}')
 
         # Create new rules
-        if dict1_only_items:
-            self.create_rules(dict1_only_items)
+        if items_to_create:
+            self.create_rules(items_to_create)
 
         # Update existing rules
-        if common_items:
-            self.update_rules(common_items)
+        if items_to_update:
+            self.update_rules(items_to_update)
 
         # Delete existing rules
-        if dict2_only_items:
-            for key in dict2_only_items.keys():
+        if items_to_delete:
+            for key in items_to_delete.keys():
                 self.delete_rule(key)
 
     @handle_http_exceptions(log)
