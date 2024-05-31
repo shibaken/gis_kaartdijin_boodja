@@ -850,6 +850,13 @@ class CDDPContentsViewSet(viewsets.ViewSet):
             try:
                 os.remove(filepath)
                 logger.info(f'File [{filepath}] deleted successfully')
+
+                # Check if the directory is empty
+                dirpath = os.path.dirname(filepath)
+                if not os.listdir(dirpath):
+                    os.rmdir(dirpath)
+                    logger.info(f'Directory [{dirpath}] deleted successfully')
+
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Exception as e:
                 logger.error(f'Error deleting file [{filepath}]: {str(e)}')
