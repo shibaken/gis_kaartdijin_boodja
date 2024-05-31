@@ -773,7 +773,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
             for dirpath, _, filenames in os.walk(self.pathToFolder):
                 for filename in filenames:
                     filepath = os.path.join(dirpath, filename)
-                    dirpath_removed = filepath.replace(self.pathToFolder + '/', '')
+                    dirpath_removed = filepath[len(self.pathToFolder + '/'):] if filepath.startswith(self.pathToFolder + '/') else filepath
                     file_stat = os.stat(filepath)
                     creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime(datetime_format)
                     last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime(datetime_format)
