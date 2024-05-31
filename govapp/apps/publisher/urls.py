@@ -24,4 +24,3 @@ router.register("cddp-contents", views.CDDPContentsViewSet, basename='cddp-conte
 
 # Catalogue URL Patterns
 urlpatterns = router.urls
-# urlpatterns.append(path('cddp-contents/<path:filepath>/', views.CDDPContentsViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'}), name='cddpcontents-detail'))

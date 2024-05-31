@@ -271,11 +271,13 @@ EMAIL_DELIVERY = decouple.config("EMAIL_DELIVERY", default="off")
 GROUP_ADMINISTRATORS = 'Administrators'
 GROUP_CATALOGUE_EDITORS = 'Catalogue Editors'
 GROUP_CATALOGUE_ADMIN = 'Catalogue Admin'
+GROUP_API_USER = 'API User'
 CUSTOM_GROUPS = [
     # Groups in this list are created automatically if not exist.
     GROUP_ADMINISTRATORS,
     GROUP_CATALOGUE_EDITORS,
     GROUP_CATALOGUE_ADMIN,
+    GROUP_API_USER,
 ]
 
 # Cron Jobs
