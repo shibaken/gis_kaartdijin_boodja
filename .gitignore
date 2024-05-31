@@ -111,6 +111,3 @@ git_history_recent
 
 *.csv
 *.xls*
-
-# Temporarily ignore for development purpose
-windows_script.py
