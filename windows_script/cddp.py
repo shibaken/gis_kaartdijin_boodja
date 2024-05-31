@@ -66,3 +66,15 @@ def destroy_file(api_url, file_path):
     # api_url = "https://kaartijin-boodja-server/api/publish/cddp-contents/destroy-file/"
     # file_path = "path/to/file"
     # destroy_file(api_url, file_path)
+
+# 1. Open config file
+# 2. files = fetch_file_list(pass config here)
+# 3. for loop in all files:
+#     get file
+#     copyt to the local in the same path
+#     delete file if no errors
+#     display message.
+
+
+api_url = "https://kaartijin-boodja-server/api/publish/cddp-contents/"
+fetch_file_list(api_url)
