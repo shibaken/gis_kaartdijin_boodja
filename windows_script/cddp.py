@@ -1,4 +1,5 @@
 import requests
+import sys
 import os
 import json
 
@@ -114,6 +115,9 @@ def save_file_locally(file_content, file_path, local_path):
         print(f"An error occurred while saving the file locally: {e}")
 
 
+# Start this script
+print('Starting the script...')
+
 # Open config file
 config_data = read_config_json()
 
@@ -122,6 +126,10 @@ create_folder(config_data['CDDP_ROOT'])
 
 # Fetch file info
 files = fetch_file_list(config_data['KB_URL'], config_data['USERNAME'], config_data['PASSWORD'])
+
+if not files:
+    print('No files found.')
+    sys.exit(0)
 
 count = 0
 for file_info in files:
