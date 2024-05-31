@@ -815,8 +815,10 @@ class CDDPContentsViewSet(viewsets.ViewSet):
         if os.path.exists(filepath):
             try:
                 with open(filepath, 'rb') as file:
-                    logger.info(f'File [{filepath}] retrieved successfully')
-                    return http.HttpResponse(file.read(), content_type='application/octet-stream')
+                    # Create the response with the file content and set the appropriate headers
+                    response = http.HttpResponse(file.read(), content_type='application/octet-stream')
+                    response['Content-Disposition'] = f'attachment; filename="{os.path.basename(filepath)}"'
+                    return response
             except Exception as e:
                 logger.error(f'Error retrieving file [{filepath}]: [{str(e)}]')
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
