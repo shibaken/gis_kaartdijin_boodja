@@ -111,3 +111,6 @@ git_history_recent
 
 *.csv
 *.xls*
+
+# config file for windows
+config.ini
