@@ -799,7 +799,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
 
         Usage:
         Make a GET request to the '/retrieve-file' endpoint and provide the 'filepath' as a query parameter.
-        Example: /api/publish/cddp-contents/retrieve-file?filepath=/path/to/file.txt
+        Example: /api/publish/cddp-contents/retrieve-file?filepath=path/to/file.txt
 
         Parameters:
         - filepath: The path of the file to retrieve.
@@ -833,7 +833,7 @@ class CDDPContentsViewSet(viewsets.ViewSet):
 
         Usage:
         Make a DELETE request to the '/destroy-file' endpoint and provide the 'filepath' as a query parameter.
-        Example: /api/publish/cddp-contents/destroy-file?filepath=/path/to/file.txt
+        Example: /api/publish/cddp-contents/destroy-file?filepath=path/to/file.txt
 
         Parameters:
         - filepath: The path of the file to delete.
