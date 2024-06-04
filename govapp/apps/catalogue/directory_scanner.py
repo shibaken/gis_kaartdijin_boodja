@@ -36,11 +36,6 @@ class Scanner:
 
         files_array = os.listdir(self.storage.get_pending_import_path())
 
-        print (files_array)
-
-
-        # files = self.storage.list(conf.settings.SHAREPOINT_INPUT_STAGING_AREA)
-
         # Check for files
         if not files_array:
             # Log

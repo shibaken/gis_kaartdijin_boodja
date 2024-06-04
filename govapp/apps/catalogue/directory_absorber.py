@@ -44,7 +44,7 @@ class Absorber:
             path (str): File to absorb.
         """
         # Log
-        log.info(f"Retrieving '{path}' from storage...")        
+        log.info(f"Retrieving '[{path}]' from storage...")        
 
         # # Retrieve file from remote storage
         # # This retrieves and writes the file to our own temporary filesystem
