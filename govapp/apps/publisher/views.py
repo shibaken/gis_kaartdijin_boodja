@@ -17,6 +17,7 @@ from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.mixins import ListModelMixin
 
 # Local
 from govapp import settings
@@ -745,7 +746,11 @@ class GeoServerQueueViewSet(
     permission_classes = [accounts_permissions.IsInAdministratorsGroup]
 
 
-class CDDPContentsViewSet(viewsets.ViewSet):
+# class CDDPContentsViewSet(viewsets.ViewSet):
+class CDDPContentsViewSet(
+    viewsets.mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
     """
     ViewSet for handling files within a specified directory.
     Provides list, retrieve, and delete functionalities.
@@ -850,6 +855,13 @@ class CDDPContentsViewSet(viewsets.ViewSet):
             try:
                 os.remove(filepath)
                 logger.info(f'File [{filepath}] deleted successfully')
+
+                # Check if the directory is empty
+                dirpath = os.path.dirname(filepath)
+                if not os.listdir(dirpath) and dirpath != self.pathToFolder:
+                    os.rmdir(dirpath)
+                    logger.info(f'Directory [{dirpath}] deleted successfully')
+
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Exception as e:
                 logger.error(f'Error deleting file [{filepath}]: {str(e)}')
