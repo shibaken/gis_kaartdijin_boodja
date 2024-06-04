@@ -6,11 +6,15 @@ import logging
 import pathlib
 import shutil
 import os
+import tempfile
 import uuid
+import zipfile
 
 # Third-Party
 from django import conf
 from django.db import transaction
+import py7zr
+import pytz
 
 # Local
 from govapp.common import local_storage
@@ -40,7 +44,7 @@ class Absorber:
             path (str): File to absorb.
         """
         # Log
-        log.info(f"Retrieving '{path}' from storage")        
+        log.info(f"Retrieving '{path}' from storage...")        
 
         # # Retrieve file from remote storage
         # # This retrieves and writes the file to our own temporary filesystem
@@ -48,22 +52,57 @@ class Absorber:
         filepath = pathlib.Path(filepath)
         # Move the file on the remote storage into the archive area
         # The file is renamed to include a UTC timestamp, to avoid collisions
-        timestamp = datetime.datetime.utcnow()
+        timestamp = datetime.datetime.now(pytz.utc)
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
-        storage_directory = f"{self.storage.get_data_storage_path()}/{timestamp.year}/"
+        storage_directory = os.path.join(self.storage.get_data_storage_path(), f'{timestamp.year}')
         if not os.path.exists(storage_directory):
-            print ("creating directory")
-            print (storage_directory)
             os.makedirs(storage_directory)
+            log.info(f"Directory created: [{storage_directory}]")
 
-        storage_path = f"{storage_directory}{filepath.stem}.{timestamp_str}{self.storage.get_path_suffix(path)}"
+        storage_path = os.path.join(storage_directory, filepath.stem + "." + timestamp_str + filepath.suffix)
         archive = self.storage.move_to_storage(filepath, storage_path)  # Move file to archive
-        # self.storage.delete(path)  # Delete file in staging area
 
         # # Log
         log.info(f"Retrieved '{path}' -> '{filepath}'")
         log.info(f"Archived '{path}' -> {storage_path} ({archive})")
 
+        self.process_file(storage_path)
+        
+    def process_file(self, path_to_file):
+        """
+        Extracts .7z or .zip files to a temp folder and executes get_gis_layers_from_file() on each extracted file.
+        For .tiff or .tif files, executes get_gis_layers_from_file() directly.
+        """
+        # Get the directory containing the archive file
+        folder_path = os.path.dirname(path_to_file)
+        
+        # Create a folder with the same name as the archive file (without extension)
+        folder_name = os.path.splitext(os.path.basename(path_to_file))[0]
+        temp_dir = os.path.join(folder_path, folder_name)
+        os.makedirs(temp_dir, exist_ok=True)
+
+        try:
+            file_ext = os.path.splitext(path_to_file)[1].lower()
+            if file_ext == '.7z':
+                # Extract .7z file
+                with py7zr.SevenZipFile(path_to_file, mode='r') as z:
+                    z.extractall(path=temp_dir)
+            elif file_ext == '.zip':
+                # Extract .zip file
+                with zipfile.ZipFile(path_to_file, 'r') as z:
+                    z.extractall(path=temp_dir)
+            elif file_ext in ['.tiff', '.tif']:
+                # Directly process .tiff or .tif file
+                self.get_gis_layers_from_file(os.path.join(temp_dir, path_to_file))
+            
+            # If extracted, loop through extracted files and process them
+            for extracted_filepath in os.listdir(temp_dir):
+                self.get_gis_layers_from_file(os.path.join(temp_dir, extracted_filepath))
+        finally:
+            # Clean up temp directory
+            shutil.rmtree(temp_dir)
+
+    def get_gis_layers_from_file(self, storage_path):
         pathlib_storage_path = pathlib.Path(storage_path)
         # # Construct Reader
         reader = readers.reader.FileReader(pathlib_storage_path)
@@ -80,7 +119,7 @@ class Absorber:
             except Exception as exc:
                 result['fail'].append(f"layer:{layer.name}, exception:{exc}")
                 # Log and continue
-                log.error(f"Error absorbing layer:'{layer.name}': file:'{filepath.name}'", exc_info=exc)
+                log.error(f"Error absorbing layer:'{layer.name}': file:'{storage_path}'", exc_info=exc)
             log.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
         log.info(f"End of absorbing layers from '{storage_path}' :  fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
         log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")

@@ -6,7 +6,6 @@ var kbmanagementcommands = {
         "geoserver_queue_sync_job" : "/api/management/commands/excute_geoserver_sync/",
     },
     run_scanner: function() {
-            console.log("RUNNING SCANNER")
             $('#scanner-job-response-success').html('');
             $('#scanner-job-response-error').html('');
             var csrf_token = $("#csrfmiddlewaretoken").val();
@@ -31,7 +30,6 @@ var kbmanagementcommands = {
             });
     },
     run_sharepoint_submissions: function() {
-        console.log("RUNNING SHAREPOINT COLLECTOR")
         $('#sharepoint-scanner-job-response-success').html('');
         $('#sharepoint-scanner-job-response-error').html('');
         var csrf_token = $("#csrfmiddlewaretoken").val();
