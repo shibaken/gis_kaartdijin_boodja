@@ -12,6 +12,7 @@ import os
 
 # Third-Party
 import py7zr
+import pytz
 import rarfile
 
 # Logging
@@ -90,7 +91,7 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
 
     print ("PREPARING EXTRACTING")
     print (file.stem)
-    timestamp = datetime.datetime.utcnow()
+    timestamp = datetime.datetime.now(pytz.utc)
     timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
 
     # Construct Path for Extraction
