@@ -11,6 +11,7 @@ import uuid
 # Third-Party
 from django import conf
 from django.db import transaction
+import pytz
 
 # Local
 from govapp.common import local_storage
@@ -48,7 +49,8 @@ class Absorber:
         filepath = pathlib.Path(filepath)
         # Move the file on the remote storage into the archive area
         # The file is renamed to include a UTC timestamp, to avoid collisions
-        timestamp = datetime.datetime.utcnow()
+        # timestamp = datetime.datetime.utcnow()
+        timestamp = datetime.datetime.now(pytz.utc)
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
         storage_directory = f"{self.storage.get_data_storage_path()}/{timestamp.year}/"
         if not os.path.exists(storage_directory):
