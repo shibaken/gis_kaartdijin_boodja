@@ -134,7 +134,7 @@ if not files:
 count = 0
 for file_info in files:
     count += 1
-    print(f"{count}")
+    print(f"--- File#{count} ---")
 
     # Retrieve file contents
     file_content = retrieve_file_content(config_data['KB_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
