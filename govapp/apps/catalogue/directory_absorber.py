@@ -15,6 +15,7 @@ from django import conf
 from django.db import transaction
 import py7zr
 import pytz
+import osgeo
 
 # Local
 from govapp.common import local_storage
@@ -103,35 +104,62 @@ class Absorber:
 
             # Process all the files
             for filepath in filepaths_to_process:
-                self.get_gis_layers_from_file(filepath)
+                if filepath.lower().endswith(('.tiff', '.tif')):
+                    # Call a different function if the file is a TIFF
+                    self.process_tiff_file(filepath)
+                else:
+                    # Call the original function for other file types
+                    self.process_vector_file(filepath)
+                # self.get_gis_layers_from_file(filepath)
             
         finally:
             if os.path.exists(temp_dir):
                 # Clean up temp directory
                 shutil.rmtree(temp_dir)
 
-    def get_gis_layers_from_file(self, storage_path):
-        pathlib_storage_path = pathlib.Path(storage_path)
+    def process_tiff_file(self, filepath):
+        # Convert the file path to a pathlib.Path object
+        pathlib_filepath = pathlib.Path(filepath)
+        
+        # 1. Get the file name
+        file_name = pathlib_filepath.name
+        log.info(f'File name: {file_name}')
+        
+        # 2. Open the file with GDAL
+        dataset = osgeo.gdal.Open(filepath)
+        if dataset is None:
+            log.error(f'Failed to open file: {filepath}')
+            return
+        
+        # Get metadata from the dataset
+        metadata = dataset.GetMetadata()
+        log.info(f'Metadata: {metadata}')
+        
+        # Clean up GDAL dataset
+        dataset = None
+
+    def process_vector_file(self, filepath):
+        pathlib_filepath = pathlib.Path(filepath)
         # # Construct Reader
-        reader = readers.reader.FileReader(pathlib_storage_path)
+        reader = readers.reader.FileReader(pathlib_filepath)
 
         result = {'total':reader.layer_count(), 'success':[], 'fail':[]}
         # Loop through layers
         for layer in reader.layers():
-            log.info(f"Absorbing layer '{layer.name}' from '{storage_path}'")
+            log.info(f"Absorbing layer '{layer.name}' from '{filepath}'")
 
             try:
                 # Absorb layer
-                self.absorb_layer(pathlib_storage_path, layer, storage_path)
+                self.absorb_layer(pathlib_filepath, layer, filepath)
                 result['success'].append(layer.name)
             except Exception as exc:
                 result['fail'].append(f"layer:{layer.name}, exception:{exc}")
                 # Log and continue
-                log.error(f"Error absorbing layer:'{layer.name}': file:'{storage_path}'", exc_info=exc)
+                log.error(f"Error absorbing layer:'{layer.name}': file:'{filepath}'", exc_info=exc)
 
             log.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
 
-        log.info(f"End of absorbing layers from '{storage_path}' :  fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
+        log.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
         log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
 
         # Delete local temporary copy of file if we can
