@@ -79,12 +79,12 @@ class Absorber:
         # Create a folder with the same name as the archive file (without extension)
         folder_name = os.path.splitext(os.path.basename(path_to_file))[0]
         temp_dir = os.path.join(folder_path, folder_name)
-        os.makedirs(temp_dir, exist_ok=True)
-        filepaths_to_process = []
 
         try:
+            filepaths_to_process = []
             file_ext = os.path.splitext(path_to_file)[1].lower()
             if file_ext in ['.7z', '.zip',]:
+                os.makedirs(temp_dir, exist_ok=True)
                 if file_ext == '.7z':
                     # Extract .7z file
                     with py7zr.SevenZipFile(path_to_file, mode='r') as z:
@@ -98,17 +98,17 @@ class Absorber:
                 for extracted_filepath in os.listdir(temp_dir):
                     filepaths_to_process.append(os.path.join(temp_dir, extracted_filepath))
                 
-            elif file_ext in ['.tiff', '.tif', '.json', '.geojson', '.gpkg',]:
-                # "Theoretically, system shouldn't reach here because only .7z and .zip are allowed to upload.
-                filepaths_to_process.append(os.path.join(temp_dir, path_to_file))
+            else:
+                filepaths_to_process.append(path_to_file)
 
-            # Process each file in temp_dir
+            # Process all the files
             for filepath in filepaths_to_process:
                 self.get_gis_layers_from_file(filepath)
             
         finally:
-            # Clean up temp directory
-            shutil.rmtree(temp_dir)
+            if os.path.exists(temp_dir):
+                # Clean up temp directory
+                shutil.rmtree(temp_dir)
 
     def get_gis_layers_from_file(self, storage_path):
         pathlib_storage_path = pathlib.Path(storage_path)
