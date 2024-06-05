@@ -80,24 +80,32 @@ class Absorber:
         folder_name = os.path.splitext(os.path.basename(path_to_file))[0]
         temp_dir = os.path.join(folder_path, folder_name)
         os.makedirs(temp_dir, exist_ok=True)
+        filepaths_to_process = []
 
         try:
             file_ext = os.path.splitext(path_to_file)[1].lower()
-            if file_ext == '.7z':
-                # Extract .7z file
-                with py7zr.SevenZipFile(path_to_file, mode='r') as z:
-                    z.extractall(path=temp_dir)
-            elif file_ext == '.zip':
-                # Extract .zip file
-                with zipfile.ZipFile(path_to_file, 'r') as z:
-                    z.extractall(path=temp_dir)
-            elif file_ext in ['.tiff', '.tif']:
-                # Directly process .tiff or .tif file
-                self.get_gis_layers_from_file(os.path.join(temp_dir, path_to_file))
+            if file_ext in ['.7z', '.zip',]:
+                if file_ext == '.7z':
+                    # Extract .7z file
+                    with py7zr.SevenZipFile(path_to_file, mode='r') as z:
+                        z.extractall(path=temp_dir)
+                elif file_ext == '.zip':
+                    # Extract .zip file
+                    with zipfile.ZipFile(path_to_file, 'r') as z:
+                        z.extractall(path=temp_dir)
+
+                # If extracted, loop through extracted files and process them
+                for extracted_filepath in os.listdir(temp_dir):
+                    filepaths_to_process.append(os.path.join(temp_dir, extracted_filepath))
+                
+            elif file_ext in ['.tiff', '.tif', '.json', '.geojson', '.gpkg',]:
+                # "Theoretically, system shouldn't reach here because only .7z and .zip are allowed to upload.
+                filepaths_to_process.append(os.path.join(temp_dir, path_to_file))
+
+            # Process each file in temp_dir
+            for filepath in filepaths_to_process:
+                self.get_gis_layers_from_file(filepath)
             
-            # If extracted, loop through extracted files and process them
-            for extracted_filepath in os.listdir(temp_dir):
-                self.get_gis_layers_from_file(os.path.join(temp_dir, extracted_filepath))
         finally:
             # Clean up temp directory
             shutil.rmtree(temp_dir)
@@ -110,8 +118,8 @@ class Absorber:
         result = {'total':reader.layer_count(), 'success':[], 'fail':[]}
         # Loop through layers
         for layer in reader.layers():
-            # Log
             log.info(f"Absorbing layer '{layer.name}' from '{storage_path}'")
+
             try:
                 # Absorb layer
                 self.absorb_layer(pathlib_storage_path, layer, storage_path)
@@ -120,7 +128,9 @@ class Absorber:
                 result['fail'].append(f"layer:{layer.name}, exception:{exc}")
                 # Log and continue
                 log.error(f"Error absorbing layer:'{layer.name}': file:'{storage_path}'", exc_info=exc)
+
             log.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
+
         log.info(f"End of absorbing layers from '{storage_path}' :  fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
         log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
 

@@ -2,6 +2,7 @@
 
 
 # Standard
+import logging
 import pathlib
 
 # Third-Party
@@ -16,6 +17,9 @@ from govapp.gis.readers import base
 from typing import Iterable
 
 from govapp.gis.readers.formats.geotiff import GeoTiffReader
+
+# Logging
+log = logging.getLogger(__name__)
 
 
 class FileReader:
@@ -39,6 +43,7 @@ class FileReader:
         # Load data source
         if self.reader == GeoTiffReader:
             value = gdal.Open(self.file, gdal.GA_ReadOnly)
+            self._log_metadata(value)
         else:
             value = ogr.Open(str(self.file))
 
@@ -84,3 +89,39 @@ class FileReader:
             value=self.datasource.GetLayerCount(),
             message=f"Could not determine number of layers in file '{self.file}'",
         )
+
+    def _log_metadata(dataset):
+        # Get the metadata
+        metadata = dataset.GetMetadata() 
+
+        # Display the metadata
+        for key, value in metadata.items(): 
+            log.info(f"{key}: {value}") 
+
+        # Resolution information
+        x_resolution = dataset.GetGeoTransform()[1] # X Resolution
+        y_resolution = dataset.GetGeoTransform()[5] # Y Resolution (often negative values)
+        log.info(f"X Resolution: {x_resolution}") 
+        log.info(f"Y Resolution: {y_resolution}") 
+
+        # Get the number of bands
+        bands = dataset.RasterCount 
+        log.info(f"Number of bands: {bands}") 
+
+        # Example of obtaining metadata for each band
+        for i in range(1, bands + 1): 
+            band = dataset.GetRasterBand(i) 
+            band_metadata = band.GetMetadata() 
+            log.info(f"Band {i} metadata:") 
+            for key, value in band_metadata.items(): 
+                log.info(f" {key}: {value}") 
+
+        # Get the projection information
+        projection = dataset.GetProjection() 
+        log.info(f"Projection: {projection}") 
+
+        # Corner coordinates (e.g., geographic coordinates of the upper left corner)
+        geo_transform = dataset.GetGeoTransform() 
+        origin_x = geo_transform[0] 
+        origin_y = geo_transform[3] 
+        log.info(f"Origin: ({origin_x}, {origin_y})")
