@@ -30,7 +30,14 @@
             </div>
             <div class='col-9 p-1'>
                 {% for key, value in catalogue_layer_metadata.additional_data.items %}
-                    <div>{{ key }}: {{ value }}</div>
+                    <div class="row">
+                        <div class="col-3">
+                            {{ key }}:
+                        </div>
+                        <div class="col-9">
+                            {{ value }}
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
         </div>
