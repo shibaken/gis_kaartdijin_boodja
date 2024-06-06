@@ -74,6 +74,21 @@ var kbpublish = {
             communication_type:null,    // will be filled during initiation
             ftp_servers: []
     },
+    variable: {
+        overlay_checkmark: $('<div class="overlay">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-check check-mark" viewBox="0 0 16 16">' +
+            '<path d="M13.485 1.929a.5.5 0 0 1 .072.638l-.072.084L6.118 10l-3.535-3.536a.5.5 0 0 1 .638-.765l.084.073L6.5 8.879l6.485-6.486a.5.5 0 0 1 .707 0z"/>' +
+            '</svg>' +
+            '</div>'),
+        overlay_crossmark: $('<div class="overlay">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" class="bi bi-x cross-mark" viewBox="0 0 16 16">' +
+            '<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" stroke="currentColor" stroke-width="2" fill="none"/>' +
+            '</svg>' +
+            '</div>'),
+        overlay_loading: $('<div class="overlay">' +
+            '<div class="spinner-border text-light" role="status"></div>' +
+            '</div>')
+    },
     init_dashboard: function() {    
         $('#publish-custodian').select2({
             placeholder: 'Select an option',
@@ -1062,26 +1077,25 @@ var kbpublish = {
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             // html+= " <td class='text-end'>";
                             html+= " <td>";
-                            html+= "<div class='row  d-flex justify-content-center align-items-center'>";
+                            html+= "<div class='row d-flex justify-content-center align-items-center'>";
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
-                                    html+= '<div class="col-sm-2">'
-                                    if (kbpublish.var.catalogue_entry_type_allowed_for_ftp.includes(response.results[i].catalogue_type))
-                                        html+= " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>";
+                                    html += '<div class="col-sm-2 d-grid" style="position: relative;">'
+                                    if (kbpublish.var.catalogue_entry_type_allowed_for_ftp.includes(response.results[i].catalogue_type)){
+                                        html += " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>";
+                                    }
                                     html += '</div>'
 
-                                    html+= '<div class="col-sm-3">'
-                                    html+= " <button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>";
+                                    html += '<div class="col-sm-3" style="position: relative;">'
+                                    html += "<button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>";
                                     html += '</div>'
 
-                                    html+= '<div class="col-sm-3">'
-                                    if (kbpublish.var.catalogue_entry_type_allowed_for_cddp.includes(response.results[i].catalogue_type))
-                                        html+= " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>";                        
+                                    html += '<div class="col-sm-3" style="position: relative;">'
+                                    if (kbpublish.var.catalogue_entry_type_allowed_for_cddp.includes(response.results[i].catalogue_type)){
+                                        html += " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>";
+                                    }
                                     html += '</div>'
                                 }
-                                html+= " <button class='btn btn-primary btn-sm publish-table-button col-sm-1' id='publish-external-loading-"+response.results[i].id+"' type='button' disabled><span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span class='visually-hidden'>Loading...</span></button>";
-                                html+= " <button class='btn btn-success btn-sm publish-table-button col-sm-1' id='publish-external-success-"+response.results[i].id+"' type='button' disabled><i class='bi bi-check'></i></button>";
-                                html+= " <button class='btn btn-danger btn-sm publish-table-button col-sm-1' id='publish-external-error-"+response.results[i].id+"' type='button' disabled><i class='bi bi-x-lg'></i></button>";
                             }
                             html+= '<div class="col-sm-1">'
                             html+="  <a class='btn btn-primary btn-sm' href='/publish/"+response.results[i].id+"'>View</a>";
@@ -1111,20 +1125,19 @@ var kbpublish = {
                 $( ".publish-to-geoserver-btn" ).click(function() {
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
-
-                    kbpublish.publish_to_geoserver(btndata.id);
+                    kbpublish.publish_to_geoserver(btndata.id, $(this));
                 });     
                 
                 $( ".publish-to-cddp-btn" ).click(function() {
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
-                    kbpublish.publish_to_cddp(btndata.id);
+                    kbpublish.publish_to_cddp(btndata.id, $(this));
                 });    
                 
                 $( ".publish-to-ftp-btn" ).click(function() {
                     var btndata_json = $(this).attr('data-json');
                     var btndata = JSON.parse(btndata_json);
-                    kbpublish.publish_to_ftp(btndata.id);
+                    kbpublish.publish_to_ftp(btndata.id, $(this));
                 });
 
        
@@ -1138,48 +1151,65 @@ var kbpublish = {
             },
         });    
     },
-    publish_to_cddp: function(btn_id) { 
-        var csrf_token = $("#csrfmiddlewaretoken").val();
-        
+    disable_buttons: function(btn_id){
         $('#publish-to-geoserver-btn-'+btn_id).attr('disabled','disabled');
         $('#publish-to-cddp-btn-'+btn_id).attr('disabled','disabled');
         $('#publish-to-ftp-btn-'+btn_id).attr('disabled','disabled');
-        $("#publish-external-success-"+btn_id).hide();
-        $("#publish-external-error-"+btn_id).hide();
-        $('#publish-external-loading-'+btn_id).show();
+    },
+    enable_buttons: function(btn_id){
+        $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
+        $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
+        $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');                
+    },
+    publish_to_cddp: function(btn_id, button) { 
+        var kbpublish = this
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        var position = button.position();
+
+        var overlay_checkmark = this.variable.overlay_checkmark.clone();
+        var overlay_crossmark = this.variable.overlay_crossmark.clone();
+        var overlay_loading = this.variable.overlay_loading.clone();
+
+        button.parent().append(overlay_loading);
+        overlay_loading.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+        kbpublish.disable_buttons(btn_id)
+
         post_data = {};
         $.ajax({
             url: kbpublish.var.publish_data_url+btn_id+"/publish/cddp/?symbology_only=false",
             type: 'POST',
-            //dataType: 'json',
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                $('#publish-external-loading-'+btn_id).hide();
-                $("#publish-external-success-"+btn_id).show();
-                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');                
+                overlay_loading.remove();
+                button.parent().append(overlay_checkmark);
+                overlay_checkmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
             },
             error: function (error) {
-                $('#publish-external-loading-'+btn_id).hide();
-                $("#publish-external-error-"+btn_id).show();
-                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');
+                overlay_loading.remove();
+                button.parent().append(overlay_crossmark);
+                overlay_crossmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
             },
+            complete: function(xhr, status){
+                kbpublish.enable_buttons(btn_id);
+            }
         });        
     },
-    publish_to_geoserver: function(btn_id) { 
+    publish_to_geoserver: function(btn_id, button) { 
+        var kbpublish = this
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
-        $('#publish-to-geoserver-btn-'+btn_id).attr('disabled','disabled');
-        $('#publish-to-cddp-btn-'+btn_id).attr('disabled','disabled');
-        $('#publish-to-ftp-btn-'+btn_id).attr('disabled','disabled');
-        $("#publish-external-success-"+btn_id).hide();
-        $("#publish-external-error-"+btn_id).hide();
-        $('#publish-external-loading-'+btn_id).show();
+        var position = button.position();
+
+        var overlay_checkmark = this.variable.overlay_checkmark.clone();
+        var overlay_crossmark = this.variable.overlay_crossmark.clone();
+        var overlay_loading = this.variable.overlay_loading.clone();
+
+        button.parent().append(overlay_loading);
+        overlay_loading.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+        kbpublish.disable_buttons(btn_id);
 
         post_data = {};
         $.ajax({
@@ -1190,36 +1220,40 @@ var kbpublish = {
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                $('#publish-external-loading-'+btn_id).hide();
-                $("#publish-external-success-"+btn_id).show();
-                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');  
-                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');  
+                overlay_loading.remove();
+                button.parent().append(overlay_checkmark);
+                overlay_checkmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
                 common_pagination.var.current_page=0;
             },
             error: function (error) {
-                $('#publish-external-loading-'+btn_id).hide();
-                $("#publish-external-error-"+btn_id).show();
-                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');
+                overlay_loading.remove();
+                button.parent().append(overlay_crossmark);
+                overlay_crossmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
                 if(error.status == 409){
                     common_entity_modal.show_alert("This geoserver publish is already in a queue.", "Duplicated");
                 } else if(error.status == 412){
                     common_entity_modal.show_alert("No geoserver publish has been set for this publish entry.", "Target Not Found");
                 }
             },
+            complete: function(xhr, status){
+                kbpublish.enable_buttons(btn_id);
+            }
         });        
     },    
-    publish_to_ftp: function(btn_id) { 
+    publish_to_ftp: function(btn_id, button) { 
+        var kbpublish = this
         var csrf_token = $("#csrfmiddlewaretoken").val();
-        
-        $('#publish-to-geoserver-btn-'+btn_id).attr('disabled','disabled');
-        $('#publish-to-cddp-btn-'+btn_id).attr('disabled','disabled');
-        $('#publish-to-ftp-btn-'+btn_id).attr('disabled','disabled');
-        $("#publish-external-success-"+btn_id).hide();
-        $("#publish-external-error-"+btn_id).hide();
-        $('#publish-external-loading-'+btn_id).show();
+
+        var position = button.position();
+
+        var overlay_checkmark = this.variable.overlay_checkmark.clone();
+        var overlay_crossmark = this.variable.overlay_crossmark.clone();
+        var overlay_loading = this.variable.overlay_loading.clone();
+
+        button.parent().append(overlay_loading);
+        overlay_loading.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+        kbpublish.disable_buttons(btn_id);
+
         post_data = {};
         $.ajax({
             url: kbpublish.var.publish_data_url+btn_id+"/publish/ftp/?symbology_only=false",
@@ -1229,19 +1263,18 @@ var kbpublish = {
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                $('#publish-external-loading-'+btn_id).hide();
-                $("#publish-external-success-"+btn_id).show();
-                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');     
-                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');           
+                overlay_loading.remove();
+                button.parent().append(overlay_checkmark);
+                overlay_checkmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
             },
             error: function (error) {
-                $('#publish-external-loading-'+btn_id).hide();
-                $("#publish-external-error-"+btn_id).show();
-                $('#publish-to-geoserver-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-cddp-btn-'+btn_id).removeAttr('disabled');
-                $('#publish-to-ftp-btn-'+btn_id).removeAttr('disabled');
+                overlay_loading.remove();
+                button.parent().append(overlay_crossmark);
+                overlay_crossmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
             },
+            complete: function(xhr, status){
+                kbpublish.enable_buttons(btn_id);
+            }
         });        
     },
     get_publish_editors: function() {
