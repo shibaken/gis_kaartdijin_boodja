@@ -7,6 +7,7 @@ import json
 
 # Third Party
 from functools import wraps
+import pathlib
 from rest_framework import status
 from rest_framework import response
 from rest_framework.serializers import ValidationError
@@ -89,4 +90,11 @@ def validation_error_hander(serializer_class):
             return view_func(view_set, request, pk)
         return _wrapped_view
     return decorator
+
+
+def get_first_part_of_filename(filepath: pathlib.Path) -> str:
+    filename = filepath.name
+    parts = filename.split('.')
+    first_part = parts[0]
+    return first_part
 

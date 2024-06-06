@@ -16,7 +16,6 @@ from govapp.gis.readers import base
 # Typing
 from typing import Iterable
 
-from govapp.gis.readers.formats.geotiff import GeoTiffReader
 
 # Logging
 log = logging.getLogger(__name__)
@@ -41,11 +40,7 @@ class FileReader:
         self.reader = utils.get_reader(self.file)
             
         # Load data source
-        if self.reader == GeoTiffReader:
-            value = gdal.Open(self.file, gdal.GA_ReadOnly)
-            self._log_metadata(value)
-        else:
-            value = ogr.Open(str(self.file))
+        value = ogr.Open(str(self.file))
 
         if value:
             self.datasource = value

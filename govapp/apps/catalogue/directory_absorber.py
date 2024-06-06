@@ -7,6 +7,7 @@ import pathlib
 import shutil
 import os
 import tempfile
+from typing import Optional
 import uuid
 import zipfile
 
@@ -24,6 +25,7 @@ from govapp.gis.conversions import to_geojson
 from govapp.apps.catalogue import models
 from govapp.apps.catalogue import directory_notifications
 from govapp.apps.catalogue import utils
+from govapp.gis.readers import types
 
 
 # Logging
@@ -121,22 +123,44 @@ class Absorber:
         # Convert the file path to a pathlib.Path object
         pathlib_filepath = pathlib.Path(filepath)
         
-        # 1. Get the file name
-        file_name = pathlib_filepath.name
-        log.info(f'File name: {file_name}')
-        
-        # 2. Open the file with GDAL
+        # Open the file with GDAL
         dataset = osgeo.gdal.Open(filepath)
         if dataset is None:
             log.error(f'Failed to open file: {filepath}')
             return
         
-        # Get metadata from the dataset
-        metadata = dataset.GetMetadata()
-        log.info(f'Metadata: {metadata}')
+        result = {'total': 1, 'success':[], 'fail':[]}
+        # Create CatalogueEntry
+        try:
+            self.absorb_tiff_as_layer(pathlib_filepath)
+            result['success'].append(pathlib_filepath.name)
+        except Exception as exc:
+            result['fail'].append(f"layer:{pathlib_filepath.name}, exception:{exc}")
+            # Log and continue
+            log.error(f"Error absorbing tiff as a layer:'{pathlib_filepath.name}': file:'{filepath}'", exc_info=exc)
+
+        log.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
+        log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
         
         # Clean up GDAL dataset
         dataset = None
+
+    def absorb_tiff_as_layer(self, pathlib_filepath):
+        metadata = types.Metadata(
+            name=utils.get_first_part_of_filename(pathlib_filepath),  # filename is like: State_Map_Base_FMS.20240606T015418.tif
+            description="",  # Blank by Default
+            created_at=datetime.datetime.now(datetime.timezone.utc),
+        )
+
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()
+
+        # Check existing catalogue entry
+        if not catalogue_entry:
+            # Create
+            self.create_catalogue_entry(metadata, str(pathlib_filepath))
+        else:
+            # Update
+            self.update_catalogue_entry(catalogue_entry, metadata, str(pathlib_filepath))
 
     def process_vector_file(self, filepath):
         pathlib_filepath = pathlib.Path(filepath)
@@ -144,32 +168,28 @@ class Absorber:
         reader = readers.reader.FileReader(pathlib_filepath)
 
         result = {'total':reader.layer_count(), 'success':[], 'fail':[]}
-        # Loop through layers
+        # Create catalogue entries by looping through the layers
         for layer in reader.layers():
             log.info(f"Absorbing layer '{layer.name}' from '{filepath}'")
 
             try:
                 # Absorb layer
-                self.absorb_layer(pathlib_filepath, layer, filepath)
+                self.absorb_vector_layer(layer, filepath)
                 result['success'].append(layer.name)
             except Exception as exc:
                 result['fail'].append(f"layer:{layer.name}, exception:{exc}")
                 # Log and continue
                 log.error(f"Error absorbing layer:'{layer.name}': file:'{filepath}'", exc_info=exc)
 
-            log.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
+            log.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
 
-        log.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} totla:{result['total']}")
+        log.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
         log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
 
-        # Delete local temporary copy of file if we can
-        # shutil.rmtree(storage_directory, ignore_errors=True)
-
-    def absorb_layer(self, filepath: pathlib.Path, layer: readers.base.LayerReader, archive: str) -> None:
+    def absorb_vector_layer(self, layer: readers.base.LayerReader, archive: str) -> None:
         """Absorbs a layer into the system.
 
         Args:
-            filepath (pathlib.Path): File to absorb layer from.
             layer (readers.base.LayerReader): Layer to absorb.
             archive (str): URL to the archived file for this layer.
         """
@@ -181,12 +201,6 @@ class Absorber:
         attributes = layer.attributes()
         symbology = layer.symbology()
 
-       
-        print ("LAYER attributes")
-        for a in attributes:
-            print (a)
-        print (attributes)
-        
         log.info(f"Extracting data from layer: '{attributes}'")
         # Retrieve existing catalogue entry from the database
         # Here we specifically check the Layer Metadata name
@@ -195,27 +209,26 @@ class Absorber:
         # Check existing catalogue entry
         if not catalogue_entry:
             # Create
-            self.create_catalogue_entry(metadata, attributes, symbology, archive)
-
+            self.create_catalogue_entry(metadata, archive, attributes, symbology)
         else:
             # Update
-            self.update_catalogue_entry(catalogue_entry, metadata, attributes, symbology, archive)
+            self.update_catalogue_entry(catalogue_entry, metadata, archive, attributes, symbology)
 
     @transaction.atomic()
     def create_catalogue_entry(
         self,
         metadata: readers.types.Metadata,
-        attributes: list[readers.types.Attribute],
-        symbology: readers.types.Symbology,
         archive: str,
+        attributes: Optional[list[readers.types.Attribute]] = [],
+        symbology: Optional[readers.types.Symbology] = None,
     ) -> bool:
         """Creates a new catalogue entry with the supplied values.
 
         Args:
             metadata (Metadata): Metadata for the entry.
+            archive (str): Archive URL for the entry
             attributes (list[Attribute]): Attributes for the entry.
             symbology (Symbology): Symbology for the entry.
-            archive (str): Archive URL for the entry
 
         Returns:
             bool: Whether the creation was successful.
@@ -238,9 +251,34 @@ class Absorber:
         log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
 
         # Convert to a Geojson text
-        geojson_path = self.convert_to_geojson(archive, catalogue_entry)
+        path = pathlib.Path(archive)
+        extension = path.suffix.lower()
+        if extension in ['.tif', '.tiff']:
+            geojson_path = ''
+        else:
+            geojson_path = self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
+        self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path)
+
+        # Create Layer Metadata
+        self.create_layer_metadata(metadata, catalogue_entry)
+
+        # Loop through attributes
+        if attributes:
+            self.create_layer_attributes(attributes, catalogue_entry)
+
+        # Create Layer Symbology
+        if symbology:
+            self.create_layer_symbology(symbology, catalogue_entry)
+
+        # Notify!
+        directory_notifications.catalogue_entry_creation(catalogue_entry)
+
+        # Return
+        return True
+
+    def create_layer_submission(self, metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path):
         models.layer_submissions.LayerSubmission.objects.create(
             description=metadata.description,
             file=archive,
@@ -252,13 +290,13 @@ class Absorber:
             geojson=geojson_path
         )
 
-        # Create Layer Metadata
+    def create_layer_metadata(self, metadata, catalogue_entry):
         models.layer_metadata.LayerMetadata.objects.create(
             created_at=metadata.created_at,
             catalogue_entry=catalogue_entry,
         )
 
-        # Loop through attributes
+    def create_layer_attributes(self, attributes, catalogue_entry):
         for attribute in attributes:
             # Create Attribute
             models.layer_attributes.LayerAttribute.objects.create(
@@ -268,35 +306,29 @@ class Absorber:
                 catalogue_entry=catalogue_entry,
             )
 
-        # Create Layer Symbology
+    def create_layer_symbology(self, symbology, catalogue_entry):
         models.layer_symbology.LayerSymbology.objects.create(
             sld=symbology.sld,
             catalogue_entry=catalogue_entry,
         )
-
-        # Notify!
-        directory_notifications.catalogue_entry_creation(catalogue_entry)
-
-        # Return
-        return True
 
     @transaction.atomic()
     def update_catalogue_entry(
         self,
         catalogue_entry: models.catalogue_entries.CatalogueEntry,
         metadata: readers.types.Metadata,
-        attributes: list[readers.types.Attribute],
-        symbology: readers.types.Symbology,
         archive: str,
+        attributes: Optional[list[readers.types.Attribute]] = [],
+        symbology: Optional[readers.types.Symbology] = None,
     ) -> bool:
         """Update a existing catalogue entry with the supplied values.
 
         Args:
             catalogue_entry (CatalogueEntry): Catalogue entry to update.
             metadata (Metadata): Metadata for the entry.
+            archive (str): Archive URL for the entry.
             attributes (list[Attribute]): Attributes for the entry.
             symbology (Symbology): Symbology for the entry.
-            archive (str): Archive URL for the entry.
 
         Returns:
             bool: Whether the update was successful.
