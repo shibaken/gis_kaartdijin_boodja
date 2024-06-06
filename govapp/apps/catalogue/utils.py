@@ -7,6 +7,7 @@ import json
 
 # Third Party
 from functools import wraps
+import pathlib
 from rest_framework import status
 from rest_framework import response
 from rest_framework.serializers import ValidationError
@@ -90,3 +91,47 @@ def validation_error_hander(serializer_class):
         return _wrapped_view
     return decorator
 
+
+def get_first_part_of_filename(filepath: pathlib.Path) -> str:
+    filename = filepath.name
+    parts = filename.split('.')
+    first_part = parts[0]
+    return first_part
+    
+def retrieve_additional_data(dataset):
+    metadata_dict = {}
+
+    # Get the metadata
+    metadata = dataset.GetMetadata()
+
+    for key, value in metadata.items():
+        metadata_dict[key] = value
+
+    # Resolution information
+    x_resolution = dataset.GetGeoTransform()[1]  # X Resolution
+    y_resolution = dataset.GetGeoTransform()[5]  # Y Resolution (often negative values)
+    metadata_dict['X Resolution'] = x_resolution
+    metadata_dict['Y Resolution'] = y_resolution
+
+    # Get the number of bands
+    bands = dataset.RasterCount
+    metadata_dict['Number of bands'] = bands
+
+    # Example of obtaining metadata for each band
+    for i in range(1, bands + 1):
+        band = dataset.GetRasterBand(i)
+        band_metadata = band.GetMetadata()
+        for key, value in band_metadata.items():
+            metadata_dict[f'Band {i} {key}'] = value
+
+    # Get the projection information
+    projection = dataset.GetProjection()
+    metadata_dict['Projection'] = projection
+
+    # Corner coordinates (e.g., geographic coordinates of the upper left corner)
+    geo_transform = dataset.GetGeoTransform()
+    origin_x = geo_transform[0]
+    origin_y = geo_transform[3]
+    metadata_dict['Origin'] = (origin_x, origin_y)
+
+    return metadata_dict

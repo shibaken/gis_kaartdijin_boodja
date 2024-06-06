@@ -19,6 +19,7 @@ class LayerMetadata(mixins.RevisionedMixin):
         related_name="metadata",
         on_delete=models.CASCADE,
     )
+    additional_data = models.JSONField(null=True, blank=True)
 
     class Meta:
         """Layer Metadata Model Metadata."""

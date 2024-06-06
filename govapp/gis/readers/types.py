@@ -4,6 +4,7 @@
 # Standard
 import dataclasses
 import datetime
+from typing import Any, Dict
 
 
 @dataclasses.dataclass
@@ -20,6 +21,7 @@ class Metadata:
     name: str
     description: str
     created_at: datetime.datetime
+    additional_data: Dict[str, Any] = dataclasses.field(default_factory=dict) 
 
 
 @dataclasses.dataclass
