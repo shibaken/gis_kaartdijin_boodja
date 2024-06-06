@@ -46,7 +46,6 @@ class Absorber:
         Args:
             path (str): File to absorb.
         """
-        # Log
         log.info(f"Retrieving '[{path}]' from storage...")        
 
         # # Retrieve file from remote storage
@@ -112,7 +111,6 @@ class Absorber:
                 else:
                     # Call the original function for other file types
                     self.process_vector_file(filepath)
-                # self.get_gis_layers_from_file(filepath)
             
         finally:
             if os.path.exists(temp_dir):
@@ -122,12 +120,6 @@ class Absorber:
     def process_tiff_file(self, filepath):
         # Convert the file path to a pathlib.Path object
         pathlib_filepath = pathlib.Path(filepath)
-        
-        # Open the file with GDAL
-        dataset = osgeo.gdal.Open(filepath)
-        if dataset is None:
-            log.error(f'Failed to open file: {filepath}')
-            return
         
         result = {'total': 1, 'success':[], 'fail':[]}
         # Create CatalogueEntry
@@ -141,26 +133,32 @@ class Absorber:
 
         log.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
         log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
-        
-        # Clean up GDAL dataset
-        dataset = None
 
     def absorb_tiff_as_layer(self, pathlib_filepath):
+        # Open the file with GDAL
+        dataset = osgeo.gdal.Open(str(pathlib_filepath))
+        if dataset is None:
+            log.error(f'Failed to open file: {str(pathlib_filepath)}')
+            return
+        additional_data = utils.retrieve_additional_data(dataset)
+        
         metadata = types.Metadata(
             name=utils.get_first_part_of_filename(pathlib_filepath),  # filename is like: State_Map_Base_FMS.20240606T015418.tif
             description="",  # Blank by Default
             created_at=datetime.datetime.now(datetime.timezone.utc),
+            additional_data=additional_data,
         )
 
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()
 
         # Check existing catalogue entry
         if not catalogue_entry:
-            # Create
             self.create_catalogue_entry(metadata, str(pathlib_filepath))
         else:
-            # Update
             self.update_catalogue_entry(catalogue_entry, metadata, str(pathlib_filepath))
+        
+        # Clean up GDAL dataset
+        dataset = None
 
     def process_vector_file(self, filepath):
         pathlib_filepath = pathlib.Path(filepath)
@@ -251,12 +249,8 @@ class Absorber:
         log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
 
         # Convert to a Geojson text
-        path = pathlib.Path(archive)
-        extension = path.suffix.lower()
-        if extension in ['.tif', '.tiff']:
-            geojson_path = ''
-        else:
-            geojson_path = self.convert_to_geojson(archive, catalogue_entry)
+        extension = pathlib.Path(archive).suffix.lower()
+        geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
         self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path)
@@ -294,6 +288,7 @@ class Absorber:
         models.layer_metadata.LayerMetadata.objects.create(
             created_at=metadata.created_at,
             catalogue_entry=catalogue_entry,
+            additional_data=metadata.additional_data,
         )
 
     def create_layer_attributes(self, attributes, catalogue_entry):

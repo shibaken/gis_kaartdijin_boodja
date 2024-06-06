@@ -14,24 +14,25 @@
             <div class='col-3'>
                 Created
             </div>
-            <div class='col-5 p-1'>
+            <div class='col-9 p-1'>
                     {{ catalogue_layer_metadata.created_at }}
             </div>
-            <div class='col-4'>
-                &nbsp;
-            </div>  
 
             <div class='col-3'>
                 Name
             </div>
-            <div class='col-5 p-1'>
+            <div class='col-9 p-1'>
                     {{ catalogue_layer_metadata.catalogue_entry.name }}
             </div>
-            <div class='col-4'>
-                &nbsp;
-            </div>  
 
-
+            <div class='col-3'>
+                Additional Data
+            </div>
+            <div class='col-9 p-1'>
+                {% for key, value in catalogue_layer_metadata.additional_data.items %}
+                    <div>{{ key }}: {{ value }}</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
