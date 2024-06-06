@@ -2,10 +2,11 @@
 
 
 # Standard
+import logging
 import pathlib
 
 # Third-Party
-from osgeo import ogr
+from osgeo import ogr, gdal
 
 # Local
 from govapp.gis import compression
@@ -14,6 +15,10 @@ from govapp.gis.readers import base
 
 # Typing
 from typing import Iterable
+
+
+# Logging
+log = logging.getLogger(__name__)
 
 
 class FileReader:
@@ -33,12 +38,14 @@ class FileReader:
 
         # Get layer reader class
         self.reader = utils.get_reader(self.file)
-
+            
         # Load data source
-        self.datasource: ogr.DataSource = utils.raise_if_none(
-            value=ogr.Open(str(self.file)),
-            message=f"Unable to read file '{self.file}'",
-        )
+        value = ogr.Open(str(self.file))
+
+        if value:
+            self.datasource = value
+        else:
+            raise ValueError(f'Unable to read file: [{self.file}]')
 
     def layers(self) -> Iterable[base.LayerReader]:
         """Iterates through the layers in the GIS file.

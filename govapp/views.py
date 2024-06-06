@@ -19,6 +19,7 @@ from govapp.apps.publisher.models import publish_entries as publish_entries_mode
 from govapp.apps.catalogue.models import custodians as custodians_models
 from govapp.apps.publisher.models import workspaces as publish_workspaces_models
 from govapp.apps.catalogue.models import layer_symbology as catalogue_layer_symbology_models
+from govapp.apps.catalogue.models import layer_attributes as catalogue_layer_attribute_models
 from govapp.apps.catalogue.models import layer_metadata as catalogue_layer_metadata_models
 from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
 from govapp.apps.catalogue.models import layer_subscriptions as catalogue_layer_subscription_models
@@ -293,6 +294,7 @@ class CatalogueEntriesView(base.TemplateView):
         catalogue_entry_list = []
         catalogue_id = self.kwargs['pk']
         symbology_definition = ''
+        catalogue_layer_attributes = ''
         catalogue_layer_metadata = None
 
         custodians_obj = custodians_models.Custodian.objects.all()
@@ -345,6 +347,8 @@ class CatalogueEntriesView(base.TemplateView):
         if catalogue_layer_metadata_obj.count() > 0:
             catalogue_layer_metadata = catalogue_layer_metadata_obj[0]
 
+        catalogue_layer_attributes = catalogue_layer_attribute_models.LayerAttribute.objects.filter(catalogue_entry=catalogue_id)
+
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
         context['custodians_obj'] = custodians_obj
@@ -354,6 +358,7 @@ class CatalogueEntriesView(base.TemplateView):
         context['symbology_definition'] = symbology_definition
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['has_edit_access'] = has_edit_access
+        context['catalogue_layer_attributes'] = catalogue_layer_attributes
         
     
         # Render Template and Return
