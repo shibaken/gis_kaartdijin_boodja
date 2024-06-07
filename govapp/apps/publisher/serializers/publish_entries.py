@@ -17,6 +17,12 @@ class PublishEntrySerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='catalogue_entry.name',)
     custodian_name = serializers.ReadOnlyField(source='catalogue_entry.custodian.name',)
     catalogue_type = serializers.ReadOnlyField(source='catalogue_entry.type',)
+    publishable_to_ftp = serializers.SerializerMethodField()
+    publishable_to_geoserver = serializers.SerializerMethodField()
+    publishable_to_cddp = serializers.SerializerMethodField()
+    num_of_ftp_publish_channels = serializers.SerializerMethodField()
+    num_of_geoserver_publish_channels = serializers.SerializerMethodField()
+    num_of_cddp_publish_channels = serializers.SerializerMethodField()
 
     class Meta:
         """Publish Entry Model Serializer Metadata."""
@@ -31,18 +37,41 @@ class PublishEntrySerializer(serializers.ModelSerializer):
             "published_at",
             "editors",
             "assigned_to",
-        #    "catalogue_entry",
-            "cddp_channel",
+            "cddp_channels",
             "geoserver_channels",
             "first_name",
             "last_name",
             "email",
             "custodian_name",
             "catalogue_type"
+            "publishable_to_ftp",
+            "publishable_to_geoserver",
+            "publishable_to_cddp",
+            "num_of_ftp_publish_channels",
+            "num_of_geoserver_publish_channels",
+            "num_of_cddp_publish_channels",
         )
 
     def get_email(self, obj):
         return obj.email
+
+    def get_publishable_to_ftp(self, obj):
+        return obj.publishable_to_ftp
+
+    def get_publishable_to_geoserver(self, obj):
+        return obj.publishable_to_geoserver
+
+    def get_publishable_to_cddp(self, obj):
+        return obj.publishable_to_cddp
+
+    def get_num_of_ftp_publish_channels(self, obj):
+        return obj.num_of_ftp_publish_channels
+
+    def get_num_of_geoserver_publish_channels(self, obj):
+        return obj.num_of_geoserver_publish_channels
+        
+    def get_num_of_cddp_publish_channels(self, obj):
+        return obj.num_of_cddp_publish_channels
 
 
 class PublishEntryCreateSerializer(serializers.ModelSerializer):
@@ -61,7 +90,7 @@ class PublishEntryCreateSerializer(serializers.ModelSerializer):
             "published_at",
             "editors",
             "assigned_to",
-            "cddp_channel",
+            "cddp_channels",
             "geoserver_channels",
         )
 

@@ -33,14 +33,11 @@
                                     <div class='col-12 p-3 border-bottom'>
                                           <p><b>Communication</b><br>
                                           <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
-
                                     </div>
                                     <div class='col-12 p-3'>
                                           <p><b>Actions</b><br>
                                           <a href='#' id="log_actions_show">Show</a></p>
-
                                     </div>
-
                               </div>
                               <br>
                               <div class='col-12 border'>
@@ -71,35 +68,47 @@
                                                                   {% endif %}
                                                             {% endfor %}
                                                       </select>
-                                                
                                                       <button class='btn btn-primary btn-sm' id='publish-assigned-to-btn' href=''>Assign</button>
                                                 </div>
-
                                           </p>
-
                                     </div>
                                     <div class='col-12 p-3'>
-                                          <p>
-                                                <b>Actions</b><br>
-                                                {% if publish_entry_obj.status == 1 %}                                          
-                                                      <button class='btn btn-primary btn-sm' id='publish-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
-                                                {% else %}                                          
-                                                      <button class='btn btn-primary btn-sm' id='publish-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
+                                          <div><b>Actions</b></div>
+                                          {% if publish_entry_obj.status == 1 %}
+                                                <div class="mb-2"><button class='btn btn-primary btn-sm w-50' id='publish-unlock'>Unlock</button></div>
+                                                {% if publishable_to_ftp %}
+                                                      {% if num_of_ftp_publish_channels > 0 %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp'>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
+                                                      {% else %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp' disabled>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
+                                                      {% endif %}
                                                 {% endif %}
-                                                
-                                          </p>
 
+                                                {% if publishable_to_geoserver %}
+                                                      {% if num_of_geoserver_publish_channels > 0 %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-geoserver'>Publish Geoserver ({{ num_of_geoserver_publish_channels }})</button></div>
+                                                      {% else %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-geoserver' disabled>Publish Geoserver ({{ num_of_geoserver_publish_channels }})</button></div>
+                                                      {% endif %}
+                                                {% endif %}
+
+                                                {% if publishable_to_cddp %}
+                                                      {% if num_of_cddp_publish_channels > 0 %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-cddp'>Publish CDDP ({{ num_of_cddp_publish_channels }})</button></div>
+                                                      {% else %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-cddp' disabled>Publish CDDP ({{ num_of_cddp_publish_channels }})</button></div>
+                                                      {% endif %}
+                                                {% endif %}
+                                          {% else %}
+                                                <div class="mb-2"><button class='btn btn-primary btn-sm w-50' id='publish-lock'>Lock</button></div>
+                                          {% endif %}
                                     </div>
-
                               </div>
-
-
                         </div>
                         <div class='col-9'>
-
-                              <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+                              <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                               <input type="hidden" id="publish_id" name="publish_id" value="{{ publish_id  }}">
-                              <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
+                              <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access }}">
                               
                               <div class="card" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
@@ -110,86 +119,83 @@
                                     <div class="col-6 text-end">
                                           <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
                                     </div>
-                                    </div>         
+                                    </div>
                               </div>
                               <div class="card-body collapse show" id="box1-card-body">
                                     <div class='row'>
-                                                <div class='col-3'>
-                                                      Name
-                                                </div>
-                                                <div class='col-5 p-1'>
-                                                      {% if has_edit_access is True %}
-                                                            <input type="text" readonly class="form-control-plaintext" id="publish-name" value="{{ publish_entry_obj.name }}" >
-                                                      {% else %}
-                                                            {{ publish_entry_obj.name }}
-                                                      {% endif %}
-                                                </div>
-                                                <div class='col-4'>
-                                                      &nbsp;
-                                                </div>                        
+                                          <div class='col-3'>
+                                                Name
+                                          </div>
+                                          <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}
+                                                      <input type="text" readonly class="form-control-plaintext" id="publish-name" value="{{ publish_entry_obj.name }}" >
+                                                {% else %}
+                                                      {{ publish_entry_obj.name }}
+                                                {% endif %}
+                                          </div>
+                                          <div class='col-4'>
+                                                &nbsp;
+                                          </div>                        
 
-                                                <div class='col-3'>
-                                                      Catalogue entry 
-                                                </div>
-                                                <div class='col-5 p-1'>
-                                                      {% if has_edit_access is True %}
-                                                      <select type="text" class="form-control" id="publish-catalogue-entry" >
+                                          <div class='col-3'>
+                                                Catalogue entry 
+                                          </div>
+                                          <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}
+                                                <select type="text" class="form-control" id="publish-catalogue-entry" >
+                                                      <option value="">Select One</option>
+                                                      {% for ce in catalogue_entry_list %}
+                                                            {% if publish_entry_obj.catalogue_entry.id == ce.id %}
+                                                                  <option value="{{ ce.id }}" selected>{{ ce.name }}</option>
+                                                            {% else %}
+                                                                  <option value="{{ ce.id }}">{{ ce.name }}</option>
+                                                            {% endif %}
+                                                      {% endfor %}                                                            
+                                                </select>
+                                                {% else %}
+                                                      {{ publish_entry_obj.catalogue_entry.name }}
+                                                {% endif %}
+                                          </div>
+                                          <div class='col-4'>
+                                                &nbsp;
+                                          </div> 
+
+                                          <div class='col-3'>
+                                                Custodian
+                                          </div>
+                                          <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}                                          
+                                                      <select type="text" class="form-control" id="publish-custodian-entry" disabled style='display:none'>
                                                             <option value="">Select One</option>
-                                                            {% for ce in catalogue_entry_list %}
-                                                                  {% if publish_entry_obj.catalogue_entry.id == ce.id %}
-                                                                        <option value="{{ ce.id }}" selected>{{ ce.name }}</option>
+                                                            {% for cd in custodians_obj %}
+                                                                  {% if publish_entry_obj.catalogue_entry.custodian.id == cd.id %} 
+                                                                        <option value="{{ cd.id }}" selected>{{ cd.name }}</option>
                                                                   {% else %}
-                                                                        <option value="{{ ce.id }}">{{ ce.name }}</option>
+                                                                        <option value="{{ cd.id }}">{{ cd.name }}</option>
                                                                   {% endif %}
                                                             {% endfor %}                                                            
                                                       </select>
-                                                      {% else %}
-                                                            {{ publish_entry_obj.catalogue_entry.name }}
-                                                      {% endif %}
-                                                </div>
-                                                <div class='col-4'>
-                                                      &nbsp;
-                                                </div> 
+                                                      {{ publish_entry_obj.catalogue_entry.custodian.name }}
+                                                {% else %}
+                                                      {{ publish_entry_obj.catalogue_entry.custodian.name }}
+                                                {% endif %}
+                                          </div>
+                                          <div class='col-4'>
+                                                &nbsp;
+                                          </div>       
 
-                                                <div class='col-3'>
-                                                      Custodian
-                                                </div>
-                                                <div class='col-5 p-1'>
-                                                      {% if has_edit_access is True %}                                          
-                                                            <select type="text" class="form-control" id="publish-custodian-entry" disabled style='display:none'>
-                                                                  <option value="">Select One</option>
-                                                                  {% for cd in custodians_obj %}
-                                                                        {% if publish_entry_obj.catalogue_entry.custodian.id == cd.id %} 
-                                                                              <option value="{{ cd.id }}" selected>{{ cd.name }}</option>
-                                                                        {% else %}
-                                                                              <option value="{{ cd.id }}">{{ cd.name }}</option>
-                                                                        {% endif %}
-                                                                  {% endfor %}                                                            
-                                                            </select>
-                                                            {{ publish_entry_obj.catalogue_entry.custodian.name }}
-                                                      {% else %}
-                                                            {{ publish_entry_obj.catalogue_entry.custodian.name }}
-                                                      {% endif %}
-                                                </div>
-                                                <div class='col-4'>
-                                                      &nbsp;
-                                                </div>       
+                                          <div class='col-3'>
+                                                Last Updated Date Time
+                                          </div>
 
-                                                <div class='col-3'>
-                                                      Last Updated Date Time
-                                                </div>
-
-                                                <div class='col-5 p-1'>                              
-                                                      {{ publish_entry_obj.updated_at }}
-                                                </div>
-                                                <div class='col-4'>
-                                                      &nbsp;
-                                                </div>       
-
-
+                                          <div class='col-5 p-1'>                              
+                                                {{ publish_entry_obj.updated_at }}
+                                          </div>
+                                          <div class='col-4'>
+                                                &nbsp;
+                                          </div>       
                                     </div>
                               </div>
-
                         </div>
                         <BR>
 
@@ -376,12 +382,9 @@
                                                       </table>                                  
                                                 </div>      
                                           </div>
-                  
                                     </div>
-                  
                               </div>
                         {% endif %}
-      
 
                         <BR>
                         <div class="card" >
@@ -477,18 +480,17 @@
                               </div>
                         </div>
                         <div class='col-12 pt-2'>
-                                    <div class='row'>
-                                          <div class='col-6'>
-                                                &nbsp;
-                                          </div>
-                                          <div class='col-6 text-end'>
-                                                {% if has_edit_access is True %}
-                                                      <button class="btn btn-primary" id='publish-btn-save' aria-current="page" >Save</button>  
-                                                      <button class="btn btn-primary" id='publish-btn-save-exit'  aria-current="page" >Save and exit</button>  
-                                                {% endif %}
-                                          </div>
-
+                              <div class='row'>
+                                    <div class='col-6'>
+                                          &nbsp;
                                     </div>
+                                    <div class='col-6 text-end'>
+                                          {% if has_edit_access is True %}
+                                                <button class="btn btn-primary" id='publish-btn-save' aria-current="page" >Save</button>  
+                                                <button class="btn btn-primary" id='publish-btn-save-exit'  aria-current="page" >Save and exit</button>  
+                                          {% endif %}
+                                    </div>
+                              </div>
                         </div>
                   </div>
             </div>
@@ -499,11 +501,11 @@
             <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
             <input type="hidden" id="catalogue-type" name="current_user" value="{{ publish_entry_obj.catalogue_entry.type }}">
 
+            {% include "govapp/publish_style.html" %}
+
             <script>
                   kbpublish.init_publish_item();
-                  // kbpublish.var.publish_geoserver_pools = { 1: "test1", 2: "test2" };
                   kbpublish.var.publish_geoserver_pools = {{ geoserver_pool_list_json|safe }};
-                  // kbpublish.var.publish_geoserver_pools = JSON.load("{{ geoserver_pool_list }}");
             </script>
       {% else %}
             <div class="container" id="dashboard-table-container">

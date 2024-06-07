@@ -72,7 +72,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
     publish_entry = models.ForeignKey(
         # publish_entries.PublishEntry,
         'PublishEntry',
-        related_name="cddp_channel",
+        related_name="cddp_channels",
         on_delete=models.CASCADE,
     )
 
@@ -527,7 +527,7 @@ class FTPPublishChannel(mixins.RevisionedMixin):
     publish_entry = models.ForeignKey(
         # publish_entries.PublishEntry,
         'PublishEntry',
-        related_name="ftp_channel",
+        related_name="ftp_channels",
         on_delete=models.CASCADE,
         null=True, 
         blank=True,        

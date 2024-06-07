@@ -41,6 +41,11 @@ class PublishEntryStatus(models.IntegerChoices):
     UNLOCKED = 2
 
 
+class PublishEntryManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('geoserver_channels', 'cddp_channels', 'ftp_channels')
+
+
 @reversion.register()
 class PublishEntry(mixins.RevisionedMixin):
     """Model for a Publish Entry."""
@@ -66,6 +71,7 @@ class PublishEntry(mixins.RevisionedMixin):
         related_name="publish_entry",
         on_delete=models.CASCADE,
     )
+    objects = PublishEntryManager()
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.
@@ -101,12 +107,28 @@ class PublishEntry(mixins.RevisionedMixin):
         return self.catalogue_entry.name
 
     @property
+    def num_of_geoserver_publish_channels(self):
+        return self.geoserver_channels.count() if hasattr(self, 'geoserver_channels') else 0
+
+    @property
+    def num_of_cddp_publish_channels(self):
+        return self.cddp_channels.count() if hasattr(self, 'cddp_channels') else 0
+
+    @property
+    def num_of_ftp_publish_channels(self):
+        return self.ftp_channels.count() if hasattr(self, 'ftp_channels') else 0
+
+    @property
     def publishable_to_cddp(self):
         return True if self.catalogue_entry.type in catalogue_entries.CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_CDDP else False
 
     @property
     def publishable_to_ftp(self):
         return True if self.catalogue_entry.type in catalogue_entries.CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP else False
+    
+    @property
+    def publishable_to_geoserver(self):
+        return True
 
     @classmethod
     def from_request(cls, request: request.Request) -> Optional["PublishEntry"]:
@@ -148,7 +170,7 @@ class PublishEntry(mixins.RevisionedMixin):
             symbology_only (bool): Flag to only publish symbology.
         """
         # Check for Publish Channel
-        if not hasattr(self, "cddp_channel"):
+        if not hasattr(self, "cddp_channels"):
             # Log
             log.info(f"'{self}' has no CDDP Publish Channel")
 
@@ -156,7 +178,7 @@ class PublishEntry(mixins.RevisionedMixin):
             return
 
         # Log
-        log.info(f"Publishing '{self.catalogue_entry}' - '{self.cddp_channel}' ({symbology_only=})")
+        log.info(f"Publishing '{self.catalogue_entry}' - '{self.cddp_channels}' ({symbology_only=})")
         from govapp.apps.publisher.models.publish_channels import CDDPPublishChannel
         # Handle Errors
         try:
@@ -185,7 +207,7 @@ class PublishEntry(mixins.RevisionedMixin):
             symbology_only (bool): Flag to only publish symbology.
         """
         # Check for Publish Channel
-        if not hasattr(self, "ftp_channel"):
+        if not hasattr(self, "ftp_channels"):
             # Log
             log.info(f"'{self}' has no FTP Publish Channel")
 
@@ -193,7 +215,7 @@ class PublishEntry(mixins.RevisionedMixin):
             return
 
         # Log
-        log.info(f"FTP Publishing '{self.catalogue_entry}' - '{self.cddp_channel}' ({symbology_only=})")
+        log.info(f"FTP Publishing '{self.catalogue_entry}' - '{self.cddp_channels}' ({symbology_only=})")
         from govapp.apps.publisher.models.publish_channels import FTPPublishChannel
         # Handle Errors
         try:
