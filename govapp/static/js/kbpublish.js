@@ -1080,7 +1080,7 @@ var kbpublish = {
                             html+= "<div class='row d-flex justify-content-center align-items-center'>";
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
-                                    html += '<div class="col-sm-2 d-grid" style="position: relative;">'
+                                    html += '<div class="col-sm-2" style="position: relative;">'
                                     if (kbpublish.var.catalogue_entry_type_allowed_for_ftp.includes(response.results[i].catalogue_type)){
                                         html += " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>";
                                     }
