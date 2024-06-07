@@ -31,6 +31,7 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
 class CustodianAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','contact_name','contact_email','contact_phone')
     list_display = ('id', 'name', 'contact_name', 'contact_email', 'contact_phone')
+    list_display_links = ('id', 'name',)
     ordering = ('id',)
 
 class LayerAttributeAdmin(reversion.admin.VersionAdmin):

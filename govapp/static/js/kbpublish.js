@@ -239,13 +239,16 @@ var kbpublish = {
             kbpublish.change_publish_status('unlock');
         });
         $("#publish-to-ftp").click(function(){
-            kbpublish.publish_to_ftp();
+            let publish_entry_id = $('#publish_id').val();
+            kbpublish.publish_to_ftp(publish_entry_id, $(this));
         });
         $("#publish-to-geoserver").click(function(){
-            kbpublish.publish_to_geoserver();
+            let publish_entry_id = $('#publish_id').val();
+            kbpublish.publish_to_geoserver(publish_entry_id, $(this));
         });
         $("#publish-to-cddp").click(function(){
-
+            let publish_entry_id = $('#publish_id').val();
+            kbpublish.publish_to_cddp(publish_entry_id, $(this));
         });
         $( "#publish-assigned-to-btn" ).click(function() {
             kbpublish.set_assigned_to();
@@ -1075,22 +1078,22 @@ var kbpublish = {
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             // html+= " <td class='text-end'>";
                             html+= " <td>";
-                            html+= "<div class='row d-flex justify-content-center align-items-center'>";
+                            html+= "<div class='row justify-content-center align-items-center'>";
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
                                     html += '<div class="col-sm-2" style="position: relative;">'
                                     if (kbpublish.var.catalogue_entry_type_allowed_for_ftp.includes(response.results[i].catalogue_type)){
-                                        html += " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish FTP</button>";
+                                        html += " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish<br/>FTP</button>";
                                     }
                                     html += '</div>'
 
                                     html += '<div class="col-sm-3" style="position: relative;">'
-                                    html += "<button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish Geoserver</button>";
+                                    html += "<button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish<br/>Geoserver</button>";
                                     html += '</div>'
 
                                     html += '<div class="col-sm-3" style="position: relative;">'
                                     if (kbpublish.var.catalogue_entry_type_allowed_for_cddp.includes(response.results[i].catalogue_type)){
-                                        html += " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish CDDP</button>";
+                                        html += " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish<br/>CDDP</button>";
                                     }
                                     html += '</div>'
                                 } else {
@@ -1099,11 +1102,11 @@ var kbpublish = {
                             } else {
                                 html += '<div class="col-sm-8"></div>'
                             }
-                            html+= '<div class="col-sm-1">'
+                            html+= '<div class="col-sm-2">'
                             html+="  <a class='btn btn-primary btn-sm' href='/publish/"+response.results[i].id+"'>View</a>";
                             html += '</div>'
 
-                            html+= '<div class="col-sm-1">'
+                            html+= '<div class="col-sm-2">'
                             html+="  <button class='btn btn-secondary btn-sm'>History</button>";
                             html += '</div>'
 
