@@ -60,14 +60,6 @@ var kbpublish = {
             },
             catalogue_entry_list: null,
             catalogue_entry_map: {},
-            catalogue_entry_type_allowed_for_cddp: [
-                catalogue_entry_type.SPATIAL_FILE,
-                catalogue_entry_type.SUBSCRIPTION_QUERY
-            ],
-            catalogue_entry_type_allowed_for_ftp: [
-                catalogue_entry_type.SPATIAL_FILE,
-                catalogue_entry_type.SUBSCRIPTION_QUERY
-            ],
             publish_date_format: "dd/mm/yyyy",
             publish_table_date_format: "DD MMM YYYY HH:mm:ss",
             publish_email_notification_type:null,    // will be filled during initiation
@@ -1078,22 +1070,36 @@ var kbpublish = {
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             // html+= " <td class='text-end'>";
                             html+= " <td>";
-                            html+= "<div class='row justify-content-center align-items-center'>";
+                            // html+= "<div class='row justify-content-center align-items-center'>";
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
-                                    html += '<div class="col-sm-2" style="position: relative;">'
-                                    if (kbpublish.var.catalogue_entry_type_allowed_for_ftp.includes(response.results[i].catalogue_type)){
-                                        html += " <button class='btn btn-primary btn-sm publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish<br/>FTP</button>";
+                                    html += '<div class="" style="position: relative;">'
+                                    if (response.results[i].publishable_to_ftp){
+                                        let disabled = ''
+                                        if (response.results[i].num_of_ftp_publish_channels <= 0){
+                                            disabled = ' disabled'
+                                        }
+                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
 
-                                    html += '<div class="col-sm-3" style="position: relative;">'
-                                    html += "<button class='btn btn-primary btn-sm publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"' >Publish<br/>Geoserver</button>";
+                                    html += '<div class="mt-1" style="position: relative;">'
+                                    if (response.results[i].publishable_to_geoserver){
+                                        let disabled = ''
+                                        if (response.results[i].num_of_geoserver_publish_channels <= 0){
+                                            disabled = ' disabled'
+                                        }
+                                        html += "<button class='btn btn-primary btn-sm w-100 publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish Geoserver (" + response.results[i].num_of_geoserver_publish_channels + ")</button>";
+                                    }
                                     html += '</div>'
 
-                                    html += '<div class="col-sm-3" style="position: relative;">'
-                                    if (kbpublish.var.catalogue_entry_type_allowed_for_cddp.includes(response.results[i].catalogue_type)){
-                                        html += " <button class='btn btn-primary btn-sm publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'>Publish<br/>CDDP</button>";
+                                    html += '<div class="mt-1" style="position: relative;">'
+                                    if (response.results[i].publishable_to_cddp){
+                                        let disabled = ''
+                                        if (response.results[i].num_of_cddp_publish_channels <= 0){
+                                            disabled = ' disabled'
+                                        }
+                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish CDDP (" + response.results[i].num_of_cddp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
                                 } else {
@@ -1102,16 +1108,11 @@ var kbpublish = {
                             } else {
                                 html += '<div class="col-sm-8"></div>'
                             }
-                            html+= '<div class="col-sm-2">'
-                            html+="  <a class='btn btn-primary btn-sm' href='/publish/"+response.results[i].id+"'>View</a>";
-                            html += '</div>'
+                            html+="<div class='d-flex gap-1 mt-1'>"
+                                html+="<a class='btn btn-primary btn-sm flex-grow-1' href='/publish/"+response.results[i].id+"'>View</a>";
+                                html+="<button class='btn btn-secondary btn-sm flex-grow-1'>History</button>";
+                            html+="</div>"
 
-                            html+= '<div class="col-sm-2">'
-                            html+="  <button class='btn btn-secondary btn-sm'>History</button>";
-                            html += '</div>'
-
-
-                            html+="</div>";
                             html+="  </td>";
                             html+= "<tr>";
                         }

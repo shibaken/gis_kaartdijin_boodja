@@ -77,11 +77,27 @@
                                           {% if publish_entry_obj.status == 1 %}
                                                 <div class="mb-2"><button class='btn btn-primary btn-sm w-50' id='publish-unlock'>Unlock</button></div>
                                                 {% if publishable_to_ftp %}
-                                                      <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp'>Publish FTP</button></div>
+                                                      {% if num_of_ftp_publish_channels > 0 %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp'>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
+                                                      {% else %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp' disabled>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
+                                                      {% endif %}
                                                 {% endif %}
-                                                <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-geoserver'>Publish Geoserver</button></div>
+
+                                                {% if publishable_to_geoserver %}
+                                                      {% if num_of_geoserver_publish_channels > 0 %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-geoserver'>Publish Geoserver ({{ num_of_geoserver_publish_channels }})</button></div>
+                                                      {% else %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-geoserver' disabled>Publish Geoserver ({{ num_of_geoserver_publish_channels }})</button></div>
+                                                      {% endif %}
+                                                {% endif %}
+
                                                 {% if publishable_to_cddp %}
-                                                      <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-cddp'>Publish CDDP</button></div>
+                                                      {% if num_of_cddp_publish_channels > 0 %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-cddp'>Publish CDDP ({{ num_of_cddp_publish_channels }})</button></div>
+                                                      {% else %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-cddp' disabled>Publish CDDP ({{ num_of_cddp_publish_channels }})</button></div>
+                                                      {% endif %}
                                                 {% endif %}
                                           {% else %}
                                                 <div class="mb-2"><button class='btn btn-primary btn-sm w-50' id='publish-lock'>Lock</button></div>
