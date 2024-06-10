@@ -69,6 +69,18 @@
                                         </select>                                            
                                    </div>
                               </div>
+                              <div class='row align-items-center mb-3'>
+                                   <div class='col-3 text-end'>
+                                        <label for="" class="form-label mb-0">Store Type</label>
+                                   </div>
+                                   <div class='col-9'>
+                                        <select type="text" class="form-control" id="new-publish-store-type" >
+                                        {% for id, label in store_types.items %}                                        
+                                             <option value="{{ id }}">{{ label }}</option>
+                                        {% endfor %}                                                                      
+                                        </select>                                            
+                                   </div>
+                              </div>
                          </div>
                     </form>
                     <div class="modal-footer">
@@ -84,7 +96,7 @@
      </div>
 </div>
 
-<div class="modal fade" id="PublishNewGeoserverSubscriptionModal" tabindex="-1" aria-labelledby="PublishNewGeoserverSubscriptionModal" aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
+<!-- <div class="modal fade" id="PublishNewGeoserverSubscriptionModal" tabindex="-1" aria-labelledby="PublishNewGeoserverSubscriptionModal" aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
      <div class="modal-dialog modal-xl">
           <div class="modal-content">
                <div class="modal-header">
@@ -209,4 +221,4 @@
           <div class="modal-footer"></div>
      </div>
 </div>
-</div>
+</div> -->
