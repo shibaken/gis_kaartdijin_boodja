@@ -36,7 +36,7 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
 
 
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'publish_entry', 'geoserver_pool', 'mode', 'frequency', 'workspace', 'active',)
+    list_display = ('id', 'publish_entry', 'geoserver_pool', 'store_type', 'mode', 'frequency', 'workspace', 'active',)
     
 
 class GeoServerQueueAdmin(reversion.admin.VersionAdmin):

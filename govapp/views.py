@@ -30,6 +30,7 @@ from govapp.apps.accounts import utils
 from typing import Any
 
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
+from govapp.apps.publisher.models.publish_channels import StoreType
 
 UserModel = auth.get_user_model()
 
@@ -174,6 +175,7 @@ class PublishView(base.TemplateView):
         publish_workspaces = publish_workspaces_models.Workspace.objects.all()
         publish_workspace_list = [{'id': ws.id, 'name': ws.name} for ws in publish_workspaces]
         geoserver_pools = GeoServerPool.objects.filter(enabled=True)
+        store_types = dict(StoreType.choices)
 
         ### START - To be improved later todo a reverse table join      
         # This code lists CatalogueEntries not associated with any PublishEntry, along with CatalogueEntries associated with a specific PublishEntry.
@@ -225,6 +227,7 @@ class PublishView(base.TemplateView):
         context['publish_workspace_list'] = publish_workspace_list
         context['geoserver_pools'] = geoserver_pools
         context['geoserver_pool_list_json'] = json.dumps(geoserver_pool_list)
+        context['store_types'] = store_types
     
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
