@@ -1,0 +1,96 @@
+<div class="modal fade" id="PublishNewUpdateGeoserverModal" tabindex="-1" aria-labelledby="PublishNewUpdateGeoserverModal" aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
+     <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+               <div class="modal-header">
+                   <h5 class="modal-title" id="new-update-geoserver-modal-title"></h5>
+                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body">
+                    <div class="alert alert-danger" role="alert" id='new-publish-new-geoserver-popup-error' style='display:none'>
+                    </div>
+                    <div class="alert alert-success" role="alert" id='new-publish-new-geoserver-success' style='display:none'>
+                    </div>
+                    <input type="hidden" name="geoserver_publish_channel_id" id="geoserver_publish_channel_id" value=""/>
+                    <form>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-3 text-end'>
+                                   <label for="" class="form-label mb-0">Name</label>
+                              </div>
+                              <div class='col-9'>
+                                   <input type="text" readonly class="form-control-plaintext" id="new-publish-name" value="{{ publish_entry_obj.catalogue_entry.name }}" autocomplete="off">
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-3 text-end'>
+                                   <label for="" class="form-label mb-0">GeoServer Pool</label>
+                              </div>
+                              <div class='col-9'>
+                                   <select type="text" class="form-control" id="new-publish-geoserver-pool" >
+                                        <option value="">Select One</option>   
+                                        {% for gsp in geoserver_pools %}                                        
+                                             <option value="{{ gsp.id }}">{{ gsp.name }}</option>
+                                        {% endfor %}                                                                      
+                                   </select>                                            
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-3 text-end'>
+                                   <label for="" class="form-label mb-0">Spatial Format</label>
+                              </div>
+                              <div class='col-9'>
+                                   <select type="text" class="form-control" id="new-publish-spatial-format" >                                        
+                                   <option value="" selected="">Select One</option>                                           
+                                   <option value="1">Wms</option>                                           
+                                   <option value="2">Wms And Wfs</option>                            
+                                   </select>                  
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-3 text-end'>
+                                   <label for="" class="form-label mb-0">Frequency Type</label>
+                              </div>
+                              <div class='col-9'>
+                                   <select type="text" class="form-control" id="new-publish-frequency-type" >
+                                   <option value="">Select One</option>   
+                                   <option value="1">On Change</option>                               
+                                   </select>                                            
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-3 text-end'>
+                                   <label for="" class="form-label mb-0">Workspace</label>
+                              </div>
+                              <div class='col-9'>
+                                   <select type="text" class="form-control" id="new-publish-workspace" >
+                                   <option value="">Select One</option>   
+                                   {% for pw in publish_workspaces %}                                        
+                                        <option value="{{ pw.id }}">{{ pw.name }}</option>
+                                   {% endfor %}                                                                      
+                                   </select>                                            
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-3 text-end'>
+                                   <label for="" class="form-label mb-0">Store Type</label>
+                              </div>
+                              <div class='col-9'>
+                                   <select type="text" class="form-control" id="new-publish-store-type" >
+                                   {% for id, label in store_types.items %}                                        
+                                        <option value="{{ id }}">{{ label }}</option>
+                                   {% endfor %}                                                                      
+                                   </select>                                            
+                              </div>
+                         </div>
+                    </form>
+                    <div class="modal-footer">
+                         <div class='col-12 text-end'>
+                              <button type="button" class="btn btn-primary booking-policy-save" id='create-update-publish-geoserver-btn'></button>                                
+                              <div class="spinner-border text-primary" role="status" style="display:none" id="newpublish-geoserver-loader-popup">
+                                   <span class="visually-hidden">Loading...</span>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </div>
+</div>

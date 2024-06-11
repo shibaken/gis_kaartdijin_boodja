@@ -4,7 +4,7 @@
       {% if request.user.is_authenticated is True %}
 
             {% include "govapp/manage_editors_modal.html" %}
-            {% include "govapp/publish_view_new_geoserver.html" %}
+            {% include "govapp/publish_view_create_update_geoserver.html" %}
             {% include "govapp/publish_view_new_cddp.html" %}
             {% include "govapp/publish_view_new_ftp.html" %}
             {% include "govapp/common_entity_modal.html" %}
@@ -76,14 +76,6 @@
                                           <div><b>Actions</b></div>
                                           {% if publish_entry_obj.status == 1 %}
                                                 <div class="mb-2"><button class='btn btn-primary btn-sm w-50' id='publish-unlock'>Unlock</button></div>
-                                                {% if publishable_to_ftp %}
-                                                      {% if num_of_ftp_publish_channels > 0 %}
-                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp'>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
-                                                      {% else %}
-                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp' disabled>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
-                                                      {% endif %}
-                                                {% endif %}
-
                                                 {% if publishable_to_geoserver %}
                                                       {% if num_of_geoserver_publish_channels > 0 %}
                                                             <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-geoserver'>Publish Geoserver ({{ num_of_geoserver_publish_channels }})</button></div>
@@ -97,6 +89,14 @@
                                                             <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-cddp'>Publish CDDP ({{ num_of_cddp_publish_channels }})</button></div>
                                                       {% else %}
                                                             <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-cddp' disabled>Publish CDDP ({{ num_of_cddp_publish_channels }})</button></div>
+                                                      {% endif %}
+                                                {% endif %}
+
+                                                {% if publishable_to_ftp %}
+                                                      {% if num_of_ftp_publish_channels > 0 %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp'>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
+                                                      {% else %}
+                                                            <div class="mb-2" style="position: relative;"><button class='btn btn-primary btn-sm w-100' id='publish-to-ftp' disabled>Publish FTP ({{ num_of_ftp_publish_channels }})</button></div>
                                                       {% endif %}
                                                 {% endif %}
                                           {% else %}

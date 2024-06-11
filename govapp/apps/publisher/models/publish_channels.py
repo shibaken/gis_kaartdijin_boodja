@@ -300,6 +300,11 @@ class GeoServerPublishChannelMode(models.IntegerChoices):
     WMS_AND_WFS = 2
 
 
+class StoreType(models.IntegerChoices):
+    GEOPACKAGE = 1, 'GeoPackage'
+    GEOTIFF = 2, 'GeoTiff'
+
+
 class GeoServerPublishChannelManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related('workspace', 'publish_entry', 'geoserver_pool')
@@ -340,13 +345,14 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     llb_miny = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
     llb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
     llb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
-    active = models.BooleanField(null=True, blank=True,)
+    active = models.BooleanField(null=True, blank=True, default=True)
     geoserver_pool = models.ForeignKey(  # We want to select the destination geoserver_pools rather than sending the layers to all the geoserver_pools.
         GeoServerPool,
         null=True, 
         blank=True,
         on_delete=models.SET_NULL,
     )
+    store_type = models.IntegerField(choices=StoreType.choices, default=StoreType.GEOPACKAGE)
     objects = GeoServerPublishChannelManager()
 
     class Meta:
