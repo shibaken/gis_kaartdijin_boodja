@@ -599,6 +599,10 @@ var kbpublish = {
         let newpublishgeoserverpool = $('#new-publish-geoserver-pool').val();
         let newpublishstoretype = $('#new-publish-store-type').val();
         // Validate data
+        if (newpublishgeoserverpool.length < 1) {
+            error_msg_elem.html("Please choose a geoserver pool.").show();
+            return false;
+        }
         if (newpublishspatialformat.length < 1) {
             error_msg_elem.html("Please choose a spatial format.").show();
             return false;
@@ -609,10 +613,6 @@ var kbpublish = {
         }
         if (newpublishworkspace.length < 1) {
             error_msg_elem.html("Please choose a workspace.").show();
-            return false;
-        }
-        if (newpublishgeoserverpool.length < 1) {
-            error_msg_elem.html("Please choose a geoserver pool.").show();
             return false;
         }
         if (newpublishstoretype.length < 1) {
@@ -1088,16 +1088,6 @@ var kbpublish = {
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
                                     html += '<div class="" style="position: relative;">'
-                                    if (response.results[i].publishable_to_ftp){
-                                        let disabled = ''
-                                        if (response.results[i].num_of_ftp_publish_channels <= 0){
-                                            disabled = ' disabled'
-                                        }
-                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
-                                    }
-                                    html += '</div>'
-
-                                    html += '<div class="mt-1" style="position: relative;">'
                                     if (response.results[i].publishable_to_geoserver){
                                         let disabled = ''
                                         if (response.results[i].num_of_geoserver_publish_channels <= 0){
@@ -1114,6 +1104,16 @@ var kbpublish = {
                                             disabled = ' disabled'
                                         }
                                         html += " <button class='btn btn-primary btn-sm w-100 publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish CDDP (" + response.results[i].num_of_cddp_publish_channels + ")</button>";
+                                    }
+                                    html += '</div>'
+
+                                    html += '<div class="mt-1" style="position: relative;">'
+                                    if (response.results[i].publishable_to_ftp){
+                                        let disabled = ''
+                                        if (response.results[i].num_of_ftp_publish_channels <= 0){
+                                            disabled = ' disabled'
+                                        }
+                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
                                 } else {
@@ -1380,7 +1380,7 @@ var kbpublish = {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
                             let geoserver_publish_channel = responsejson[i];
-                            button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
+                            let button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
 
                             html+= "<tr>";
                             html+= " <td>"+geoserver_publish_channel.id+"</td>";                        
@@ -1403,13 +1403,12 @@ var kbpublish = {
                             html+= "</td>";
                             html+= "<tr>";                                    
                             $('#publish-geoserver-tbody').html(html);
-                            $( ".publish-geoserver-delete" ).click(function() {
+                            $(".publish-geoserver-delete").click(function() {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
                             });
-                            $( ".publish-geoserver-update" ).click(function() {
-
+                            $(".publish-geoserver-update").click(function() {
                                 let data = $(this).data('json')
                                 let selected_id = parseInt(data.id)
                                 let selected_obj = null
@@ -1427,12 +1426,12 @@ var kbpublish = {
                                     // Set button text
                                     $('#create-update-publish-geoserver-btn').text('Update');
                                     // Set values
-                                    $('#geoserver_publish_channel_id').val(geoserver_publish_channel.id);  // Existence of the id means this modal is for updating.
-                                    $('#new-publish-geoserver-pool').removeAttr('disabled').val(geoserver_publish_channel.geoserver_pool);
-                                    $('#new-publish-spatial-format').removeAttr('disabled').val(geoserver_publish_channel.mode);
-                                    $('#new-publish-frequency-type').removeAttr('disabled').val(geoserver_publish_channel.frequency);
-                                    $('#new-publish-workspace').removeAttr('disabled').val(geoserver_publish_channel.workspace);
-                                    $('#new-publish-store-type').removeAttr('disabled').val(geoserver_publish_channel.store_type);  
+                                    $('#geoserver_publish_channel_id').val(selected_obj.id);  // Existence of the id means this modal is for updating.
+                                    $('#new-publish-geoserver-pool').removeAttr('disabled').val(selected_obj.geoserver_pool);
+                                    $('#new-publish-spatial-format').removeAttr('disabled').val(selected_obj.mode);
+                                    $('#new-publish-frequency-type').removeAttr('disabled').val(selected_obj.frequency);
+                                    $('#new-publish-workspace').removeAttr('disabled').val(selected_obj.workspace);
+                                    $('#new-publish-store-type').removeAttr('disabled').val(selected_obj.store_type);  
                                     // Remove success/error message
                                     $('#new-publish-new-geoserver-popup-error').html('').hide();
                                     $('#new-publish-new-geoserver-success').html('').hide();
