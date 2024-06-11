@@ -599,6 +599,10 @@ var kbpublish = {
         let newpublishgeoserverpool = $('#new-publish-geoserver-pool').val();
         let newpublishstoretype = $('#new-publish-store-type').val();
         // Validate data
+        if (newpublishgeoserverpool.length < 1) {
+            error_msg_elem.html("Please choose a geoserver pool.").show();
+            return false;
+        }
         if (newpublishspatialformat.length < 1) {
             error_msg_elem.html("Please choose a spatial format.").show();
             return false;
@@ -609,10 +613,6 @@ var kbpublish = {
         }
         if (newpublishworkspace.length < 1) {
             error_msg_elem.html("Please choose a workspace.").show();
-            return false;
-        }
-        if (newpublishgeoserverpool.length < 1) {
-            error_msg_elem.html("Please choose a geoserver pool.").show();
             return false;
         }
         if (newpublishstoretype.length < 1) {
