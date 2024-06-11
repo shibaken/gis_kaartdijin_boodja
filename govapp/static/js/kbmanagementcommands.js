@@ -54,7 +54,6 @@ var kbmanagementcommands = {
         });
     },
     run_geoserver_queue_cron_job: function() {
-        console.log("RUNNING GEOSERVER QUEUE CRON JOB")
         $('#geoserver-queue-job-response-success').html('');
         $('#geoserver-queue-job-response-error').html('');
         var csrf_token = $("#csrfmiddlewaretoken").val();

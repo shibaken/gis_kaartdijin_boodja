@@ -1103,7 +1103,7 @@ var kbpublish = {
                                         if (response.results[i].num_of_cddp_publish_channels <= 0){
                                             disabled = ' disabled'
                                         }
-                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish CDDP (" + response.results[i].num_of_cddp_publish_channels + ")</button>";
+                                        html += "<button class='btn btn-primary btn-sm w-100 publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish CDDP (" + response.results[i].num_of_cddp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
 
@@ -1113,14 +1113,10 @@ var kbpublish = {
                                         if (response.results[i].num_of_ftp_publish_channels <= 0){
                                             disabled = ' disabled'
                                         }
-                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
+                                        html += "<button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
-                                } else {
-                                    html += '<div class="col-sm-8"></div>'
                                 }
-                            } else {
-                                html += '<div class="col-sm-8"></div>'
                             }
                             html+="<div class='d-flex gap-1 mt-1'>"
                                 html+="<a class='btn btn-primary btn-sm flex-grow-1' href='/publish/"+response.results[i].id+"'>View</a>";
@@ -1380,6 +1376,7 @@ var kbpublish = {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
                             let geoserver_publish_channel = responsejson[i];
+                            console.log({geoserver_publish_channel})
                             let button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
 
                             html+= "<tr>";
@@ -1388,6 +1385,7 @@ var kbpublish = {
                             html+= " <td>"+kbpublish.var.publish_geoserver_format[geoserver_publish_channel.mode]+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_frequency[geoserver_publish_channel.frequency]+"</td>";                                                    
                             html+= " <td>"+geoserver_publish_channel.workspace_name+"</td>"; 
+                            html+= " <td>"+geoserver_publish_channel.store_type_name+"</td>"; 
                             html+= " <td>";
                             if (geoserver_publish_channel.published_at == null) {
                                 html+= "Not Published";   
@@ -1397,8 +1395,8 @@ var kbpublish = {
                             html+= "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
-                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='"+button_json+"' >Update</button> ";
-                                html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"' >Delete</button>";
+                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='"+button_json+"'>Update</button> ";
+                                html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"'>Delete</button>";
                             }
                             html+= "</td>";
                             html+= "<tr>";                                    
@@ -1541,20 +1539,20 @@ var kbpublish = {
         bbox_div.append(bbox_row_div);
         return [bbox_div, labels_fields, ids, ids_list];
     },
-    show_update_geoserver_modal: function(prev){
-        common_entity_modal.init("Publish Update Geoserver", "submit");
-        common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
-        let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
-        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
-        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
-        // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
-        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
+    // show_update_geoserver_modal: function(prev){
+    //     common_entity_modal.init("Publish Update Geoserver", "submit");
+    //     common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
+    //     let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
+    //     let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
+    //     let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
+    //     // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
+    //     let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
         
-        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.update_publish_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
-                                            success_callback=this.get_publish_geoservers);
-        common_entity_modal.show();
-    },
+    //     common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+    //                                         this.update_publish_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
+    //                                         success_callback=this.get_publish_geoservers);
+    //     common_entity_modal.show();
+    // },
     write_geoserver_subscription: function(success_callback, error_callback, ids, geoserver_id){
         const publish_id = $('#publish_id').val(); 
         // prefixed. could be changed in the future
@@ -1600,41 +1598,41 @@ var kbpublish = {
             error: error_callback
         });
     },
-    update_publish_geoserver: function(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, publish_id){
-        // get & validation check
-        const mode = utils.validate_empty_input('format', $('#'+format_id).val());
-        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
-        const workspace = utils.validate_empty_input('workspace', $('#'+workspace_id).val());
-        const geoserver_pool = utils.validate_empty_input('geoserver_pool', $('#'+geoserver_pool_id).val());
+    // update_publish_geoserver: function(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, publish_id){
+    //     // get & validation check
+    //     const mode = utils.validate_empty_input('format', $('#'+format_id).val());
+    //     const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
+    //     const workspace = utils.validate_empty_input('workspace', $('#'+workspace_id).val());
+    //     const geoserver_pool = utils.validate_empty_input('geoserver_pool', $('#'+geoserver_pool_id).val());
         
-        // make data body
-        var geoserver_data = {
-            geoserver_pool: geoserver_pool,
-            mode:mode,
-            frequency:frequency,
-            workspace:workspace,
-            publish_entry:$('#publish-entry-id').val()
-        };
-        var url = this.var.publish_save_geoserver_url;
-        var method = 'POST';
-        if(publish_id){
-            delete geoserver_data['publish_entry'];
-            url += publish_id+'/';
-            method = 'PUT';
-        }
+    //     // make data body
+    //     var geoserver_data = {
+    //         geoserver_pool: geoserver_pool,
+    //         mode:mode,
+    //         frequency:frequency,
+    //         workspace:workspace,
+    //         publish_entry:$('#publish-entry-id').val()
+    //     };
+    //     var url = this.var.publish_save_geoserver_url;
+    //     var method = 'POST';
+    //     if(publish_id){
+    //         delete geoserver_data['publish_entry'];
+    //         url += publish_id+'/';
+    //         method = 'PUT';
+    //     }
 
-        // call POST API
-        $.ajax({
-            url: url,
-            method: method,
-            dataType: 'json',
-            contentType: 'application/json',
-            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
-            data: JSON.stringify(geoserver_data),
-            success: success_callback,
-            error: error_callback
-        });
-    },
+    //     // call POST API
+    //     $.ajax({
+    //         url: url,
+    //         method: method,
+    //         dataType: 'json',
+    //         contentType: 'application/json',
+    //         headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+    //         data: JSON.stringify(geoserver_data),
+    //         success: success_callback,
+    //         error: error_callback
+    //     });
+    // },
 
     get_publish_cddp: function() {
         var publish_id = $('#publish_id').val();

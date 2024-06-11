@@ -113,9 +113,11 @@ class Absorber:
                     self.process_vector_file(filepath)
             
         finally:
-            if os.path.exists(temp_dir):
-                # Clean up temp directory
-                shutil.rmtree(temp_dir)
+            pass
+        #     if os.path.exists(temp_dir):
+        #         # Clean up temp directory
+        #         shutil.rmtree(temp_dir)
+        #         log.info(f'Remove the directory: [{temp_dir}]')
 
     def process_tiff_file(self, filepath):
         # Convert the file path to a pathlib.Path object
@@ -232,7 +234,7 @@ class Absorber:
             bool: Whether the creation was successful.
         """
         # Log
-        log.info("Creating new catalogue entry")
+        log.info(f"Creating a new CatalogueEntry with the name: [{metadata.name}]...")
         
         # Calculate attributes hash
         attributes_hash = utils.attributes_hash(attributes)
