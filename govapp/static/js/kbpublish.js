@@ -1088,16 +1088,6 @@ var kbpublish = {
                             if (response.results[i].status == 1) {
                                 if($('#is_administrator').val() == 'True'){
                                     html += '<div class="" style="position: relative;">'
-                                    if (response.results[i].publishable_to_ftp){
-                                        let disabled = ''
-                                        if (response.results[i].num_of_ftp_publish_channels <= 0){
-                                            disabled = ' disabled'
-                                        }
-                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
-                                    }
-                                    html += '</div>'
-
-                                    html += '<div class="mt-1" style="position: relative;">'
                                     if (response.results[i].publishable_to_geoserver){
                                         let disabled = ''
                                         if (response.results[i].num_of_geoserver_publish_channels <= 0){
@@ -1114,6 +1104,16 @@ var kbpublish = {
                                             disabled = ' disabled'
                                         }
                                         html += " <button class='btn btn-primary btn-sm w-100 publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish CDDP (" + response.results[i].num_of_cddp_publish_channels + ")</button>";
+                                    }
+                                    html += '</div>'
+
+                                    html += '<div class="mt-1" style="position: relative;">'
+                                    if (response.results[i].publishable_to_ftp){
+                                        let disabled = ''
+                                        if (response.results[i].num_of_ftp_publish_channels <= 0){
+                                            disabled = ' disabled'
+                                        }
+                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
                                 } else {
