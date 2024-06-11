@@ -1380,7 +1380,7 @@ var kbpublish = {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
                             let geoserver_publish_channel = responsejson[i];
-                            button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
+                            let button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
 
                             html+= "<tr>";
                             html+= " <td>"+geoserver_publish_channel.id+"</td>";                        
@@ -1403,13 +1403,12 @@ var kbpublish = {
                             html+= "</td>";
                             html+= "<tr>";                                    
                             $('#publish-geoserver-tbody').html(html);
-                            $( ".publish-geoserver-delete" ).click(function() {
+                            $(".publish-geoserver-delete").click(function() {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
                             });
-                            $( ".publish-geoserver-update" ).click(function() {
-
+                            $(".publish-geoserver-update").click(function() {
                                 let data = $(this).data('json')
                                 let selected_id = parseInt(data.id)
                                 let selected_obj = null
@@ -1427,12 +1426,12 @@ var kbpublish = {
                                     // Set button text
                                     $('#create-update-publish-geoserver-btn').text('Update');
                                     // Set values
-                                    $('#geoserver_publish_channel_id').val(geoserver_publish_channel.id);  // Existence of the id means this modal is for updating.
-                                    $('#new-publish-geoserver-pool').removeAttr('disabled').val(geoserver_publish_channel.geoserver_pool);
-                                    $('#new-publish-spatial-format').removeAttr('disabled').val(geoserver_publish_channel.mode);
-                                    $('#new-publish-frequency-type').removeAttr('disabled').val(geoserver_publish_channel.frequency);
-                                    $('#new-publish-workspace').removeAttr('disabled').val(geoserver_publish_channel.workspace);
-                                    $('#new-publish-store-type').removeAttr('disabled').val(geoserver_publish_channel.store_type);  
+                                    $('#geoserver_publish_channel_id').val(selected_obj.id);  // Existence of the id means this modal is for updating.
+                                    $('#new-publish-geoserver-pool').removeAttr('disabled').val(selected_obj.geoserver_pool);
+                                    $('#new-publish-spatial-format').removeAttr('disabled').val(selected_obj.mode);
+                                    $('#new-publish-frequency-type').removeAttr('disabled').val(selected_obj.frequency);
+                                    $('#new-publish-workspace').removeAttr('disabled').val(selected_obj.workspace);
+                                    $('#new-publish-store-type').removeAttr('disabled').val(selected_obj.store_type);  
                                     // Remove success/error message
                                     $('#new-publish-new-geoserver-popup-error').html('').hide();
                                     $('#new-publish-new-geoserver-success').html('').hide();

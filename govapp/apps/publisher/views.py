@@ -254,7 +254,7 @@ class PublishEntryViewSet(
         # # Help `mypy` by casting the resulting object to a Publish Entry
         publish_entry = self.get_object()
         publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
-        geoserver_publish_channel = models.publish_channels.GeoServerPublishChannel.objects.filter(publish_entry=publish_entry)
+        geoserver_publish_channel = models.publish_channels.GeoServerPublishChannel.objects.filter(publish_entry=publish_entry).order_by('id')
         serializer = serializers.publish_channels.GeoServerPublishChannelSerializer(geoserver_publish_channel, many=True)
         
         # Return Response
