@@ -251,16 +251,24 @@ var kbpublish = {
         });           
         $( "#publish-new-geoserver-btn" ).click(function() {
             // SPATIAL_FILE = 1, SUBSCRIPTION = 2
+            let GEOTIFF = 1
             if($('#catalogue-type').val() == '1'){
-                $('#new-publish-spatial-format').removeAttr('disabled');
-                $('#new-publish-frequency-type').removeAttr('disabled');
-                $('#new-publish-workspace').removeAttr('disabled');  
-                            
-                $('#new-publish-spatial-format').val('');
-                $('#new-publish-frequency-type').val('');
-                $('#new-publish-workspace').val('');             
-
-                $('#PublishNewGeoserverModal').modal('show');
+                // Set modal title
+                $('#new-update-geoserver-modal-title').text('Publish New Geoserver');
+                // Set button text
+                $('#create-update-publish-geoserver-btn').text('Create');
+                // Set values
+                $('#geoserver_publish_channel_id').val('');  // No id means creating new
+                $('#new-publish-geoserver-pool').removeAttr('disabled').val('');
+                $('#new-publish-spatial-format').removeAttr('disabled').val('');
+                $('#new-publish-frequency-type').removeAttr('disabled').val('');
+                $('#new-publish-workspace').removeAttr('disabled').val('');
+                $('#new-publish-store-type').removeAttr('disabled').val(GEOTIFF);  
+                // Remove success/error message
+                $('#new-publish-new-geoserver-popup-error').html('').hide();
+                $('#new-publish-new-geoserver-success').html('').hide();
+                // Show modal
+                $('#PublishNewUpdateGeoserverModal').modal('show');
             } else {
                 kbpublish.show_write_geoserver_subscription_modal();
                 // $('#PublishNewGeoserverSubscriptionModal').modal('show');
@@ -310,18 +318,14 @@ var kbpublish = {
             $('#PublishNewFTPModal').modal('show');
         });  
 
-        $( "#create-publish-geoserver-btn" ).click(function() {
-            console.log("Create new geoserver");             
-            kbpublish.create_publish_geoserver();
+        $( "#create-update-publish-geoserver-btn").click(function() {
+            kbpublish.create_update_publish_geoserver();
         });
 
         $( "#create-publish-cddp-btn" ).click(function() {
-            console.log("Create new CDDP");
-
             kbpublish.create_publish_cddp();
         });
         $( "#create-publish-ftp-btn" ).click(function() {
-            console.log("Create new FTP");;
             kbpublish.create_publish_ftp();
         });
         
@@ -584,75 +588,88 @@ var kbpublish = {
             },
         });
     },
-    create_publish_geoserver: function() {
-        var publish_id = $('#publish_id').val();
-        var newpublishspatialformat = $('#new-publish-spatial-format').val();
-        var newpublishfrequencytype = $('#new-publish-frequency-type').val();
-        var newpublishworkspace = $('#new-publish-workspace').val();
-        var newpublishgeoserverpool = $('#new-publish-geoserver-pool').val();
-
+    create_update_publish_geoserver: function() {
+        let error_msg_elem = $('#new-publish-new-geoserver-popup-error');
+        let success_msg_elem = $('#new-publish-new-geoserver-success');
+        // Retrieve data
+        let publish_entry_id = $('#publish_id').val();
+        let newpublishspatialformat = $('#new-publish-spatial-format').val();
+        let newpublishfrequencytype = $('#new-publish-frequency-type').val();
+        let newpublishworkspace = $('#new-publish-workspace').val();
+        let newpublishgeoserverpool = $('#new-publish-geoserver-pool').val();
+        let newpublishstoretype = $('#new-publish-store-type').val();
+        // Validate data
+        if (newpublishspatialformat.length < 1) {
+            error_msg_elem.html("Please choose a spatial format.").show();
+            return false;
+        }
+        if (newpublishfrequencytype.length < 1) {
+            error_msg_elem.html("Please choose a frequency type.").show();
+            return false;
+        }
+        if (newpublishworkspace.length < 1) {
+            error_msg_elem.html("Please choose a workspace.").show();
+            return false;
+        }
+        if (newpublishgeoserverpool.length < 1) {
+            error_msg_elem.html("Please choose a geoserver pool.").show();
+            return false;
+        }
+        if (newpublishstoretype.length < 1) {
+            error_msg_elem.html("Please choose a store type.").show();
+            return false;
+        }
+        // Construct data to send
+        let geoserver_publish_channel_id = $('#geoserver_publish_channel_id').val()
         var post_data = {
             "mode": newpublishspatialformat,
             "frequency": newpublishfrequencytype,
             "workspace": newpublishworkspace,
-            "publish_entry": publish_id,
-            "geoserver_pool": newpublishgeoserverpool
+            "publish_entry": publish_entry_id,
+            "geoserver_pool": newpublishgeoserverpool,
+            "store_type": newpublishstoretype
         };
-        var csrf_token = $("#csrfmiddlewaretoken").val();
-       
-        $('#new-publish-new-geoserver-popup-error').html("");
-        $('#new-publish-new-geoserver-popup-error').hide();
-        $('#new-publish-new-geoserver-success').html("");
-        $('#new-publish-new-geoserver-success').hide();
-        
-        if (newpublishspatialformat.length < 1) {
-            $('#new-publish-new-geoserver-popup-error').html("Please choose a spatial format.");
-            $('#new-publish-new-geoserver-popup-error').show();
-            return false;
-        }
-
-        if (newpublishfrequencytype.length < 1) {
-            $('#new-publish-new-geoserver-popup-error').html("Please choose a frequency type.");
-            $('#new-publish-new-geoserver-popup-error').show();
-            return false;
-        }
-
-        if (newpublishworkspace.length < 1) {
-            $('#new-publish-new-geoserver-popup-error').html("Please choose a workspace.");
-            $('#new-publish-new-geoserver-popup-error').show();
-            return false;
+        let csrf_token = $("#csrfmiddlewaretoken").val();
+        // let modal_for = $('#PublishNewUpdateGeoserverModal').attr('data-modal-for')
+        let method = ''
+        let target_url = ''
+        let success_message = ''
+        let error_message = ''
+        if (geoserver_publish_channel_id){
+            // Update
+            method = 'PUT'
+            target_url = this.var.publish_save_geoserver_url + geoserver_publish_channel_id + '/';
+            success_message = 'Successfully updated geoserver publish channel.'
+            error_message = 'Failed to update geoserver publish channel.'
+            delete post_data['publish_entry'];
+        } else {
+            // Create
+            console.log('for create')
+            method = 'POST'
+            target_url = kbpublish.var.publish_save_geoserver_url
+            success_message = 'Successfully created geoserver publish channel.'
+            error_message = 'Failed to create geoserver publish channel.'
         }
        
-        if (newpublishgeoserverpool.length < 1) {
-            $('#new-publish-new-geoserver-popup-error').html("Please choose a geoserver pool.");
-            $('#new-publish-new-geoserver-popup-error').show();
-            return false;
-        }
+        error_msg_elem.html("").hide();
+        success_msg_elem.html("").hide();
 
         $('#new-publish-spatial-format').attr('disabled','disabled');
         $('#new-publish-frequency-type').attr('disabled','disabled');
         $('#new-publish-workspace').attr('disabled','disabled');
         $('#new-publish-geoserver-pool').attr('disabled','disabled');
-
+        $('#new-publish-store-type').attr('disabled','disabled');
         
         $.ajax({
-            url: kbpublish.var.publish_save_geoserver_url,        
-            type: 'POST',
+            url: target_url,
+            type: method,
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                    var html = '';
-                
-                    $('#new-publish-new-geoserver-popup-success').html("Successfully created publish entry");
-                    $('#new-publish-new-geoserver-popup-success').show();                
-                    setTimeout("$('#PublishNewGeoserverModal').modal('hide');",1000);
+                    success_msg_elem.html(success_message).show();
+                    setTimeout("$('#PublishNewUpdateGeoserverModal').modal('hide');",1000);
                     kbpublish.get_publish_geoservers();
-
-                    //$('#new-publish-spatial-format').removeAttr('disabled');
-                    //$('#new-publish-frequency-type').removeAttr('disabled');
-                    //$('#new-publish-workspace').removeAttr('disabled');                                       
-
             },
             error: function (response) {
                 var jsonresponse = {};
@@ -661,20 +678,17 @@ var kbpublish = {
                 }
 
                 if (jsonresponse.hasOwnProperty('publish_entry')) {
-                    $('#new-publish-new-geoserver-popup-error').html(jsonresponse['publish_entry']);
-                    $('#new-publish-new-geoserver-popup-error').show();        
+                    error_msg_elem.html(jsonresponse['publish_entry']).show();
                 } else {
-                    $('#new-publish-new-geoserver-popup-error').html("Error create to publish.");
-                    $('#new-publish-new-geoserver-popup-error').show();        
+                    error_msg_elem.html(error_message).show();
                 }
                 $('#new-publish-spatial-format').removeAttr('disabled');
                 $('#new-publish-frequency-type').removeAttr('disabled');
                 $('#new-publish-workspace').removeAttr('disabled');  
                 $('#new-publish-geoserver-pool').removeAttr('disabled');  
+                $('#new-publish-store-type').removeAttr('disabled');  
             },
         });
-
-
     },
     create_publish_subscription_geoserver: function() {
         var publish_id = $('#publish_id').val();
@@ -729,7 +743,7 @@ var kbpublish = {
                 
                     $('#new-publish-new-geoserver-popup-success').html("Successfully created publish entry");
                     $('#new-publish-new-geoserver-popup-success').show();                
-                    setTimeout("$('#PublishNewGeoserverModal').modal('hide');",1000);
+                    setTimeout("$('#PublishNewUpdateGeoserverModal').modal('hide');",1000);
                     kbpublish.get_publish_geoservers();
 
                     //$('#new-publish-spatial-format').removeAttr('disabled');
@@ -1365,21 +1379,20 @@ var kbpublish = {
                     if (response.length > 0) {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
-                            console.log({responsejson})
-                            
-                            button_json = '{"id": "'+responsejson[i].id+'"}'
+                            let geoserver_publish_channel = responsejson[i];
+                            button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
 
                             html+= "<tr>";
-                            html+= " <td>"+responsejson[i].id+"</td>";                        
-                            html+= " <td><a href='"+responsejson[i].geoserver_pool_url+"'>"+responsejson[i].geoserver_pool_name+"</a></td>";                        
-                            html+= " <td>"+kbpublish.var.publish_geoserver_format[responsejson[i].mode]+"</td>";                        
-                            html+= " <td>"+kbpublish.var.publish_geoserver_frequency[responsejson[i].frequency]+"</td>";                                                    
-                            html+= " <td>"+responsejson[i].workspace_name+"</td>"; 
+                            html+= " <td>"+geoserver_publish_channel.id+"</td>";                        
+                            html+= " <td><a href='"+geoserver_publish_channel.geoserver_pool_url+"'>"+geoserver_publish_channel.geoserver_pool_name+"</a></td>";                        
+                            html+= " <td>"+kbpublish.var.publish_geoserver_format[geoserver_publish_channel.mode]+"</td>";                        
+                            html+= " <td>"+kbpublish.var.publish_geoserver_frequency[geoserver_publish_channel.frequency]+"</td>";                                                    
+                            html+= " <td>"+geoserver_publish_channel.workspace_name+"</td>"; 
                             html+= " <td>";
-                            if (responsejson[i].published_at == null) {
+                            if (geoserver_publish_channel.published_at == null) {
                                 html+= "Not Published";   
                             } else {
-                                html+= responsejson[i].published_at;
+                                html+= geoserver_publish_channel.published_at;
                             }
                             html+= "</td>";
                             html+= " <td class='text-end'>";
@@ -1396,6 +1409,7 @@ var kbpublish = {
                                 kbpublish.delete_publish_geoserver(btndata.id);                                                        
                             });
                             $( ".publish-geoserver-update" ).click(function() {
+
                                 let data = $(this).data('json')
                                 let selected_id = parseInt(data.id)
                                 let selected_obj = null
@@ -1406,7 +1420,24 @@ var kbpublish = {
                                 }
 
                                 if($('#catalogue-type').val() == catalogue_entry_type.SPATIAL_FILE){
-                                    kbpublish.show_update_geoserver_modal(selected_obj);
+                                    // kbpublish.show_update_geoserver_modal(selected_obj);  // Creating modal DOM from scratch...
+
+                                    // Set modal title
+                                    $('#new-update-geoserver-modal-title').text('Update Geoserver');
+                                    // Set button text
+                                    $('#create-update-publish-geoserver-btn').text('Update');
+                                    // Set values
+                                    $('#geoserver_publish_channel_id').val(geoserver_publish_channel.id);  // Existence of the id means this modal is for updating.
+                                    $('#new-publish-geoserver-pool').removeAttr('disabled').val(geoserver_publish_channel.geoserver_pool);
+                                    $('#new-publish-spatial-format').removeAttr('disabled').val(geoserver_publish_channel.mode);
+                                    $('#new-publish-frequency-type').removeAttr('disabled').val(geoserver_publish_channel.frequency);
+                                    $('#new-publish-workspace').removeAttr('disabled').val(geoserver_publish_channel.workspace);
+                                    $('#new-publish-store-type').removeAttr('disabled').val(geoserver_publish_channel.store_type);  
+                                    // Remove success/error message
+                                    $('#new-publish-new-geoserver-popup-error').html('').hide();
+                                    $('#new-publish-new-geoserver-success').html('').hide();
+                                    // Display modal
+                                    $('#PublishNewUpdateGeoserverModal').modal('show');
                                 } else if([catalogue_entry_type.SUBSCRIPTION_WFS, catalogue_entry_type.SUBSCRIPTION_WMS, catalogue_entry_type.SUBSCRIPTION_POSTGIS, catalogue_entry_type.SUBSCRIPTION_QUERY].includes($('#catalogue-type').val())){
                                     kbpublish.show_write_geoserver_subscription_modal(selected_obj);
                                 }
@@ -1521,7 +1552,7 @@ var kbpublish = {
         let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
         
         common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.write_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
+                                            this.update_publish_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
                                             success_callback=this.get_publish_geoservers);
         common_entity_modal.show();
     },
@@ -1570,7 +1601,7 @@ var kbpublish = {
             error: error_callback
         });
     },
-    write_geoserver: function(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, publish_id){
+    update_publish_geoserver: function(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, publish_id){
         // get & validation check
         const mode = utils.validate_empty_input('format', $('#'+format_id).val());
         const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());

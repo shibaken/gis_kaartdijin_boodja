@@ -300,6 +300,11 @@ class GeoServerPublishChannelMode(models.IntegerChoices):
     WMS_AND_WFS = 2
 
 
+class StoreType(models.IntegerChoices):
+    GEOPACKAGE = 1, 'GeoPackage'
+    GEOTIFF = 2, 'GeoTiff'
+
+
 class GeoServerPublishChannelManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().select_related('workspace', 'publish_entry', 'geoserver_pool')
@@ -347,6 +352,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         blank=True,
         on_delete=models.SET_NULL,
     )
+    store_type = models.IntegerField(choices=StoreType.choices, default=StoreType.GEOPACKAGE)
     objects = GeoServerPublishChannelManager()
 
     class Meta:
