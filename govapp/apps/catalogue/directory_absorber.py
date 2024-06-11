@@ -341,7 +341,9 @@ class Absorber:
             attributes_str = attributes_str+str(attr)+"\n"
 
         # Convert to a Geojson text
-        geojson_path = self.convert_to_geojson(archive, catalogue_entry)
+        # geojson_path = self.convert_to_geojson(archive, catalogue_entry)
+        extension = pathlib.Path(archive).suffix.lower()
+        geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create New Layer Submission
         layer_submission = models.layer_submissions.LayerSubmission.objects.create(
