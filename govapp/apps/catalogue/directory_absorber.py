@@ -255,7 +255,7 @@ class Absorber:
         geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
-        self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path)
+        self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, True)
 
         # Create Layer Metadata
         self.create_layer_metadata(metadata, catalogue_entry)
@@ -274,17 +274,18 @@ class Absorber:
         # Return
         return True
 
-    def create_layer_submission(self, metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path):
-        models.layer_submissions.LayerSubmission.objects.create(
+    def create_layer_submission(self, metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, is_active):
+        layer_submission = models.layer_submissions.LayerSubmission.objects.create(
             description=metadata.description,
             file=archive,
-            is_active=True,  # Active!
+            is_active=is_active,  # Active!
             created_at=metadata.created_at,
             hash=attributes_hash,
             layer_attribute=attributes_str,
             catalogue_entry=catalogue_entry,
             geojson=geojson_path
         )
+        return layer_submission
 
     def create_layer_metadata(self, metadata, catalogue_entry):
         models.layer_metadata.LayerMetadata.objects.create(
@@ -331,7 +332,7 @@ class Absorber:
             bool: Whether the update was successful.
         """
         # Log
-        log.info("Updating existing catalogue entry")
+        log.info("Updating existing catalogue entry...")
         
         # Calculate Layer Submission Attributes Hash
         attributes_hash = utils.attributes_hash(attributes)
@@ -341,21 +342,11 @@ class Absorber:
             attributes_str = attributes_str+str(attr)+"\n"
 
         # Convert to a Geojson text
-        # geojson_path = self.convert_to_geojson(archive, catalogue_entry)
         extension = pathlib.Path(archive).suffix.lower()
         geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create New Layer Submission
-        layer_submission = models.layer_submissions.LayerSubmission.objects.create(
-            description=metadata.description,
-            file=archive,
-            is_active=False,  # Starts out Inactive
-            created_at=metadata.created_at,
-            hash=attributes_hash,
-            layer_attribute=attributes_str,
-            catalogue_entry=catalogue_entry,
-            geojson=geojson_path
-        )    
+        layer_submission = self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, False)
         
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate(False)
