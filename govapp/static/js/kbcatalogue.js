@@ -117,10 +117,10 @@ var kbcatalogue = {
         // Start uploading
         $("#fileInput").change(function(){
             var files = $("#fileInput")[0].files;
-            for (var i = 0; i < files.length; i++) {
+            // for (var i = 0; i < files.length; i++) {
                 // Show progress bar
-                $("#progressBars").append('<div class="progress mt-2"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
-            }
+                // $("#progressBars").append('<div class="progress mt-2"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+            // }
             kbcatalogue.uploadFiles(files);
         });
         // Select by drag-and-drop
@@ -323,15 +323,17 @@ var kbcatalogue = {
     },
 
     createProgressBar: function(fileName, newFileName) {
+        console.log('creating progress bar')
         var progressBarContainer = $('<div class="progress-container mt-2"></div>');
         var progressBarRow = $('<div class="row  d-flex align-items-center"></div>');
         var fileNameColumn = $('<div class="col-6"></div>');
-        var progressBarColumn = $('<div class="col-5"></div>');
+        // var progressBarColumn = $('<div class="col-5"></div>');
+        var progressBarColumn = $('<div class="col-4"></div>');
+        var progressBarTextColumn = $('<div class="col-1"><span class="progress-text"></span></div>');
         var deleteIconColumn = $('<div class="col-1"></div>');
     
         var progressBar = $('<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
         var fileNameElement = $('<div class="file-name">' + fileName + '</div>');
-        // var deleteIcon = $('<div class="cross-sign" data-newFileName="' + newFileName + '"></div>');
         var deleteIcon = $('<span class="delete-icon" data-newFileName="' + newFileName + '"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12L4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>')
     
         fileNameColumn.append(fileNameElement);
@@ -339,6 +341,7 @@ var kbcatalogue = {
         deleteIconColumn.append(deleteIcon);
     
         progressBarRow.append(fileNameColumn);
+        progressBarRow.append(progressBarTextColumn);
         progressBarRow.append(progressBarColumn);
         progressBarRow.append(deleteIconColumn);
     
@@ -435,6 +438,8 @@ var kbcatalogue = {
                                 // Update progressbar
                                 progressBar.find(".progress-bar").width(percentComplete + '%');
                                 progressBar.find(".progress-bar").attr('aria-valuenow', percentComplete);
+                                // Display percentage text
+                                progressBarContainer.find(".progress-text").text(percentComplete.toFixed(0) + '%');
                             }
                         }, false);
                         return xhr;

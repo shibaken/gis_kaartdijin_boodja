@@ -208,10 +208,8 @@ class Absorber:
 
         # Check existing catalogue entry
         if not catalogue_entry:
-            # Create
             self.create_catalogue_entry(metadata, archive, attributes, symbology)
         else:
-            # Update
             self.update_catalogue_entry(catalogue_entry, metadata, archive, attributes, symbology)
 
     @transaction.atomic()
@@ -274,42 +272,6 @@ class Absorber:
         # Return
         return True
 
-    def create_layer_submission(self, metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, is_active):
-        layer_submission = models.layer_submissions.LayerSubmission.objects.create(
-            description=metadata.description,
-            file=archive,
-            is_active=is_active,  # Active!
-            created_at=metadata.created_at,
-            hash=attributes_hash,
-            layer_attribute=attributes_str,
-            catalogue_entry=catalogue_entry,
-            geojson=geojson_path
-        )
-        return layer_submission
-
-    def create_layer_metadata(self, metadata, catalogue_entry):
-        models.layer_metadata.LayerMetadata.objects.create(
-            created_at=metadata.created_at,
-            catalogue_entry=catalogue_entry,
-            additional_data=metadata.additional_data,
-        )
-
-    def create_layer_attributes(self, attributes, catalogue_entry):
-        for attribute in attributes:
-            # Create Attribute
-            models.layer_attributes.LayerAttribute.objects.create(
-                name=attribute.name,
-                type=attribute.type,
-                order=attribute.order,
-                catalogue_entry=catalogue_entry,
-            )
-
-    def create_layer_symbology(self, symbology, catalogue_entry):
-        models.layer_symbology.LayerSymbology.objects.create(
-            sld=symbology.sld,
-            catalogue_entry=catalogue_entry,
-        )
-
     @transaction.atomic()
     def update_catalogue_entry(
         self,
@@ -332,7 +294,7 @@ class Absorber:
             bool: Whether the update was successful.
         """
         # Log
-        log.info("Updating existing catalogue entry...")
+        log.info(f"Updating existing catalogue entry: [{catalogue_entry}]...")
         
         # Calculate Layer Submission Attributes Hash
         attributes_hash = utils.attributes_hash(attributes)
@@ -370,6 +332,42 @@ class Absorber:
         # Return
         return success
 
+    def create_layer_submission(self, metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, is_active):
+        layer_submission = models.layer_submissions.LayerSubmission.objects.create(
+            description=metadata.description,
+            file=archive,
+            is_active=is_active,  # Active!
+            created_at=metadata.created_at,
+            hash=attributes_hash,
+            layer_attribute=attributes_str,
+            catalogue_entry=catalogue_entry,
+            geojson=geojson_path
+        )
+        return layer_submission
+
+    def create_layer_metadata(self, metadata, catalogue_entry):
+        models.layer_metadata.LayerMetadata.objects.create(
+            created_at=metadata.created_at,
+            catalogue_entry=catalogue_entry,
+            additional_data=metadata.additional_data,
+        )
+
+    def create_layer_attributes(self, attributes, catalogue_entry):
+        for attribute in attributes:
+            # Create Attribute
+            models.layer_attributes.LayerAttribute.objects.create(
+                name=attribute.name,
+                type=attribute.type,
+                order=attribute.order,
+                catalogue_entry=catalogue_entry,
+            )
+
+    def create_layer_symbology(self, symbology, catalogue_entry):
+        models.layer_symbology.LayerSymbology.objects.create(
+            sld=symbology.sld,
+            catalogue_entry=catalogue_entry,
+        )
+
     def convert_to_geojson(
         self, 
         filepath: str, 
@@ -400,4 +398,3 @@ class Absorber:
         
         # Raise Exception when it failed for some reasons
         raise Exception(f"failed to move file from {path_from} to {path_to}")
-

@@ -67,21 +67,22 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
 
     # Retrieve the File from Storage
     filepath = sharepoint.sharepoint_input().get_from_url(url=entry.active_layer.file)
+    extension = filepath.suffix.lower()
+    if extension not in ['.tif', '.tiff']:
+        # Convert Layer to GeoJSON
+        geojson = gis.conversions.to_geojson(
+            filepath=filepath,
+            layer=entry.metadata.name,
+        )
 
-    # Convert Layer to GeoJSON
-    geojson = gis.conversions.to_geojson(
-        filepath=filepath,
-        layer=entry.metadata.name,
-    )
+        # Send Webhook Posts
+        webhooks.post_geojson(
+            *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
+            geojson=geojson,
+        )
 
-    # Send Webhook Posts
-    webhooks.post_geojson(
-        *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-        geojson=geojson,
-    )
-
-    # Delete local temporary copy of file if we can
-    shutil.rmtree(filepath.parent, ignore_errors=True)
+        # Delete local temporary copy of file if we can
+        shutil.rmtree(filepath.parent, ignore_errors=True)
 
 
 def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") -> None:
