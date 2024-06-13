@@ -536,17 +536,17 @@ var kbcatalogue = {
                             html+="  </td>";
                             html+= "<tr>";
                         }
-                                           
+
                         $('#publish-tbody').html(html);
                         $('.publish-table-button').hide();
 
                     } else {
-                        $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
+                        $('#publish-tbody').html("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                     }
 
                     common_pagination.init(response.count, params, kbcatalogue.get_catalogue, $('#paging_navi'));
                 } else {
-                      $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
+                      $('#publish-tbody').html("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                 }
 
                 $( ".publish-to-geoserver-btn" ).click(function() {
