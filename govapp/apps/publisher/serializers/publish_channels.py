@@ -52,7 +52,7 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
     workspace_name = serializers.ReadOnlyField(source='workspace.name')
     geoserver_pool_name = serializers.ReadOnlyField(source='geoserver_pool.name')
     geoserver_pool_url = serializers.SerializerMethodField()
-    store_type_name = serializers.CharField(source='get_store_type_display')
+    store_type_name = serializers.ReadOnlyField(source='get_store_type_display')
     
     class Meta:
         """GeoServer Publish Channel Model Serializer Metadata."""
