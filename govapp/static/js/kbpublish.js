@@ -154,23 +154,39 @@ var kbpublish = {
         $('#publish-lastupdatedto').datepicker({  dateFormat: this.var.publish_date_format, 
                 format: this.var.publish_date_format,
         });
-
-
         $( "#publish-filter-btn" ).click(function() {
-            console.log("Reload Publish Table");
             kbpublish.get_publish();
         });
-        $( "#publish-new-btn" ).click(function() {
-            console.log(kbpublish.var.catalogue_entry_map)
-            common_entity_modal.init("New Publish", "submit");
-            // let name_id = common_entity_modal.add_field(label="Name", type="text");
-            let catalogue_entry_id = common_entity_modal.add_field(label="Catalogue Entry", type="select", value=null, option_map=kbpublish.var.catalogue_entry_map);
-            let description_id = common_entity_modal.add_field(label="Description", type="text");
-            common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                                kbpublish.create_publish(success_callback, error_callback, catalogue_entry_id, description_id),
-                                                success_callback=(response)=>{location.href = '/publish/'+response.id;});
-            common_entity_modal.show();
-        });           
+        $("#create-new-publish-entry-btn" ).click(function() {
+            $('#new-publish-entry-catalogue-entry').val('');
+            $('#new-publish-entry-description').val('');
+            $('#new-publish-entry-modal').modal('show');
+        }),
+        $('#new-publish-entry-modal-submit-btn').click(function(){
+            const catalogue_entry = utils.validate_empty_input('Catalogue Entry', $('#new-publish-entry-catalogue-entry').val());
+            const description = utils.validate_empty_input('Description', $('#new-publish-entry-description').val());
+            
+            var publish_data = {
+                catalogue_entry: catalogue_entry,
+                description: description,
+            };
+
+            $.ajax({
+                url: kbpublish.var.publish_save_url,
+                method: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                headers: {'X-CSRFToken': $("#csrfmiddlewaretoken").val()},
+                data: JSON.stringify(publish_data),
+                success: (response)=>{
+                    // Redirect to the publish_entry created just now
+                    location.href = '/publish/' + response.id;
+                },
+                error: (error)=>{
+                    console.error('Error occurred:', error);
+                },
+            });
+        }),
         $( "#publish-limit" ).change(function(){
             common_pagination.var.current_page=0;
             kbpublish.get_publish();
