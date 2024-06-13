@@ -60,7 +60,7 @@ class GeoServer:
 
         # Create the workspace only if it doesn't exist
         if response.status_code == 404:
-            log.info(f"Workspace '{workspace_name}' does not exist. Creating...")
+            log.info(f"Workspace '{workspace_name}' does not exist in the geoserver: [{self.service_url}]. Creating...")
 
             # URL to create the workspace
             create_workspace_url = f"{self.service_url}/rest/workspaces"
@@ -78,12 +78,12 @@ class GeoServer:
 
             # Check the status code to determine if the creation was successful
             if create_response.status_code == 201:
-                log.info(f"Workspace '{workspace_name}' created successfully.")
+                log.info(f"Workspace '{workspace_name}' created successfully in the geoserver: [{self.service_url}].")
             else:
                 log.info("Failed to create workspace.")
                 log.info(create_response.text)
         else:
-            log.info(f"Workspace '{workspace_name}' already exists.")
+            log.info(f"Workspace '{workspace_name}' already exists in the geoserver: [{self.service_url}].")
 
     @handle_http_exceptions(log)
     def create_store_if_not_exists(self, workspace_name, store_name, data):

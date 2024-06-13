@@ -113,7 +113,7 @@ var kbcatalogue_detail = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response){
-                    $('#catalogue-detail-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    $('#catalogue-detail-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     return;
                 }
 

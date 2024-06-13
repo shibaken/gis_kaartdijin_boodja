@@ -161,6 +161,7 @@ var kbpublish = {
             kbpublish.get_publish();
         });
         $( "#publish-new-btn" ).click(function() {
+            console.log(kbpublish.var.catalogue_entry_map)
             common_entity_modal.init("New Publish", "submit");
             // let name_id = common_entity_modal.add_field(label="Name", type="text");
             let catalogue_entry_id = common_entity_modal.add_field(label="Catalogue Entry", type="select", value=null, option_map=kbpublish.var.catalogue_entry_map);
@@ -1131,11 +1132,11 @@ var kbpublish = {
                         $('.publish-table-button').hide();
 
                     } else {
-                        $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     }
                     common_pagination.init(response.count, params, kbpublish.get_publish, $('#paging_navi'));
                 } else {
-                      $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
 
                 $( ".publish-to-geoserver-btn" ).click(function() {
@@ -1343,11 +1344,11 @@ var kbpublish = {
                             
                         });                         
                     } else {
-                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
 
                     }
                 } else {
-                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
 
        
@@ -1441,10 +1442,10 @@ var kbpublish = {
                             });
                         }
                     } else {
-                        $('#publish-geoserver-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-geoserver-tbody').empty().append("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                     }
                 } else {
-                      $('#publish-geoserver-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-geoserver-tbody').empty().append("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                 }
             },
             error: function (error) {
@@ -1683,14 +1684,11 @@ var kbpublish = {
                             });
                         }
                     } else {
-                        $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
-
+                        $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     }
                 } else {
-                      $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
-
-       
             },
             error: function (error) {
                 $('#save-publish-popup-error').html("Error Loading publish data");
@@ -1745,24 +1743,22 @@ var kbpublish = {
                             $( ".publish-ftp-delete" ).click(function() {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
-                                kbpublish.delete_publish_ftp(btndata.id);                                                        
+                                kbpublish.delete_publish_ftp(btndata.id);
                             });
                             $( ".publish-ftp-update" ).click(function() {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
-                                kbpublish.show_update_ftp_modal(btndata);                                
+                                kbpublish.show_update_ftp_modal(btndata);
                                 //kbpublish.show_update_ftp_modal(responsejson[i]);
                             });
                         }
                     } else {
-                        $('#publish-ftp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-ftp-tbody').html("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
 
                     }
                 } else {
-                      $('#publish-ftp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#publish-ftp-tbody').html("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                 }
-
-       
             },
             error: function (error) {
                 $('#save-publish-popup-error').html("Error Loading publish data");
@@ -2002,7 +1998,7 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response){
-                    $('#publish-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    $('#publish-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     return;
                 }
                 // change type number to name

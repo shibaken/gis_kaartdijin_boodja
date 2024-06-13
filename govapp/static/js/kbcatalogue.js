@@ -541,12 +541,12 @@ var kbcatalogue = {
                         $('.publish-table-button').hide();
 
                     } else {
-                        $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     }
 
                     common_pagination.init(response.count, params, kbcatalogue.get_catalogue, $('#paging_navi'));
                 } else {
-                      $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
 
                 $( ".publish-to-geoserver-btn" ).click(function() {
@@ -605,10 +605,10 @@ var kbcatalogue = {
                             kbcatalogue.delete_catalogue_editors(btndata.id);
                         });                         
                     } else {
-                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     }
                 } else {
-                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
 
        
