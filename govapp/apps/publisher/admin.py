@@ -8,9 +8,15 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib import admin, auth
 from django.utils.safestring import mark_safe
 import reversion.admin
+from django.utils.html import format_html
 
 # Local
+from govapp.apps.catalogue.admin import construct_catalogue_entry_link
 from govapp.apps.publisher import models
+
+
+def construct_publish_entry_link(publish_entry):
+    return format_html(f'<a href="/admin/publisher/publishentry/{publish_entry.id}/change/">{publish_entry.name}</a>')
 
 
 class PublishEntryAdmin(reversion.admin.VersionAdmin):
@@ -18,34 +24,78 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     filter_horizontal = ["editors"]
-    list_display = ('id', 'catalogue_entry', 'status', 'published_at')
+    list_display = ('id', 'catalogue_entry_link', 'status', 'published_at')
     ordering = ('-id',)
-    
+
+    def catalogue_entry_link(self, obj):
+        construct_catalogue_entry_link(obj.catalogue_entry)
+    catalogue_entry_link.short_description = 'Catalogue Entry'
+
 
 class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
-    list_display = ('id', 'name', 'url', 'num_of_layers', 'username', 'enabled', 'created_at')
+    list_display = ('id', 'name', 'url_link', 'num_of_layers', 'username', 'enabled', 'created_at')
+    list_display_links = ('id', 'name',)
     ordering = ('id', 'name')
 
     def num_of_layers(self, obj):
         return f'{obj.total_active_layers} ({obj.total_layers})'
-
     num_of_layers.short_description = 'active layers (total layers)'
+
+    def url_link(self, obj):
+        return format_html(f'<a href="{obj.url}">{obj.url}</a>')
+    url_link.short_description = 'URL'
 
 
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'publish_entry', 'geoserver_pool', 'store_type', 'mode', 'frequency', 'workspace', 'active',)
+    list_display = ('id', 'publish_entry_link', 'geoserver_pool_link', 'store_type', 'mode', 'frequency', 'workspace_link', 'active',)
+    raw_id_fields = ('publish_entry',)
+
+    def publish_entry_link(self, obj):
+        # publish_entry = obj.publish_entry
+        # return format_html(f'<a href="/admin/publisher/publishentry/{publish_entry.id}/change/">{publish_entry.name}</a>')
+        return construct_publish_entry_link(obj.publish_entry)
+    publish_entry_link.short_description = 'Publish Entry'
+
+    def geoserver_pool_link(self, obj):
+        geoserver_pool = obj.geoserver_pool
+        return format_html(f'<a href="/admin/publisher/geoserverpool/{geoserver_pool.id}/change/">{geoserver_pool.name}</a>')
+    geoserver_pool_link.short_description = 'Geoserver Pool'
+
+    def workspace_link(self, obj):
+        return format_html(f'<a href="/admin/publisher/workspace/{obj.workspace.id}/change/">{obj.workspace.name}</a>')
+    workspace_link.short_description = 'Workspace'
+
+
+class CDDPPublishChannelAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'publish_entry_link', 'format', 'mode', 'frequency', 'path', 'xml_path', 'published_at',)
+    raw_id_fields = ('publish_entry',)
     
+    def publish_entry_link(self, obj):
+        return construct_publish_entry_link(obj.publish_entry)
+    publish_entry_link.short_description = 'Publish Entry'
+
 
 class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Queue."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
-    list_display = ('id', 'publish_entry', 'symbology_only', 'status', 'success', 'submitter','started_at', 'completed_at', 'created_at')
+    list_display = ('id', 'publish_entry_link', 'symbology_only', 'status', 'success', 'submitter_link','started_at', 'completed_at', 'created_at')
     ordering = ('-id',)
-    raw_id_fields = ('submitter',)
+    raw_id_fields = ('submitter', 'publish_entry')
+
+    def publish_entry_link(self, obj):
+        return construct_publish_entry_link(obj.publish_entry)
+    publish_entry_link.short_description = 'Publish Entry'
+
+    def submitter_link(self, obj):
+        if obj.submitter:
+            return format_html(f'<a href="/admin/auth/user/{obj.submitter.id}/change">{obj.submitter}</a>')
+        else:
+            return '-'
+    submitter_link.short_description = 'Submitter'
 
 
 class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
@@ -104,6 +154,7 @@ class WorkspaceAdmin(reversion.admin.VersionAdmin):
         return mark_safe(table_html)
     display_geoserver_roles.short_description = 'Geoserver Roles and Permissions'
 
+
 class GeoServerGroupForm(forms.ModelForm):
     # Meta class to specify the model and fields to include in the form
     class Meta:
@@ -128,12 +179,24 @@ class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
         return ','.join([role.name for role in obj.geoserver_roles.all()])
     get_geoserver_roles.short_description = 'roles'
 
+
+class EmailNotificationAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('id','name','email')
+    list_display = ('id', 'name', 'type', 'email', 'active', 'publish_entry_link')
+    raw_id_fields = ('publish_entry',)
+    ordering = ('id',)
+
+    def publish_entry_link(self, obj):
+        return construct_publish_entry_link(obj.publish_entry)
+    publish_entry_link.short_description = 'Publish Entry'
+
+
 admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_channels.FTPPublishChannel, FTPPublishChannelAdmin)
-admin.site.register(models.publish_channels.CDDPPublishChannel, reversion.admin.VersionAdmin)
+admin.site.register(models.publish_channels.CDDPPublishChannel, CDDPPublishChannelAdmin)
 admin.site.register(models.publish_channels.GeoServerPublishChannel, GeoServerPublishChannelAdmin)
 admin.site.register(models.publish_entries.PublishEntry, PublishEntryAdmin)
-admin.site.register(models.notifications.EmailNotification, reversion.admin.VersionAdmin)
+admin.site.register(models.notifications.EmailNotification, EmailNotificationAdmin)
 admin.site.register(models.workspaces.Workspace, WorkspaceAdmin)
 admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)

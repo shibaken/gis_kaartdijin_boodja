@@ -110,7 +110,7 @@
                               <input type="hidden" id="publish_id" name="publish_id" value="{{ publish_id  }}">
                               <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access }}">
                               
-                              <div class="card" >
+                              <div class="card mb-3" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
                                     <div class="col-6">
@@ -197,9 +197,8 @@
                                     </div>
                               </div>
                         </div>
-                        <BR>
 
-                        <div class="card" >
+                        <div class="card mb-3" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
                                     <div class="col-6">
@@ -223,8 +222,7 @@
                                     </div>
                               </div>
                         </div>
-                        <BR>
-                        <div class="card" >
+                        <div class="card mb-3" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
                                     <div class="col-6">
@@ -256,29 +254,25 @@
                                                       <thead class='table-dark'>
                                                       <tr>
                                                             <th>ID</th>
-                                                            <th>GeoServer Pool</th>
-                                                            <th>Spatial Format</th>
-                                                            <th>Frequency Type</th>
+                                                            <th>GeoServer<br/>Pool</th>
+                                                            <th>Spatial<br/>Format</th>
+                                                            <th>Frequency<br/>Type</th>
                                                             <th>Workspace</th>
-                                                            <th>Publish Date/time</th>                                      
+                                                            <th>Store<br/>Type</th>
+                                                            <th>Publish<br/>Date/time</th>
                                                             <th>Action</th>
                                                       </tr>
                                                       </thead>
                                                       <tbody id='publish-geoserver-tbody'>
-                                                      <tr>
-                                                            <td colspan="5" class='text-center'>No Results</td>
-                                                      </tr>
                                                       </tbody>
-                                                </table>                                  
-                                          </div>      
+                                                </table>
+                                          </div>
                                     </div>
-
                               </div>
-
                         </div>
 
                         {% if publishable_to_cddp %}
-                              <div class="card" >
+                              <div class="card mb-3" >
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
                                           <div class="col-6">
@@ -310,18 +304,15 @@
                                                             <thead class='table-dark'>
                                                             <tr>
                                                                   <th>ID</th>                                                             
-                                                                  <th>Spatial Format</th>
-                                                                  <th>Spatial Mode</th>
-                                                                  <th>Frequency Type</th>
+                                                                  <th>Spatial<br/>Format</th>
+                                                                  <th>Spatial<br/>Mode</th>
+                                                                  <th>Frequency<br/>Type</th>
                                                                   <th>Path</th>
-                                                                  <th>Publish Date/time</th>                                      
+                                                                  <th>Publish<br/>Date/time</th>                                      
                                                                   <th>Action</th>
                                                             </tr>
                                                             </thead>
                                                             <tbody id='publish-cddp-tbody'>
-                                                            <tr>
-                                                                  <td colspan="6" class='text-center'>No Results</td>
-                                                            </tr>
                                                             </tbody>
                                                       </table>                                  
                                                 </div>      
@@ -333,7 +324,7 @@
                         {% endif %}
 
                         {% if publishable_to_ftp %}
-                              <div class="card" >
+                              <div class="card mb-3" >
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
                                           <div class="col-6">
@@ -366,11 +357,11 @@
                                                             <tr>
                                                                   <th>ID</th>     
                                                                   <th>Filename</th>                                             
-                                                                  <th>FTP Server</th>    
-                                                                  <th>Spatial Format</th>
-                                                                  <th>Frequency Type</th>
+                                                                  <th>FTP<br/>Server</th>    
+                                                                  <th>Spatial<br/>Format</th>
+                                                                  <th>Frequency<br/>Type</th>
                                                                   <th>Path (Directory)</th>
-                                                                  <th>Publish Date/time</th>                                      
+                                                                  <th>Publish<br/>Date/time</th>                                      
                                                                   <th>Action</th>
                                                             </tr>
                                                             </thead>
@@ -386,8 +377,7 @@
                               </div>
                         {% endif %}
 
-                        <BR>
-                        <div class="card" >
+                        <div class="card mb-3" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
                                     <div class="col-6">

@@ -113,9 +113,11 @@ class Absorber:
                     self.process_vector_file(filepath)
             
         finally:
-            if os.path.exists(temp_dir):
-                # Clean up temp directory
-                shutil.rmtree(temp_dir)
+            pass
+        #     if os.path.exists(temp_dir):
+        #         # Clean up temp directory
+        #         shutil.rmtree(temp_dir)
+        #         log.info(f'Remove the directory: [{temp_dir}]')
 
     def process_tiff_file(self, filepath):
         # Convert the file path to a pathlib.Path object
@@ -206,10 +208,8 @@ class Absorber:
 
         # Check existing catalogue entry
         if not catalogue_entry:
-            # Create
             self.create_catalogue_entry(metadata, archive, attributes, symbology)
         else:
-            # Update
             self.update_catalogue_entry(catalogue_entry, metadata, archive, attributes, symbology)
 
     @transaction.atomic()
@@ -232,7 +232,7 @@ class Absorber:
             bool: Whether the creation was successful.
         """
         # Log
-        log.info("Creating new catalogue entry")
+        log.info(f"Creating a new CatalogueEntry with the name: [{metadata.name}]...")
         
         # Calculate attributes hash
         attributes_hash = utils.attributes_hash(attributes)
@@ -253,7 +253,7 @@ class Absorber:
         geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
-        self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path)
+        self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, True)
 
         # Create Layer Metadata
         self.create_layer_metadata(metadata, catalogue_entry)
@@ -271,41 +271,6 @@ class Absorber:
 
         # Return
         return True
-
-    def create_layer_submission(self, metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path):
-        models.layer_submissions.LayerSubmission.objects.create(
-            description=metadata.description,
-            file=archive,
-            is_active=True,  # Active!
-            created_at=metadata.created_at,
-            hash=attributes_hash,
-            layer_attribute=attributes_str,
-            catalogue_entry=catalogue_entry,
-            geojson=geojson_path
-        )
-
-    def create_layer_metadata(self, metadata, catalogue_entry):
-        models.layer_metadata.LayerMetadata.objects.create(
-            created_at=metadata.created_at,
-            catalogue_entry=catalogue_entry,
-            additional_data=metadata.additional_data,
-        )
-
-    def create_layer_attributes(self, attributes, catalogue_entry):
-        for attribute in attributes:
-            # Create Attribute
-            models.layer_attributes.LayerAttribute.objects.create(
-                name=attribute.name,
-                type=attribute.type,
-                order=attribute.order,
-                catalogue_entry=catalogue_entry,
-            )
-
-    def create_layer_symbology(self, symbology, catalogue_entry):
-        models.layer_symbology.LayerSymbology.objects.create(
-            sld=symbology.sld,
-            catalogue_entry=catalogue_entry,
-        )
 
     @transaction.atomic()
     def update_catalogue_entry(
@@ -329,7 +294,7 @@ class Absorber:
             bool: Whether the update was successful.
         """
         # Log
-        log.info("Updating existing catalogue entry")
+        log.info(f"Updating existing catalogue entry: [{catalogue_entry}]...")
         
         # Calculate Layer Submission Attributes Hash
         attributes_hash = utils.attributes_hash(attributes)
@@ -339,19 +304,11 @@ class Absorber:
             attributes_str = attributes_str+str(attr)+"\n"
 
         # Convert to a Geojson text
-        geojson_path = self.convert_to_geojson(archive, catalogue_entry)
+        extension = pathlib.Path(archive).suffix.lower()
+        geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create New Layer Submission
-        layer_submission = models.layer_submissions.LayerSubmission.objects.create(
-            description=metadata.description,
-            file=archive,
-            is_active=False,  # Starts out Inactive
-            created_at=metadata.created_at,
-            hash=attributes_hash,
-            layer_attribute=attributes_str,
-            catalogue_entry=catalogue_entry,
-            geojson=geojson_path
-        )    
+        layer_submission = self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, False)
         
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate(False)
@@ -374,6 +331,42 @@ class Absorber:
             directory_notifications.catalogue_entry_update_failure(catalogue_entry)
         # Return
         return success
+
+    def create_layer_submission(self, metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, is_active):
+        layer_submission = models.layer_submissions.LayerSubmission.objects.create(
+            description=metadata.description,
+            file=archive,
+            is_active=is_active,  # Active!
+            created_at=metadata.created_at,
+            hash=attributes_hash,
+            layer_attribute=attributes_str,
+            catalogue_entry=catalogue_entry,
+            geojson=geojson_path
+        )
+        return layer_submission
+
+    def create_layer_metadata(self, metadata, catalogue_entry):
+        models.layer_metadata.LayerMetadata.objects.create(
+            created_at=metadata.created_at,
+            catalogue_entry=catalogue_entry,
+            additional_data=metadata.additional_data,
+        )
+
+    def create_layer_attributes(self, attributes, catalogue_entry):
+        for attribute in attributes:
+            # Create Attribute
+            models.layer_attributes.LayerAttribute.objects.create(
+                name=attribute.name,
+                type=attribute.type,
+                order=attribute.order,
+                catalogue_entry=catalogue_entry,
+            )
+
+    def create_layer_symbology(self, symbology, catalogue_entry):
+        models.layer_symbology.LayerSymbology.objects.create(
+            sld=symbology.sld,
+            catalogue_entry=catalogue_entry,
+        )
 
     def convert_to_geojson(
         self, 
@@ -405,4 +398,3 @@ class Absorber:
         
         # Raise Exception when it failed for some reasons
         raise Exception(f"failed to move file from {path_from} to {path_to}")
-

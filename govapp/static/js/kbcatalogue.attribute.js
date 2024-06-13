@@ -122,7 +122,7 @@ var kbcatalogue_attribute = {
             success: function (response) {
                 if (response != null) {
                     if(!response){
-                        $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                         return;
                     }
 
@@ -172,10 +172,10 @@ var kbcatalogue_attribute = {
                     //     common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, +params.limit, $('#paging_navi'));
 
                     // } else {
-                    //     $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    //     $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     // }
                 } else {
-                      $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }      
             },
             error: function (error) {

@@ -94,19 +94,21 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str, export_m
     output_filepath = pathlib.Path(output_dir) / f"{layer}.geojson"
 
     # Run Command
-    subprocess.check_call(  # noqa: S603,S607
-        [
-            "ogr2ogr",
-            "-unsetFid",
-            str(output_filepath),
-            str(filepath),            
-            str(layer),
-        ]
-    )
-    # converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath}
-    # Return
+    try:
+        subprocess.check_call(  # noqa: S603,S607
+            [
+                "ogr2ogr",
+                "-unsetFid",
+                str(output_filepath),
+                str(filepath),            
+                str(layer),
+            ]
+        )
+    except subprocess.CalledProcessError as e:
+        log.error(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
+        raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON")
+
     return pathlib.Path(output_filepath)
-    #return output_filepath
 
 
 def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:

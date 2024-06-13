@@ -128,7 +128,7 @@ class PublishPage(base.TemplateView):
         catalogue_entry_list = []
 
         # START - To be improved later todo a reverse table join      
-        ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
+        ce_obj = catalogue_entries_models.CatalogueEntry.objects.all().order_by('id')
         pe_obj = publish_entries_models.PublishEntry.objects.all()
 
         for pe in pe_obj:            
