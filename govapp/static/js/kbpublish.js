@@ -154,22 +154,39 @@ var kbpublish = {
         $('#publish-lastupdatedto').datepicker({  dateFormat: this.var.publish_date_format, 
                 format: this.var.publish_date_format,
         });
-
-
         $( "#publish-filter-btn" ).click(function() {
-            console.log("Reload Publish Table");
             kbpublish.get_publish();
         });
-        $( "#publish-new-btn" ).click(function() {
-            common_entity_modal.init("New Publish", "submit");
-            // let name_id = common_entity_modal.add_field(label="Name", type="text");
-            let catalogue_entry_id = common_entity_modal.add_field(label="Catalogue Entry", type="select", value=null, option_map=kbpublish.var.catalogue_entry_map);
-            let description_id = common_entity_modal.add_field(label="Description", type="text");
-            common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                                kbpublish.create_publish(success_callback, error_callback, catalogue_entry_id, description_id),
-                                                success_callback=(response)=>{location.href = '/publish/'+response.id;});
-            common_entity_modal.show();
-        });           
+        $("#create-new-publish-entry-btn" ).click(function() {
+            $('#new-publish-entry-catalogue-entry').val('');
+            $('#new-publish-entry-description').val('');
+            $('#new-publish-entry-modal').modal('show');
+        }),
+        $('#new-publish-entry-modal-submit-btn').click(function(){
+            const catalogue_entry = utils.validate_empty_input('Catalogue Entry', $('#new-publish-entry-catalogue-entry').val());
+            const description = utils.validate_empty_input('Description', $('#new-publish-entry-description').val());
+            
+            var publish_data = {
+                catalogue_entry: catalogue_entry,
+                description: description,
+            };
+
+            $.ajax({
+                url: kbpublish.var.publish_save_url,
+                method: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                headers: {'X-CSRFToken': $("#csrfmiddlewaretoken").val()},
+                data: JSON.stringify(publish_data),
+                success: (response)=>{
+                    // Redirect to the publish_entry created just now
+                    location.href = '/publish/' + response.id;
+                },
+                error: (error)=>{
+                    console.error('Error occurred:', error);
+                },
+            });
+        }),
         $( "#publish-limit" ).change(function(){
             common_pagination.var.current_page=0;
             kbpublish.get_publish();
@@ -1103,7 +1120,7 @@ var kbpublish = {
                                         if (response.results[i].num_of_cddp_publish_channels <= 0){
                                             disabled = ' disabled'
                                         }
-                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish CDDP (" + response.results[i].num_of_cddp_publish_channels + ")</button>";
+                                        html += "<button class='btn btn-primary btn-sm w-100 publish-to-cddp-btn' id='publish-to-cddp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish CDDP (" + response.results[i].num_of_cddp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
 
@@ -1113,14 +1130,10 @@ var kbpublish = {
                                         if (response.results[i].num_of_ftp_publish_channels <= 0){
                                             disabled = ' disabled'
                                         }
-                                        html += " <button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
+                                        html += "<button class='btn btn-primary btn-sm w-100 publish-to-ftp-btn' id='publish-to-ftp-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish FTP (" + response.results[i].num_of_ftp_publish_channels + ")</button>";
                                     }
                                     html += '</div>'
-                                } else {
-                                    html += '<div class="col-sm-8"></div>'
                                 }
-                            } else {
-                                html += '<div class="col-sm-8"></div>'
                             }
                             html+="<div class='d-flex gap-1 mt-1'>"
                                 html+="<a class='btn btn-primary btn-sm flex-grow-1' href='/publish/"+response.results[i].id+"'>View</a>";
@@ -1135,11 +1148,11 @@ var kbpublish = {
                         $('.publish-table-button').hide();
 
                     } else {
-                        $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     }
                     common_pagination.init(response.count, params, kbpublish.get_publish, $('#paging_navi'));
                 } else {
-                      $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#publish-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
 
                 $( ".publish-to-geoserver-btn" ).click(function() {
@@ -1347,11 +1360,11 @@ var kbpublish = {
                             
                         });                         
                     } else {
-                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
 
                     }
                 } else {
-                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
 
        
@@ -1380,6 +1393,7 @@ var kbpublish = {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
                             let geoserver_publish_channel = responsejson[i];
+                            console.log({geoserver_publish_channel})
                             let button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
 
                             html+= "<tr>";
@@ -1388,6 +1402,7 @@ var kbpublish = {
                             html+= " <td>"+kbpublish.var.publish_geoserver_format[geoserver_publish_channel.mode]+"</td>";                        
                             html+= " <td>"+kbpublish.var.publish_geoserver_frequency[geoserver_publish_channel.frequency]+"</td>";                                                    
                             html+= " <td>"+geoserver_publish_channel.workspace_name+"</td>"; 
+                            html+= " <td>"+geoserver_publish_channel.store_type_name+"</td>"; 
                             html+= " <td>";
                             if (geoserver_publish_channel.published_at == null) {
                                 html+= "Not Published";   
@@ -1397,8 +1412,8 @@ var kbpublish = {
                             html+= "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
-                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='"+button_json+"' >Update</button> ";
-                                html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"' >Delete</button>";
+                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='"+button_json+"'>Update</button> ";
+                                html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"'>Delete</button>";
                             }
                             html+= "</td>";
                             html+= "<tr>";                                    
@@ -1443,10 +1458,10 @@ var kbpublish = {
                             });
                         }
                     } else {
-                        $('#publish-geoserver-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-geoserver-tbody').empty().append("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                     }
                 } else {
-                      $('#publish-geoserver-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-geoserver-tbody').empty().append("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                 }
             },
             error: function (error) {
@@ -1541,20 +1556,20 @@ var kbpublish = {
         bbox_div.append(bbox_row_div);
         return [bbox_div, labels_fields, ids, ids_list];
     },
-    show_update_geoserver_modal: function(prev){
-        common_entity_modal.init("Publish Update Geoserver", "submit");
-        common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
-        let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
-        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
-        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
-        // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
-        let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
+    // show_update_geoserver_modal: function(prev){
+    //     common_entity_modal.init("Publish Update Geoserver", "submit");
+    //     common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
+    //     let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
+    //     let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
+    //     let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
+    //     // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
+    //     let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
         
-        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.update_publish_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
-                                            success_callback=this.get_publish_geoservers);
-        common_entity_modal.show();
-    },
+    //     common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
+    //                                         this.update_publish_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
+    //                                         success_callback=this.get_publish_geoservers);
+    //     common_entity_modal.show();
+    // },
     write_geoserver_subscription: function(success_callback, error_callback, ids, geoserver_id){
         const publish_id = $('#publish_id').val(); 
         // prefixed. could be changed in the future
@@ -1600,41 +1615,41 @@ var kbpublish = {
             error: error_callback
         });
     },
-    update_publish_geoserver: function(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, publish_id){
-        // get & validation check
-        const mode = utils.validate_empty_input('format', $('#'+format_id).val());
-        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
-        const workspace = utils.validate_empty_input('workspace', $('#'+workspace_id).val());
-        const geoserver_pool = utils.validate_empty_input('geoserver_pool', $('#'+geoserver_pool_id).val());
+    // update_publish_geoserver: function(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, publish_id){
+    //     // get & validation check
+    //     const mode = utils.validate_empty_input('format', $('#'+format_id).val());
+    //     const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
+    //     const workspace = utils.validate_empty_input('workspace', $('#'+workspace_id).val());
+    //     const geoserver_pool = utils.validate_empty_input('geoserver_pool', $('#'+geoserver_pool_id).val());
         
-        // make data body
-        var geoserver_data = {
-            geoserver_pool: geoserver_pool,
-            mode:mode,
-            frequency:frequency,
-            workspace:workspace,
-            publish_entry:$('#publish-entry-id').val()
-        };
-        var url = this.var.publish_save_geoserver_url;
-        var method = 'POST';
-        if(publish_id){
-            delete geoserver_data['publish_entry'];
-            url += publish_id+'/';
-            method = 'PUT';
-        }
+    //     // make data body
+    //     var geoserver_data = {
+    //         geoserver_pool: geoserver_pool,
+    //         mode:mode,
+    //         frequency:frequency,
+    //         workspace:workspace,
+    //         publish_entry:$('#publish-entry-id').val()
+    //     };
+    //     var url = this.var.publish_save_geoserver_url;
+    //     var method = 'POST';
+    //     if(publish_id){
+    //         delete geoserver_data['publish_entry'];
+    //         url += publish_id+'/';
+    //         method = 'PUT';
+    //     }
 
-        // call POST API
-        $.ajax({
-            url: url,
-            method: method,
-            dataType: 'json',
-            contentType: 'application/json',
-            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
-            data: JSON.stringify(geoserver_data),
-            success: success_callback,
-            error: error_callback
-        });
-    },
+    //     // call POST API
+    //     $.ajax({
+    //         url: url,
+    //         method: method,
+    //         dataType: 'json',
+    //         contentType: 'application/json',
+    //         headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+    //         data: JSON.stringify(geoserver_data),
+    //         success: success_callback,
+    //         error: error_callback
+    //     });
+    // },
 
     get_publish_cddp: function() {
         var publish_id = $('#publish_id').val();
@@ -1685,14 +1700,11 @@ var kbpublish = {
                             });
                         }
                     } else {
-                        $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
-
+                        $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     }
                 } else {
-                      $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
-
-       
             },
             error: function (error) {
                 $('#save-publish-popup-error').html("Error Loading publish data");
@@ -1747,24 +1759,22 @@ var kbpublish = {
                             $( ".publish-ftp-delete" ).click(function() {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
-                                kbpublish.delete_publish_ftp(btndata.id);                                                        
+                                kbpublish.delete_publish_ftp(btndata.id);
                             });
                             $( ".publish-ftp-update" ).click(function() {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
-                                kbpublish.show_update_ftp_modal(btndata);                                
+                                kbpublish.show_update_ftp_modal(btndata);
                                 //kbpublish.show_update_ftp_modal(responsejson[i]);
                             });
                         }
                     } else {
-                        $('#publish-ftp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                        $('#publish-ftp-tbody').html("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
 
                     }
                 } else {
-                      $('#publish-ftp-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                      $('#publish-ftp-tbody').html("<tr><td colspan='8' class='text-center'>No results found</td></tr>");
                 }
-
-       
             },
             error: function (error) {
                 $('#save-publish-popup-error').html("Error Loading publish data");
@@ -2004,7 +2014,7 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                 if(!response){
-                    $('#publish-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found<td></tr>");
+                    $('#publish-notification-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     return;
                 }
                 // change type number to name

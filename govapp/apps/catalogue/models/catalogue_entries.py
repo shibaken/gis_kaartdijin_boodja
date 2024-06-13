@@ -148,7 +148,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
             layer_submissions.LayerSubmission: The currently active layer.
         """
         # Retrieve Active Layer
-        active_layer = self.layers.filter(is_active=True).last()
+        active_layer = self.layers.filter(is_active=True).order_by('id').last()
 
         # Check only when the type is CatalogueEntryType.SPATIAL_FILE
         #if CatalogueEntryType.SPATIAL_FILE == self.type:

@@ -406,7 +406,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             symbology_only (bool): Whether to publish symbology only.
         """
         # Log
-        log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self}'")
+        log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self.geoserver_pool}'")
 
         # if not geoserver:
         #     geoserver = gis.geoserver.geoserver()
@@ -443,20 +443,20 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         self.save()
 
     def publish_geoserver_symbology(self, geoserver: gis.geoserver.GeoServer) -> None:
-    # def publish_geoserver_symbology(self) -> None:
         """Publishes the Symbology to GeoServer if applicable."""
         # Log
-        log.info(f"Publishing '{self}' (Symbology) to GeoServer")
+        log.info(f"Publishing '{self}' (Symbology) to GeoServer...")
 
-        # geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
-
-        # Publish Style to GeoServer
-        geoserver.upload_style(
-            workspace=self.workspace.name,
-            layer=self.publish_entry.catalogue_entry.metadata.name,
-            name=self.publish_entry.catalogue_entry.symbology.name,
-            sld=self.publish_entry.catalogue_entry.symbology.sld,
-        )
+        if hasattr(self.publish_entry.catalogue_entry, 'symbology'):
+            # Publish Style to GeoServer
+            geoserver.upload_style(
+                workspace=self.workspace.name,
+                layer=self.publish_entry.catalogue_entry.metadata.name,
+                name=self.publish_entry.catalogue_entry.symbology.name,
+                sld=self.publish_entry.catalogue_entry.symbology.sld,
+            )
+        else:
+            log.info(f'Catalogue Entry: [{self.publish_entry.catalogue_entry}] does not have Symbology.')
 
     def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
     # def publish_geoserver_layer(self, wms: bool, wfs: bool) -> None:
@@ -477,26 +477,36 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # )
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
  
-        # Convert Layer to GeoPackage
-        geopackage = gis.conversions.to_geopackage(
-            filepath=filepath,
-            layer=self.publish_entry.catalogue_entry.metadata.name,
-            catalogue_name=self.publish_entry.catalogue_entry.name,
-            export_method='geoserver'
-        )
-            
-        # Push Layer to GeoServer
-        geoserver.upload_geopackage(
-            workspace=self.workspace.name,
-            layer=self.publish_entry.catalogue_entry.metadata.name,
-            filepath=geopackage['full_filepath'],
-        )
+        if self.store_type == StoreType.GEOPACKAGE:
+            # Convert Layer to GeoPackage
+            geopackage = gis.conversions.to_geopackage(
+                filepath=filepath,
+                layer=self.publish_entry.catalogue_entry.metadata.name,
+                catalogue_name=self.publish_entry.catalogue_entry.name,
+                export_method='geoserver'
+            )
+                
+            # Push Layer to GeoServer
+            geoserver.upload_geopackage(
+                workspace=self.workspace.name,
+                layer=self.publish_entry.catalogue_entry.metadata.name,
+                filepath=geopackage['full_filepath'],
+            )
+        elif self.store_type == StoreType.GEOTIFF:
+            geoserver.upload_tif(
+                workspace=self.workspace.name,
+                layer=self.publish_entry.catalogue_entry.metadata.name,
+                filepath=filepath,
+            )
+        else:
+            log.warn(f'Unknown store_type: [{self.store_type}].')
 
         # Set Default Style
+        style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') else ''
         geoserver.set_default_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
-            name=self.publish_entry.catalogue_entry.symbology.name,
+            name=style_name,
         )
 
         ## HERE 
