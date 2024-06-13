@@ -26,12 +26,24 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     # filter_horizontal = ["editors"]
-    list_display = ('id', 'name', 'status', 'type', 'created_at', 'updated_at')
+    list_display = ('id', 'name', 'status', 'type', 'layer_subscription_link','custodian_link', 'assigned_to_link', 'created_at', 'updated_at')
     list_display_links = ('id', 'name',)
     ordering = ('id',)
     inlines = [CatalogueEntryPermissionInline]
     raw_id_fields = ('custodian', 'assigned_to')
     
+    def custodian_link(self, obj):
+        return format_html(f'<a href="/admin/catalogue/custodian/{obj.custodian.id}/change/">{obj.custodian.name}</a>') if obj.custodian else '-'
+    custodian_link.short_description = 'Custodian'
+
+    def assigned_to_link(self, obj):
+        return format_html(f'<a href="/admin/auth/user/{obj.assigned_to.id}/change">{obj.assigned_to}</a>') if obj.assigned_to else '-'
+    assigned_to_link.short_description = 'Assigned to'
+
+    def layer_subscription_link(self, obj):
+        return format_html(f'<a href="/admin/catalogue/layersubscription/{obj.layer_subscription.id}/change">{obj.layer_subscription}</a>') if obj.layer_subscription else '-'
+    layer_subscription_link.short_description = 'Layer Subscription'
+
 
 class CustodianAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','contact_name','contact_email','contact_phone')
@@ -65,7 +77,7 @@ class LayerMetadataAdmin(reversion.admin.VersionAdmin):
     
 class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
     # list_display = ('id', 'name', 'status', 'is_active', 'catalogue_entry', 'created_at')
-    list_display = ('id', 'name', 'status', 'is_active', 'catalogue_entry_link', 'created_at')
+    list_display = ('id', 'name', 'status', 'is_active', 'catalogue_entry_link', 'file', 'created_at')
     list_display_links = ('id', 'name',)
     ordering = ('id',)
     raw_id_fields = ('catalogue_entry',)
@@ -76,9 +88,18 @@ class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
 
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'name', 'description', 'status', 'enabled', 'assigned_to', 'username', 'url', 'host', 'updated_at', 'created_at')
+    list_display = ('id', 'name', 'description', 'status', 'enabled', 'assigned_to_link', 'username', 'url_link', 'host', 'updated_at', 'created_at')
     list_display_links = ('id', 'name',)
     ordering = ('id',)
+
+    def assigned_to_link(self, obj):
+        return format_html(f'<a href="/admin/auth/user/{obj.assigned_to.id}/change">{obj.assigned_to}</a>') if obj.assigned_to else '-'
+    assigned_to_link.short_description = 'Assigned to'
+
+    def url_link(self, obj):
+        return format_html(f'<a href="{obj.url}">{obj.url}</a>') if obj.url else ''
+    url_link.short_description = 'URL'
+
     
 class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
     search_fields = ('catalogue_entry__id','sld')
@@ -102,13 +123,16 @@ class EmailNotificationAdmin(reversion.admin.VersionAdmin):
     
 class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','type', 'url')
-    list_display = ('id', 'name', 'type', 'url', 'catalogue_entry_link')
+    list_display = ('id', 'name', 'type', 'url_link', 'catalogue_entry_link')
     ordering = ('id',)
 
     def catalogue_entry_link(self, obj):
         return construct_catalogue_entry_link(obj.catalogue_entry)
     catalogue_entry_link.short_description = 'Catalogue Entry'
 
+    def url_link(self, obj):
+        return format_html(f'<a href="{obj.url}">{obj.url}</a>') if obj.url else ''
+    url_link.short_description = 'URL'
 
 class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'user', 'catalogue_entry_link')
