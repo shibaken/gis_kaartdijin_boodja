@@ -1423,9 +1423,7 @@ var kbpublish = {
                                 $('#confirmDeleteBtn').attr('data-json', btndata_json);
                                 // Display the item to be deleted
                                 var btndata = JSON.parse(btndata_json);
-                                $('#item_to_be_deleted').text('ID: ' + btndata.id + ' ' + btndata.geoserver_pool_name);
-                                // Display modal
-                                $('#deleteConfirmationModal').modal('show');
+                                kbpublish.open_confirmation_modal('ID: ' + btndata.id + ' ' + btndata.geoserver_pool_name)
                             });
                             $('#confirmDeleteBtn').click(function() {
                                 // Retrieve the data-json data form the 'Delete' button on the modal
@@ -1433,10 +1431,7 @@ var kbpublish = {
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_geoserver(btndata.id);
                                 // Remove the data-json attribute
-                                $('#confirmDeleteBtn').removeAttr('data-json');
-                                $('#item_to_be_deleted').text('');
-                                // Close modal
-                                $('#deleteConfirmationModal').modal('hide');
+                                kbpublish.close_confirmation_modal()
                             });
                             $(".publish-geoserver-update").click(function() {
                                 let data = $(this).data('json')
@@ -1705,10 +1700,20 @@ var kbpublish = {
                             html+= "<tr>";                                      
                             $('#publish-cddp-tbody').html(html);
                             $( ".publish-cddp-delete" ).click(function() {
-
+                                // Copy data-json to the 'Delete' button on the modal
+                                let btndata_json = $(this).attr('data-json');
+                                $('#confirmDeleteBtn').attr('data-json', btndata_json);
+                                // Display the item to be deleted
+                                var btndata = JSON.parse(btndata_json);
+                                kbpublish.open_confirmation_modal('ID: ' + btndata.id)
+                            });
+                            $('#confirmDeleteBtn').click(function() {
+                                // Retrieve the data-json data form the 'Delete' button on the modal
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
-                                kbpublish.delete_publish_cddp(btndata.id);                                                        
+                                kbpublish.delete_publish_cddp(btndata.id);
+                                // Remove the data-json attribute
+                                kbpublish.close_confirmation_modal()
                             });
                             $( ".publish-cddp-update" ).click(function() {
                                 kbpublish.show_update_cddp_modal(responsejson[i]);
@@ -1772,9 +1777,20 @@ var kbpublish = {
 
                             $('#publish-ftp-tbody').html(html);
                             $( ".publish-ftp-delete" ).click(function() {
+                                // Copy data-json to the 'Delete' button on the modal
+                                let btndata_json = $(this).attr('data-json');
+                                $('#confirmDeleteBtn').attr('data-json', btndata_json);
+                                // Display the item to be deleted
+                                var btndata = JSON.parse(btndata_json);
+                                kbpublish.open_confirmation_modal('ID: ' + btndata.id)
+                            });
+                            $('#confirmDeleteBtn').click(function() {
+                                // Retrieve the data-json data form the 'Delete' button on the modal
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_ftp(btndata.id);
+                                // Remove the data-json attribute
+                                kbpublish.close_confirmation_modal()
                             });
                             $( ".publish-ftp-update" ).click(function() {
                                 var btndata_json = $(this).attr('data-json');
@@ -1799,6 +1815,18 @@ var kbpublish = {
                 console.log('Error Loading publish data');
             },
         });
+    },
+    open_confirmation_modal: function(item_to_be_deleted_text){
+        $('#item_to_be_deleted').text(item_to_be_deleted_text)
+        // Display modal
+        $('#deleteConfirmationModal').modal('show');
+    },
+    close_confirmation_modal: function(){
+        // Remove data etc.
+        $('#confirmDeleteBtn').removeAttr('data-json');
+        $('#item_to_be_deleted').text('');
+        // Close modal
+        $('#deleteConfirmationModal').modal('hide');
     },
     show_update_cddp_modal: function(prev){
         common_entity_modal.init("Update Cddp Notification", "submit");
