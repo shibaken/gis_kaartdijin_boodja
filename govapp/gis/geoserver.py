@@ -178,11 +178,7 @@ class GeoServer:
         log.info(f"Uploading GeoTiff '{filepath}' to GeoServer")
 
         # Construct URL
-        url = "{0}/rest/workspaces/{1}/coveragestores/{2}/file.geotiff".format(
-            self.service_url,
-            workspace,
-            layer,
-        )
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/file.geotiff"
 
         # Perform Request
         response = httpx.put(
@@ -197,6 +193,38 @@ class GeoServer:
         log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
 
         # Check Response
+        response.raise_for_status()
+
+        # Once uploaded, create a layer for the coverage store
+        self.create_layer_from_coveragestore(workspace, layer)
+
+    @handle_http_exceptions(log)
+    def create_layer_from_coveragestore(self, workspace: str, layer: str) -> None:
+        """
+        Creates a layer in GeoServer from an existing coverage store.
+
+        Args:
+            workspace (str): Workspace where the coverage store exists.
+            layer (str): Name of the layer to create in GeoServer.
+        """
+        # Log
+        log.info(f"Creating layer '{layer}' in workspace '{workspace}'")
+
+        # Construct URL for layers endpoint
+        layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/coverages"
+
+        # Perform POST request to create the layer
+        response = httpx.post(
+            url=layers_url,
+            headers={"Content-type": "application/xml"},
+            auth=(self.username, self.password),
+            timeout=3000.0
+        )
+
+        # Log GeoServer response
+        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+        # Check response status
         response.raise_for_status()
 
     def upload_store_wms(self, workspace, store_name, context) -> None:
