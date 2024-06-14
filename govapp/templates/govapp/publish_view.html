@@ -8,6 +8,8 @@
             {% include "govapp/publish_view_new_cddp.html" %}
             {% include "govapp/publish_view_new_ftp.html" %}
             {% include "govapp/common_entity_modal.html" %}
+            {% include "govapp/publish_style.html" %}
+            {% include "govapp/confirmation_modal.html" %}
 
             <div class="container" id="dashboard-table-container">
                   <div class='row'>
@@ -490,8 +492,6 @@
             <div id="publish_workspace_list" data-list="{{ publish_workspace_list }}"></div>
             <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
             <input type="hidden" id="catalogue-type" name="current_user" value="{{ publish_entry_obj.catalogue_entry.type }}">
-
-            {% include "govapp/publish_style.html" %}
 
             <script>
                   kbpublish.init_publish_item();

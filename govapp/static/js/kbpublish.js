@@ -1393,8 +1393,7 @@ var kbpublish = {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
                             let geoserver_publish_channel = responsejson[i];
-                            console.log({geoserver_publish_channel})
-                            let button_json = '{"id": "'+geoserver_publish_channel.id+'"}'
+                            let button_json = '{"id": "' + geoserver_publish_channel.id + '", "geoserver_pool_name": "' + geoserver_publish_channel.geoserver_pool_name + '"}'
 
                             html+= "<tr>";
                             html+= " <td>"+geoserver_publish_channel.id+"</td>";                        
@@ -1412,16 +1411,32 @@ var kbpublish = {
                             html+= "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
-                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='"+button_json+"'>Update</button> ";
-                                html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='"+button_json+"'>Delete</button>";
+                                html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='" + button_json + "'>Update</button> ";
+                                html+= "<button class='btn btn-danger btn-sm publish-geoserver-delete' data-json='" + button_json + "'>Delete</button>";
                             }
                             html+= "</td>";
                             html+= "<tr>";                                    
                             $('#publish-geoserver-tbody').html(html);
                             $(".publish-geoserver-delete").click(function() {
+                                // Copy data-json to the 'Delete' button on the modal
+                                let btndata_json = $(this).attr('data-json');
+                                $('#confirmDeleteBtn').attr('data-json', btndata_json);
+                                // Display the item to be deleted
+                                var btndata = JSON.parse(btndata_json);
+                                $('#item_to_be_deleted').text('ID: ' + btndata.id + ' ' + btndata.geoserver_pool_name);
+                                // Display modal
+                                $('#deleteConfirmationModal').modal('show');
+                            });
+                            $('#confirmDeleteBtn').click(function() {
+                                // Retrieve the data-json data form the 'Delete' button on the modal
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
-                                kbpublish.delete_publish_geoserver(btndata.id);                                                        
+                                kbpublish.delete_publish_geoserver(btndata.id);
+                                // Remove the data-json attribute
+                                $('#confirmDeleteBtn').removeAttr('data-json');
+                                $('#item_to_be_deleted').text('');
+                                // Close modal
+                                $('#deleteConfirmationModal').modal('hide');
                             });
                             $(".publish-geoserver-update").click(function() {
                                 let data = $(this).data('json')
