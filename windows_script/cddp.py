@@ -131,10 +131,14 @@ if not files:
     print('No files found.')
     sys.exit(0)
 
+# Print total number of files
+total_files = len(files)
+print(f'Total number of files: {total_files}')
+
 count = 0
 for file_info in files:
     count += 1
-    print(f"--- File#{count} ---")
+    print(f"--- File#{count} (out of {total_files}) files ---")
 
     # Retrieve file contents
     file_content = retrieve_file_content(config_data['KB_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
