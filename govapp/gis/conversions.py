@@ -6,6 +6,7 @@ import logging
 import pathlib
 import subprocess  # noqa: S404
 import tempfile
+from osgeo import gdal
 
 # Local
 from govapp.gis import compression
@@ -241,3 +242,52 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
     hash_array["output_dir"] = output_dir
     hash_array["compressed_filepath"] = compressed_filepath
     return hash_array 
+
+
+def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
+    """
+    Converts a TIFF file to a GeoPackage file.
+
+    Parameters:
+    input_tiff (str): Path to the input TIFF file.
+    output_gpkg (str): Path to the output GeoPackage file.
+    output_layer_name (str): Name of the layer to be added in the GeoPackage.
+
+    """
+    # Open the input TIFF file
+    tiff_dataset = gdal.Open(input_tiff)
+    
+    if tiff_dataset is None:
+        raise ValueError("Failed to open the input TIFF file.")
+
+    # Get the GeoPackage driver
+    gpkg_driver = gdal.GetDriverByName("GPKG")
+    
+    if gpkg_driver is None:
+        log.error("GeoPackage driver is not available.")
+        raise ValueError("GeoPackage driver is not available.")
+
+    # Create the GeoPackage file
+    gpkg_dataset = gpkg_driver.Create(output_gpkg,
+                                      tiff_dataset.RasterXSize,
+                                      tiff_dataset.RasterYSize,
+                                      tiff_dataset.RasterCount,
+                                      gdal.GDT_Byte)
+    
+    if gpkg_dataset is None:
+        log.error("Failed to create the GeoPackage file.")
+        raise ValueError("Failed to create the GeoPackage file.")
+
+    # Copy data from the TIFF file to the GeoPackage file
+    for band_number in range(1, tiff_dataset.RasterCount + 1):
+        band = tiff_dataset.GetRasterBand(band_number)
+        gpkg_band = gpkg_dataset.GetRasterBand(band_number)
+        gpkg_band.WriteArray(band.ReadAsArray())
+
+    # Set the layer name in the GeoPackage file
+    gpkg_dataset.SetMetadataItem("LAYERS", output_layer_name)
+
+    # Close the GeoPackage file
+    gpkg_dataset = None
+
+    log.info("Converted TIFF file to GeoPackage successfully.")
