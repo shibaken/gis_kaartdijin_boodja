@@ -2,6 +2,7 @@
 
 
 # Third-Party
+import pytz
 from rest_framework import serializers
 
 # Local
@@ -15,6 +16,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
     assigned_to_first_name = serializers.ReadOnlyField(source='assigned_to.first_name',)
     assigned_to_last_name = serializers.ReadOnlyField(source='assigned_to.last_name',)
     assigned_to_email = serializers.ReadOnlyField(source='assigned_to.email',)
+    updated_at = serializers.SerializerMethodField()
 
     class Meta:
         """Catalogue Entry Model Serializer Metadata."""
@@ -65,12 +67,15 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "publish_entry",
         )
 
-    # def validate_name(self):
-    #     if self.name and self.type == 5:
-    #         pass
-    #     else:
-    #         if len(self.name) < 1:
-    #             raise serializers.ValidationError("Please enter a valid catalogue name.")
+    def get_updated_at(self, obj):
+        """Convert updated_at to the desired format."""
+        if obj.updated_at:
+            # Convert to local time
+            local_time = obj.updated_at.astimezone(pytz.timezone('Australia/Perth'))
+            # Return formatted string
+            return local_time.strftime('%d %b %Y %I:%M %p')
+        return None
+
 
 class CatalogueEntryCreateSubscriptionMappingSerializer(serializers.ModelSerializer):
     class Meta:
