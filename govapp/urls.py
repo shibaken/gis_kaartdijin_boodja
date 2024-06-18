@@ -73,10 +73,13 @@ urlpatterns = [
     urls.re_path("layer/subscriptions/(?P<pk>\d+)/", views.LayerSubscriptionsView.as_view()),
 
     # GeoServerQueue
-    urls.path("geoserver/queue/", views.GeoServerQueue.as_view()),
+    urls.path("geoserver-queue/", views.GeoServerQueue.as_view()),
+
+    # Layer monitor
+    # urls.path("geoserver/", views.GeoServerViewSet.as_view()),
 
     # CDDPQueue
-    urls.path("cddp/queue/", views.CDDPQueueView.as_view()),
+    urls.path("cddp-queue/", views.CDDPQueueView.as_view()),
 
     urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
 
