@@ -1055,39 +1055,28 @@ var kbpublish = {
             success: function (response) {
                 var html = '';
 
-                console.log({response})
-                
                 if (response != null) {
                     if (response.results.length > 0) {
                         for (let i = 0; i < response.results.length; i++) {
                             assigned_to_friendly = "";
                             if (response.results[i].first_name != null) {
-
-                                console.log ("HERE");
-                                
                                 assigned_to_friendly = response.results[i].first_name;
-
                                 if (response.results[i].last_name != null) {
                                     assigned_to_friendly += " "+response.results[i].last_name;
-    
                                 }
-
                             } 
                             
                             if (assigned_to_friendly.replace(" ","").length == 0) {
                                 if (response.results[i].email != null) {
                                     assigned_to_friendly = response.results[i].email;
                                 }
-
                             }
-
 
                             button_json = '{"id": "'+response.results[i].id+'"}'
 
                             html+= "<tr>";
                             html+= " <td>PE"+response.results[i].id+"</td>";
                             html+= " <td>"+response.results[i].name+"</td>";
-
 
                             html+= " <td>";
                             if (response.results[i].custodian_name != null) { 

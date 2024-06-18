@@ -178,11 +178,7 @@ class GeoServer:
         log.info(f"Uploading GeoTiff '{filepath}' to GeoServer")
 
         # Construct URL
-        url = "{0}/rest/workspaces/{1}/coveragestores/{2}/file.geotiff".format(
-            self.service_url,
-            workspace,
-            layer,
-        )
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/file.geotiff"
 
         # Perform Request
         response = httpx.put(
@@ -197,6 +193,35 @@ class GeoServer:
         log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
 
         # Check Response
+        response.raise_for_status()
+
+    @handle_http_exceptions(log)
+    def create_layer_from_coveragestore(self, workspace: str, layer: str) -> None:
+        """
+        Creates a layer in GeoServer from an existing coverage store.
+
+        Args:
+            workspace (str): Workspace where the coverage store exists.
+            layer (str): Name of the layer to create in GeoServer.
+        """
+        # Log
+        log.info(f"Creating layer '{layer}' in workspace '{workspace}'")
+
+        # Construct URL for layers endpoint
+        layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/coverages"
+
+        # Perform POST request to create the layer
+        response = httpx.post(
+            url=layers_url,
+            headers={"Content-type": "application/xml"},
+            auth=(self.username, self.password),
+            timeout=3000.0
+        )
+
+        # Log GeoServer response
+        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+        # Check response status
         response.raise_for_status()
 
     def upload_store_wms(self, workspace, store_name, context) -> None:
@@ -662,6 +687,43 @@ class GeoServer:
         else:
             # No layers
             return []
+
+    @handle_http_exceptions(log)
+    def get_layer_details(self, layer_name: str) -> Optional[dict]:
+        """
+        Retrieve details for a specific layer from GeoServer.
+
+        Args:
+            layer_name (str): The name of the layer to retrieve details for.
+
+        Returns:
+            Optional[dict]: The details of the layer, or None if not found.
+        """
+        # Log
+        log.info(f'Retrieving details for layer: [{layer_name}] from GeoServer: [{self.service_url}]')
+        
+        # Construct URL
+        url = f"{self.service_url}/rest/layers/{layer_name}"
+        
+        # Perform Request
+        response = httpx.get(
+            url=url,
+            auth=(self.username, self.password),
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            timeout=120.0
+        )
+
+        # Check Response
+        response.raise_for_status()
+
+        json_response = response.json()
+        if json_response is None or not json_response.get('layer'):
+            log.error(f"The response of retrieving details for layer [{layer_name}] from GeoServer was wrong. {json_response}")
+            return None
+        
+        # Return JSON
+        return json_response['layer']
+
     
     @handle_http_exceptions(log)
     def delete_layer(self, layer_name) -> None:

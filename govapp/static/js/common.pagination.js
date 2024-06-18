@@ -121,17 +121,19 @@ var common_pagination = {
         let direct_navi_html = ''
         if ((beginning > 1) || (end < total - 1)){
             direct_navi_html = `
-            <div id="direct_navi_html"><ul class="pagination justify-content-end">
-                <li class="page-item disabled">
-                    <span class="page-link">Go to page</span>
-                </li>
-                <li class="page-item">
-                    <input type="number" id="page_number_input" class="form-control" style="width: 60px;" min="1" max="${total}" value="${current + 1}">
-                </li>
-                <li class="page-item">
-                    <button id="page_number_go" class="btn btn-primary">Go</button>
-                </li>
-                </ul></div>
+                <div id="direct_navi_html">
+                    <ul class="pagination justify-content-end">
+                        <li class="page-item disabled">
+                            <span class="page-link">Go to page</span>
+                        </li>
+                        <li class="page-item">
+                            <input type="number" id="page_number_input" class="form-control" style="width: 60px;" min="1" max="${total}" value="${current + 1}">
+                        </li>
+                        <li class="page-item">
+                            <button id="page_number_go" class="btn btn-primary">Go</button>
+                        </li>
+                    </ul>
+                </div>
             `;
         }
 
