@@ -184,7 +184,11 @@ class GeoServer:
         response = httpx.put(
             url=url,
             content=filepath.read_bytes(),
-            params={"filename": filepath.name, "update": "overwrite"},
+            params={
+                "filename": filepath.name,
+                "update": "overwrite",
+                "configure": "all"
+                },
             auth=(self.username, self.password),
             timeout=3000.0
         )
@@ -204,16 +208,68 @@ class GeoServer:
             workspace (str): Workspace where the coverage store exists.
             layer (str): Name of the layer to create in GeoServer.
         """
+        response_data = self.get_layer_details(layer)
+        response_data['layer']['resource']['srs'] = "EPSG:26918"
+        response_data['layer']['resource']['boundingBox'] = {
+                "nativeBoundingBox": {
+                    "minx": -180,
+                    "miny": -90,
+                    "maxx": 180,
+                    "maxy": 90,
+                    "crs": "EPSG:26918"
+                },
+                "latLonBoundingBox": {
+                    "minx": -180,
+                    "miny": -90,
+                    "maxx": 180,
+                    "maxy": 90,
+                    "crs": "EPSG:26918"
+                }
+            }
+        log.info(f'layer_data: [{response_data}]')
         # Log
         log.info(f"Creating layer '{layer}' in workspace '{workspace}'")
 
         # Construct URL for layers endpoint
-        layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/coverages"
+        # layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}_store/coverages"
+        # layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/reset"
+        layers_url = f"{self.service_url}/rest/layers/{workspace}:{layer}.json"
 
+        # response_data['layer']['defaultStyle'] = {"name": "raster"}
+        # response_data['layer']['resource']['srs'] = "EPSG:4326"
+        # response_data['layer']['resource']['boundingBox'] = {
+        #     "nativeBoundingBox": {
+        #         "minx": -180,
+        #         "miny": -90,
+        #         "maxx": 180,
+        #         "maxy": 90,
+        #         "crs": "EPSG:4326"
+        #     },
+        #     "latLonBoundingBox": {
+        #         "minx": -180,
+        #         "miny": -90,
+        #         "maxx": 180,
+        #         "maxy": 90,
+        #         "crs": "EPSG:4326"
+        #     }
+        # }
+        
         # Perform POST request to create the layer
-        response = httpx.post(
+        response = httpx.put(
             url=layers_url,
-            headers={"Content-type": "application/xml"},
+            content=json.dumps(response_data),
+            # content=json.dumps({
+            #     "coverage": {
+            #         # "name": f'{workspace}:{layer}',
+            #         # "name": f'{workspace}',
+            #         # "name": f'{layer}',
+            #         # "name": "aho1", #201, 500
+            #         # "name": "aho2", #201, 500
+            #         "title": f'{layer}',
+            #         "enabled": True
+            #     }
+            # }),
+            headers={"Content-type": "application/json"},
             auth=(self.username, self.password),
             timeout=3000.0
         )
@@ -722,7 +778,8 @@ class GeoServer:
             return None
         
         # Return JSON
-        return json_response['layer']
+        # return json_response['layer']
+        return json_response
 
     
     @handle_http_exceptions(log)
