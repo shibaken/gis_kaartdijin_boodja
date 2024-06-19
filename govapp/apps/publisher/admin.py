@@ -191,6 +191,14 @@ class EmailNotificationAdmin(reversion.admin.VersionAdmin):
     publish_entry_link.short_description = 'Publish Entry'
 
 
+class GeoserverGroupUserAdmin(reversion.admin.VersionAdmin):
+    raw_id_fields = ('user',)
+
+class GeoserverRoleUserAdmin(reversion.admin.VersionAdmin):
+    raw_id_fields = ('user',)
+
+
+
 admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
 admin.site.register(models.publish_channels.FTPPublishChannel, FTPPublishChannelAdmin)
 admin.site.register(models.publish_channels.CDDPPublishChannel, CDDPPublishChannelAdmin)
@@ -201,4 +209,5 @@ admin.site.register(models.workspaces.Workspace, WorkspaceAdmin)
 admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
-admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
+admin.site.register(models.geoserver_roles_groups.GeoServerGroupUser, GeoserverGroupUserAdmin)
+admin.site.register(models.geoserver_roles_groups.GeoServerRoleUser, GeoserverRoleUserAdmin)
