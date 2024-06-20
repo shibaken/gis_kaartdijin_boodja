@@ -148,14 +148,16 @@ class GeoServerGroupUser(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     geoserver_group = models.ForeignKey(GeoServerGroup, null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user} - {self.user_group}"
+        return f"{self.user} - {self.geoserver_group}"
 
 class GeoServerRoleUser(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     geoserver_role = models.ForeignKey(GeoServerRole, null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user} - {self.user_role}"
+        return f"{self.user} - {self.geoserver_role}"
