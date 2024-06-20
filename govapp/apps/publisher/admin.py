@@ -192,11 +192,27 @@ class EmailNotificationAdmin(reversion.admin.VersionAdmin):
 
 
 class GeoserverGroupUserAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'user_link', 'geoserver_group_link', 'created_at',)
     raw_id_fields = ('user',)
+
+    def geoserver_group_link(self, obj):
+        if obj.geoserver_group:
+            return format_html(f'<a href="/admin/publisher/geoservergroup/{obj.geoserver_group.id}/change">{obj.geoserver_group}</a>')
+        else:
+            return '-'
+    geoserver_group_link.short_description = 'Geoserver Group'
+
+    def user_link(self, obj):
+        if obj.user:
+            return format_html(f'<a href="/admin/auth/user/{obj.user.id}/change">{obj.user}</a>')
+        else:
+            return '-'
+    user_link.short_description = 'User'
+
 
 class GeoserverRoleUserAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'user', 'geoserver_role', 'created_at',)
     raw_id_fields = ('user',)
-
 
 
 admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
@@ -209,5 +225,6 @@ admin.site.register(models.workspaces.Workspace, WorkspaceAdmin)
 admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
+admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerGroupUser, GeoserverGroupUserAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRoleUser, GeoserverRoleUserAdmin)

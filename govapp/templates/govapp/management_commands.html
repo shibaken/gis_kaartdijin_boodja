@@ -9,17 +9,17 @@
                     <div id='publish-table'>
                           <table id="example" class="table" style="width:100%">
                                 <thead class='table-dark'>
-                                <tr>
-                                      <th>Management Command</th>                                                             
-                                      <th>Action</th>
-                                      <th>Response</th>
-                                      
-                                </tr>
+                                    <tr>
+                                          <th>Management Command</th>                                                             
+                                          <th>Action</th>
+                                          <th>Response</th>
+                                          
+                                    </tr>
                                 </thead>
                                 <tbody id='publish-cddp-tbody'>
                                 <tr>
                                       <td>Run Directory Scanner</td>
-                                      <td class='text-end'><button class='btn btn-primary btn-sm' id='run-scanner'>RUN</button>
+                                      <td><button class='btn btn-primary btn-sm' id='run-scanner'>RUN</button>
                                         <button class="btn btn-primary btn-sm" type="button" id='run-scanner-loader' disabled>
                                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                             <span class="visually-hidden">Loading...</span>
@@ -34,7 +34,7 @@
                                 </tr>
                                 <tr>
                                     <td>Run Sharepoint Scanner</td>
-                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-sharepoint-scanner'>RUN</button>
+                                    <td><button class='btn btn-primary btn-sm' id='run-sharepoint-scanner'>RUN</button>
                                       <button class="btn btn-primary btn-sm" type="button" id='run-sharepoint-scanner-loader' disabled>
                                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                           <span class="visually-hidden">Loading...</span>
@@ -49,7 +49,7 @@
                               </tr>
                               <tr>
                                     <td>Run GeoServer Queue Cron Job</td>
-                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-queue'>RUN</button>
+                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-queue'>RUN</button>
                                       <button class="btn btn-primary btn-sm" type="button" id='run-geoserver-queue-loader' disabled>
                                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                           <span class="visually-hidden">Loading...</span>
@@ -64,7 +64,7 @@
                               </tr>        
                               <tr>
                                     <td>Run Sync Layers</td>
-                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-layers'>RUN</button>
+                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-layers'>RUN</button>
                                           <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-layers-loader' disabled>
                                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                           <span class="visually-hidden">Loading...</span>
@@ -77,7 +77,7 @@
                               </tr>                        
                               <tr>
                                     <td>Run Sync Roles</td>
-                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-roles'>RUN</button>
+                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-roles'>RUN</button>
                                           <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-roles-loader' disabled>
                                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                           <span class="visually-hidden">Loading...</span>
@@ -90,7 +90,7 @@
                               </tr>                        
                               <tr>
                                     <td>Run Sync Groups</td>
-                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-groups'>RUN</button>
+                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-groups'>RUN</button>
                                           <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-groups-loader' disabled>
                                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                           <span class="visually-hidden">Loading...</span>
@@ -103,7 +103,7 @@
                               </tr>                        
                               <tr>
                                     <td>Run Sync Rules</td>
-                                    <td class='text-end'><button class='btn btn-primary btn-sm' id='run-geoserver-sync-rules'>RUN</button>
+                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-rules'>RUN</button>
                                           <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-rules-loader' disabled>
                                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                           <span class="visually-hidden">Loading...</span>
@@ -114,8 +114,21 @@
                                           <span id='geoserver-sync-rules-job-response-error' class='text-danger'></span>
                                     </td>
                               </tr>                        
+                              <tr>
+                                    <td>Run Sync Users</td>
+                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-users'>RUN</button>
+                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-users-loader' disabled>
+                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                          <span class="visually-hidden">Loading...</span>
+                                          </button>
+                                    </td>
+                                    <td>
+                                          <span id='geoserver-sync-users-job-response-success' class='text-success'></span>
+                                          <span id='geoserver-sync-users-job-response-error' class='text-danger'></span>
+                                    </td>
+                              </tr>
                                 </tbody>
-                          </table>                                  
+                          </table>
                     </div>      
               </div>
             </div>

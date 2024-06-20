@@ -106,41 +106,32 @@ var kbmanagementcommands = {
     },
     init: function() {
         $( "#run-scanner" ).click(function() {
-            console.log("Running Scanner");
-            
             kbmanagementcommands.run_scanner();
         });
         $( "#run-sharepoint-scanner" ).click(function() {
-            console.log("Running Scanner");
-            
             kbmanagementcommands.run_sharepoint_submissions();
         });
 
         $( "#run-geoserver-queue" ).click(function() {
-            console.log("Running GeoServer Queue");
-            
             kbmanagementcommands.run_geoserver_queue_cron_job();
         });
         $( "#run-geoserver-sync" ).click(function() {
-            console.log("Running GeoServer sync");
             kbmanagementcommands.run_geoserver_sync_cron_job('layers');
         });
         $( "#run-geoserver-sync-roles" ).click(function() {
-            console.log("Running GeoServer sync roles");
             kbmanagementcommands.run_geoserver_sync_cron_job('roles');
         });
         $( "#run-geoserver-sync-groups" ).click(function() {
-            console.log("Running GeoServer sync groups");
             kbmanagementcommands.run_geoserver_sync_cron_job('groups');
         });
         $( "#run-geoserver-sync-rules" ).click(function() {
-            console.log("Running GeoServer sync rules");
             kbmanagementcommands.run_geoserver_sync_cron_job('rules');
+        });
+        $( "#run-geoserver-sync-users" ).click(function() {
+            kbmanagementcommands.run_geoserver_sync_cron_job('users');
         });
         $('#run-scanner-loader').hide();
         $('#run-sharepoint-scanner-loader').hide();
         $('#run-geoserver-queue-loader').hide();
-        // $('#run-geoserver-sync-loader').hide();
     }
-
 }

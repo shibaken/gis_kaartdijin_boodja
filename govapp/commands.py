@@ -164,6 +164,8 @@ class ManagementCommands(viewsets.ViewSet):
                 management.call_command("geoserver_sync_groups")
             elif items_to_sync == 'rules':
                 management.call_command("geoserver_sync_rules")
+            elif items_to_sync == 'users':
+                management.call_command("sync_users")
 
         except Exception as exc:
             # Log
