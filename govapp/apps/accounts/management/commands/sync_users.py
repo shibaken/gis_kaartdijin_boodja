@@ -1,111 +1,128 @@
 import json
 import httpx
 import logging
+import urllib.parse
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
-from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroupUser, GeoServerRoleUser
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupRole, GeoServerGroupUser, GeoServerRoleUser
 
 log = logging.getLogger(__name__)
 UserModel = get_user_model()
-serviceName = 'default'  # Confirm the serviceName at the GeoServer --> [Security] --> [Users, Groups, Roles] --> [Services] tab
 
 class Command(BaseCommand):
     help = 'Synchronize users, roles, and groups with GeoServer.'
+    USE_EMAIL_AS_USERNAME = False  # For now, set to False
 
     def handle(self, *args, **options):
         geoservers = GeoServerPool.objects.filter(enabled=True)
         for geoserver in geoservers:
-            self.sync_users(geoserver)
+            # Sync relations between users and groups, and users and roles
+            self.sync_users_groups_roles(geoserver)
+
+            # Sync relations between roles with grous ###
+            self.sync_groups_roles(geoserver)
+
+            # Cleanup
             self.cleanup_groups(geoserver)
             self.cleanup_roles(geoserver)
 
-    def sync_users(self, geoserver):
-        """Synchronize users with GeoServer."""
-        log.info(f'Synchronize users in the geoserver: [{geoserver}]...')
+    def sync_groups_roles(self, geoserver):
+        """Synchronize groups-roles with GeoServer."""
+        log.info(f'Synchronize groups-roles in the geoserver: [{geoserver}]...')
+
+        geoserver_groups_in_kb = GeoServerGroup.objects.all()
+        for geoserver_group_in_kb in geoserver_groups_in_kb:
+            self.sync_relations_groups_roles(geoserver, geoserver_group_in_kb)
+
+    def sync_relations_groups_roles(self, geoserver, geoserver_group_in_kb):
+        # Associate group with roles
+        roles_in_geoserver = geoserver.get_all_roles_for_group(geoserver_group_in_kb.name)
+        for geoserver_role_in_kb in geoserver_group_in_kb.geoserver_roles.all():
+            role_exists = any(geoserver_role_in_kb.name == role_in_geoserver for role_in_geoserver in roles_in_geoserver)
+            if not role_exists:
+                geoserver.create_new_role(geoserver_role_in_kb.name)
+            geoserver.associate_role_with_group(geoserver_role_in_kb.name, geoserver_group_in_kb.name)
+
+        # Disassociate group from roles
+        for role_in_geoserver in roles_in_geoserver:
+            role_exists = any(role_in_geoserver == geoserver_role_in_kb.name for geoserver_role_in_kb in geoserver_group_in_kb.geoserver_roles.all())
+            if not role_exists:
+                geoserver.disassociate_role_from_group(role_in_geoserver, geoserver_group_in_kb.name)
+
+    def sync_users_groups_roles(self, geoserver):
+        """Synchronize users-groups and users-roles with GeoServer."""
+        log.info(f'Synchronize users-groups and users-roles in the geoserver: [{geoserver}]...')
         users = UserModel.objects.all()
         for user in users:
-            groups = GeoServerGroupUser.objects.filter(user=user)
-            roles = GeoServerRoleUser.objects.filter(user=user)
-            if groups.exists() or roles.exists():
-                self.create_or_update_user(geoserver, user, groups, roles)
+            self.create_or_update_user(geoserver, user)
 
-    def create_or_update_user(self, geoserver, user, groups, roles):
+            # Sync relations between users and groups
+            self.sync_relations_users_groups(geoserver, user)
+
+            # Sync relations between users and roles
+            self.sync_relations_users_roles(geoserver, user)
+
+    def create_or_update_user(self, geoserver, user):
         """Create or update a user in GeoServer."""
-        auth = (geoserver.username, geoserver.password)
+        username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
+        
         user_data = {
-            # "userName": user.email,
-            "userName": 'testUserName3',
-            "password": "strong_password3",  # Replace with a secure password handling mechanism
-            # "enabled": user.is_active
-            "enabled": "true"
+            "user": {
+                "userName": username,
+                "password": user.password,  # Replace with a secure password handling mechanism
+                "enabled": user.is_active
+            }
         }
 
-        response = httpx.get(
-            url=f"{geoserver.url}/rest/security/usergroup/service/{serviceName}/users/",
-            headers={"Accept": "application/json"},
-            auth=auth,
-        )
-        response.raise_for_status()
-        existing_users = response.json()
-
         # Check if user already exists
-        user_exists = any(user_in_geoserver['userName'] == user_data['userName'] for user_in_geoserver in existing_users['users'])
+        existing_users = geoserver.get_all_users()
+        user_exists = any(user_in_geoserver['userName'] == user_data['user']['userName'] for user_in_geoserver in existing_users)
 
-        # Somehow json doesn't work... We use XML formt.
-        xml_str = f'<?xml version="1.0" encoding="UTF-8"?>\n'
-        xml_str += f"<user>\n"
-        xml_str += f"    <userName>{user_data['userName']}</userName>\n"
-        xml_str += f"    <password>{user_data['password']}</password>\n"
-        xml_str += f"    <enabled>{str(user_data['enabled']).lower()}</enabled>\n"
-        xml_str += f"</user>"
-
-        if user_exists:
-            # Update existing user
-            response = httpx.post(
-                url=f"{geoserver.url}/rest/security/usergroup/service/{serviceName}/user/{user_data['userName']}",
-                headers={"Content-Type": "application/xml"},
-                content=xml_str,
-                # headers={"Content-Type": "application/json"},
-                # content=json.dumps(user_data),
-                auth=auth
-            )
-            action = 'updated'
-        else:
-            # Create new user
-            response = httpx.post(
-                url=f"{geoserver.url}/rest/security/usergroup/service/{serviceName}/users/",
-                headers={"Content-Type": "application/xml"},
-                content=xml_str,
-                # headers={"Content-Type": "application/json"},
-                # content=json.dumps(user_data),
-                auth=auth
-            )
-            action = 'created'
-
-        # Log response
+        # Create/Update user
+        response = geoserver.update_existing_user(user_data) if user_exists else geoserver.create_new_user(user_data)
         response.raise_for_status()
-        print(f"User: [{user_data['userName']}] has been {action} successfully in GeoServer: [{geoserver}].")
 
-        for group in groups:
-            group_url = f"{geoserver.url}/rest/security/usergroup/groups/{group.user_group}/user/{user_data['userName']}"
-            httpx.put(
-                url=group_url,
-                headers={"Content-Type": "application/json"},
-                auth=(geoserver.username, geoserver.password),
-                timeout=30.0
-            )
+    def sync_relations_users_roles(self, geoserver, user):
+        username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
+        roles_in_geoserver = geoserver.get_all_roles_for_user(username)
 
-        for role in roles:
-            role_url = f"{geoserver.url}/rest/security/roles/{role.user_role}/users/{user_data['userName']}"
-            httpx.put(
-                url=role_url,
-                headers={"Content-Type": "application/json"},
-                auth=(geoserver.username, geoserver.password),
-                timeout=30.0
-            )
+        # Associate role with user
+        roleusers_for_user = GeoServerRoleUser.objects.filter(user=user)
+        for roleuser in roleusers_for_user:
+            role_in_kb = roleuser.geoserver_role.name
+            role_exists = any(role_in_kb == role_in_geoserver for role_in_geoserver in roles_in_geoserver)
+            if not role_exists:
+                geoserver.create_new_role(role_in_kb)
+            geoserver.associate_role_with_user(username, role_in_kb)
+
+        # Disassociate role from user
+        for role_in_geoserver in roles_in_geoserver:
+            role_exists = any(role_in_geoserver == roleuser.geoserver_role.name for roleuser in roleusers_for_user)
+            if not role_exists:
+                geoserver.disassociate_role_from_user(username, role_in_geoserver)
+
+    def sync_relations_users_groups(self, geoserver, user):
+        username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
+        groups_in_geoserver = geoserver.get_all_groups_for_user(username)
+
+        # Associate user with group
+        groupusers_for_user = GeoServerGroupUser.objects.filter(user=user)
+        for groupuser in groupusers_for_user:
+            group_in_kb = groupuser.geoserver_group.name
+            group_exists = any(group_in_kb == group_in_geoserver for group_in_geoserver in groups_in_geoserver)
+            if not group_exists:
+                geoserver.create_new_group(group_in_kb)
+            geoserver.associate_user_with_group(username, group_in_kb)
+
+        # Disassociate user from group
+        for group_in_geoserver in groups_in_geoserver:
+            group_exists = any(group_in_geoserver == groupuser.geoserver_group.name for groupuser in groupusers_for_user)
+            if not group_exists:
+                geoserver.disassociate_user_from_group(username, group_in_geoserver)
+
 
     def cleanup_groups(self, geoserver):
         """Remove groups from users in GeoServer if not assigned."""
