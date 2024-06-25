@@ -1,13 +1,10 @@
-import json
-import httpx
 import logging
-import urllib.parse
 from django.core.management.base import BaseCommand
-from django.conf import settings
 from django.contrib.auth import get_user_model
 
+from govapp import settings
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
-from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupRole, GeoServerGroupUser, GeoServerRoleUser
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
 
 log = logging.getLogger(__name__)
 UserModel = get_user_model()
@@ -106,10 +103,10 @@ class Command(BaseCommand):
 
         # Create/Update user
         if user_exists:
-            log.info(f'User: [{user_data['user']['userName']}] exists in the geoserver: [{geoserver}]')
+            log.info(f'User: [{username}] exists in the geoserver: [{geoserver}]')
             response = geoserver.update_existing_user(user_data)
         else:
-            log.info(f'User: [{user_data['user']['userName']}] does not exist in the geoserver: [{geoserver}]')
+            log.info(f'User: [{username}] does not exist in the geoserver: [{geoserver}]')
             response = geoserver.create_new_user(user_data)
 
         response.raise_for_status()
@@ -118,7 +115,8 @@ class Command(BaseCommand):
         username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
 
         # Associate role with user
-        roles_for_user_in_kb = GeoServerRoleUser.objects.filter(user=user).values_list('geoserver_role', flat=True)
+        role_user_in_kb = GeoServerRoleUser.objects.filter(user=user)
+        roles_for_user_in_kb = [obj.geoserver_role for obj in role_user_in_kb]
         log.info(f'Role(s): [{roles_for_user_in_kb}] found for the user: [{username}] in the geoserver: [{geoserver}].')
 
         all_roles_in_geoserver = geoserver.get_all_roles()
@@ -156,7 +154,8 @@ class Command(BaseCommand):
         username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
 
         # Associate user with group
-        groups_for_user_in_kb = GeoServerGroupUser.objects.filter(user=user).values_list('geoserver_group', flat=True)
+        group_user_in_kb = GeoServerGroupUser.objects.filter(user=user)
+        groups_for_user_in_kb = [obj.geoserver_group for obj in group_user_in_kb]
         log.info(f'Group(s): [{groups_for_user_in_kb}] found for the user: [{username}] in the KB')
 
         all_groups_in_geoserver = geoserver.get_all_groups()
@@ -191,49 +190,27 @@ class Command(BaseCommand):
                 geoserver.disassociate_user_from_group(username, group_in_geoserver)
 
     def cleanup_groups(self, geoserver):
-        """Remove groups from users in GeoServer if not assigned."""
-        assigned_groups = GeoServerGroupUser.objects.values_list('user_group', flat=True).distinct()
-        groups_url = f"{geoserver.url}/rest/security/usergroup/groups"
-        response = httpx.get(
-            url=groups_url,
-            headers={"Accept": "application/json"},
-            auth=(geoserver.username, geoserver.password),
-            timeout=30.0
-        )
-        response.raise_for_status()
-        groups = response.json().get("groupList", [])
+        log.info(f'Cleaning up groups in the geoserver: [{geoserver}]...')
 
-        for group in groups:
-            group_name = group["groupName"]
-            if group_name not in assigned_groups:
-                group_url = f"{geoserver.url}/rest/security/usergroup/groups/{group_name}"
-                httpx.delete(
-                    url=group_url,
-                    headers={"Content-Type": "application/json"},
-                    auth=(geoserver.username, geoserver.password),
-                    timeout=30.0
-                )
+        all_groups_in_geoserver = geoserver.get_all_groups()
+        all_groups_in_kb = GeoServerGroup.objects.all()
+
+        for group_in_geoserver in all_groups_in_geoserver:
+            group_exists_in_kb = any(group_in_geoserver == group_in_kb.name for group_in_kb in all_groups_in_kb)
+
+            if not group_exists_in_kb and group_exists_in_kb not in settings.USERGROUPS_TO_KEEP:
+                log.info(f'Group: [{group_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
+                geoserver.delete_existing_group(group_in_geoserver)
 
     def cleanup_roles(self, geoserver):
-        """Remove roles from users in GeoServer if not assigned."""
-        assigned_roles = GeoServerRoleUser.objects.values_list('user_role', flat=True).distinct()
-        roles_url = f"{geoserver.url}/rest/security/roles"
-        response = httpx.get(
-            url=roles_url,
-            headers={"Accept": "application/json"},
-            auth=(geoserver.username, geoserver.password),
-            timeout=30.0
-        )
-        response.raise_for_status()
-        roles = response.json().get("roleList", [])
+        log.info(f'Cleaning up roles in the geoserver: [{geoserver}]...')
 
-        for role in roles:
-            role_name = role["roleName"]
-            if role_name not in assigned_roles:
-                role_url = f"{geoserver.url}/rest/security/roles/{role_name}"
-                httpx.delete(
-                    url=role_url,
-                    headers={"Content-Type": "application/json"},
-                    auth=(geoserver.username, geoserver.password),
-                    timeout=30.0
-                )
+        all_roles_in_geoserver = geoserver.get_all_groups()
+        all_roles_in_kb = GeoServerRole.objects.all()
+
+        for role_in_geoserver in all_roles_in_geoserver:
+            role_exists_in_kb = any(role_in_geoserver == role_in_kb.name for role_in_kb in all_roles_in_kb)
+
+            if not role_exists_in_kb and role_exists_in_kb not in settings.ROLES_TO_KEEP:
+                log.info(f'Role: [{role_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
+                geoserver.delete_existing_role(role_in_geoserver)

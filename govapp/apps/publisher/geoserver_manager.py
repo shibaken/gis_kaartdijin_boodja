@@ -130,8 +130,9 @@ class GeoServerSyncExcutor:
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             # Generate GeoServer obj
-            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
-            geoserver_obj.synchronize_roles(geoserver_role_names)
+            # geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+            # geoserver_obj.synchronize_roles(geoserver_role_names)
+            geoserver_info.synchronize_roles(geoserver_role_names)
 
     def sync_geoserver_groups(self):
         log.info(f"Sync geoserver groups...")
@@ -145,8 +146,9 @@ class GeoServerSyncExcutor:
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             # Generate GeoServer obj
-            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
-            geoserver_obj.synchronize_groups(geoserver_group_names)
+            # geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+            # geoserver_obj.synchronize_groups(geoserver_group_names)
+            geoserver_info.synchronize_groups(geoserver_group_names)
 
     def sync_geoserver_role_permissions(self):
         log.info(f"Sync geoserver rules...")

@@ -9,6 +9,7 @@ import httpx
 import json
 
 # Local
+from govapp import settings
 from govapp.common import mixins
 from govapp.common.utils import handle_http_exceptions
 
@@ -58,6 +59,36 @@ class GeoServerPool(mixins.RevisionedMixin):
     @property
     def total_layers(self):
         return self.total_active_layers + self.total_inactive_layers
+
+    def synchronize_groups(self, group_name_list):
+        existing_groups = self.get_all_groups()
+
+        # Determine groups to delete (existing groups not in group_name_list)
+        groups_to_delete = set(existing_groups) - set(group_name_list)
+        for group in groups_to_delete:
+            self.delete_existing_group(group)
+
+        # Determine groups to create (groups in group_name_list not in existing groups)
+        groups_to_create = set(group_name_list) - set(existing_groups)
+        for group in groups_to_create:
+            self.create_new_group(group)
+
+    def synchronize_roles(self, role_name_list):
+        try:
+            # Fetch existing roles from GeoServer
+            existing_roles = self.get_all_role()
+
+            # Determine roles to delete (existing roles not in role_name_list)
+            roles_to_delete = set(existing_roles) - set(role_name_list)
+            for role in roles_to_delete:
+                self.delete_existing_role(role)
+
+            # Determine roles to create (roles in role_name_list not in existing roles)
+            roles_to_create = set(role_name_list) - set(existing_roles)
+            for role in roles_to_create:
+                self.create_new_role(role)
+        except Exception as e:
+            log.error(f'An error occurred during synchronization: {e}')
 
     ### User
     @handle_http_exceptions(log)
@@ -137,6 +168,10 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def delete_existing_group(self, group_name):
+        if group_name in settings.USERGROUPS_TO_KEEP:
+            log.info(f'Group: [{group_name}] cannot be deleted from the geoserver: [{self}]. (USERGROUPS_TO_KEEP: [{settings.USERGROUPS_TO_KEEP}])')
+            return
+
         response = httpx.delete(
             url=f"{self.base_url}/usergroup/group/{group_name}",
             auth=self.auth
@@ -204,6 +239,10 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def delete_existing_role(self, role_name):
+        if role_name in settings.ROLES_TO_KEEP:  # We don't want to delete the default group 'ADMIN'
+            log.info(f'Role: [{role_name}] cannot be deleted from the geoserver: [{self}]. (ROLES_TO_KEEP: [{settings.ROLES_TO_KEEP}])')
+            return
+
         response = httpx.delete(
             url=f"{self.base_url}/roles/role/{role_name}",
             auth=self.auth

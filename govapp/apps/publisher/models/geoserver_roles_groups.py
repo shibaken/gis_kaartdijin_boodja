@@ -144,20 +144,33 @@ class GeoServerRolePermission(mixins.RevisionedMixin):
 
 UserModel = auth.get_user_model()
 
+
+class GeoServerGroupUserManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('user', 'geoserver_group',)
+
+
 class GeoServerGroupUser(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     geoserver_group = models.ForeignKey(GeoServerGroup, null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = GeoServerGroupUserManager()
 
     def __str__(self):
         return f"{self.user} - {self.geoserver_group}"
+
+
+class GeoServerRoleUserManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related('user', 'geoserver_role',)
 
 class GeoServerRoleUser(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     geoserver_role = models.ForeignKey(GeoServerRole, null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = GeoServerRoleUserManager()
 
     def __str__(self):
         return f"{self.user} - {self.geoserver_role}"
