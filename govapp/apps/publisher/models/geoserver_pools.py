@@ -41,7 +41,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     
     @property
     def base_url(self):
-        return f"{self.url}/rest/security",
+        return f"{self.url}/rest/security"
     
     @property
     def auth(self):
@@ -235,7 +235,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         log.info(f"Role: [{role_name}] has been associated successfully with the group: [{group_name}] in the GeoServer: [{self}].")
         return response
 
-    def disassociate_role_with_group(self, role_name, group_name):
+    def disassociate_role_from_group(self, role_name, group_name):
         response = httpx.delete(
             url=f"{self.base_url}/roles/role/{role_name}/group/{group_name}",
             auth=self.auth
