@@ -60,6 +60,19 @@ class ManagementCommands(viewsets.ViewSet):
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=False, methods=["POST"])
+    def randomize_password(self, request: request.Request) -> response.Response:
+        try:
+            # TODO: implement
+            pass
+        except Exception as exc:
+            # Log
+            log.error(f"Unable to perform randomize_password: {exc}")
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=False, methods=["POST"])
     def scan_dir(self, request: request.Request) -> response.Response:
         """Runs the `scan` Management Command.
 

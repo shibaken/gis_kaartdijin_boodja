@@ -4,10 +4,10 @@ import httpx
 import json
 from django.core.management.base import BaseCommand
 
+from govapp import settings
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
 
 
-EXCLUDE_USERS = ['admin']  # Add other usernames to exclude here
 
 class Command(BaseCommand):
     help = 'Randomize passwords for all GeoServer user accounts.'
@@ -19,19 +19,11 @@ class Command(BaseCommand):
 
     def randomize_passwords(self, geoserver):
         """Randomize passwords for all users in GeoServer."""
-        users_url = f"{geoserver.url}/rest/security/usergroup/users"
-        response = httpx.get(
-            url=users_url,
-            headers={"Accept": "application/json"},
-            auth=(geoserver.username, geoserver.password),
-            timeout=30.0
-        )
-        response.raise_for_status()
-        users = response.json().get("userList", [])
+        users = geoserver.get_all_users()
 
         for user in users:
             user_name = user["userName"]
-            if user_name not in EXCLUDE_USERS:
+            if user_name not in settings.EXCLUDE_USERS:
                 new_password = self.generate_random_password()
                 self.update_password(geoserver, user_name, new_password)
 
@@ -47,12 +39,4 @@ class Command(BaseCommand):
             "password": new_password,
             "enabled": True  # Ensure user is enabled
         }
-        user_url = f"{geoserver.url}/rest/security/usergroup/users/{user_name}"
-        response = httpx.put(
-            url=user_url,
-            content=json.dumps(user_data),
-            headers={"Content-Type": "application/json"},
-            auth=(geoserver.username, geoserver.password),
-            timeout=30.0
-        )
-        response.raise_for_status()
+        geoserver.update_existing_user(user_data)

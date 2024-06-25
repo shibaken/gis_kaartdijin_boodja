@@ -4,30 +4,53 @@ var kbmanagementcommands = {
         "get_sharepoint_submission_url" :"/api/management/commands/get_sharepoint_submissions/",
         "geoserver_queue_cron_job" :"/api/management/commands/excute_geoserver_queue/",
         "geoserver_queue_sync_job" : "/api/management/commands/excute_geoserver_sync/",
+        "run_randomize_password": "/api/management/commands/randomize_password/",
     },
     run_scanner: function() {
-            $('#scanner-job-response-success').html('');
-            $('#scanner-job-response-error').html('');
-            var csrf_token = $("#csrfmiddlewaretoken").val();
-            $('#run-scanner').attr('disabled','disabled');
-            $('#run-scanner-loader').show();
-            $.ajax({
-                url: kbmanagementcommands.var.scan_url,
-                type: 'POST',
-                headers: {'X-CSRFToken' : csrf_token},
-                contentType: 'application/json',
-                success: function (response) {                            
-                    $('#scanner-job-response-success').html("Completed");                   
-                    $('#run-scanner').removeAttr('disabled');
-                    $('#run-scanner-loader').hide();
-                    
-                },
-                error: function (error) {                    
-                    $('#scanner-job-response-error').html("Error running job");
-                    $('#run-scanner').removeAttr('disabled');
-                    $('#run-scanner-loader').hide();
-                },
-            });
+        $('#scanner-job-response-success').html('');
+        $('#scanner-job-response-error').html('');
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        $('#run-scanner').attr('disabled','disabled');
+        $('#run-scanner-loader').show();
+        $.ajax({
+            url: kbmanagementcommands.var.scan_url,
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                $('#scanner-job-response-success').html("Completed");
+                $('#run-scanner').removeAttr('disabled');
+                $('#run-scanner-loader').hide();
+            },
+            error: function (error) {
+                $('#scanner-job-response-error').html("Error running job");
+                $('#run-scanner').removeAttr('disabled');
+                $('#run-scanner-loader').hide();
+            },
+        });
+    },
+    run_randomize_password: function(){
+        $('#geoserver-randomize-password-job-response-success').html('');
+        $('#geoserver-randomize-password-job-response-error').html('');
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        $('#run-randomize-password').attr('disabled','disabled');
+        $('#run-randomize-password-loader').show();
+        $.ajax({
+            url: kbmanagementcommands.var.run_randomize_password,
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                $('#geoserver-randomize-password-job-response-success').html("Completed");
+                $('#run-randomize-password').removeAttr('disabled');
+                $('#run-randomize-password-loader').hide();
+            },
+            error: function (error) {
+                $('#geoserver-randomize-password-job-response-error').html("Error running job");
+                $('#run-randomize-password').removeAttr('disabled');
+                $('#run-randomize-password-loader').hide();
+            },
+        });
     },
     run_sharepoint_submissions: function() {
         $('#sharepoint-scanner-job-response-success').html('');
@@ -40,13 +63,12 @@ var kbmanagementcommands = {
             type: 'POST',
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
-            success: function (response) {                            
-                $('#sharepoint-scanner-job-response-success').html("Completed");                   
+            success: function (response) {
+                $('#sharepoint-scanner-job-response-success').html("Completed");
                 $('#run-sharepoint-scanner').removeAttr('disabled');
                 $('#run-sharepoint-scanner-loader').hide();
-                
             },
-            error: function (error) {                    
+            error: function (error) {
                 $('#sharepoint-scanner-job-response-error').html("Error running job");
                 $('#run-sharepoint-scanner').removeAttr('disabled');
                 $('#run-sharepoint-scanner-loader').hide();
@@ -64,13 +86,12 @@ var kbmanagementcommands = {
             type: 'POST',
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
-            success: function (response) {                            
-                $('#geoserver-queue-job-response-success').html("Completed");                   
+            success: function (response) {
+                $('#geoserver-queue-job-response-success').html("Completed");
                 $('#run-geoserver-queue').removeAttr('disabled');
                 $('#run-geoserver-queue-loader').hide();
-                
             },
-            error: function (error) {                    
+            error: function (error) {
                 $('#geoserver-queue-job-response-error').html("Error running job");
                 $('#run-geoserver-queue').removeAttr('disabled');
                 $('#run-geoserver-queue-loader').hide();
@@ -78,7 +99,6 @@ var kbmanagementcommands = {
         });
     },
     run_geoserver_sync_cron_job: function(items_to_sync) {
-        console.log("RUNNING GEOSERVER SYNC CRON JOB for: " + items_to_sync)
         $('#geoserver-sync-' + items_to_sync + '-job-response-success').html('');
         $('#geoserver-sync-' + items_to_sync + '-job-response-error').html('');
         var csrf_token = $("#csrfmiddlewaretoken").val();
@@ -91,13 +111,12 @@ var kbmanagementcommands = {
             dataType: 'json',
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
-            success: function (response) {                            
-                $('#geoserver-sync-' + items_to_sync + '-job-response-success').html("Completed");                   
+            success: function (response) {
+                $('#geoserver-sync-' + items_to_sync + '-job-response-success').html("Completed");
                 $('#run-geoserver-sync-' + items_to_sync).removeAttr('disabled');
                 $('#run-geoserver-sync-' + items_to_sync + '-loader').hide();
-                
             },
-            error: function (error) {                    
+            error: function (error) {
                 $('#geoserver-sync-' + items_to_sync + '-job-response-error').html("Error running job");
                 $('#run-geoserver-sync-' + items_to_sync).removeAttr('disabled');
                 $('#run-geoserver-sync-' + items_to_sync + '-loader').hide();
@@ -111,7 +130,6 @@ var kbmanagementcommands = {
         $( "#run-sharepoint-scanner" ).click(function() {
             kbmanagementcommands.run_sharepoint_submissions();
         });
-
         $( "#run-geoserver-queue" ).click(function() {
             kbmanagementcommands.run_geoserver_queue_cron_job();
         });
@@ -129,6 +147,9 @@ var kbmanagementcommands = {
         });
         $( "#run-geoserver-sync-users" ).click(function() {
             kbmanagementcommands.run_geoserver_sync_cron_job('users');
+        });
+        $( "#run-randomize-password" ).click(function() {
+            kbmanagementcommands.run_randomize_password();
         });
         $('#run-scanner-loader').hide();
         $('#run-sharepoint-scanner-loader').hide();
