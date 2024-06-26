@@ -313,6 +313,11 @@ if not os.path.exists(PENDING_IMPORT_PATH):
     os.mkdir(PENDING_IMPORT_PATH)
 DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
+# Local Storage Paths
+GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./geoserver_security/")
+if not os.path.exists(GEOSERVER_SECURITY_FILE_PATH):
+    os.mkdir(GEOSERVER_SECURITY_FILE_PATH)
+
 # Django Timezone
 TIME_ZONE = 'Australia/Perth'
 

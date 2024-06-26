@@ -2,6 +2,7 @@
 
 
 # Third-Party
+import os
 from django import conf
 import django
 from django.contrib import auth
@@ -13,6 +14,14 @@ from typing import Iterable, Union
 
 from govapp import settings
 
+import logging
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.core.exceptions import ObjectDoesNotExist
+
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Shortcuts
 UserModel = auth.get_user_model()
@@ -120,3 +129,78 @@ def limit_to_catalogue_editors() -> query.Q:
     group = django.contrib.auth.models.Group.objects.get(name=settings.GROUP_CATALOGUE_EDITORS)
     # return query.Q(groups__pk=conf.settings.GROUP_CATALOGUE_EDITOR_ID)
     return query.Q(groups__pk=group.id)
+
+
+def hash_password(password):
+    """
+    Convert Django's hashed password to a GeoServer-compatible format.
+    Here we use SHA-256 and Base64 encoding
+    """
+    try:
+        # Assuming password is in Django's 'pbkdf2_sha256' format and removing the scheme
+        hashed = password.split('$')[-1]
+        return f"crypt1:{hashed}"
+    except Exception as e:
+        logger.error(f"Password hashing error: {e}")
+        raise
+
+def generate_users_xml(file_name='dbca-users.xml'):
+    """
+    Generate the users.xml file from the Django models using a Django template.
+    
+    :param output_path: Path where the generated users.xml should be saved.
+    """
+    try:
+        from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
+        # Fetch all active users
+        users = UserModel.objects.filter(is_active=True)
+        
+        # Fetch all active groups
+        groups = GeoServerGroup.objects.filter(active=True)
+        
+        # Fetch all active roles
+        roles = GeoServerRole.objects.filter(active=True)
+
+        # Prepare user data
+        user_data = [{
+            'name': user.email,  # Assuming email is used as username
+            'password': hash_password(user.password)  # GeoServer needs hashed passwords
+        } for user in users]
+
+        # Prepare group data
+        group_data = []
+        for group in groups:
+            members = GeoServerGroupUser.objects.filter(geoserver_group=group).values_list('user__email', flat=True)
+            group_data.append({
+                'name': group.name,
+                'members': list(members)
+            })
+
+        # Prepare role data
+        role_data = []
+        for role in roles:
+            users_in_role = GeoServerRoleUser.objects.filter(geoserver_role=role).values_list('user__email', flat=True)
+            role_data.append({
+                'name': role.name,
+                'users': list(users_in_role)
+            })
+
+        # Render the template with the data
+        rendered_xml = render_to_string('govapp/geoserver/users_template.xml', {
+            'users': user_data,
+            'groups': group_data,
+            'roles': role_data
+        })
+
+        # Save the rendered XML to the output path
+        save_path = os.path.join(settings.GEOSERVER_SECURITY_FILE_PATH, file_name)
+        with open(save_path, 'w', encoding='utf-8') as output_file:
+            output_file.write(rendered_xml)
+            logger.info(f"File: [{save_path}] has been successfully generated.")
+
+    except ObjectDoesNotExist as e:
+        logger.error(f"Database object not found: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"An error occurred while generating {file_name}: {e}")
+        raise

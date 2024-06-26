@@ -11,7 +11,7 @@ UserModel = get_user_model()
 
 class Command(BaseCommand):
     help = 'Synchronize users, roles, and groups with GeoServer.'
-    USE_EMAIL_AS_USERNAME = False  # For now, set to False
+    USE_EMAIL_AS_USERNAME = True  # For now, set to False
 
     def handle(self, *args, **options):
         geoservers = GeoServerPool.objects.filter(enabled=True)

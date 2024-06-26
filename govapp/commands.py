@@ -62,8 +62,7 @@ class ManagementCommands(viewsets.ViewSet):
     @decorators.action(detail=False, methods=["POST"])
     def randomize_password(self, request: request.Request) -> response.Response:
         try:
-            # TODO: implement
-            pass
+            management.call_command("runcrons", "govapp.apps.catalogue.cron.DirectoryScannerCronJob", "--force")
         except Exception as exc:
             # Log
             log.error(f"Unable to perform randomize_password: {exc}")

@@ -110,6 +110,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             content=json.dumps(user_data),
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"User: [{user_data['user']['userName']}] has been updated successfully in GeoServer: [{self}].")
         return response
 
@@ -121,6 +122,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             content=json.dumps(user_data),
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"User: [{user_data['user']['userName']}] has been created successfully in the GeoServer: [{self}].")
         return response
 
@@ -130,6 +132,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/usergroup/user/{username}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"User: [{username}] has been deleted successfully from the GeoServer: [{self}].")
         return response
     
@@ -176,6 +179,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/usergroup/group/{group_name}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"Group: [{group_name}] has been deleted successfully from the GeoServer: [{self}].")
         return response
 
@@ -185,6 +189,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/usergroup/user/{username}/group/{group_name}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"User: [{username}] has been successfully associated with the group: [{group_name}] in the GeoServer: [{self}].")
         return response
 
@@ -194,6 +199,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}//usergroup/user/{username}/group/{group_name}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"User: [{username}] has been successfully unassociated from the group: [{group_name}] in the GeoServer: [{self}].")
         return response
 
@@ -235,6 +241,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/roles/role/{role_name}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"Role: [{role_name}] has been created successfully in the GeoServer: [{self}].")
         return response
 
@@ -247,6 +254,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/roles/role/{role_name}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"Role: [{role_name}] has been deleted successfully in the GeoServer: [{self}].")
         return response
 
@@ -255,6 +263,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/roles/role/{role_name}/user/{username}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"Role: [{role_name}] has been associated successfully with the user: [{username}] in the GeoServer: [{self}].")
         return response
 
@@ -263,6 +272,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/roles/role/{role_name}/user/{username}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"Role: [{role_name}] has been disassociated successfully from the user: [{username}] in the GeoServer: [{self}].")
         return response
 
@@ -271,6 +281,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/roles/role/{role_name}/group/{group_name}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"Role: [{role_name}] has been associated successfully with the group: [{group_name}] in the GeoServer: [{self}].")
         return response
 
@@ -279,5 +290,6 @@ class GeoServerPool(mixins.RevisionedMixin):
             url=f"{self.base_url}/roles/role/{role_name}/group/{group_name}",
             auth=self.auth
         )
+        response.raise_for_status()
         log.info(f"Role: [{role_name}] has been disassociated successfully from the group: [{group_name}] in the GeoServer: [{self}].")
         return response
