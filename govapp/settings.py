@@ -294,13 +294,19 @@ CRON_CLASSES = [
 ]
 
 # GeoServer Settings
-DEFAULT_ROLES_IN_GEOSERVER = ['ADMIN', 'GROUP_ADMIN',]
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
 GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
 GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
-ROLES_TO_KEEP = decouple.config("ROLES_TO_KEEP", default=[]) + DEFAULT_ROLES_IN_GEOSERVER # env example: ROLES_TO_KEEP=ADMIN,GROUP_ADMIN,ROLE1
-USERGROUPS_TO_KEEP = decouple.config("USERGRUPS_TO_KEEP", default='').split(',')  # env example: USERGROUPS_TO_KEEP=ADMIN_GROUP,GROUP1,GROUP2
-EXCLUDE_USERS = decouple.config("EXCLUDE_USERS", default='admin').split(',')  # Add other usernames to exclude here
+
+# Users, Groups, Roles
+DEFAULT_USERS_IN_GEOSERVER = ['admin']
+DEFAULT_ROLES_IN_GEOSERVER = ['ADMIN', 'GROUP_ADMIN',]
+DEFAULT_USERGROUPS_IN_GEOSERVER = []
+NON_DELETABLE_USERS = decouple.config("NON_DELETABLE_USERS", default='admin').split(',') + DEFAULT_USERS_IN_GEOSERVER
+NON_DELETABLE_ROLES = decouple.config("NON_DELETABLE_ROLES", default='').split(',') + DEFAULT_ROLES_IN_GEOSERVER # .env example: ROLES_TO_KEEP=ADMIN,GROUP_ADMIN,ROLE1
+NON_DELETABLE_USERGROUPS = decouple.config("NON_DELETABLE_USERGROUPS", default='').split(',') + DEFAULT_USERGROUPS_IN_GEOSERVER  # .env example: USERGROUPS_TO_KEEP=ADMIN_GROUP,GROUP1,GROUP2
+GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME=decouple.config("GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME", "dbca")
+GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME=decouple.config("GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME", "dbca")
 
 # Temporary Fix for ARM Architecture
 if platform.machine() == "arm64":
@@ -314,11 +320,9 @@ if not os.path.exists(PENDING_IMPORT_PATH):
 DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
 # Local Storage Paths
-GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./geoserver_security/")
+GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./config/geoserver_security/")
 if not os.path.exists(GEOSERVER_SECURITY_FILE_PATH):
     os.mkdir(GEOSERVER_SECURITY_FILE_PATH)
-
-GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME=decouple.config("GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME", "dbca")
 
 # Django Timezone
 TIME_ZONE = 'Australia/Perth'

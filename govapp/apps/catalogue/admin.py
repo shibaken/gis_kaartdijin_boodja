@@ -26,7 +26,9 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     # filter_horizontal = ["editors"]
+    search_fields = ('id', 'name', 'assigned_to__email', 'custodian__name', 'layer_subscription__name',)
     list_display = ('id', 'name', 'status', 'type', 'layer_subscription_link','custodian_link', 'assigned_to_link', 'created_at', 'updated_at')
+    list_filter = ('status', 'type', 'assigned_to', 'custodian',)
     list_display_links = ('id', 'name',)
     ordering = ('id',)
     inlines = [CatalogueEntryPermissionInline]
@@ -77,8 +79,9 @@ class LayerMetadataAdmin(reversion.admin.VersionAdmin):
     
 class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
     # list_display = ('id', 'name', 'status', 'is_active', 'catalogue_entry', 'created_at')
-    list_display = ('id', 'name', 'status', 'is_active', 'catalogue_entry_link', 'file', 'created_at')
-    list_display_links = ('id', 'name',)
+    search_fields = ('id', 'catalogue_entry__name', 'file')
+    list_display = ('id', 'status', 'is_active', 'catalogue_entry_link', 'file', 'created_at')
+    list_filter = ('status', 'is_active',)
     ordering = ('id',)
     raw_id_fields = ('catalogue_entry',)
 

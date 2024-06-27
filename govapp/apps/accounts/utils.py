@@ -145,7 +145,12 @@ def hash_password(password):
         logger.error(f"Password hashing error: {e}")
         raise
 
-def generate_users_xml(file_name='dbca-users.xml'):
+def generate_auth_files(usergroup_service_name):
+    # TODO
+    ...
+
+
+def generate_usergroup_files(usergroup_service_name, file_name):
     """
     Generate the users.xml file from the Django models using a Django template.
     
@@ -187,7 +192,7 @@ def generate_users_xml(file_name='dbca-users.xml'):
             })
 
         # Render the template with the data
-        rendered_xml = render_to_string('govapp/geoserver/users_template.xml', {
+        rendered_xml = render_to_string('govapp/geoserver/security/usergroup/users_template.xml', {
             'users': user_data,
             'groups': group_data,
             'roles': role_data
@@ -196,7 +201,7 @@ def generate_users_xml(file_name='dbca-users.xml'):
         cleaned_xml = remove_blank_lines(rendered_xml)
 
         # Save the cleaned XML to the output path
-        save_path = os.path.join(settings.GEOSERVER_SECURITY_FILE_PATH, 'usergroup', settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, file_name)
+        save_path = os.path.join(settings.GEOSERVER_SECURITY_FILE_PATH, 'usergroup', usergroup_service_name, file_name)
         # Ensure the directory exists
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
@@ -213,7 +218,7 @@ def generate_users_xml(file_name='dbca-users.xml'):
         raise
 
 
-def generate_roles_xml(file_name='roles.xml'):
+def generate_role_files(file_name='roles.xml'):
     """
     Generate the roles.xml file from the Django models using a Django template.
     
@@ -256,7 +261,7 @@ def generate_roles_xml(file_name='roles.xml'):
             })
 
         # Render the template with the data
-        rendered_xml = render_to_string('govapp/geoserver/roles_template.xml', {
+        rendered_xml = render_to_string('govapp/geoserver/security/role/roles_template.xml', {
             'roles': role_data,
             'user_roles': user_roles,
             'group_roles': group_roles

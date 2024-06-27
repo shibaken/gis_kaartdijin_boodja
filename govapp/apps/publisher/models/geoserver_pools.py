@@ -171,8 +171,8 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def delete_existing_group(self, group_name):
-        if group_name in settings.USERGROUPS_TO_KEEP:
-            log.info(f'Group: [{group_name}] cannot be deleted from the geoserver: [{self}]. (USERGROUPS_TO_KEEP: [{settings.USERGROUPS_TO_KEEP}])')
+        if group_name in settings.NON_DELETABLE_USERGROUPS:
+            log.info(f'Group: [{group_name}] cannot be deleted from the geoserver: [{self}]. (USERGROUPS_TO_KEEP: [{settings.NON_DELETABLE_USERGROUPS}])')
             return
 
         response = httpx.delete(
@@ -246,8 +246,8 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def delete_existing_role(self, role_name):
-        if role_name in settings.ROLES_TO_KEEP:  # We don't want to delete the default group 'ADMIN'
-            log.info(f'Role: [{role_name}] cannot be deleted from the geoserver: [{self}]. (ROLES_TO_KEEP: [{settings.ROLES_TO_KEEP}])')
+        if role_name in settings.NON_DELETABLE_ROLES:  # We don't want to delete the default group 'ADMIN'
+            log.info(f'Role: [{role_name}] cannot be deleted from the geoserver: [{self}]. (ROLES_TO_KEEP: [{settings.NON_DELETABLE_ROLES}])')
             return
 
         response = httpx.delete(

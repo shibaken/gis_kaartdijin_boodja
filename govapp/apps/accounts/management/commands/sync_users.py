@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 
 from govapp import settings
-from govapp.apps.accounts.utils import generate_roles_xml, generate_users_xml
+from govapp.apps.accounts.utils import generate_auth_files, generate_role_files, generate_usergroup_files
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
 
@@ -15,6 +15,12 @@ class Command(BaseCommand):
     USE_EMAIL_AS_USERNAME = True  # For now, set to False
 
     def handle(self, *args, **options):
+        ### TEST ###
+        generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)  # security/auth/SERVICE_NAME/config.xml
+        generate_usergroup_files(settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, 'users.xml')  # se
+        generate_role_files()
+        return
+
         geoservers = GeoServerPool.objects.filter(enabled=True)
         for geoserver in geoservers:
             # Sync relations between users and groups, and users and roles
@@ -76,11 +82,6 @@ class Command(BaseCommand):
     def sync_users_groups_roles(self, geoserver):
         """Synchronize users-groups and users-roles with GeoServer."""
         log.info(f'Synchronize users-groups and users-roles in the geoserver: [{geoserver}]...')
-
-        # TEST
-        generate_users_xml()
-        generate_roles_xml()
-        return
 
         users = UserModel.objects.all()
         for user in users:
@@ -205,7 +206,7 @@ class Command(BaseCommand):
         for group_in_geoserver in all_groups_in_geoserver:
             group_exists_in_kb = any(group_in_geoserver == group_in_kb.name for group_in_kb in all_groups_in_kb)
 
-            if not group_exists_in_kb and group_exists_in_kb not in settings.USERGROUPS_TO_KEEP:
+            if not group_exists_in_kb and group_exists_in_kb not in settings.NON_DELETABLE_USERGROUPS:
                 log.info(f'Group: [{group_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
                 geoserver.delete_existing_group(group_in_geoserver)
 
@@ -218,6 +219,6 @@ class Command(BaseCommand):
         for role_in_geoserver in all_roles_in_geoserver:
             role_exists_in_kb = any(role_in_geoserver == role_in_kb.name for role_in_kb in all_roles_in_kb)
 
-            if not role_exists_in_kb and role_exists_in_kb not in settings.ROLES_TO_KEEP and role_exists_in_kb not in settings.DEFAULT_ROLES_IN_GEOSERVER:
+            if not role_exists_in_kb and role_exists_in_kb not in settings.NON_DELETABLE_ROLES and role_exists_in_kb not in settings.DEFAULT_ROLES_IN_GEOSERVER:
                 log.info(f'Role: [{role_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
                 geoserver.delete_existing_role(role_in_geoserver)

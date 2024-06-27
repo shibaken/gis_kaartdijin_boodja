@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
         for user in users:
             user_name = user["userName"]
-            if user_name not in settings.EXCLUDE_USERS:
+            if user_name not in settings.NON_DELETABLE_USERS:
                 new_password = self.generate_random_password()
                 self.update_password(geoserver, user_name, new_password)
 
