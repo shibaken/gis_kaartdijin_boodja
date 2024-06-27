@@ -13,6 +13,7 @@ from django.utils.html import format_html
 # Local
 from govapp.apps.catalogue.admin import construct_catalogue_entry_link
 from govapp.apps.publisher import models
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroupUser, GeoServerRoleUser
 
 
 def construct_publish_entry_link(publish_entry):
@@ -23,12 +24,14 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for Publish Entries."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
+    search_fields = ('id', 'catalogue_entry__name',)
     filter_horizontal = ["editors"]
-    list_display = ('id', 'catalogue_entry_link', 'status', 'published_at')
+    list_display = ('id', 'catalogue_entry_link', 'status', 'assigned_to', 'published_at')
+    list_filter = ('status', 'assigned_to',)
     ordering = ('-id',)
 
     def catalogue_entry_link(self, obj):
-        construct_catalogue_entry_link(obj.catalogue_entry)
+        return construct_catalogue_entry_link(obj.catalogue_entry)
     catalogue_entry_link.short_description = 'Catalogue Entry'
 
 
@@ -36,7 +39,9 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
+    search_fields = ('id', 'name', 'url',)
     list_display = ('id', 'name', 'url_link', 'num_of_layers', 'username', 'enabled', 'created_at')
+    list_filter = ('enabled',)
     list_display_links = ('id', 'name',)
     ordering = ('id', 'name')
 
@@ -50,7 +55,9 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
 
 
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('id', 'publish_entry__catalogue_entry__name', 'geoserver_pool__name', 'workspace__name',)
     list_display = ('id', 'publish_entry_link', 'geoserver_pool_link', 'store_type', 'mode', 'frequency', 'workspace_link', 'active',)
+    list_filter = ('geoserver_pool', 'store_type', 'mode', 'frequency', 'workspace', 'active',)
     raw_id_fields = ('publish_entry',)
 
     def publish_entry_link(self, obj):
@@ -70,7 +77,9 @@ class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
 
 
 class CDDPPublishChannelAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('id', 'publish_entry__description',)
     list_display = ('id', 'publish_entry_link', 'format', 'mode', 'frequency', 'path', 'xml_path', 'published_at',)
+    list_filter = ('format', 'mode', 'frequency',)
     raw_id_fields = ('publish_entry',)
     
     def publish_entry_link(self, obj):
@@ -82,7 +91,9 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Queue."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
+    search_fields = ('id', 'publish_entry__catalogue_entry__name', 'submitter__email',)
     list_display = ('id', 'publish_entry_link', 'symbology_only', 'status', 'success', 'submitter_link','started_at', 'completed_at', 'created_at')
+    list_filter = ('symbology_only', 'status', 'success',)
     ordering = ('-id',)
     raw_id_fields = ('submitter', 'publish_entry')
 
@@ -120,13 +131,34 @@ class GeoServerGroupRoleInline(admin.TabularInline):
     fields = ['geoserver_role', 'active',]
 
 
+class GeoServerGroupUserInline(admin.TabularInline):
+    model = models.geoserver_roles_groups.GeoServerGroupUser
+    extra = 1  # Number of empty forms to display
+    fields = ['geoserver_group', 'user',]
+
+
+class GeoServerRoleUserInline(admin.TabularInline):
+    model = models.geoserver_roles_groups.GeoServerRoleUser
+    extra = 1  # Number of empty forms to display
+    fields = ['geoserver_role', 'user',]
+
+
 class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'name', 'active', 'created_at',)
+    search_fields = ('id', 'name',)
+    list_display = ('id', 'name', 'get_geoserver_users', 'active', 'created_at',)
+    list_filter = ('active', )
     list_display_links = ('id', 'name')
-    # inlines = [GeoServerRolePermissionInline,]
+    inlines = [GeoServerRoleUserInline,]
+
+    def get_geoserver_users(self, obj):
+        geoserver_role_users = GeoServerRoleUser.objects.filter(geoserver_role=obj)
+        users = '<br>'.join([geoserver_role_user.user.email for geoserver_role_user in geoserver_role_users])
+        return format_html(users)
+    get_geoserver_users.short_description = 'users'
 
 
 class WorkspaceAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('id', 'name',)
     list_display = ('id', 'name', 'display_geoserver_roles')
     list_display_links = ('id', 'name')
     inlines = [GeoServerRolePermissionInline,]
@@ -170,19 +202,29 @@ class GeoServerGroupForm(forms.ModelForm):
 
 
 class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'name', 'get_geoserver_roles', 'active', 'created_at',)
+    search_fields = ('id', 'name',)
+    list_display = ('id', 'name', 'get_geoserver_roles', 'get_geoserver_users', 'active', 'created_at',)
+    list_filter = ('active',)
     list_display_links = ('id', 'name')
     # form = GeoServerGroupForm  # <== This line adds the FilteredSelectMultiple widget.
-    inlines = [GeoServerGroupRoleInline,]
+    inlines = [GeoServerGroupRoleInline, GeoServerGroupUserInline,]
 
     def get_geoserver_roles(self, obj):
-        return ','.join([role.name for role in obj.geoserver_roles.all()])
+        roles = '<br>'.join([role.name for role in obj.geoserver_roles.all()])
+        return format_html(roles)
     get_geoserver_roles.short_description = 'roles'
+
+    def get_geoserver_users(self, obj):
+        geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=obj)
+        users = '<br>'.join([geoserver_group_user.user.email for geoserver_group_user in geoserver_group_users])
+        return format_html(users)
+    get_geoserver_users.short_description = 'users'
 
 
 class EmailNotificationAdmin(reversion.admin.VersionAdmin):
-    search_fields = ('id','name','email')
+    search_fields = ('id','name','email',)
     list_display = ('id', 'name', 'type', 'email', 'active', 'publish_entry_link')
+    list_filter = ('type', 'active',)
     raw_id_fields = ('publish_entry',)
     ordering = ('id',)
 
@@ -191,28 +233,28 @@ class EmailNotificationAdmin(reversion.admin.VersionAdmin):
     publish_entry_link.short_description = 'Publish Entry'
 
 
-class GeoserverGroupUserAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'user_link', 'geoserver_group_link', 'created_at',)
-    raw_id_fields = ('user',)
+# class GeoserverGroupUserAdmin(reversion.admin.VersionAdmin):
+#     list_display = ('id', 'user_link', 'geoserver_group_link', 'created_at',)
+#     raw_id_fields = ('user',)
 
-    def geoserver_group_link(self, obj):
-        if obj.geoserver_group:
-            return format_html(f'<a href="/admin/publisher/geoservergroup/{obj.geoserver_group.id}/change">{obj.geoserver_group}</a>')
-        else:
-            return '-'
-    geoserver_group_link.short_description = 'Geoserver Group'
+#     def geoserver_group_link(self, obj):
+#         if obj.geoserver_group:
+#             return format_html(f'<a href="/admin/publisher/geoservergroup/{obj.geoserver_group.id}/change">{obj.geoserver_group}</a>')
+#         else:
+#             return '-'
+#     geoserver_group_link.short_description = 'Geoserver Group'
 
-    def user_link(self, obj):
-        if obj.user:
-            return format_html(f'<a href="/admin/auth/user/{obj.user.id}/change">{obj.user}</a>')
-        else:
-            return '-'
-    user_link.short_description = 'User'
+#     def user_link(self, obj):
+#         if obj.user:
+#             return format_html(f'<a href="/admin/auth/user/{obj.user.id}/change">{obj.user}</a>')
+#         else:
+#             return '-'
+#     user_link.short_description = 'User'
 
 
-class GeoserverRoleUserAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'user', 'geoserver_role', 'created_at',)
-    raw_id_fields = ('user',)
+# class GeoserverRoleUserAdmin(reversion.admin.VersionAdmin):
+#     list_display = ('id', 'user', 'geoserver_role', 'created_at',)
+#     raw_id_fields = ('user',)
 
 
 admin.site.register(models.publish_channels.FTPServer, reversion.admin.VersionAdmin)
@@ -226,5 +268,3 @@ admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
-admin.site.register(models.geoserver_roles_groups.GeoServerGroupUser, GeoserverGroupUserAdmin)
-admin.site.register(models.geoserver_roles_groups.GeoServerRoleUser, GeoserverRoleUserAdmin)

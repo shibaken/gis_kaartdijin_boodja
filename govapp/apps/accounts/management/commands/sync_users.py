@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 
 from govapp import settings
+from govapp.apps.accounts.utils import generate_roles_xml, generate_users_xml
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
 
@@ -75,6 +76,12 @@ class Command(BaseCommand):
     def sync_users_groups_roles(self, geoserver):
         """Synchronize users-groups and users-roles with GeoServer."""
         log.info(f'Synchronize users-groups and users-roles in the geoserver: [{geoserver}]...')
+
+        # TEST
+        generate_users_xml()
+        generate_roles_xml()
+        return
+
         users = UserModel.objects.all()
         for user in users:
             self.create_or_update_user(geoserver, user)
@@ -211,6 +218,6 @@ class Command(BaseCommand):
         for role_in_geoserver in all_roles_in_geoserver:
             role_exists_in_kb = any(role_in_geoserver == role_in_kb.name for role_in_kb in all_roles_in_kb)
 
-            if not role_exists_in_kb and role_exists_in_kb not in settings.ROLES_TO_KEEP:
+            if not role_exists_in_kb and role_exists_in_kb not in settings.ROLES_TO_KEEP and role_exists_in_kb not in settings.DEFAULT_ROLES_IN_GEOSERVER:
                 log.info(f'Role: [{role_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
                 geoserver.delete_existing_role(role_in_geoserver)

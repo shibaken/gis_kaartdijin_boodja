@@ -294,10 +294,11 @@ CRON_CLASSES = [
 ]
 
 # GeoServer Settings
+DEFAULT_ROLES_IN_GEOSERVER = ['ADMIN', 'GROUP_ADMIN',]
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
 GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
 GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
-ROLES_TO_KEEP = decouple.config("ROLES_TO_KEEP", default='ADMIN,GROUP_ADMIN').split(',')  # env example: ROLES_TO_KEEP=ADMIN,GROUP_ADMIN,ROLE1
+ROLES_TO_KEEP = decouple.config("ROLES_TO_KEEP", default=[]) + DEFAULT_ROLES_IN_GEOSERVER # env example: ROLES_TO_KEEP=ADMIN,GROUP_ADMIN,ROLE1
 USERGROUPS_TO_KEEP = decouple.config("USERGRUPS_TO_KEEP", default='').split(',')  # env example: USERGROUPS_TO_KEEP=ADMIN_GROUP,GROUP1,GROUP2
 EXCLUDE_USERS = decouple.config("EXCLUDE_USERS", default='admin').split(',')  # Add other usernames to exclude here
 
@@ -305,7 +306,6 @@ EXCLUDE_USERS = decouple.config("EXCLUDE_USERS", default='admin').split(',')  # 
 if platform.machine() == "arm64":
     GDAL_LIBRARY_PATH = "/opt/homebrew/opt/gdal/lib/libgdal.dylib"
     GEOS_LIBRARY_PATH = "/opt/homebrew/opt/geos/lib/libgeos_c.dylib"
-
 
 # Local Storage Paths
 PENDING_IMPORT_PATH=decouple.config("PENDING_IMPORT_PATH", default="./pending_imports/")
@@ -317,6 +317,8 @@ DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./geoserver_security/")
 if not os.path.exists(GEOSERVER_SECURITY_FILE_PATH):
     os.mkdir(GEOSERVER_SECURITY_FILE_PATH)
+
+GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME=decouple.config("GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME", "dbca")
 
 # Django Timezone
 TIME_ZONE = 'Australia/Perth'

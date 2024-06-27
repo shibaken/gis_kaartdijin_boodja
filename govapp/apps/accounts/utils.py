@@ -3,6 +3,7 @@
 
 # Third-Party
 import os
+import re
 from django import conf
 import django
 from django.contrib import auth
@@ -192,10 +193,16 @@ def generate_users_xml(file_name='dbca-users.xml'):
             'roles': role_data
         })
 
+        cleaned_xml = remove_blank_lines(rendered_xml)
+
+        # Save the cleaned XML to the output path
+        save_path = os.path.join(settings.GEOSERVER_SECURITY_FILE_PATH, 'usergroup', settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, file_name)
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
         # Save the rendered XML to the output path
-        save_path = os.path.join(settings.GEOSERVER_SECURITY_FILE_PATH, file_name)
         with open(save_path, 'w', encoding='utf-8') as output_file:
-            output_file.write(rendered_xml)
+            output_file.write(cleaned_xml)
             logger.info(f"File: [{save_path}] has been successfully generated.")
 
     except ObjectDoesNotExist as e:
@@ -204,3 +211,81 @@ def generate_users_xml(file_name='dbca-users.xml'):
     except Exception as e:
         logger.error(f"An error occurred while generating {file_name}: {e}")
         raise
+
+
+def generate_roles_xml(file_name='roles.xml'):
+    """
+    Generate the roles.xml file from the Django models using a Django template.
+    
+    :param file_name: Name of the output file.
+    """
+    try:
+        from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
+
+        # Fetch all active roles
+        roles = GeoServerRole.objects.filter(active=True)
+        
+        # Prepare role data
+        role_data = []
+        for role in roles:
+            # Define parent role ID if any
+            parent_role = GeoServerRole.objects.filter(geoserver_groups__geoserver_roles=role).first()
+            role_data.append({
+                'id': role.name,
+                'parent_id': parent_role.name if parent_role else None
+            })
+
+        # Prepare user-role data
+        user_roles = []
+        users = UserModel.objects.filter(is_active=True)
+        for user in users:
+            user_role_ids = GeoServerRoleUser.objects.filter(user=user).values_list('geoserver_role__name', flat=True)
+            user_roles.append({
+                'username': user.email,  # Assuming email is used as username
+                'roles': list(user_role_ids)
+            })
+
+        # Prepare group-role data
+        group_roles = []
+        groups = GeoServerGroup.objects.filter(active=True)
+        for group in groups:
+            group_role_ids = group.geoserver_roles.values_list('name', flat=True)
+            group_roles.append({
+                'groupname': group.name,
+                'roles': list(group_role_ids)
+            })
+
+        # Render the template with the data
+        rendered_xml = render_to_string('govapp/geoserver/roles_template.xml', {
+            'roles': role_data,
+            'user_roles': user_roles,
+            'group_roles': group_roles
+        })
+
+        # Remove blank lines from rendered XML
+        cleaned_xml = remove_blank_lines(rendered_xml)
+
+        # Save the cleaned XML to the output path
+        save_path = os.path.join(settings.GEOSERVER_SECURITY_FILE_PATH, 'role', 'default', file_name)
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+        with open(save_path, 'w', encoding='utf-8') as output_file:
+            output_file.write(cleaned_xml)
+            logger.info(f"File: [{save_path}] has been successfully generated.")
+    
+    except ObjectDoesNotExist as e:
+        logger.error(f"Database object not found: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"An error occurred while generating roles.xml: {e}")
+        raise
+
+def remove_blank_lines(text):
+    """
+    Remove blank lines from a string.
+    
+    :param text: The input string.
+    :return: A string with blank lines removed.
+    """
+    return re.sub(r'\n\s*\n', '\n', text)

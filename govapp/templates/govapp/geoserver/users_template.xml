@@ -14,13 +14,4 @@
         </group>
         {% endfor %}
     </groups>
-    <roles>
-        {% for role in roles %}
-        <role name="{{ role.name }}">
-            {% for user in role.users %}
-            <user username="{{ user }}"/>
-            {% endfor %}
-        </role>
-        {% endfor %}
-    </roles>
 </userRegistry>
