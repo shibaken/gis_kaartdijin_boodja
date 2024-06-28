@@ -78,7 +78,6 @@ class LayerMetadataAdmin(reversion.admin.VersionAdmin):
     catalogue_entry_link.short_description = 'Catalogue Entry'
     
 class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
-    # list_display = ('id', 'name', 'status', 'is_active', 'catalogue_entry', 'created_at')
     search_fields = ('id', 'catalogue_entry__name', 'file')
     list_display = ('id', 'status', 'is_active', 'catalogue_entry_link', 'file', 'created_at')
     list_filter = ('status', 'is_active',)
@@ -91,7 +90,9 @@ class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
 
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'name', 'description', 'status', 'enabled', 'assigned_to_link', 'username', 'url_link', 'host', 'updated_at', 'created_at')
+    search_fields = ('id', 'name', 'description', 'username', 'url', 'host',)
+    list_display = ('id', 'name', 'type', 'description', 'status', 'enabled', 'workspace_link', 'assigned_to_link', 'username', 'url_link', 'host', 'max_connections', 'min_connections', 'updated_at', 'created_at')
+    list_filter = ('enabled', 'type', 'status', 'workspace', 'assigned_to',)
     list_display_links = ('id', 'name',)
     ordering = ('id',)
 
@@ -102,6 +103,10 @@ class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
     def url_link(self, obj):
         return format_html(f'<a href="{obj.url}">{obj.url}</a>') if obj.url else ''
     url_link.short_description = 'URL'
+
+    def workspace_link(self, obj):
+        return format_html(f'<a href="/admin/publisher/workspace/{obj.workspace.id}/change/">{obj.workspace.name}</a>')
+    workspace_link.short_description = 'Workspace'
 
     
 class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
@@ -137,16 +142,25 @@ class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
         return format_html(f'<a href="{obj.url}">{obj.url}</a>') if obj.url else ''
     url_link.short_description = 'URL'
 
+
 class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'user', 'catalogue_entry_link')
+    search_fields = ('id', 'catalogue_entry__name',)
+    list_display = ('id', 'user_link', 'catalogue_entry_link', 'active')
+    list_filter = ('active', 'user',)
 
     def catalogue_entry_link(self, obj):
         return construct_catalogue_entry_link(obj.catalogue_entry)
     catalogue_entry_link.short_description = 'Catalogue Entry'
 
+    def user_link(self, obj):
+        return format_html(f'<a href="/admin/auth/user/{obj.user.id}/change">{obj.user}</a>') if obj.user else '-'
+    user_link.short_description = 'User'
+
 
 class CustomQueryFrequencyAdmin(reversion.admin.VersionAdmin):   
+    search_fields = ('id', 'catalogue_entry__name')
     list_display = ('id', 'catalogue_entry_link','last_job_run','type', 'every_minutes','every_hours','hour','minute','day_of_week')
+    list_filter = ('type',)
 
     def catalogue_entry_link(self, obj):
         return construct_catalogue_entry_link(obj.catalogue_entry)

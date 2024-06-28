@@ -16,8 +16,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         ### TEST ###
-        generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)  # security/auth/SERVICE_NAME/config.xml
-        generate_usergroup_files(settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, 'users.xml')  # se
+        generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)
+        generate_usergroup_files(settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, 'users.xml')
         generate_role_files()
         return
 

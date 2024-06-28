@@ -13,6 +13,7 @@ data_storage/
 pending_imports/*
 sync/*
 geoserver_security/*
+documents/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
