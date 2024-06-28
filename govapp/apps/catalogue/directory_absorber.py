@@ -103,14 +103,17 @@ class Absorber:
             else:
                 filepaths_to_process.append(path_to_file)
 
+            tiff_files = any(pathlib.Path(path).suffix.lower() in ['.tif', '.tiff',] for path in filepaths_to_process)
+
             # Process all the files
-            for filepath in filepaths_to_process:
-                if filepath.lower().endswith(('.tiff', '.tif')):
-                    # Call a different function if the file is a TIFF
-                    self.process_tiff_file(filepath)
-                else:
-                    # Call the original function for other file types
-                    self.process_vector_file(filepath)
+            if tiff_files:
+                for filepath in filepaths_to_process:
+                    if filepath.lower().endswith(('.tiff', '.tif')):
+                        # Call a different function if the file is a TIFF
+                        self.process_tiff_file(filepath)
+            else:
+                # Call the original function for other file types
+                self.process_vector_file(path_to_file)
             
         finally:
             pass
@@ -165,6 +168,7 @@ class Absorber:
     def process_vector_file(self, filepath):
         pathlib_filepath = pathlib.Path(filepath)
         # # Construct Reader
+        # reader = readers.reader.FileReader(filepath)
         reader = readers.reader.FileReader(pathlib_filepath)
 
         result = {'total':reader.layer_count(), 'success':[], 'fail':[]}
