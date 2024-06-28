@@ -26,7 +26,7 @@ class Command(BaseCommand):
             # Sync relations between users and groups, and users and roles
             self.sync_users_groups_roles(geoserver)
 
-            # Sync relations between roles with grous ###
+            # Sync relations between roles with groups ###
             self.sync_groups_roles(geoserver)
 
             # Cleanup
