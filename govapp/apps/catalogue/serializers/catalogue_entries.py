@@ -17,6 +17,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
     assigned_to_last_name = serializers.ReadOnlyField(source='assigned_to.last_name',)
     assigned_to_email = serializers.ReadOnlyField(source='assigned_to.email',)
     updated_at = serializers.SerializerMethodField()
+    # file_extension = serializers.ReadOnlyField()
 
     class Meta:
         """Catalogue Entry Model Serializer Metadata."""
@@ -45,7 +46,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "assigned_to_first_name",
             "assigned_to_last_name",
             "assigned_to_email",
-            
+            # "file_extension",
         )
         read_only_fields = (
             "id",
@@ -65,6 +66,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "metadata",
             "symbology",
             "publish_entry",
+            # "file_extension",
         )
 
     def get_updated_at(self, obj):

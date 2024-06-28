@@ -764,7 +764,7 @@ class LayerSubscriptionViewSet(
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_POSTGIS
             
         # Create Catalogue Entry
-        models.catalogue_entries.CatalogueEntry.objects.create(
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
             name=data['name'],
             description=data['description'] if 'description' in data else None,
             mapping_name=data['mapping_name'],

@@ -300,36 +300,14 @@ class CatalogueEntriesView(base.TemplateView):
         # Construct Context
         context: dict[str, Any] = {}
         has_edit_access = False
-        pe_list = []
-        catalogue_entry_list = []
         catalogue_id = self.kwargs['pk']
         symbology_definition = ''
-        catalogue_layer_attributes = ''
         catalogue_layer_metadata = None
 
         custodians_obj = custodians_models.Custodian.objects.all()
         catalogue_entry_obj = catalogue_entries_models.CatalogueEntry.objects.get(id=self.kwargs['pk'])
 
-        # publish_workspaces = publish_workspaces_models.Workspace.objects.all()
-
-        # # START - To be improved later todo a reverse table join      
-        # ce_obj = catalogue_entries_models.CatalogueEntry.objects.all()
-        # pe_obj = publish_entries_models.PublishEntry.objects.all()
-
-        # for pe in pe_obj:            
-        #     pe_list.append(pe.catalogue_entry.id)
-
-        # for ce in ce_obj:
-        #     if ce.id not in pe_list:
-        #         catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
-        #         print (ce.id)    
-        #     if publish_entry_obj.catalogue_entry:  
-        #         if ce.id == publish_entry_obj.catalogue_entry.id:
-        #             catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
-        # # END - To be improved later todo a reverse table join     
-
         system_users_dict = {}
-        # system_users_obj = UserModel.objects.filter(is_active=True, groups__name=conf.settings.GROUP_ADMINISTRATOR_NAME)
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
              system_users_dict[su.id] = {'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email}
@@ -357,7 +335,7 @@ class CatalogueEntriesView(base.TemplateView):
         if catalogue_layer_metadata_obj.count() > 0:
             catalogue_layer_metadata = catalogue_layer_metadata_obj[0]
 
-        catalogue_layer_attributes = catalogue_layer_attribute_models.LayerAttribute.objects.filter(catalogue_entry=catalogue_id)
+        display_attributes_tab = False if catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff'] else True
 
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
@@ -368,8 +346,8 @@ class CatalogueEntriesView(base.TemplateView):
         context['symbology_definition'] = symbology_definition
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['has_edit_access'] = has_edit_access
-        context['catalogue_layer_attributes'] = catalogue_layer_attributes
-        
+        context['display_attributes_tab'] = display_attributes_tab
+
     
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
