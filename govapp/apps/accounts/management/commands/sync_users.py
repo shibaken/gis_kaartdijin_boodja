@@ -1,4 +1,6 @@
 import logging
+import decouple
+import os
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 
@@ -15,6 +17,11 @@ class Command(BaseCommand):
     USE_EMAIL_AS_USERNAME = True  # For now, set to False
 
     def handle(self, *args, **options):
+        # Local Storage Paths
+        GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./config/geoserver_security/")
+        if not os.path.exists(GEOSERVER_SECURITY_FILE_PATH):
+            os.makedirs(GEOSERVER_SECURITY_FILE_PATH)
+
         ### TEST ###
         generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)
         generate_usergroup_files(settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, 'users.xml')
