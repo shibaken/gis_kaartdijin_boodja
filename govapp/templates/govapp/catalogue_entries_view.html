@@ -99,7 +99,7 @@
                                   <a class="nav-link {% if tab == 'details' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/details/">Details</a>
                                 </li>
                                 <li class="nav-item">
-                                    {% if catalogue_entry_attributes %}
+                                    {% if display_attributes_tab %}
                                           <a class="nav-link {% if tab == 'attribute' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/attribute/">Attribute Table</a>
                                     {% endif %}
                                 </li>

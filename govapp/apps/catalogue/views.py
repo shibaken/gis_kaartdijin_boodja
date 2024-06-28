@@ -764,14 +764,14 @@ class LayerSubscriptionViewSet(
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_POSTGIS
             
         # Create Catalogue Entry
-        models.catalogue_entries.CatalogueEntry.objects.create(
+        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
             name=data['name'],
             description=data['description'] if 'description' in data else None,
             mapping_name=data['mapping_name'],
             type=catalogue_type,
             layer_subscription=subscription
         )
-        log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+        logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
         
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -956,7 +956,7 @@ class LayerSubscriptionViewSet(
             type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
             layer_subscription=subscription
         )
-        log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+        logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
         
         # Create Custom Query Frequency
         for option in frequency_options:

@@ -1,7 +1,7 @@
 """Kaartdijin Boodja Catalogue Django Application Catalogue Entry Models."""
 
 # Standard
-import types
+import os
 import reversion
 from datetime import datetime 
 
@@ -22,6 +22,7 @@ from govapp.apps.catalogue.models import custodians
 
 # Typing
 from typing import Optional, Union, TYPE_CHECKING
+
 
 # Type Checking
 if TYPE_CHECKING:
@@ -139,6 +140,12 @@ class CatalogueEntry(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+
+    @property
+    def file_extension(self):
+        from govapp.apps.catalogue.models.layer_submissions import LayerSubmission
+        latest_submission = LayerSubmission.objects.filter(catalogue_entry=self).last()
+        return os.path.splitext(latest_submission.file)[-1]
 
     @property
     def active_layer(self) -> "layer_submissions.LayerSubmission":
