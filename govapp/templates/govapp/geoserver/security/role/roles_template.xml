@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<roleRegistry xmlns="http://www.geoserver.org/security/roles" version="1.0">
+    <roleList>
+        {% for role in roles %}
+        <role id="{{ role.id }}"{% if role.parent_id %} parentID="{{ role.parent_id }}"{% endif %}/>
+        {% endfor %}
+    </roleList>
+    <userList>
+        {% for user in user_roles %}
+        <userRoles username="{{ user.username }}">
+            {% for role_id in user.roles %}
+            <roleRef roleID="{{ role_id }}"/>
+            {% endfor %}
+        </userRoles>
+        {% endfor %}
+    </userList>
+    <groupList>
+        {% for group in group_roles %}
+        <groupRoles groupname="{{ group.groupname }}">
+            {% for role_id in group.roles %}
+            <roleRef roleID="{{ role_id }}"/>
+            {% endfor %}
+        </groupRoles>
+        {% endfor %}
+    </groupList>
+</roleRegistry>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<userRegistry xmlns="http://www.geoserver.org/security/users" version="1.0">
+    <users>
+        {% for user in users %}
+        <user enabled="true" name="{{ user.name }}" password="{{ user.password }}"/>
+        {% endfor %}
+    </users>
+    <groups>
+        {% for group in groups %}
+        <group enabled="true" name="{{ group.name }}">
+            {% for member in group.members %}
+            <member username="{{ member }}"/>
+            {% endfor %}
+        </group>
+        {% endfor %}
+    </groups>
+</userRegistry>

@@ -178,17 +178,17 @@ class GeoServer:
         log.info(f"Uploading GeoTiff '{filepath}' to GeoServer")
 
         # Construct URL
-        url = "{0}/rest/workspaces/{1}/coveragestores/{2}/file.geotiff".format(
-            self.service_url,
-            workspace,
-            layer,
-        )
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/file.geotiff"
 
         # Perform Request
         response = httpx.put(
             url=url,
             content=filepath.read_bytes(),
-            params={"filename": filepath.name, "update": "overwrite"},
+            params={
+                "filename": filepath.name,
+                "update": "overwrite",
+                "configure": "all"
+                },
             auth=(self.username, self.password),
             timeout=3000.0
         )
@@ -197,6 +197,87 @@ class GeoServer:
         log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
 
         # Check Response
+        response.raise_for_status()
+
+    @handle_http_exceptions(log)
+    def create_layer_from_coveragestore(self, workspace: str, layer: str) -> None:
+        """
+        Creates a layer in GeoServer from an existing coverage store.
+
+        Args:
+            workspace (str): Workspace where the coverage store exists.
+            layer (str): Name of the layer to create in GeoServer.
+        """
+        response_data = self.get_layer_details(layer)
+        response_data['layer']['resource']['srs'] = "EPSG:26918"
+        response_data['layer']['resource']['boundingBox'] = {
+                "nativeBoundingBox": {
+                    "minx": -180,
+                    "miny": -90,
+                    "maxx": 180,
+                    "maxy": 90,
+                    "crs": "EPSG:26918"
+                },
+                "latLonBoundingBox": {
+                    "minx": -180,
+                    "miny": -90,
+                    "maxx": 180,
+                    "maxy": 90,
+                    "crs": "EPSG:26918"
+                }
+            }
+        log.info(f'layer_data: [{response_data}]')
+        # Log
+        log.info(f"Creating layer '{layer}' in workspace '{workspace}'")
+
+        # Construct URL for layers endpoint
+        # layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}_store/coverages"
+        # layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/reset"
+        layers_url = f"{self.service_url}/rest/layers/{workspace}:{layer}.json"
+
+        # response_data['layer']['defaultStyle'] = {"name": "raster"}
+        # response_data['layer']['resource']['srs'] = "EPSG:4326"
+        # response_data['layer']['resource']['boundingBox'] = {
+        #     "nativeBoundingBox": {
+        #         "minx": -180,
+        #         "miny": -90,
+        #         "maxx": 180,
+        #         "maxy": 90,
+        #         "crs": "EPSG:4326"
+        #     },
+        #     "latLonBoundingBox": {
+        #         "minx": -180,
+        #         "miny": -90,
+        #         "maxx": 180,
+        #         "maxy": 90,
+        #         "crs": "EPSG:4326"
+        #     }
+        # }
+        
+        # Perform POST request to create the layer
+        response = httpx.put(
+            url=layers_url,
+            content=json.dumps(response_data),
+            # content=json.dumps({
+            #     "coverage": {
+            #         # "name": f'{workspace}:{layer}',
+            #         # "name": f'{workspace}',
+            #         # "name": f'{layer}',
+            #         # "name": "aho1", #201, 500
+            #         # "name": "aho2", #201, 500
+            #         "title": f'{layer}',
+            #         "enabled": True
+            #     }
+            # }),
+            headers={"Content-type": "application/json"},
+            auth=(self.username, self.password),
+            timeout=3000.0
+        )
+
+        # Log GeoServer response
+        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+        # Check response status
         response.raise_for_status()
 
     def upload_store_wms(self, workspace, store_name, context) -> None:
@@ -662,6 +743,44 @@ class GeoServer:
         else:
             # No layers
             return []
+
+    @handle_http_exceptions(log)
+    def get_layer_details(self, layer_name: str) -> Optional[dict]:
+        """
+        Retrieve details for a specific layer from GeoServer.
+
+        Args:
+            layer_name (str): The name of the layer to retrieve details for.
+
+        Returns:
+            Optional[dict]: The details of the layer, or None if not found.
+        """
+        # Log
+        log.info(f'Retrieving details for layer: [{layer_name}] from GeoServer: [{self.service_url}]')
+        
+        # Construct URL
+        url = f"{self.service_url}/rest/layers/{layer_name}"
+        
+        # Perform Request
+        response = httpx.get(
+            url=url,
+            auth=(self.username, self.password),
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            timeout=120.0
+        )
+
+        # Check Response
+        response.raise_for_status()
+
+        json_response = response.json()
+        if json_response is None or not json_response.get('layer'):
+            log.error(f"The response of retrieving details for layer [{layer_name}] from GeoServer was wrong. {json_response}")
+            return None
+        
+        # Return JSON
+        # return json_response['layer']
+        return json_response
+
     
     @handle_http_exceptions(log)
     def delete_layer(self, layer_name) -> None:
@@ -682,47 +801,6 @@ class GeoServer:
         else:
             log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
 
-    def synchronize_groups(self, group_name_list):
-        existing_groups = self.fetch_geoserver_groups()
-
-        # Determine groups to delete (existing groups not in group_name_list)
-        groups_to_delete = set(existing_groups) - set(group_name_list)
-        for group in groups_to_delete:
-            self.delete_geoserver_group(group)
-
-        # Determine groups to create (groups in group_name_list not in existing groups)
-        groups_to_create = set(group_name_list) - set(existing_groups)
-        for group in groups_to_create:
-            self.create_geoserver_group(group)
-
-    def synchronize_roles(self, role_name_list):
-        try:
-            # Fetch existing roles from GeoServer
-            existing_roles = self.fetch_geoserver_roles()
-
-            # Determine roles to delete (existing roles not in role_name_list)
-            roles_to_delete = set(existing_roles) - set(role_name_list)
-            for role in roles_to_delete:
-                self.delete_geoserver_role(role)
-
-            # Determine roles to create (roles in role_name_list not in existing roles)
-            roles_to_create = set(role_name_list) - set(existing_roles)
-            for role in roles_to_create:
-                self.create_geoserver_role(role)
-        except Exception as e:
-            log.error(f'An error occurred during synchronization: {e}')
-
-    # Function to fetch existing groups from GeoServer
-    @handle_http_exceptions(log)
-    def fetch_geoserver_groups(self):
-        url = f"{self.service_url}/rest/security/usergroup/groups.json"
-        response = httpx.get(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        groups_data = response.json()
-        existing_groups = groups_data['groups']
-        log.info(f"Fetched groups: {existing_groups} from the geoserver: [{self.service_url}]")
-        return existing_groups
-
     # Function to create a new group in GeoServer
     @handle_http_exceptions(log)
     def create_geoserver_group(self, group_name):
@@ -731,29 +809,6 @@ class GeoServer:
         response.raise_for_status()
         log.info(f"Created group: {group_name} on the geoserver: [{self.service_url}]")
 
-    # Function to delete an existing group in GeoServer
-    @handle_http_exceptions(log)
-    def delete_geoserver_group(self, group_name):
-        if group_name in settings.USERGROUPS_TO_KEEP:
-            log.info(f'Group: [{group_name}] cannot be deleted. (USERGROUPS_TO_KEEP: [{settings.USERGROUPS_TO_KEEP}])')
-            return
-
-        url = f"{self.service_url}/rest/security/usergroup/group/{group_name}"
-        response = httpx.delete(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f"Deleted group: {group_name} from the geoserver: [{self.service_url}]")
-
-    # Function to fetch existing roles from GeoServer
-    @handle_http_exceptions(log)
-    def fetch_geoserver_roles(self):
-        url = f"{self.service_url}/rest/security/roles.json"
-        response = httpx.get(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        roles_data = response.json()
-        existing_roles = roles_data['roles']
-        log.info(f"Fetched roles: [{existing_roles}] from the geoserver: [{self.service_url}] ")
-        return existing_roles
-
     # Function to create a new role in GeoServer
     @handle_http_exceptions(log)
     def create_geoserver_role(self, role_name):
@@ -761,18 +816,6 @@ class GeoServer:
         response = httpx.post(url, auth=(self.username, self.password))
         response.raise_for_status()
         log.info(f"Created role: {role_name} on the geoserver: [{self.service_url}]")
-
-    # Function to delete an existing role in GeoServer
-    @handle_http_exceptions(log)
-    def delete_geoserver_role(self, role_name):
-        if role_name in settings.ROLES_TO_KEEP:  # We don't want to delete the default group 'ADMIN'
-            log.info(f'Role: [{role_name}] cannot be deleted. (ROLES_TO_KEEP: [{settings.ROLES_TO_KEEP}])')
-            return
-
-        url = f"{self.service_url}/rest/security/roles/role/{role_name}"
-        response = httpx.delete(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f"Deleted role: {role_name} from the geoserver: [{self.service_url}]")
 
     @handle_http_exceptions(log)
     def update_workspace_security(self, workspace_name, role_to_modify, read_permission, write_permission, admin_permission):

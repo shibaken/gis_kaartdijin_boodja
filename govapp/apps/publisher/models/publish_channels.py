@@ -493,11 +493,15 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
                 filepath=geopackage['full_filepath'],
             )
         elif self.store_type == StoreType.GEOTIFF:
+            workspace_name = self.workspace.name
+            layer_name = self.publish_entry.catalogue_entry.metadata.name
             geoserver.upload_tif(
-                workspace=self.workspace.name,
-                layer=self.publish_entry.catalogue_entry.metadata.name,
+                workspace=workspace_name,
+                layer=layer_name,
                 filepath=filepath,
             )
+            # Once uploaded, create a layer for the coverage store
+            geoserver.create_layer_from_coveragestore(workspace_name, layer_name)
         else:
             log.warn(f'Unknown store_type: [{self.store_type}].')
 

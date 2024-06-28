@@ -763,19 +763,25 @@ class CDDPContentsViewSet(
         List all files within the directory along with their metadata.
         """
         try:
-            file_list = self._get_files_with_metadata()
-            return Response(file_list)
+            limit = request.GET.get('limit', None)
+            offset = request.GET.get('offset', 0)
+            order_by = request.GET.get('order_by', 'created_at')
+
+            results = self._get_files_with_metadata(limit, offset, order_by)
+            return Response(results)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def _get_files_with_metadata(self) -> list:
+    def _get_files_with_metadata(self, limit, offset, order_by) -> list:
         """
         Retrieve file paths and metadata for files within the specified directory.
         """
         file_list = []
         datetime_format = '%d-%m-%Y %H:%M:%S'
         try:
+            num_of_files = 0
             for dirpath, _, filenames in os.walk(self.pathToFolder):
+                num_of_files += len(filenames)
                 for filename in filenames:
                     filepath = os.path.join(dirpath, filename)
                     dirpath_removed = filepath[len(self.pathToFolder + '/'):] if filepath.startswith(self.pathToFolder + '/') else filepath
@@ -793,9 +799,26 @@ class CDDPContentsViewSet(
                         'size_bytes': size_bytes,
                         'size_kb': size_kb
                     })
+
+            reverse = order_by.startswith('-')
+            key = order_by.lstrip('-')
+            file_list.sort(key=lambda x: x.get(key, None), reverse=reverse)
+            
+            # Offset
+            offset = int(offset)
+            file_list = file_list[offset:]
+            
+            # limit
+            if limit:
+                limit = int(limit)
+                file_list = file_list[:limit]
+
         except Exception as e:
             raise RuntimeError(f"Error while retrieving file metadata: {str(e)}")
-        return file_list
+        return {
+            'count': num_of_files,
+            'results': file_list
+        }
 
     @decorators.action(detail=False, methods=['get'], url_path='retrieve-file')
     def retrieve_file(self, request: http.HttpRequest) -> http.HttpResponse:

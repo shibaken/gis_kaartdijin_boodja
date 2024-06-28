@@ -60,6 +60,18 @@ class ManagementCommands(viewsets.ViewSet):
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=False, methods=["POST"])
+    def randomize_password(self, request: request.Request) -> response.Response:
+        try:
+            management.call_command("runcrons", "govapp.apps.catalogue.cron.DirectoryScannerCronJob", "--force")
+        except Exception as exc:
+            # Log
+            log.error(f"Unable to perform randomize_password: {exc}")
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=False, methods=["POST"])
     def scan_dir(self, request: request.Request) -> response.Response:
         """Runs the `scan` Management Command.
 
@@ -164,6 +176,8 @@ class ManagementCommands(viewsets.ViewSet):
                 management.call_command("geoserver_sync_groups")
             elif items_to_sync == 'rules':
                 management.call_command("geoserver_sync_rules")
+            elif items_to_sync == 'users':
+                management.call_command("sync_users")
 
         except Exception as exc:
             # Log
