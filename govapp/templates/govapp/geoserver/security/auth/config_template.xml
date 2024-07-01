@@ -1,0 +1,6 @@
+<usernamePassword>
+  <id>-6cf6d2ec:1906c4b6be7:-7fe3</id>
+  <name>{{ authentication_provider_name }}</name>
+  <className>org.geoserver.security.auth.UsernamePasswordAuthenticationProvider</className>
+  <userGroupServiceName>{{ usergroup_service_name }}</userGroupServiceName>
+</usernamePassword>

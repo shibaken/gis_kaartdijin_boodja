@@ -18,9 +18,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Local Storage Paths
-        GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./config/geoserver_security/")
-        if not os.path.exists(GEOSERVER_SECURITY_FILE_PATH):
-            os.makedirs(GEOSERVER_SECURITY_FILE_PATH)
+        if not os.path.exists(settings.GEOSERVER_SECURITY_FILE_PATH):
+            os.makedirs(settings.GEOSERVER_SECURITY_FILE_PATH)
 
         ### TEST ###
         generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)

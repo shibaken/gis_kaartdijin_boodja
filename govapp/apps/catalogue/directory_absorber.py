@@ -103,10 +103,10 @@ class Absorber:
             else:
                 filepaths_to_process.append(path_to_file)
 
-            tiff_files = any(pathlib.Path(path).suffix.lower() in ['.tif', '.tiff',] for path in filepaths_to_process)
+            tiff_exists = any(pathlib.Path(path).suffix.lower() in ['.tif', '.tiff',] for path in filepaths_to_process)
 
             # Process all the files
-            if tiff_files:
+            if tiff_exists:
                 for filepath in filepaths_to_process:
                     if filepath.lower().endswith(('.tiff', '.tif')):
                         # Call a different function if the file is a TIFF

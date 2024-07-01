@@ -12,7 +12,7 @@ data/
 data_storage/
 pending_imports/*
 sync/*
-geoserver_security/*
+config/*
 documents/*
 
 # Byte-compiled / optimized / DLL files
