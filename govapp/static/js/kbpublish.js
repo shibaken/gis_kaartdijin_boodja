@@ -1432,7 +1432,11 @@ var kbpublish = {
                                     }
                                 }
 
+                                console.log('1')
+                                console.log($('#catalogue-type').val())
+
                                 if($('#catalogue-type').val() == catalogue_entry_type.SPATIAL_FILE){
+                                    console.log('2')
                                     // kbpublish.show_update_geoserver_modal(selected_obj);  // Creating modal DOM from scratch...
 
                                     // Set modal title
@@ -1451,7 +1455,8 @@ var kbpublish = {
                                     $('#new-publish-new-geoserver-success').html('').hide();
                                     // Display modal
                                     $('#PublishNewUpdateGeoserverModal').modal('show');
-                                } else if([catalogue_entry_type.SUBSCRIPTION_WFS, catalogue_entry_type.SUBSCRIPTION_WMS, catalogue_entry_type.SUBSCRIPTION_POSTGIS, catalogue_entry_type.SUBSCRIPTION_QUERY].includes($('#catalogue-type').val())){
+                                } else if([catalogue_entry_type.SUBSCRIPTION_WFS, catalogue_entry_type.SUBSCRIPTION_WMS, catalogue_entry_type.SUBSCRIPTION_POSTGIS, catalogue_entry_type.SUBSCRIPTION_QUERY].includes(parseInt($('#catalogue-type').val()))){
+                                    console.log('aho')
                                     kbpublish.show_write_geoserver_subscription_modal(selected_obj);
                                 }
                             });
