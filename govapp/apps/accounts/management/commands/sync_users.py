@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 
 from govapp import settings
-from govapp.apps.accounts.utils import generate_auth_files, generate_role_files, generate_usergroup_files
+from govapp.apps.accounts.utils import generate_auth_files, generate_role_files, generate_security_config_file, generate_usergroup_files
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
 
@@ -21,9 +21,18 @@ class Command(BaseCommand):
         if not os.path.exists(settings.GEOSERVER_SECURITY_FILE_PATH):
             os.makedirs(settings.GEOSERVER_SECURITY_FILE_PATH)
 
-        ### TEST ###
+        # security/config.xml
+        generate_security_config_file(['default', settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME])
+
+        # security/auth/config.xml
         generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)
+
+        # security/usergroup/config.xml
+        # security/usergroup/users.xml
+        # security/usergroup/users.xsd
         generate_usergroup_files(settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, 'users.xml')
+
+        # security/role/roles.xml
         generate_role_files()
         return
 
@@ -38,7 +47,7 @@ class Command(BaseCommand):
             # Cleanup
             self.cleanup_groups(geoserver)
             self.cleanup_roles(geoserver)
-
+    
     def sync_groups_roles(self, geoserver):
         """Synchronize groups-roles with GeoServer."""
         log.info(f'Synchronize groups-roles in the geoserver: [{geoserver}]...')

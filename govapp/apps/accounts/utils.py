@@ -160,27 +160,35 @@ def exception_handler_decorator(func):
     return wrapper
 
 @exception_handler_decorator
+def generate_security_config_file(usergroup_service_names):
+    this_config_filename = 'config.xml'
+        
+    # Render the template with the data
+    rendered_xml = render_to_string('govapp/geoserver/security/config_template.xml', {
+        'auth_provider_names': usergroup_service_names
+    })
+    cleaned_xml = remove_blank_lines(rendered_xml)
+
+    # Save file
+    save_path = os.path.join(govapp.settings.GEOSERVER_SECURITY_FILE_PATH, this_config_filename)
+    save_contents_to_file(cleaned_xml, save_path)
+
+
+@exception_handler_decorator
 def generate_auth_files(usergroup_service_name):
     authentication_provider_name = usergroup_service_name
-    file_name = 'config.xml'
+    this_config_filename = 'config.xml'
 
     # Render the template with the data
     rendered_xml = render_to_string('govapp/geoserver/security/auth/config_template.xml', {
         'authentication_provider_name': authentication_provider_name,
         'usergroup_service_name': usergroup_service_name, 
     })
-
     cleaned_xml = remove_blank_lines(rendered_xml)
 
-    # Save the cleaned XML to the output path
-    save_path = os.path.join(govapp.settings.GEOSERVER_SECURITY_FILE_PATH, 'auth', authentication_provider_name, file_name)
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
-    # Save the rendered XML to the output path
-    with open(save_path, 'w', encoding='utf-8') as output_file:
-        output_file.write(cleaned_xml)
-        logger.info(f"File: [{save_path}] has been successfully generated.")
+    # Save file
+    save_path = os.path.join(govapp.settings.GEOSERVER_SECURITY_FILE_PATH, 'auth', authentication_provider_name, this_config_filename)
+    save_contents_to_file(cleaned_xml, save_path)
 
 
 def generate_usergroup_files(usergroup_service_name, users_xml_filename):
@@ -198,18 +206,11 @@ def generate_user_config_xml_file(usergroup_service_name, users_xml_filename):
         'usergroup_service_name': usergroup_service_name, 
         'users_xml_filename': users_xml_filename
     })
-
     cleaned_xml = remove_blank_lines(rendered_xml)
 
-    # Save the cleaned XML to the output path
+    # Save file
     save_path = os.path.join(govapp.settings.GEOSERVER_SECURITY_FILE_PATH, 'usergroup', usergroup_service_name, file_name)
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
-    # Save the rendered XML to the output path
-    with open(save_path, 'w', encoding='utf-8') as output_file:
-        output_file.write(cleaned_xml)
-        logger.info(f"File: [{save_path}] has been successfully generated.")
+    save_contents_to_file(cleaned_xml, save_path)
 
 
 @exception_handler_decorator
@@ -219,18 +220,11 @@ def generate_users_xsd_file(usergroup_service_name):
     # Render the template with the data
     rendered_xml = render_to_string('govapp/geoserver/security/usergroup/users_template.xsd', {
     })
-
     cleaned_xml = remove_blank_lines(rendered_xml)
 
-    # Save the cleaned XML to the output path
+    # Save file
     save_path = os.path.join(govapp.settings.GEOSERVER_SECURITY_FILE_PATH, 'usergroup', usergroup_service_name, file_name)
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
-    # Save the rendered XML to the output path
-    with open(save_path, 'w', encoding='utf-8') as output_file:
-        output_file.write(cleaned_xml)
-        logger.info(f"File: [{save_path}] has been successfully generated.")
+    save_contents_to_file(cleaned_xml, save_path)
 
 
 @exception_handler_decorator
@@ -280,18 +274,11 @@ def generate_users_xml_files(usergroup_service_name, users_xml_filename):
         'groups': group_data,
         'roles': role_data
     })
-
     cleaned_xml = remove_blank_lines(rendered_xml)
 
-    # Save the cleaned XML to the output path
+    # Save file
     save_path = os.path.join(govapp.settings.GEOSERVER_SECURITY_FILE_PATH, 'usergroup', usergroup_service_name, users_xml_filename)
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
-    # Save the rendered XML to the output path
-    with open(save_path, 'w', encoding='utf-8') as output_file:
-        output_file.write(cleaned_xml)
-        logger.info(f"File: [{save_path}] has been successfully generated.")
+    save_contents_to_file(cleaned_xml, save_path)
 
 
 @exception_handler_decorator
@@ -342,13 +329,14 @@ def generate_role_files(role_service_name='default', roles_xml_file_name='roles.
         'user_roles': user_roles,
         'group_roles': group_roles
     })
-
-    # Remove blank lines from rendered XML
     cleaned_xml = remove_blank_lines(rendered_xml)
 
-    # Save the cleaned XML to the output path
+    # Save file
     save_path = os.path.join(govapp.settings.GEOSERVER_SECURITY_FILE_PATH, 'role', role_service_name, roles_xml_file_name)
-    # Ensure the directory exists
+    save_contents_to_file(cleaned_xml, save_path)
+
+
+def save_contents_to_file(cleaned_xml, save_path):
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     with open(save_path, 'w', encoding='utf-8') as output_file:
