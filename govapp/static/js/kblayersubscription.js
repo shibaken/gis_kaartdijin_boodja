@@ -659,9 +659,11 @@ var kblayersubscription = {
                                     is_valid:(mapping)=>!(mapping.name in response.results)},
                             EDIT:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
                                     is_valid:(mapping)=>mapping.name in response.results}};
-                    table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
+                    // table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
+                    table.set_thead(thead, {"Catalogue Name":4, [title+"s"]:7, "Action":1});
                 } else {
-                    table.set_thead(thead, {[title+"s"]:6, "Catalogue Name":6});
+                    // table.set_thead(thead, {[title+"s"]:6, "Catalogue Name":6});
+                    table.set_thead(thead, {"Catalogue Name":4, [title+"s"]:8});
                 }
                 let rows = []
                 for(let i in kblayersubscription.var.mapping_names){
@@ -674,7 +676,8 @@ var kblayersubscription = {
                         rows.push(mapping);
                     }
                 }
-                table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
+                // table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
+                table.set_tbody(tbody, rows, [{catalogue:"text"}, {name:"text"}], buttons);
                 if(rows.length == 0){
                     table.message_tbody(tbody, "No results found");
                 }
@@ -803,7 +806,7 @@ var kblayersubscription = {
                     buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
                             DELETE:(query)=>kblayersubscription.delete_custom_query(query)};
                 }
-                table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
+                table.set_thead(thead, {"Catalogue Name":4, "Description":7, "Action":1});
                 let rows = []
                 for(let i in response.results){
                     rows.push(response.results[i]);
