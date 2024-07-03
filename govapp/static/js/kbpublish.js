@@ -267,28 +267,12 @@ var kbpublish = {
             $('#ManageEditorsModal').modal('show');
         });           
         $( "#publish-new-geoserver-btn" ).click(function() {
-            // SPATIAL_FILE = 1, SUBSCRIPTION = 2
-            let GEOTIFF = 1
-            if($('#catalogue-type').val() == '1'){
-                // Set modal title
-                $('#new-update-geoserver-modal-title').text('Publish New Geoserver');
-                // Set button text
-                $('#create-update-publish-geoserver-btn').text('Create');
-                // Set values
-                $('#geoserver_publish_channel_id').val('');  // No id means creating new
-                $('#new-publish-geoserver-pool').removeAttr('disabled').val('');
-                $('#new-publish-spatial-format').removeAttr('disabled').val('');
-                $('#new-publish-frequency-type').removeAttr('disabled').val('');
-                $('#new-publish-workspace').removeAttr('disabled').val('');
-                $('#new-publish-store-type').removeAttr('disabled').val(GEOTIFF);  
-                // Remove success/error message
-                $('#new-publish-new-geoserver-popup-error').html('').hide();
-                $('#new-publish-new-geoserver-success').html('').hide();
-                // Show modal
-                $('#PublishNewUpdateGeoserverModal').modal('show');
+            let this_catalogue_entry_type = +$('#catalogue-type').val();
+
+            if([catalogue_entry_type.SPATIAL_FILE, catalogue_entry_type.SUBSCRIPTION_QUERY].includes(this_catalogue_entry_type)){
+                kbpublish.show_new_update_geoserver_modal(null)
             } else {
                 kbpublish.show_write_geoserver_subscription_modal();
-                // $('#PublishNewGeoserverSubscriptionModal').modal('show');
             }
         });      
         $( "#publish-new-cddp-btn" ).click(function() {
@@ -1425,39 +1409,18 @@ var kbpublish = {
                             $(".publish-geoserver-update").click(function() {
                                 let data = $(this).data('json')
                                 let selected_id = parseInt(data.id)
-                                let selected_obj = null
+                                let geoserver_publish_channel_obj = null
                                 for(let response of responsejson){
                                     if (response.id == selected_id){
-                                        selected_obj = response
+                                        geoserver_publish_channel_obj = response
                                     }
                                 }
+                                let this_catalogue_entry_type = +$('#catalogue-type').val()
 
-                                console.log('1')
-                                console.log($('#catalogue-type').val())
-
-                                if($('#catalogue-type').val() == catalogue_entry_type.SPATIAL_FILE){
-                                    console.log('2')
-                                    // kbpublish.show_update_geoserver_modal(selected_obj);  // Creating modal DOM from scratch...
-
-                                    // Set modal title
-                                    $('#new-update-geoserver-modal-title').text('Update Geoserver');
-                                    // Set button text
-                                    $('#create-update-publish-geoserver-btn').text('Update');
-                                    // Set values
-                                    $('#geoserver_publish_channel_id').val(selected_obj.id);  // Existence of the id means this modal is for updating.
-                                    $('#new-publish-geoserver-pool').removeAttr('disabled').val(selected_obj.geoserver_pool);
-                                    $('#new-publish-spatial-format').removeAttr('disabled').val(selected_obj.mode);
-                                    $('#new-publish-frequency-type').removeAttr('disabled').val(selected_obj.frequency);
-                                    $('#new-publish-workspace').removeAttr('disabled').val(selected_obj.workspace);
-                                    $('#new-publish-store-type').removeAttr('disabled').val(selected_obj.store_type);  
-                                    // Remove success/error message
-                                    $('#new-publish-new-geoserver-popup-error').html('').hide();
-                                    $('#new-publish-new-geoserver-success').html('').hide();
-                                    // Display modal
-                                    $('#PublishNewUpdateGeoserverModal').modal('show');
-                                } else if([catalogue_entry_type.SUBSCRIPTION_WFS, catalogue_entry_type.SUBSCRIPTION_WMS, catalogue_entry_type.SUBSCRIPTION_POSTGIS, catalogue_entry_type.SUBSCRIPTION_QUERY].includes(parseInt($('#catalogue-type').val()))){
-                                    console.log('aho')
-                                    kbpublish.show_write_geoserver_subscription_modal(selected_obj);
+                                if([catalogue_entry_type.SPATIAL_FILE, catalogue_entry_type.SUBSCRIPTION_QUERY].includes(this_catalogue_entry_type)){
+                                    kbpublish.show_new_update_geoserver_modal(geoserver_publish_channel_obj)
+                                } else {
+                                    kbpublish.show_write_geoserver_subscription_modal(geoserver_publish_channel_obj);
                                 }
                             });
                         }
@@ -1476,6 +1439,47 @@ var kbpublish = {
                 console.log('Error Loading publish data');
             },
         });
+    },
+    show_new_update_geoserver_modal: function(geoserver_publish_channel_obj){
+        let PUBLISH_STORE_TYPE_GEOTIFF = 1
+
+        if (geoserver_publish_channel_obj){
+            // Update existing
+            // Set modal title
+            $('#new-update-geoserver-modal-title').text('Update Geoserver');
+            // Set button text
+            $('#create-update-publish-geoserver-btn').text('Update');
+            // Set values
+            $('#geoserver_publish_channel_id').val(geoserver_publish_channel_obj.id);  // Existence of the id means this modal is for updating.
+            $('#new-publish-geoserver-pool').removeAttr('disabled').val(geoserver_publish_channel_obj.geoserver_pool);
+            $('#new-publish-spatial-format').removeAttr('disabled').val(geoserver_publish_channel_obj.mode);
+            $('#new-publish-frequency-type').removeAttr('disabled').val(geoserver_publish_channel_obj.frequency);
+            $('#new-publish-workspace').removeAttr('disabled').val(geoserver_publish_channel_obj.workspace);
+            $('#new-publish-store-type').removeAttr('disabled').val(geoserver_publish_channel_obj.store_type);  
+            // Remove success/error message
+            $('#new-publish-new-geoserver-popup-error').html('').hide();
+            $('#new-publish-new-geoserver-success').html('').hide();
+            // Display modal
+            $('#PublishNewUpdateGeoserverModal').modal('show');
+        } else {
+            // Create new
+            // Set modal title
+            $('#new-update-geoserver-modal-title').text('Publish New Geoserver');
+            // Set button text
+            $('#create-update-publish-geoserver-btn').text('Create');
+            // Set values
+            $('#geoserver_publish_channel_id').val('');  // No id means creating new
+            $('#new-publish-geoserver-pool').removeAttr('disabled').val('');
+            $('#new-publish-spatial-format').removeAttr('disabled').val('');
+            $('#new-publish-frequency-type').removeAttr('disabled').val('');
+            $('#new-publish-workspace').removeAttr('disabled').val('');
+            $('#new-publish-store-type').removeAttr('disabled').val(PUBLISH_STORE_TYPE_GEOTIFF);  
+            // Remove success/error message
+            $('#new-publish-new-geoserver-popup-error').html('').hide();
+            $('#new-publish-new-geoserver-success').html('').hide();
+            // Show modal
+            $('#PublishNewUpdateGeoserverModal').modal('show');
+        }
     },
     show_write_geoserver_subscription_modal: function(prev){
         console.log({prev})
@@ -1502,7 +1506,7 @@ var kbpublish = {
         ids = {}
         override_bbox_ids=[]
 
-        common_entity_modal.init("Publish New Geoserver", "submit");
+        common_entity_modal.init("Publish New Geoserver2", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
         ids.geoserver_pool = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
         ids.workspace = common_entity_modal.add_field(label="Workspace", type="select", value=workspace, option_map=kbpublish.var.publish_workspace_map);
