@@ -806,7 +806,7 @@ var kblayersubscription = {
                     buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
                             DELETE:(query)=>kblayersubscription.delete_custom_query(query)};
                 }
-                table.set_thead(thead, {"Catalogue Name":4, "Description":7, "Action":1});
+                table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
                 let rows = []
                 for(let i in response.results){
                     rows.push(response.results[i]);

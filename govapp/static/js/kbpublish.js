@@ -1506,7 +1506,7 @@ var kbpublish = {
         ids = {}
         override_bbox_ids=[]
 
-        common_entity_modal.init("Publish New Geoserver2", "submit");
+        common_entity_modal.init("Publish New Geoserver", "submit");
         common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
         ids.geoserver_pool = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
         ids.workspace = common_entity_modal.add_field(label="Workspace", type="select", value=workspace, option_map=kbpublish.var.publish_workspace_map);
