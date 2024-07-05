@@ -114,5 +114,5 @@ git_history_recent
 *.csv
 *.xls*
 
-# config file for windows
+# config file for windows and geoserver
 config.ini
