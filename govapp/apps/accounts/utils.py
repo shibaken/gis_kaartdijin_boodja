@@ -1,6 +1,9 @@
 """Kaartdijin Boodja Accounts Django Application Utility Functions."""
 
 
+from datetime import datetime
+from math import ceil
+
 # Third-Party
 import os
 import re
@@ -360,3 +363,31 @@ def remove_blank_lines(text):
     :return: A string with blank lines removed.
     """
     return re.sub(r'\n\s*\n', '\n', text)
+
+
+def get_file_list(config_path):
+    file_list = []
+    datetime_format = '%d-%m-%Y %H:%M:%S'
+    num_of_files = 0
+        # Recursively collect all files
+    for dirpath, _, filenames in os.walk(config_path):
+        num_of_files += len(filenames)
+        for filename in filenames:
+            filepath = os.path.join(dirpath, filename)
+            dirpath_removed = filepath[len(config_path + '/'):] if filepath.startswith(config_path + '/') else filepath
+            file_stat = os.stat(filepath)
+            creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime(datetime_format)
+            last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime(datetime_format)
+            last_modify_time = datetime.fromtimestamp(file_stat.st_mtime).strftime(datetime_format)
+            size_bytes = file_stat.st_size
+            size_kb = ceil(file_stat.st_size / 1024)
+            file_list.append({
+                    'filepath': dirpath_removed,
+                    'created_at': creation_time,
+                    'last_accessed_at': last_access_time,
+                    'last_modified_at': last_modify_time,
+                    'size_bytes': size_bytes,
+                    'size_kb': size_kb
+                })
+    return file_list, num_of_files
+

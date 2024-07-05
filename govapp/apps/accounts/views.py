@@ -19,6 +19,7 @@ from rest_framework import permissions
 from govapp import settings
 from govapp.apps.accounts import serializers
 from govapp.apps.accounts import filters
+from govapp.apps.accounts.utils import get_file_list
 
 
 # Shortcuts
@@ -66,20 +67,23 @@ class FileListView(views.APIView):
 
     def get(self, request):
         config_path = os.path.join(settings.BASE_DIR, 'config')
-        files = []
-        # Recursively collect all files
-        for root, _, file_names in os.walk(config_path):
-            for file_name in file_names:
-                file_path = os.path.join(root, file_name)
-                files.append(file_path.replace(config_path + os.sep, ''))  # Remove base directory from path
-        return response.Response(files)
+
+        try:
+            file_list, num_of_files = get_file_list(config_path)
+            return response.Response({
+                'count': num_of_files,
+                'results': file_list
+            })
+
+        except Exception as e:
+            raise RuntimeError(f"Error while retrieving file metadata: {str(e)}")
 
 
 class FileDownloadView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        file_path = request.query_params.get('file_path', None)
+        file_path = request.query_params.get('filepath', None)
         
         if not file_path:
             return response.Response({'error': 'File path is required as query parameter.'}, status=400)

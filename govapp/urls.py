@@ -89,7 +89,7 @@ urlpatterns = [
 
     # users, groups and roles file
     urls.path('api/geoserver-config-files/', FileListView.as_view(), name='geoserver-config-files'),
-    urls.path('api/geoserver-config-files/download/', FileDownloadView.as_view(), name='geoserver-config-files-download'),
+    urls.path('api/geoserver-config-files/retrieve-file/', FileDownloadView.as_view(), name='geoserver-retrieve-file'),
 ]
 
 # DBCA Template URLs
