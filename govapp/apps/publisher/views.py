@@ -21,6 +21,7 @@ from rest_framework.mixins import ListModelMixin
 
 # Local
 from govapp import settings
+from govapp.apps.accounts.utils import get_file_list
 from govapp.common import mixins
 from govapp.common import utils
 from govapp.apps.accounts import permissions as accounts_permissions
@@ -776,29 +777,9 @@ class CDDPContentsViewSet(
         """
         Retrieve file paths and metadata for files within the specified directory.
         """
-        file_list = []
-        datetime_format = '%d-%m-%Y %H:%M:%S'
+
         try:
-            num_of_files = 0
-            for dirpath, _, filenames in os.walk(self.pathToFolder):
-                num_of_files += len(filenames)
-                for filename in filenames:
-                    filepath = os.path.join(dirpath, filename)
-                    dirpath_removed = filepath[len(self.pathToFolder + '/'):] if filepath.startswith(self.pathToFolder + '/') else filepath
-                    file_stat = os.stat(filepath)
-                    creation_time = datetime.fromtimestamp(file_stat.st_ctime).strftime(datetime_format)
-                    last_access_time = datetime.fromtimestamp(file_stat.st_atime).strftime(datetime_format)
-                    last_modify_time = datetime.fromtimestamp(file_stat.st_mtime).strftime(datetime_format)
-                    size_bytes = file_stat.st_size
-                    size_kb = ceil(file_stat.st_size / 1024)
-                    file_list.append({
-                        'filepath': dirpath_removed,
-                        'created_at': creation_time,
-                        'last_accessed_at': last_access_time,
-                        'last_modified_at': last_modify_time,
-                        'size_bytes': size_bytes,
-                        'size_kb': size_kb
-                    })
+            file_list, num_of_files = get_file_list(self.pathToFolder)
 
             reverse = order_by.startswith('-')
             key = order_by.lstrip('-')
@@ -813,12 +794,13 @@ class CDDPContentsViewSet(
                 limit = int(limit)
                 file_list = file_list[:limit]
 
+            return {
+                'count': num_of_files,
+                'results': file_list
+            }
+
         except Exception as e:
             raise RuntimeError(f"Error while retrieving file metadata: {str(e)}")
-        return {
-            'count': num_of_files,
-            'results': file_list
-        }
 
     @decorators.action(detail=False, methods=['get'], url_path='retrieve-file')
     def retrieve_file(self, request: http.HttpRequest) -> http.HttpResponse:
