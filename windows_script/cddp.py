@@ -105,7 +105,7 @@ def save_file_locally(file_content, file_path, local_path):
     try:
         # Save the file locally
         file_name = os.path.basename(file_path)
-        local_file_path = os.path.join(local_path, file_name)
+        local_file_path = os.path.join(local_path, file_path)
         with open(local_file_path, 'wb') as local_file:
             local_file.write(file_content)
         
@@ -122,28 +122,29 @@ print('Starting the script...')
 config_data = read_config_json()
 
 # Create local distination folder
-create_folder(config_data['CDDP_ROOT'])
+create_folder(config_data['DESTINATION_FOLDER'])
 
 # Fetch file info
-files = fetch_file_list(config_data['KB_URL'], config_data['USERNAME'], config_data['PASSWORD'])
+response = fetch_file_list(config_data['ENDPOINT_URL'], config_data['USERNAME'], config_data['PASSWORD'])
+print(response)
+total_files = response['count']
 
-if not files:
+if not total_files:
     print('No files found.')
     sys.exit(0)
 
 # Print total number of files
-total_files = len(files)
 print(f'Total number of files: {total_files}')
 
 count = 0
-for file_info in files:
+for file_info in response['results']:
     count += 1
     print(f"--- File#{count} (out of {total_files}) files ---")
 
     # Retrieve file contents
-    file_content = retrieve_file_content(config_data['KB_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
+    file_content = retrieve_file_content(config_data['ENDPOINT_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
     if file_content:
         # Save file contents locally
-        save_file_locally(file_content, file_info['filepath'], config_data['CDDP_ROOT'])
+        save_file_locally(file_content, file_info['filepath'], config_data['DESTINATION_FOLDER'])
         # Destroy file from the server
-        delete_file_remotely(config_data['KB_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
+        delete_file_remotely(config_data['ENDPOINT_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
