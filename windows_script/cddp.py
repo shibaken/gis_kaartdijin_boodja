@@ -103,6 +103,10 @@ def create_folder(folder_path):
 
 def save_file_locally(file_content, file_path, local_path):
     try:
+        # Ensure the local path exists
+        if not os.path.exists(local_path):
+            os.makedirs(local_path)
+
         # Save the file locally
         file_name = os.path.basename(file_path)
         local_file_path = os.path.join(local_path, file_path)
