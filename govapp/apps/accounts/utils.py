@@ -159,6 +159,7 @@ def exception_handler_decorator(func):
             raise
     return wrapper
 
+
 @exception_handler_decorator
 def generate_security_config_file(usergroup_service_names):
     this_config_filename = 'config.xml'
