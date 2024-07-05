@@ -1,0 +1,10 @@
+<userGroupService>
+  <id>-6cf6d2ec:1906c4b6be7:-7fe4</id>
+  <name>{{ usergroup_service_name }}</name>
+  <className>org.geoserver.security.xml.XMLUserGroupService</className>
+  <fileName>{{ users_xml_filename }}</fileName>
+  <checkInterval>1000</checkInterval>
+  <validating>true</validating>
+  <passwordEncoderName>pbePasswordEncoder</passwordEncoderName>
+  <passwordPolicyName>default</passwordPolicyName>
+</userGroupService>

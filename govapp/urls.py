@@ -25,6 +25,7 @@ from django.contrib.auth import views as auth_views
 
 # Local
 from govapp import are_migrations_running, views
+from govapp.apps.accounts.views import FileDownloadView, FileListView
 from govapp.default_data_manager import DefaultDataManager
 
 
@@ -85,6 +86,10 @@ urlpatterns = [
 
     # sentry
     urls.path("sentry-debug/", trigger_error),
+
+    # users, groups and roles file
+    urls.path('api/geoserver-config-files/', FileListView.as_view(), name='geoserver-config-files'),
+    urls.path('api/geoserver-config-files/retrieve-file/', FileDownloadView.as_view(), name='geoserver-retrieve-file'),
 ]
 
 # DBCA Template URLs

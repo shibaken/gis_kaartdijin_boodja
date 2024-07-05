@@ -145,7 +145,7 @@ class GeoServerRoleUserInline(admin.TabularInline):
 
 class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'name',)
-    list_display = ('id', 'name', 'get_geoserver_users', 'active', 'created_at',)
+    list_display = ('id', 'name', 'parent_role', 'get_geoserver_users', 'active', 'created_at',)
     list_filter = ('active', )
     list_display_links = ('id', 'name')
     inlines = [GeoServerRoleUserInline,]

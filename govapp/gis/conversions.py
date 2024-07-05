@@ -219,6 +219,8 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str,sqlquery: str) -> pathlib.Path: 
     hash_array = {}
     output_dir = tempfile.mkdtemp()
+    cleaned_sqlquery = sqlquery.replace('\n', ' ')
+
     subprocess.check_call(
         ["pgsql2shp",
         "-f",
@@ -232,10 +234,10 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
         "-P",
         str(password),
         str(database),
-        str(sqlquery)
+        # str(sqlquery)
+        str(cleaned_sqlquery)
         ],
         cwd=output_dir
-        
     )
     
     compressed_filepath = compression.compress(output_dir)
