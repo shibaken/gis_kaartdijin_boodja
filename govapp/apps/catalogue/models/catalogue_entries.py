@@ -145,7 +145,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     def file_extension(self):
         from govapp.apps.catalogue.models.layer_submissions import LayerSubmission
         latest_submission = LayerSubmission.objects.filter(catalogue_entry=self).last()
-        return os.path.splitext(latest_submission.file)[-1]
+        return os.path.splitext(latest_submission.file)[-1] if latest_submission else ''
 
     @property
     def active_layer(self) -> "layer_submissions.LayerSubmission":

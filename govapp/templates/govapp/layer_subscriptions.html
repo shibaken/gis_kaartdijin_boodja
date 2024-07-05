@@ -19,7 +19,7 @@
                               <div class="col-6 text-end">
                                     <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
                               </div>
-                        </div>         
+                        </div>
                   </div>
                   <div class="card-body collapse show" id="box1-card-body">
                         <div class="col-12 bg-light p-3">
@@ -47,7 +47,7 @@
                                                             <option value="false">False</option>
                                                       </select>
                                                 </div>
-                                                <div class='col-3'>                                                
+                                                <div class='col-3'>
                                                       &nbsp;
                                                 </div>
                                           </div>
@@ -88,7 +88,6 @@
                                           <div class='col-3'>
                                                 <label for="subscription-description" class="form-label">Description</label>
                                                 <input type="text" class="form-control" id="subscription-description" >
-
                                           </div>
                                           <div class='col-3'>
                                                 <label for="layer-subscription-number" class="form-label">Number</label>
@@ -103,8 +102,8 @@
                                                 &nbsp;
                                           </div>
                                     </div>
-                              </div>                        
-                        </div>                  
+                              </div>
+                        </div>
                         <div class='col-12 pt-4'>
                               <div class='row'>
                                     <div class='col-6'>
@@ -112,12 +111,11 @@
                                     </div>
                                     <div class='col-6 text-end'>
                                           {% if is_administrator %}
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>New Subscription</button>
+                                                <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>Create New Subscription</button>
                                           {% endif %}
                                     </div>
                               </div>
-                        </div>      
-
+                        </div>
 
                         <div class='col-12 pt-2 pb-2 '>
                               <div class='row'>
@@ -134,7 +132,6 @@
                                                       <form class="row ">
                                                             <div class="col-4 text-end">
                                                                   &nbsp;
-                                                                  
                                                             </div>
                                                             <div class="col-5 text-end">
                                                                   &nbsp;
@@ -146,16 +143,9 @@
                                                       </form>
                                                 </div>
                                           </div>
-                                    </div>                                    
-
+                                    </div>
                               </div>
                         </div>  
-
-
-
-
-
-
 
                         <div class='col-12 pt-2 pb-2 '>
                               <div class='row'>
@@ -185,7 +175,7 @@
                                                                         <option value="name">Name</option>
                                                                         <option value="status">Status</option>
                                                                         <option value="type">Type</option>
-                                                                        <option value="workspace">Workspace</option>                                                                        
+                                                                        <option value="workspace">Workspace</option>
                                                                         <option value="enabled">Enabled</option>
                                                                         <option value="updated_at">Updated at</option>
                                                                         <option value="assigned_to">Assigned to</option>
@@ -217,7 +207,7 @@
                                           <td colspan="7" class='text-center'>No Results</td>
                                     </tr>
                                     </tbody>
-                              </table>   
+                              </table>
                               <nav aria-label="Page navigation example">
                                     <ul class="pagination justify-content-end" id='subscription-navi'>
                                       <li class="page-item"><a class="page-link" href="#">Previous</a></li>
@@ -226,13 +216,11 @@
                                       <li class="page-item"><a class="page-link" href="#">3</a></li>
                                       <li class="page-item"><a class="page-link" href="#">Next</a></li>
                                     </ul>
-                              </nav>                               
-                        </div>           
-                        
+                              </nav>
+                        </div>
                   </div>
                   <input type="hidden" id="is-administrator" name="is_administrator" value="{{ is_administrator  }}">
             </div>
-
       </div>
       <script>
             kblayersubscription.init_dashboard();

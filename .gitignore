@@ -12,7 +12,7 @@ data/
 data_storage/
 pending_imports/*
 sync/*
-geoserver_security/*
+config/*
 documents/*
 
 # Byte-compiled / optimized / DLL files
@@ -114,5 +114,5 @@ git_history_recent
 *.csv
 *.xls*
 
-# config file for windows
+# config file for windows and geoserver
 config.ini

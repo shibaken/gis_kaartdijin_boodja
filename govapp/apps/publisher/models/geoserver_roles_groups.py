@@ -1,5 +1,6 @@
 import json
 import logging
+from django.forms import ValidationError
 import reversion
 
 from django.db import models
@@ -19,10 +20,21 @@ class GeoServerRole(mixins.RevisionedMixin):
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    parent_role = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_roles')
 
     class Meta:
         verbose_name = "GeoServer Role"
         verbose_name_plural = "GeoServer Roles"
+
+    def clean(self):
+        """Ensure parent_role does not refer to itself."""
+        if self.parent_role == self:
+            raise ValidationError("Parent role cannot be self.")
+
+    def save(self, *args, **kwargs):
+        """Override save method to enforce clean validation."""
+        self.full_clean()  # Validate the object
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.name

@@ -73,7 +73,6 @@ class Scanner:
 
                     if is_time_to_run is True:
                         generate_shp = True
-                    
 
                 # Every hour scheduler.
                 elif row.type == 2:

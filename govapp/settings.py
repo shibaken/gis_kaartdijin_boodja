@@ -297,10 +297,12 @@ CRON_CLASSES = [
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
 GEOSERVER_USERNAME = decouple.config("GEOSERVER_USERNAME", default="admin")
 GEOSERVER_PASSWORD = decouple.config("GEOSERVER_PASSWORD", default="geoserver")
+GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./config/geoserver_security/")
 
 # Users, Groups, Roles
 DEFAULT_USERS_IN_GEOSERVER = ['admin']
 DEFAULT_ROLES_IN_GEOSERVER = ['ADMIN', 'GROUP_ADMIN',]
+DEFAULT_USER_ROLES = [{'admin': ['ADMIN',]},]  # default user: 'admin' has a default role 'ADMIN'
 DEFAULT_USERGROUPS_IN_GEOSERVER = []
 NON_DELETABLE_USERS = decouple.config("NON_DELETABLE_USERS", default='admin').split(',') + DEFAULT_USERS_IN_GEOSERVER
 NON_DELETABLE_ROLES = decouple.config("NON_DELETABLE_ROLES", default='').split(',') + DEFAULT_ROLES_IN_GEOSERVER # .env example: ROLES_TO_KEEP=ADMIN,GROUP_ADMIN,ROLE1
@@ -318,11 +320,6 @@ PENDING_IMPORT_PATH=decouple.config("PENDING_IMPORT_PATH", default="./pending_im
 if not os.path.exists(PENDING_IMPORT_PATH):
     os.makedirs(PENDING_IMPORT_PATH)
 DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
-
-# Local Storage Paths
-GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", default="./config/geoserver_security/")
-if not os.path.exists(GEOSERVER_SECURITY_FILE_PATH):
-    os.makedirs(GEOSERVER_SECURITY_FILE_PATH)
 
 # Django Timezone
 TIME_ZONE = 'Australia/Perth'
