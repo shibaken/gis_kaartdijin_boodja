@@ -116,3 +116,5 @@ git_history_recent
 
 # config file for windows and geoserver
 config.ini
+config.cddp.ini
+config.geoserver.ini
