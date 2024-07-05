@@ -302,6 +302,7 @@ GEOSERVER_SECURITY_FILE_PATH=decouple.config("GEOSERVER_SECURITY_FILE_PATH", def
 # Users, Groups, Roles
 DEFAULT_USERS_IN_GEOSERVER = ['admin']
 DEFAULT_ROLES_IN_GEOSERVER = ['ADMIN', 'GROUP_ADMIN',]
+DEFAULT_USER_ROLES = [{'admin': ['ADMIN',]},]  # default user: 'admin' has a default role 'ADMIN'
 DEFAULT_USERGROUPS_IN_GEOSERVER = []
 NON_DELETABLE_USERS = decouple.config("NON_DELETABLE_USERS", default='admin').split(',') + DEFAULT_USERS_IN_GEOSERVER
 NON_DELETABLE_ROLES = decouple.config("NON_DELETABLE_ROLES", default='').split(',') + DEFAULT_ROLES_IN_GEOSERVER # .env example: ROLES_TO_KEEP=ADMIN,GROUP_ADMIN,ROLE1

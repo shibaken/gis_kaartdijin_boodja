@@ -297,10 +297,9 @@ def generate_role_files(role_service_name='default', roles_xml_file_name='roles.
     role_data = []
     for role in roles:
         # Define parent role ID if any
-        parent_role = GeoServerRole.objects.filter(geoserver_groups__geoserver_roles=role).first()
         role_data.append({
             'id': role.name,
-            'parent_id': parent_role.name if parent_role else None
+            'parent_id': role.parent_role.name if role.parent_role else None
         })
 
     # Prepare user-role data
@@ -312,6 +311,14 @@ def generate_role_files(role_service_name='default', roles_xml_file_name='roles.
             'username': user.email,  # Assuming email is used as username
             'roles': list(user_role_ids)
         })
+
+        # default user: 'admin' has a default role 'ADMIN'
+        for relation in settings.DEFAULT_USER_ROLES:
+            for user, roles in relation.items():
+                user_roles.append({
+                    'username': user,
+                    'roles': list(roles)
+                })
 
     # Prepare group-role data
     group_roles = []
