@@ -103,13 +103,19 @@ def create_folder(folder_path):
 
 def save_file_locally(file_content, file_path, local_path):
     try:
-        # Ensure the local path exists
-        if not os.path.exists(local_path):
-            os.makedirs(local_path)
+        # Normalize paths to handle different path separators
+        file_path = os.path.normpath(file_path)
+        local_path = os.path.normpath(local_path)
 
         # Save the file locally
         file_name = os.path.basename(file_path)
         local_file_path = os.path.join(local_path, file_path)
+
+        # Ensure the directory for the local file path exists
+        local_file_dir = os.path.dirname(local_file_path)
+        if not os.path.exists(local_file_dir):
+            os.makedirs(local_file_dir)
+
         with open(local_file_path, 'wb') as local_file:
             local_file.write(file_content)
         
