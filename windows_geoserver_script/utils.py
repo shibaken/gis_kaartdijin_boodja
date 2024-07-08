@@ -1,3 +1,4 @@
+
 import requests
 import sys
 import os
@@ -58,29 +59,58 @@ def delete_file_remotely(api_url, username, password, file_path):
     # delete_file(api_url, file_path)
 
 
+# def read_config_json(filename='config.ini'):
+#     """
+#     Read JSON data directly from a config.ini file located in the same folder as the script.
+#     Args: filename (str): Name of the config file. Default is 'config.ini'.
+#     Returns: dict: JSON data read from the config file.
+#     """
+#     # Get the absolute path to the config file
+#     config_path = os.path.join(os.path.dirname(__file__), filename)
+
+#     # Check if the config file exists
+#     if not os.path.exists(config_path):
+#         print(f"Config file '{filename}' not found at path: {config_path}")
+#         raise FileNotFoundError(f"Config file '{filename}' not found.")
+
+#     print(f"Reading JSON data from config file: {config_path}")
+
+#     # Read the JSON data from the config file
+#     with open(config_path, 'r') as file:
+#         json_data = json.load(file)
+
+#     print("JSON data read successfully.")
+
+#     # Return the JSON data
+#     return json_data
+
+
 def read_config_json(filename='config.ini'):
     """
     Read JSON data directly from a config.ini file located in the same folder as the script.
+    If the file is not found, read from environment variables.
     Args: filename (str): Name of the config file. Default is 'config.ini'.
-    Returns: dict: JSON data read from the config file.
+    Returns: dict: JSON data read from the config file or environment variables.
     """
-    # Get the absolute path to the config file
     config_path = os.path.join(os.path.dirname(__file__), filename)
 
-    # Check if the config file exists
-    if not os.path.exists(config_path):
-        print(f"Config file '{filename}' not found at path: {config_path}")
-        raise FileNotFoundError(f"Config file '{filename}' not found.")
+    if os.path.exists(config_path):
+        print(f"Reading JSON data from config file: {config_path}")
+        with open(config_path, 'r') as file:
+            json_data = json.load(file)
+        print("JSON data read successfully.")
+    else:
+        print(f"Config file '{filename}' not found at path: {config_path}. Falling back to environment variables.")
+        json_data = {
+            'ENDPOINT_URL': os.getenv('ENDPOINT_URL'),
+            'USERNAME': os.getenv('USERNAME'),
+            'PASSWORD': os.getenv('PASSWORD'),
+            'DESTINATION_FOLDER': os.getenv('DESTINATION_FOLDER')
+        }
+        missing_vars = [key for key, value in json_data.items() if not value]
+        if missing_vars:
+            raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
 
-    print(f"Reading JSON data from config file: {config_path}")
-
-    # Read the JSON data from the config file
-    with open(config_path, 'r') as file:
-        json_data = json.load(file)
-
-    print("JSON data read successfully.")
-
-    # Return the JSON data
     return json_data
 
 
@@ -123,38 +153,3 @@ def save_file_locally(file_content, file_path, local_path):
 
     except Exception as e:
         print(f"An error occurred while saving the file locally: {e}")
-
-
-# Start this script
-print('Starting the script...')
-
-# Open config file
-config_data = read_config_json()
-
-# Create local distination folder
-create_folder(config_data['DESTINATION_FOLDER'])
-
-# Fetch file info
-response = fetch_file_list(config_data['ENDPOINT_URL'], config_data['USERNAME'], config_data['PASSWORD'])
-print(response)
-total_files = response['count']
-
-if not total_files:
-    print('No files found.')
-    sys.exit(0)
-
-# Print total number of files
-print(f'Total number of files: {total_files}')
-
-count = 0
-for file_info in response['results']:
-    count += 1
-    print(f"--- File#{count} (out of {total_files}) files ---")
-
-    # Retrieve file contents
-    file_content = retrieve_file_content(config_data['ENDPOINT_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
-    if file_content:
-        # Save file contents locally
-        save_file_locally(file_content, file_info['filepath'], config_data['DESTINATION_FOLDER'])
-        # Destroy file from the server
-        delete_file_remotely(config_data['ENDPOINT_URL'], config_data['USERNAME'], config_data['PASSWORD'], file_info['filepath'])
