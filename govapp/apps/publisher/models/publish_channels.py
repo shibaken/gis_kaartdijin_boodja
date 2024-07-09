@@ -179,15 +179,15 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             os.makedirs(output_path)
 
         geodb_dir = ""
-        if self.format == 3:
+        if self.format == CDDPPublishChannelFormat.GEODATABASE:
             file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
             if len(file_names_geodb) == 1:
                 geodb_dir = file_names_geodb[0]
 
-        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)))
+        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)))
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
-            if self.format == 3:
+            if self.format == CDDPPublishChannelFormat.GEODATABASE:
                 if len(new_output_path) > 0:
                     if os.path.isdir(new_output_path): 
                         shutil.rmtree(pathlib.Path(new_output_path))
@@ -197,9 +197,9 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             else:
                 if os.path.isfile(new_output_path):                    
                         os.remove(new_output_path)   
-            shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)), file_name), output_path)
+            shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)), file_name), output_path)
 
-        if self.format == 3:
+        if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.
             xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
             print (xml_file)
@@ -253,7 +253,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         #publish_path = str(publish_directory / self.path / converted.name)
 
         geodb_dir = ""
-        if self.format == 3:
+        if self.format == CDDPPublishChannelFormat.GEODATABASE:
             file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
             if len(file_names_geodb) == 1:
                 geodb_dir = file_names_geodb[0]
@@ -270,7 +270,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
 
 
 
-        if self.format == 3:
+        if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.
             if len(self.xml_path) > 1:
                 xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
@@ -629,10 +629,10 @@ class FTPPublishChannel(mixins.RevisionedMixin):
             export_method='ftp'
         )
         
-        log.info(f"Publishing '{self}' to FTP - Uploading to FTP "+(self.path+'/'+generated_template)+'.zip' )
+        log.info(f"Publishing '{self}' to FTP - Uploading to FTP "+(self.path + os.path.sep + generated_template) + '.zip' )
         session = ftplib.FTP(self.ftp_server.host,self.ftp_server.username,self.ftp_server.password)
         file = open(publish_directory['compressed_filepath'],'rb')     
-        session.storbinary('STOR '+str(self.path+'/'+generated_template)+'.zip', file)
+        session.storbinary('STOR '+str(self.path + os.path.sep + generated_template) + '.zip', file)
         file.close()  
         session.quit()
 
