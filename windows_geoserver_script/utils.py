@@ -102,10 +102,10 @@ def read_config_json(filename='config.ini'):
     else:
         print(f"Config file '{filename}' not found at path: {config_path}. Falling back to environment variables.")
         json_data = {
-            'ENDPOINT_URL': os.getenv('ENDPOINT_URL'),
-            'USERNAME': os.getenv('USERNAME'),
-            'PASSWORD': os.getenv('PASSWORD'),
-            'DESTINATION_FOLDER': os.getenv('DESTINATION_FOLDER')
+            'FILE_SYNC_ENDPOINT_URL': os.getenv('FILE_SYNC_ENDPOINT_URL'),
+            'KB_USERNAME': os.getenv('KB_USERNAME'),
+            'KB_PASSWORD': os.getenv('KB_PASSWORD'),
+            'LOCAL_DESTINATION_FOLDER': os.getenv('LOCAL_DESTINATION_FOLDER')
         }
         missing_vars = [key for key, value in json_data.items() if not value]
         if missing_vars:
