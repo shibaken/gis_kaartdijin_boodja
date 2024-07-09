@@ -67,12 +67,11 @@ class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
     publish_entry_link.short_description = 'Publish Entry'
 
     def geoserver_pool_link(self, obj):
-        geoserver_pool = obj.geoserver_pool
-        return format_html(f'<a href="/admin/publisher/geoserverpool/{geoserver_pool.id}/change/">{geoserver_pool.name}</a>')
+        return format_html(f'<a href="/admin/publisher/geoserverpool/{obj.geoserver_pool.id}/change/">{obj.geoserver_pool.name}</a>') if obj.geoserver_pool else '-'
     geoserver_pool_link.short_description = 'Geoserver Pool'
 
     def workspace_link(self, obj):
-        return format_html(f'<a href="/admin/publisher/workspace/{obj.workspace.id}/change/">{obj.workspace.name}</a>')
+        return format_html(f'<a href="/admin/publisher/workspace/{obj.workspace.id}/change/">{obj.workspace.name}</a>') if obj.workspace else '-'
     workspace_link.short_description = 'Workspace'
 
 
@@ -102,10 +101,7 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     publish_entry_link.short_description = 'Publish Entry'
 
     def submitter_link(self, obj):
-        if obj.submitter:
-            return format_html(f'<a href="/admin/auth/user/{obj.submitter.id}/change">{obj.submitter}</a>')
-        else:
-            return '-'
+        return format_html(f'<a href="/admin/auth/user/{obj.submitter.id}/change">{obj.submitter}</a>') if obj.submitter else '-'
     submitter_link.short_description = 'Submitter'
 
 
