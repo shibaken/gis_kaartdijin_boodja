@@ -184,7 +184,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             if len(file_names_geodb) == 1:
                 geodb_dir = file_names_geodb[0]
 
-        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)))
+        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)))
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
             if self.format == CDDPPublishChannelFormat.GEODATABASE:
@@ -197,7 +197,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             else:
                 if os.path.isfile(new_output_path):                    
                         os.remove(new_output_path)   
-            shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+'/'+str(geodb_dir)), file_name), output_path)
+            shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)), file_name), output_path)
 
         if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.
@@ -629,10 +629,10 @@ class FTPPublishChannel(mixins.RevisionedMixin):
             export_method='ftp'
         )
         
-        log.info(f"Publishing '{self}' to FTP - Uploading to FTP "+(self.path+'/'+generated_template)+'.zip' )
+        log.info(f"Publishing '{self}' to FTP - Uploading to FTP "+(self.path + os.path.sep + generated_template) + '.zip' )
         session = ftplib.FTP(self.ftp_server.host,self.ftp_server.username,self.ftp_server.password)
         file = open(publish_directory['compressed_filepath'],'rb')     
-        session.storbinary('STOR '+str(self.path+'/'+generated_template)+'.zip', file)
+        session.storbinary('STOR '+str(self.path + os.path.sep + generated_template) + '.zip', file)
         file.close()  
         session.quit()
 
