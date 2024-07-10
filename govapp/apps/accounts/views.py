@@ -101,3 +101,28 @@ class FileDownloadView(views.APIView):
                 return response.Response({'error': str(e)}, status=500)
         else:
             return HttpResponseForbidden("You do not have permission to access this file.")
+
+
+class FileDeleteView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        file_path = request.query_params.get('filepath', None)
+        
+        if not file_path:
+            return response.Response({'error': 'File path is required as query parameter.'}, status=400)
+        
+        # Construct full path
+        config_path = os.path.join(settings.BASE_DIR, 'config')
+        file_full_path = os.path.join(config_path, file_path)
+
+        # Check if the file is within the config directory and is a file
+        common_path = os.path.commonpath([file_full_path, config_path])
+        if common_path == config_path and os.path.exists(file_full_path) and os.path.isfile(file_full_path):
+            try:
+                os.remove(file_full_path)
+                return response.Response({'message': 'File deleted successfully.'}, status=200)
+            except Exception as e:
+                return response.Response({'error': str(e)}, status=500)
+        else:
+            return HttpResponseForbidden("You do not have permission to access or delete this file.")
