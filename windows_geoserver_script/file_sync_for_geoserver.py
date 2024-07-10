@@ -1,9 +1,7 @@
-
-import requests
 import sys
 import os
+import requests
 import json
-
 
 def handle_exceptions(func):
     def wrapper(*args, **kwargs):
@@ -59,32 +57,6 @@ def delete_file_remotely(api_url, username, password, file_path):
     # delete_file(api_url, file_path)
 
 
-# def read_config_json(filename='config.ini'):
-#     """
-#     Read JSON data directly from a config.ini file located in the same folder as the script.
-#     Args: filename (str): Name of the config file. Default is 'config.ini'.
-#     Returns: dict: JSON data read from the config file.
-#     """
-#     # Get the absolute path to the config file
-#     config_path = os.path.join(os.path.dirname(__file__), filename)
-
-#     # Check if the config file exists
-#     if not os.path.exists(config_path):
-#         print(f"Config file '{filename}' not found at path: {config_path}")
-#         raise FileNotFoundError(f"Config file '{filename}' not found.")
-
-#     print(f"Reading JSON data from config file: {config_path}")
-
-#     # Read the JSON data from the config file
-#     with open(config_path, 'r') as file:
-#         json_data = json.load(file)
-
-#     print("JSON data read successfully.")
-
-#     # Return the JSON data
-#     return json_data
-
-
 def read_config_json(filename='config.ini'):
     """
     Read JSON data directly from a config.ini file located in the same folder as the script.
@@ -102,10 +74,14 @@ def read_config_json(filename='config.ini'):
     else:
         print(f"Config file '{filename}' not found at path: {config_path}. Falling back to environment variables.")
         json_data = {
+            # Required env variables
             'FILE_SYNC_ENDPOINT_URL': os.getenv('FILE_SYNC_ENDPOINT_URL'),
             'KB_USERNAME': os.getenv('KB_USERNAME'),
             'KB_PASSWORD': os.getenv('KB_PASSWORD'),
-            'LOCAL_DESTINATION_FOLDER': os.getenv('LOCAL_DESTINATION_FOLDER')
+            # Arbitrary env variables
+            'PATH_TO_GEOSERVER_SECURITY_FOLDER': os.getenv('PATH_TO_GEOSERVER_SECURITY_FOLDER', '/opt/geoserver_data/security/'),
+            'MATCHING_SECURITY_FOLDER_NAME': os.getenv('MATCHING_SECURITY_FOLDER_NAME', 'geoserver_security'),
+            'DELETE_FILES_FROM_KB': os.getenv('DELETE_FILES_FROM_KB', False),
         }
         missing_vars = [key for key, value in json_data.items() if not value]
         if missing_vars:
@@ -131,15 +107,19 @@ def create_folder(folder_path):
             print(f"Failed to create folder '{folder_path}': {e}")
 
 
-def save_file_locally(file_content, file_path, local_path):
+def save_file_locally(file_content, path_to_geoserver_security_folder, file_path, matching_geoserver_security_folder):
     try:
         # Normalize paths to handle different path separators
         file_path = os.path.normpath(file_path)
-        local_path = os.path.normpath(local_path)
+        path_to_geoserver_security_folder = os.path.normpath(path_to_geoserver_security_folder)
+        matching_geoserver_security_folder = os.path.normpath(matching_geoserver_security_folder)
 
-        # Save the file locally
-        file_name = os.path.basename(file_path)
-        local_file_path = os.path.join(local_path, file_path)
+        # Remove the matching_geoserver_security_folder from file_path if it is present
+        if file_path.startswith(matching_geoserver_security_folder):
+            file_path = file_path[len(matching_geoserver_security_folder):].lstrip(os.sep)
+
+        # Create the local file path
+        local_file_path = os.path.join(path_to_geoserver_security_folder, file_path)
 
         # Ensure the directory for the local file path exists
         local_file_dir = os.path.dirname(local_file_path)
@@ -149,7 +129,43 @@ def save_file_locally(file_content, file_path, local_path):
         with open(local_file_path, 'wb') as local_file:
             local_file.write(file_content)
         
-        print(f"File [{file_name}] saved locally successfully")
+        print(f"File: [{local_file_path}] saved locally successfully")
 
     except Exception as e:
         print(f"An error occurred while saving the file locally: {e}")
+
+
+# Start this script
+print('Starting the script...')
+
+# Open config file
+config_data = read_config_json()
+
+# Create local distination folder
+create_folder(config_data['PATH_TO_GEOSERVER_SECURITY_FOLDER'])
+
+# Fetch file info
+response = fetch_file_list(config_data['FILE_SYNC_ENDPOINT_URL'], config_data['KB_USERNAME'], config_data['KB_PASSWORD'])
+print(response)
+total_files = response['count']
+
+if not total_files:
+    print('No files found.')
+    sys.exit(0)
+
+# Print total number of files
+print(f'Total number of files: {total_files}')
+
+count = 0
+for file_info in response['results']:
+    count += 1
+    print(f"--- File#{count} (out of {total_files}) files ---")
+
+    # Retrieve file contents
+    file_content = retrieve_file_content(config_data['FILE_SYNC_ENDPOINT_URL'], config_data['KB_USERNAME'], config_data['KB_PASSWORD'], file_info['filepath'])
+    if file_content:
+        # Save file contents locally
+        save_file_locally(file_content, config_data['PATH_TO_GEOSERVER_SECURITY_FOLDER'], file_info['filepath'], config_data['MATCHING_SECURITY_FOLDER_NAME'])
+        # Destroy file from the server
+        if config_data['DELETE_FILES_FROM_KB']:
+            delete_file_remotely(config_data['FILE_SYNC_ENDPOINT_URL'], config_data['KB_USERNAME'], config_data['KB_PASSWORD'], file_info['filepath'])
