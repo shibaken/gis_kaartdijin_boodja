@@ -862,8 +862,6 @@ class GeoServer:
             log.error(f"Failed to update security settings: {response.status_code}, Response: {response.text}")
 
     def synchronize_rules(self, new_rules):
-        from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRolePermission
-
         existing_rules = self.fetch_rules()
 
         items_to_update, items_to_create, items_to_delete = calculate_dict_differences(new_rules, existing_rules)
