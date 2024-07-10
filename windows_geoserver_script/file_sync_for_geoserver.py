@@ -74,11 +74,14 @@ def read_config_json(filename='config.ini'):
     else:
         print(f"Config file '{filename}' not found at path: {config_path}. Falling back to environment variables.")
         json_data = {
+            # Required env variables
             'FILE_SYNC_ENDPOINT_URL': os.getenv('FILE_SYNC_ENDPOINT_URL'),
             'KB_USERNAME': os.getenv('KB_USERNAME'),
             'KB_PASSWORD': os.getenv('KB_PASSWORD'),
+            # Arbitrary env variables
             'PATH_TO_GEOSERVER_SECURITY_FOLDER': os.getenv('PATH_TO_GEOSERVER_SECURITY_FOLDER', '/opt/geoserver_data/security/'),
             'MATCHING_SECURITY_FOLDER_NAME': os.getenv('MATCHING_SECURITY_FOLDER_NAME', 'geoserver_security'),
+            'DELETE_FILES_FROM_KB': os.getenv('DELETE_FILES_FROM_KB', False),
         }
         missing_vars = [key for key, value in json_data.items() if not value]
         if missing_vars:
@@ -126,8 +129,7 @@ def save_file_locally(file_content, path_to_geoserver_security_folder, file_path
         with open(local_file_path, 'wb') as local_file:
             local_file.write(file_content)
         
-        file_name = os.path.basename(file_path)
-        print(f"File [{file_name}] saved locally successfully")
+        print(f"File: [{local_file_path}] saved locally successfully")
 
     except Exception as e:
         print(f"An error occurred while saving the file locally: {e}")
@@ -165,4 +167,5 @@ for file_info in response['results']:
         # Save file contents locally
         save_file_locally(file_content, config_data['PATH_TO_GEOSERVER_SECURITY_FOLDER'], file_info['filepath'], config_data['MATCHING_SECURITY_FOLDER_NAME'])
         # Destroy file from the server
-        delete_file_remotely(config_data['FILE_SYNC_ENDPOINT_URL'], config_data['KB_USERNAME'], config_data['KB_PASSWORD'], file_info['filepath'])
+        if config_data['DELETE_FILES_FROM_KB']:
+            delete_file_remotely(config_data['FILE_SYNC_ENDPOINT_URL'], config_data['KB_USERNAME'], config_data['KB_PASSWORD'], file_info['filepath'])
