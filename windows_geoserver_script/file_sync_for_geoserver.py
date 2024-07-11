@@ -83,7 +83,7 @@ def read_config_json(filename='config.ini'):
             'MATCHING_SECURITY_FOLDER_NAME': os.getenv('MATCHING_SECURITY_FOLDER_NAME', 'geoserver_security'),
             'DELETE_FILES_FROM_KB': os.getenv('DELETE_FILES_FROM_KB', False),
         }
-        missing_vars = [key for key, value in json_data.items() if not value]
+        missing_vars = [key for key, value in json_data.items() if value is None or value == '']
         if missing_vars:
             raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
 
