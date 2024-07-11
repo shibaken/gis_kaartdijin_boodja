@@ -1414,6 +1414,7 @@ var kbpublish = {
         });
     },
     show_new_update_cddp_modal: function(cddp_publish_channel_obj){
+        console.log({cddp_publish_channel_obj})
         if (cddp_publish_channel_obj){
             // Set modal title
             $('#new_update_cddp_modal_title').text('Update CDDP Publish Entry');
@@ -1716,7 +1717,17 @@ var kbpublish = {
                                 // Remove the data-json attribute
                                 kbpublish.close_confirmation_modal()
                             });
-                            $( ".publish-cddp-update" ).click(function() {
+                            $(".publish-cddp-update").click(function() {
+
+                                let data = $(this).data('json')
+                                let selected_id = parseInt(data.id)
+                                let geoserver_publish_channel_obj = null
+                                for(let response of responsejson){
+                                    if (response.id == selected_id){
+                                        geoserver_publish_channel_obj = response
+                                    }
+                                }
+
                                 kbpublish.show_new_update_cddp_modal(responsejson[i]);
                             });
                         }
