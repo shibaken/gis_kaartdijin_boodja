@@ -101,7 +101,6 @@ def save_file_locally(file_content, file_path, local_path):
         local_path = os.path.normpath(local_path)
 
         # Save the file locally
-        file_name = os.path.basename(file_path)
         local_file_path = os.path.join(local_path, file_path)
 
         # Ensure the directory for the local file path exists
@@ -112,7 +111,7 @@ def save_file_locally(file_content, file_path, local_path):
         with open(local_file_path, 'wb') as local_file:
             local_file.write(file_content)
         
-        print(f"File [{file_name}] saved locally successfully")
+        print(f"File [{local_file_path}] saved locally successfully")
 
     except Exception as e:
         print(f"An error occurred while saving the file locally: {e}")
