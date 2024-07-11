@@ -1,6 +1,6 @@
 {
     "LOCAL_DESTINATION_FOLDER": "C:\\Users\\KatsufumiShibata\\CDDP_DATA",
-    "FILE_SYNC_ENDPOINT_URL": "http://localhost:9071/api/geoserver-config-files/",
+    "FILE_SYNC_ENDPOINT_URL": "http://localhost:9071/api/publish/cddp-contents/",
     "KB_USERNAME": "katsufumi",
     "KB_PASSWORD": "temp"
 }
