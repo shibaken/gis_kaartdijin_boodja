@@ -50,7 +50,7 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     num_of_layers.short_description = 'active layers (total layers)'
 
     def url_link(self, obj):
-        return format_html(f'<a href="{obj.url}">{obj.url}</a>')
+        return format_html(f'<a href="{obj.url}" target="_blank">{obj.url}</a>')
     url_link.short_description = 'URL'
 
 

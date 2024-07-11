@@ -1,6 +1,7 @@
 import sys
 import os
 import requests
+import json
 
 
 def handle_exceptions(func):
@@ -60,7 +61,6 @@ def delete_file_remotely(api_url, username, password, file_path):
 def read_config_json(filename='config.ini'):
     """
     Read JSON data directly from a config.ini file located in the same folder as the script.
-    If the file is not found, read from environment variables.
     Args: filename (str): Name of the config file. Default is 'config.ini'.
     Returns: dict: JSON data read from the config file or environment variables.
     """
@@ -72,16 +72,7 @@ def read_config_json(filename='config.ini'):
             json_data = json.load(file)
         print("JSON data read successfully.")
     else:
-        print(f"Config file '{filename}' not found at path: {config_path}. Falling back to environment variables.")
-        json_data = {
-            'FILE_SYNC_ENDPOINT_URL': os.getenv('FILE_SYNC_ENDPOINT_URL'),
-            'KB_USERNAME': os.getenv('KB_USERNAME'),
-            'KB_PASSWORD': os.getenv('KB_PASSWORD'),
-            'LOCAL_DESTINATION_FOLDER': os.getenv('LOCAL_DESTINATION_FOLDER')
-        }
-        missing_vars = [key for key, value in json_data.items() if not value]
-        if missing_vars:
-            raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
+        raise EnvironmentError(f"config.ini file not found")
 
     return json_data
 
@@ -110,7 +101,6 @@ def save_file_locally(file_content, file_path, local_path):
         local_path = os.path.normpath(local_path)
 
         # Save the file locally
-        file_name = os.path.basename(file_path)
         local_file_path = os.path.join(local_path, file_path)
 
         # Ensure the directory for the local file path exists
@@ -121,7 +111,7 @@ def save_file_locally(file_content, file_path, local_path):
         with open(local_file_path, 'wb') as local_file:
             local_file.write(file_content)
         
-        print(f"File [{file_name}] saved locally successfully")
+        print(f"File [{local_file_path}] saved locally successfully")
 
     except Exception as e:
         print(f"An error occurred while saving the file locally: {e}")

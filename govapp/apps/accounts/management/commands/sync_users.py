@@ -36,18 +36,6 @@ class Command(BaseCommand):
         generate_role_files()
         return
 
-        geoservers = GeoServerPool.objects.filter(enabled=True)
-        for geoserver in geoservers:
-            # Sync relations between users and groups, and users and roles
-            self.sync_users_groups_roles(geoserver)
-
-            # Sync relations between roles with groups ###
-            self.sync_groups_roles(geoserver)
-
-            # Cleanup
-            self.cleanup_groups(geoserver)
-            self.cleanup_roles(geoserver)
-    
     def sync_groups_roles(self, geoserver):
         """Synchronize groups-roles with GeoServer."""
         log.info(f'Synchronize groups-roles in the geoserver: [{geoserver}]...')

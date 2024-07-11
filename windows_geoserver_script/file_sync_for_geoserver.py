@@ -59,33 +59,23 @@ def delete_file_remotely(api_url, username, password, file_path):
 
 def read_config_json(filename='config.ini'):
     """
-    Read JSON data directly from a config.ini file located in the same folder as the script.
-    If the file is not found, read from environment variables.
+    Read JSON data from the environmental variables.
     Args: filename (str): Name of the config file. Default is 'config.ini'.
     Returns: dict: JSON data read from the config file or environment variables.
     """
-    config_path = os.path.join(os.path.dirname(__file__), filename)
-
-    if os.path.exists(config_path):
-        print(f"Reading JSON data from config file: {config_path}")
-        with open(config_path, 'r') as file:
-            json_data = json.load(file)
-        print("JSON data read successfully.")
-    else:
-        print(f"Config file '{filename}' not found at path: {config_path}. Falling back to environment variables.")
-        json_data = {
-            # Required env variables
-            'FILE_SYNC_ENDPOINT_URL': os.getenv('FILE_SYNC_ENDPOINT_URL'),
-            'KB_USERNAME': os.getenv('KB_USERNAME'),
-            'KB_PASSWORD': os.getenv('KB_PASSWORD'),
-            # Arbitrary env variables
-            'PATH_TO_GEOSERVER_SECURITY_FOLDER': os.getenv('PATH_TO_GEOSERVER_SECURITY_FOLDER', '/opt/geoserver_data/security/'),
-            'MATCHING_SECURITY_FOLDER_NAME': os.getenv('MATCHING_SECURITY_FOLDER_NAME', 'geoserver_security'),
-            'DELETE_FILES_FROM_KB': os.getenv('DELETE_FILES_FROM_KB', False),
-        }
-        missing_vars = [key for key, value in json_data.items() if not value]
-        if missing_vars:
-            raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
+    json_data = {
+        # Required env variables
+        'FILE_SYNC_ENDPOINT_URL': os.getenv('FILE_SYNC_ENDPOINT_URL', None),
+        'KB_USERNAME': os.getenv('KB_USERNAME', None),
+        'KB_PASSWORD': os.getenv('KB_PASSWORD', None),
+        # Arbitrary env variables
+        'PATH_TO_GEOSERVER_SECURITY_FOLDER': os.getenv('PATH_TO_GEOSERVER_SECURITY_FOLDER', '/opt/geoserver_data/security/'),
+        'MATCHING_SECURITY_FOLDER_NAME': os.getenv('MATCHING_SECURITY_FOLDER_NAME', 'geoserver_security'),
+        'DELETE_FILES_FROM_KB': os.getenv('DELETE_FILES_FROM_KB', False),
+    }
+    missing_vars = [key for key, value in json_data.items() if value is None or value == '']
+    if missing_vars:
+        raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
 
     return json_data
 
