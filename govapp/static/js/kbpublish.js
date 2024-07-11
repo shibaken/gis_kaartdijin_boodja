@@ -7,64 +7,62 @@ let catalogue_entry_type = {
 }
 var kbpublish = {
     var: {
-            publish_data_url: "/api/publish/entries/",
-            publish_save_url: "/api/publish/entries/", 
-            publish_data_geoserver_url: "/api/publish/channels/geoserver/",
-            publish_save_geoserver_url: "/api/publish/channels/geoserver/",
-            publish_data_cddp_url: "/api/publish/channels/cddp/",                       
-            publish_save_cddp_url: "/api/publish/channels/cddp/",
-            publish_data_ftp_url: "/api/publish/channels/ftp/",                       
-            publish_save_ftp_url: "/api/publish/channels/ftp/",            
-            publish_email_notification_url: "/api/publish/notifications/emails/",
-            publish_email_notification_type_url: "/api/publish/notifications/emails/type/",
-            ftp_server_url : "/api/publish/channels/ftp-server/",
-            log_communication_type_url:"/api/logs/communications/type/",
-            publish_status: {
-                1: "Locked",
-                2: "Unlocked"
-            },
-            publish_geoserver_format: {
-                1: "WMS",  
-                2: "WMS & WFS"
-            },
-            publish_geoserver_pools: {
+        publish_data_url: "/api/publish/entries/",
+        publish_save_url: "/api/publish/entries/", 
+        publish_data_geoserver_url: "/api/publish/channels/geoserver/",
+        publish_save_geoserver_url: "/api/publish/channels/geoserver/",
+        publish_save_cddp_url: "/api/publish/channels/cddp/",
+        publish_save_ftp_url: "/api/publish/channels/ftp/",            
+        publish_email_notification_url: "/api/publish/notifications/emails/",
+        publish_email_notification_type_url: "/api/publish/notifications/emails/type/",
+        ftp_server_url : "/api/publish/channels/ftp-server/",
+        log_communication_type_url:"/api/logs/communications/type/",
+        publish_status: {
+            1: "Locked",
+            2: "Unlocked"
+        },
+        publish_geoserver_format: {
+            1: "WMS",  
+            2: "WMS & WFS"
+        },
+        publish_geoserver_pools: {
 
-            },
-            publish_geoserver_frequency: {
-                1: "OnChange"
-            },
-            publish_workspace_list: [],
-            publish_workspace_map: {},
-            has_edit_access: false,
-            publish_cddp_format: {
-                1: "Geopackage",
-                2: "Shapefile",
-                3: "Geodatabase",
-                4: "GeoJSON"
-            },
-            publish_cddp_mode: {
-                1: "Azure",
-                2: "Azure and Sharepoint"
-            },
-            publish_cddp_frequency: {
-                1: "OnChange"
-            },
-            publish_ftp_format: {
-                1: "Geopackage",
-                2: "Shapefile",
-                3: "Geodatabase",
-                4: "GeoJSON"
-            },
-            publish_ftp_frequency: {
-                1: "OnChange"
-            },
-            catalogue_entry_list: null,
-            catalogue_entry_map: {},
-            publish_date_format: "dd/mm/yyyy",
-            publish_table_date_format: "DD MMM YYYY HH:mm:ss",
-            publish_email_notification_type:null,    // will be filled during initiation
-            communication_type:null,    // will be filled during initiation
-            ftp_servers: []
+        },
+        publish_geoserver_frequency: {
+            1: "OnChange"
+        },
+        publish_workspace_list: [],
+        publish_workspace_map: {},
+        has_edit_access: false,
+        publish_cddp_format: {
+            1: "Geopackage",
+            2: "Shapefile",
+            3: "Geodatabase",
+            4: "GeoJSON"
+        },
+        publish_cddp_mode: {
+            1: "Azure",
+            2: "Azure and Sharepoint"
+        },
+        publish_cddp_frequency: {
+            1: "OnChange"
+        },
+        publish_ftp_format: {
+            1: "Geopackage",
+            2: "Shapefile",
+            3: "Geodatabase",
+            4: "GeoJSON"
+        },
+        publish_ftp_frequency: {
+            1: "OnChange"
+        },
+        catalogue_entry_list: null,
+        catalogue_entry_map: {},
+        publish_date_format: "dd/mm/yyyy",
+        publish_table_date_format: "DD MMM YYYY HH:mm:ss",
+        publish_email_notification_type:null,    // will be filled during initiation
+        communication_type:null,    // will be filled during initiation
+        ftp_servers: []
     },
     variable: {
         overlay_checkmark: $('<div class="overlay">' +
@@ -276,34 +274,9 @@ var kbpublish = {
             }
         });      
         $( "#publish-new-cddp-btn" ).click(function() {
-            console.log("New CDDP");             
-            $('#new-publish-cddp-spatial-format').removeAttr('disabled');
-            $('#new-publish-cddp-frequency-type').removeAttr('disabled');
-            $('#new-publish-cddp-spatial-mode').removeAttr('disabled');  
-            $('#new-publish-cddp-path').removeAttr('disabled'); 
-
-            $("#new-publish-cddp-xml-path-div").hide();
-
-            $('#new-publish-cddp-spatial-format').val('');
-            $('#new-publish-cddp-frequency-type').val('');
-            $('#new-publish-cddp-spatial-mode').val('');
-            $('#new-publish-cddp-path').val(''); 
-            $("#new-publish-cddp-xml-path").val('');
-            
-            $('#new-publish-cddp-spatial-format').change(function(){
-                $('#new-publish-cddp-xml-path-div').hide();
-                if($('#new-publish-cddp-spatial-format').val() == 3){
-                    $('#new-publish-cddp-xml-path-div').show();
-                }
-            });
-           
-            $('#PublishNewCDDPModal').modal('show');
-        });            
-
-
+            kbpublish.show_new_update_cddp_modal(null)
+        });
         $( "#publish-new-ftp-btn" ).click(function() {
-            console.log("New FTP");  
-
             $('#new-publish-ftp-name').removeAttr('disabled');
             $('#new-publish-ftp-server-format').removeAttr('disabled');                
             $('#new-publish-ftp-spatial-format').removeAttr('disabled');
@@ -323,8 +296,8 @@ var kbpublish = {
             kbpublish.create_update_publish_geoserver();
         });
 
-        $( "#create-publish-cddp-btn" ).click(function() {
-            kbpublish.create_publish_cddp();
+        $( "#create-update-publish-cddp-btn" ).click(function() {
+            kbpublish.create_update_publish_cddp();
         });
         $( "#create-publish-ftp-btn" ).click(function() {
             kbpublish.create_publish_ftp();
@@ -668,9 +641,9 @@ var kbpublish = {
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                    success_msg_elem.html(success_message).show();
-                    setTimeout("$('#PublishNewUpdateGeoserverModal').modal('hide');",1000);
-                    kbpublish.get_publish_geoservers();
+                success_msg_elem.html(success_message).show();
+                setTimeout("$('#PublishNewUpdateGeoserverModal').modal('hide');",1000);
+                kbpublish.get_publish_geoservers();
             },
             error: function (response) {
                 var jsonresponse = {};
@@ -772,8 +745,13 @@ var kbpublish = {
             },
         });
     },
-    create_publish_cddp: function() {
+    create_update_publish_cddp: function() {
+        let error_msg_elem = $('#new-publish-new-cddp-popup-error');
+        let success_msg_elem = $('#new-publish-new-cddp-success');
+
         var publish_id = $('#publish_id').val();
+        let cddp_publish_channel_id = $('#cddp_publish_channel_id').val();
+
         var newpublishname = $('#new-publish-cddp-name').val();
         var newpublishspatialformat = $('#new-publish-cddp-spatial-format').val();
         var newpublishspatialmode = $('#new-publish-cddp-spatial-mode').val();
@@ -792,59 +770,59 @@ var kbpublish = {
         };
         var csrf_token = $("#csrfmiddlewaretoken").val();
        
-        $('#new-publish-new-cddp-popup-error').html("");
-        $('#new-publish-new-cddp-popup-error').hide();
-        $('#new-publish-new-cddp-success').html("");
-        $('#new-publish-new-cddp-success').hide();
+        error_msg_elem.html("").hide();
+        success_msg_elem.html("").hide();
         
         if (newpublishspatialformat.length < 1) {
-            $('#new-publish-new-cddp-popup-error').html("Please choose a spatial format.");
-            $('#new-publish-new-cddp-popup-error').show();
+            error_msg_elem.html("Please choose a spatial format.").show();
             return false;
         }
 
         if (newpublishspatialmode.length < 1) {
-            $('#new-publish-new-cddp-popup-error').html("Please choose a Spatial Mode.");
-            $('#new-publish-new-cddp-popup-error').show();
+            error_msg_elem.html("Please choose a Spatial Mode.").show();
             return false;
         }
 
         if (newpublishfrequencytype.length < 1) {
-            $('#new-publish-new-cddp-popup-error').html("Please choose a frequency type.");
-            $('#new-publish-new-cddp-popup-error').show();
+            error_msg_elem.html("Please choose a frequency type.").show();
             return false;
         }
 
         if (newpublishcddppath.length < 3) {
-            $('#new-publish-new-cddp-popup-error').html("Please choose a path");
-            $('#new-publish-new-cddp-popup-error').show();
+            error_msg_elem.html("Please choose a path").show();
             return false;
         }
 
         if (newpublishspatialformat == 3 && newpublishcddpxmppath.length < 1) {
-            $('#new-publish-new-cddp-popup-error').html("Please choose a xml path");
-            $('#new-publish-new-cddp-popup-error').show();
+            error_msg_elem.html("Please choose a xml path").show();
             return false;
         }
-        
-       
+
         $('#new-publish-cddp-spatial-format').attr('disabled','disabled');
         $('#new-publish-cddp-frequency-type').attr('disabled','disabled');
         $('#new-publish-cddp-spatial-mode').attr('disabled','disabled');
         $('#new-publish-cddp-path').attr('disabled','disabled');
+
+        var url = kbpublish.var.publish_save_cddp_url;
+        var method = 'POST';
+
+        if(cddp_publish_channel_id){
+            delete post_data['publish_entry'];
+            url += cddp_publish_channel_id + '/';
+            method = 'PUT';
+        }
         
         $.ajax({
-            url: kbpublish.var.publish_save_cddp_url,        
-            type: 'POST',
+            url: url,
+            type: method,
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-                    var html = '';           
-                    $('#new-publish-new-cddp-popup-success').html("Successfully created publish entry");
-                    $('#new-publish-new-cddp-popup-success').show();                
+                    var html = '';
+                    success_msg_elem.html("Successfully created publish entry").show();
                     setTimeout("$('#PublishNewCDDPModal').modal('hide');",1000);
-                    kbpublish.get_publish_cddp();                                      
+                    kbpublish.get_publish_cddp();
             },
             error: function (response) {
                 var jsonresponse = {};
@@ -853,22 +831,17 @@ var kbpublish = {
                 }
 
                 if (jsonresponse.hasOwnProperty('publish_entry')) {
-                    $('#new-publish-new-cddp-popup-error').html(jsonresponse['publish_entry']);
-                    $('#new-publish-new-cddp-popup-error').show();        
+                    error_msg_elem.html(jsonresponse['publish_entry']).show();
                 } else {
-                    $('#new-publish-new-cddp-popup-error').html("Error create to publish.");
-                    $('#new-publish-new-cddp-popup-error').show();        
+                    error_msg_elem.html("Error create to publish.").show();
                 }
 
                 $('#new-publish-cddp-spatial-format').removeAttr('disabled');
                 $('#new-publish-cddp-frequency-type').removeAttr('disabled');
                 $('#new-publish-cddp-spatial-mode').removeAttr('disabled');  
                 $('#new-publish-cddp-path').removeAttr('disabled');  
-
-            },
+            }
         });
-
-
     },    
     create_publish_ftp: function() {
         var publish_id = $('#publish_id').val();
@@ -1440,13 +1413,51 @@ var kbpublish = {
             },
         });
     },
+    show_new_update_cddp_modal: function(cddp_publish_channel_obj){
+        if (cddp_publish_channel_obj){
+            // Set modal title
+            $('#new_update_cddp_modal_title').text('Update CDDP Publish Entry');
+            // Set button text
+            $('#create-update-publish-cddp-btn').text('Update')
+            // Set values
+            $('#cddp_publish_channel_id').val(cddp_publish_channel_obj.id);
+            $('#new-publish-cddp-name').removeAttr('disabled').val(cddp_publish_channel_obj.name);
+            $('#new-publish-cddp-spatial-format').removeAttr('disabled').val(cddp_publish_channel_obj.format);
+            $('#new-publish-cddp-frequency-type').removeAttr('disabled').val(cddp_publish_channel_obj.frequency);
+            $('#new-publish-cddp-spatial-mode').removeAttr('disabled').val(cddp_publish_channel_obj.mode);  
+            $('#new-publish-cddp-path').removeAttr('disabled').val(cddp_publish_channel_obj.path); 
+        } else {
+            // Set modal title
+            $('#new_update_cddp_modal_title').text('Create New CDDP Publish Entry');
+            // Set button text
+            $('#create-update-publish-cddp-btn').text('Create')
+            // Set values
+            $('#cddp_publish_channel_id').val('');
+            $('#new-publish-cddp-name').removeAttr('disabled').val('');
+            $('#new-publish-cddp-spatial-format').removeAttr('disabled').val('');
+            $('#new-publish-cddp-frequency-type').removeAttr('disabled').val('');
+            $('#new-publish-cddp-spatial-mode').removeAttr('disabled').val('');  
+            $('#new-publish-cddp-path').removeAttr('disabled').val(''); 
+        }
+
+        $("#new-publish-cddp-xml-path-div").hide();
+        $("#new-publish-cddp-xml-path").val('');
+        $('#new-publish-cddp-spatial-format').change(function(){
+            $('#new-publish-cddp-xml-path-div').hide();
+            if($('#new-publish-cddp-spatial-format').val() == 3){
+                $('#new-publish-cddp-xml-path-div').show();
+            }
+        });
+
+        // Show modal
+        $('#PublishNewCDDPModal').modal('show');
+    },
     show_new_update_geoserver_modal: function(geoserver_publish_channel_obj){
         let PUBLISH_STORE_TYPE_GEOTIFF = 1
 
-        if (geoserver_publish_channel_obj){
-            // Update existing
+        if (geoserver_publish_channel_obj){ // Update existing
             // Set modal title
-            $('#new-update-geoserver-modal-title').text('Update Geoserver');
+            $('#new-update-geoserver-modal-title').text('Update Geoserver Publish Entry');
             // Set button text
             $('#create-update-publish-geoserver-btn').text('Update');
             // Set values
@@ -1456,15 +1467,9 @@ var kbpublish = {
             $('#new-publish-frequency-type').removeAttr('disabled').val(geoserver_publish_channel_obj.frequency);
             $('#new-publish-workspace').removeAttr('disabled').val(geoserver_publish_channel_obj.workspace);
             $('#new-publish-store-type').removeAttr('disabled').val(geoserver_publish_channel_obj.store_type);  
-            // Remove success/error message
-            $('#new-publish-new-geoserver-popup-error').html('').hide();
-            $('#new-publish-new-geoserver-success').html('').hide();
-            // Display modal
-            $('#PublishNewUpdateGeoserverModal').modal('show');
-        } else {
-            // Create new
+        } else { // Create new
             // Set modal title
-            $('#new-update-geoserver-modal-title').text('Publish New Geoserver');
+            $('#new-update-geoserver-modal-title').text('Create New Geoserver Publish Entry');
             // Set button text
             $('#create-update-publish-geoserver-btn').text('Create');
             // Set values
@@ -1474,12 +1479,12 @@ var kbpublish = {
             $('#new-publish-frequency-type').removeAttr('disabled').val('');
             $('#new-publish-workspace').removeAttr('disabled').val('');
             $('#new-publish-store-type').removeAttr('disabled').val(PUBLISH_STORE_TYPE_GEOTIFF);  
-            // Remove success/error message
-            $('#new-publish-new-geoserver-popup-error').html('').hide();
-            $('#new-publish-new-geoserver-success').html('').hide();
-            // Show modal
-            $('#PublishNewUpdateGeoserverModal').modal('show');
         }
+        // Remove success/error message
+        $('#new-publish-new-geoserver-popup-error').html('').hide();
+        $('#new-publish-new-geoserver-success').html('').hide();
+        // Show modal
+        $('#PublishNewUpdateGeoserverModal').modal('show');
     },
     show_write_geoserver_subscription_modal: function(prev){
         console.log({prev})
@@ -1713,8 +1718,16 @@ var kbpublish = {
                                 // Remove the data-json attribute
                                 kbpublish.close_confirmation_modal()
                             });
-                            $( ".publish-cddp-update" ).click(function() {
-                                kbpublish.show_update_cddp_modal(responsejson[i]);
+                            $(".publish-cddp-update").click(function() {
+                                let data = $(this).data('json')
+                                let selected_id = parseInt(data.id)
+                                let cddp_publish_channel_obj = null
+                                for(let response of responsejson){
+                                    if (response.id == selected_id){
+                                        cddp_publish_channel_obj = response
+                                    }
+                                }
+                                kbpublish.show_new_update_cddp_modal(cddp_publish_channel_obj);
                             });
                         }
                     } else {
@@ -1826,74 +1839,6 @@ var kbpublish = {
         // Close modal
         $('#deleteConfirmationModal').modal('hide');
     },
-    show_update_cddp_modal: function(prev){
-        common_entity_modal.init("Update Cddp Notification", "submit");
-        let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name);
-        let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.format, option_map=kbpublish.var.publish_cddp_format);
-        let mode_id = common_entity_modal.add_field(label="Spatial Mode", type="select", value=prev.mode, option_map=kbpublish.var.publish_cddp_mode);
-        let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_cddp_frequency);
-        let path_id = common_entity_modal.add_field(label="Path", type="text", value=prev.path);
-        let xml_path_id = common_entity_modal.add_field(label="XML Path", type="text", value=prev.xml_path);
-        if(prev.format != 3){
-            $('#'+xml_path_id).hide();
-        }
-        $('#'+format_id).change(function(){
-            common_entity_modal.hide_entity(xml_path_id);
-            if($('#'+format_id).val() == 3){
-                common_entity_modal.show_entity(xml_path_id);
-            }
-        })
-
-        common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-                                            this.write_cddp(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, xml_path_id, prev.id),
-                                            success_callback=this.get_publish_cddp);
-        common_entity_modal.show();
-    },
-
-
-    write_cddp: function(success_callback, error_callback, name_id, format_id, mode_id, frequency_id, path_id, xml_path_id, cddp_id){
-        // get & validation check
-        const name = utils.validate_empty_input('name', $('#'+name_id).val());
-        const format = utils.validate_empty_input('format', $('#'+format_id).val());
-        const mode = utils.validate_empty_input('mode', $('#'+mode_id).val());
-        const frequency = utils.validate_empty_input('frequency', $('#'+frequency_id).val());
-        const path = utils.validate_empty_input('path', $('#'+path_id).val());
-        let xml_path = null;
-        if(format == 3){
-            xml_path = utils.validate_empty_input('xml_path', $('#'+xml_path_id).val());
-        }
-        
-        // make data body
-        var cddp_data = {
-            name:name,
-            format:format,
-            mode:mode,
-            frequency:frequency,
-            path:path,
-            xml_path:xml_path,
-            publish_entry:$('#publish-entry-id')
-        };
-        var url = this.var.publish_save_cddp_url;
-        var method = 'POST';
-        if(cddp_id){
-            delete cddp_data['publish_entry'];
-            url += cddp_id+'/';
-            method = 'PUT';
-        }
-
-        // call POST API
-        $.ajax({
-            url: url,
-            method: method,
-            dataType: 'json',
-            contentType: 'application/json',
-            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
-            data: JSON.stringify(cddp_data),
-            success: success_callback,
-            error: error_callback
-        });
-    },
-
     show_update_ftp_modal: function(btn_data){       
         var btn_data_ta = $('#publish-ftp-data-'+btn_data.id).val();
         var prev = JSON.parse(btn_data_ta);
@@ -1903,8 +1848,6 @@ var kbpublish = {
             const row = kbpublish.var.ftp_servers[i];
             ftp_server_map[row.id] = row.name;
         }
-        // 
-
 
         let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name.replaceAll('<-Quote->','"'));
         let ftp_server_id = common_entity_modal.add_field(label="FTP Server", type="select", value=prev.ftp_server_id, option_map=ftp_server_map);

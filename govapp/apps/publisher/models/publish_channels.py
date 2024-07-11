@@ -173,8 +173,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         )
 
         # # Construct Path
-        output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY+"/"+self.path)
-        xml_output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY+"/"+self.xml_path)
+        output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY + os.path.sep + self.path)
+        xml_output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY + os.path.sep + self.xml_path)
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
@@ -184,7 +184,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             if len(file_names_geodb) == 1:
                 geodb_dir = file_names_geodb[0]
 
-        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)))
+        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath']) + os.path.sep + str(geodb_dir)))
         for file_name in file_names:            
             new_output_path = os.path.join(output_path,file_name)
             if self.format == CDDPPublishChannelFormat.GEODATABASE:
@@ -201,7 +201,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
 
         if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.
-            xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
+            xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + os.path.sep + self.name + ".xml")
             print (xml_file)
             if os.path.isfile(xml_file):
                 shutil.copy(xml_file, xml_output_path)
@@ -273,7 +273,7 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.
             if len(self.xml_path) > 1:
-                xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + "/" + self.name + ".xml")
+                xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + os.path.sep + self.name + ".xml")
                 print (xml_file)
                 if os.path.isfile(xml_file):
                     new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.xml_path,self.name + ".xml")            
