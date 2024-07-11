@@ -7,62 +7,62 @@ let catalogue_entry_type = {
 }
 var kbpublish = {
     var: {
-            publish_data_url: "/api/publish/entries/",
-            publish_save_url: "/api/publish/entries/", 
-            publish_data_geoserver_url: "/api/publish/channels/geoserver/",
-            publish_save_geoserver_url: "/api/publish/channels/geoserver/",
-            publish_save_cddp_url: "/api/publish/channels/cddp/",
-            publish_save_ftp_url: "/api/publish/channels/ftp/",            
-            publish_email_notification_url: "/api/publish/notifications/emails/",
-            publish_email_notification_type_url: "/api/publish/notifications/emails/type/",
-            ftp_server_url : "/api/publish/channels/ftp-server/",
-            log_communication_type_url:"/api/logs/communications/type/",
-            publish_status: {
-                1: "Locked",
-                2: "Unlocked"
-            },
-            publish_geoserver_format: {
-                1: "WMS",  
-                2: "WMS & WFS"
-            },
-            publish_geoserver_pools: {
+        publish_data_url: "/api/publish/entries/",
+        publish_save_url: "/api/publish/entries/", 
+        publish_data_geoserver_url: "/api/publish/channels/geoserver/",
+        publish_save_geoserver_url: "/api/publish/channels/geoserver/",
+        publish_save_cddp_url: "/api/publish/channels/cddp/",
+        publish_save_ftp_url: "/api/publish/channels/ftp/",            
+        publish_email_notification_url: "/api/publish/notifications/emails/",
+        publish_email_notification_type_url: "/api/publish/notifications/emails/type/",
+        ftp_server_url : "/api/publish/channels/ftp-server/",
+        log_communication_type_url:"/api/logs/communications/type/",
+        publish_status: {
+            1: "Locked",
+            2: "Unlocked"
+        },
+        publish_geoserver_format: {
+            1: "WMS",  
+            2: "WMS & WFS"
+        },
+        publish_geoserver_pools: {
 
-            },
-            publish_geoserver_frequency: {
-                1: "OnChange"
-            },
-            publish_workspace_list: [],
-            publish_workspace_map: {},
-            has_edit_access: false,
-            publish_cddp_format: {
-                1: "Geopackage",
-                2: "Shapefile",
-                3: "Geodatabase",
-                4: "GeoJSON"
-            },
-            publish_cddp_mode: {
-                1: "Azure",
-                2: "Azure and Sharepoint"
-            },
-            publish_cddp_frequency: {
-                1: "OnChange"
-            },
-            publish_ftp_format: {
-                1: "Geopackage",
-                2: "Shapefile",
-                3: "Geodatabase",
-                4: "GeoJSON"
-            },
-            publish_ftp_frequency: {
-                1: "OnChange"
-            },
-            catalogue_entry_list: null,
-            catalogue_entry_map: {},
-            publish_date_format: "dd/mm/yyyy",
-            publish_table_date_format: "DD MMM YYYY HH:mm:ss",
-            publish_email_notification_type:null,    // will be filled during initiation
-            communication_type:null,    // will be filled during initiation
-            ftp_servers: []
+        },
+        publish_geoserver_frequency: {
+            1: "OnChange"
+        },
+        publish_workspace_list: [],
+        publish_workspace_map: {},
+        has_edit_access: false,
+        publish_cddp_format: {
+            1: "Geopackage",
+            2: "Shapefile",
+            3: "Geodatabase",
+            4: "GeoJSON"
+        },
+        publish_cddp_mode: {
+            1: "Azure",
+            2: "Azure and Sharepoint"
+        },
+        publish_cddp_frequency: {
+            1: "OnChange"
+        },
+        publish_ftp_format: {
+            1: "Geopackage",
+            2: "Shapefile",
+            3: "Geodatabase",
+            4: "GeoJSON"
+        },
+        publish_ftp_frequency: {
+            1: "OnChange"
+        },
+        catalogue_entry_list: null,
+        catalogue_entry_map: {},
+        publish_date_format: "dd/mm/yyyy",
+        publish_table_date_format: "DD MMM YYYY HH:mm:ss",
+        publish_email_notification_type:null,    // will be filled during initiation
+        communication_type:null,    // will be filled during initiation
+        ftp_servers: []
     },
     variable: {
         overlay_checkmark: $('<div class="overlay">' +
@@ -1414,7 +1414,6 @@ var kbpublish = {
         });
     },
     show_new_update_cddp_modal: function(cddp_publish_channel_obj){
-        console.log({cddp_publish_channel_obj})
         if (cddp_publish_channel_obj){
             // Set modal title
             $('#new_update_cddp_modal_title').text('Update CDDP Publish Entry');
@@ -1422,6 +1421,7 @@ var kbpublish = {
             $('#create-update-publish-cddp-btn').text('Update')
             // Set values
             $('#cddp_publish_channel_id').val(cddp_publish_channel_obj.id);
+            $('#new-publish-cddp-name').removeAttr('disabled').val(cddp_publish_channel_obj.name);
             $('#new-publish-cddp-spatial-format').removeAttr('disabled').val(cddp_publish_channel_obj.format);
             $('#new-publish-cddp-frequency-type').removeAttr('disabled').val(cddp_publish_channel_obj.frequency);
             $('#new-publish-cddp-spatial-mode').removeAttr('disabled').val(cddp_publish_channel_obj.mode);  
@@ -1433,6 +1433,7 @@ var kbpublish = {
             $('#create-update-publish-cddp-btn').text('Create')
             // Set values
             $('#cddp_publish_channel_id').val('');
+            $('#new-publish-cddp-name').removeAttr('disabled').val('');
             $('#new-publish-cddp-spatial-format').removeAttr('disabled').val('');
             $('#new-publish-cddp-frequency-type').removeAttr('disabled').val('');
             $('#new-publish-cddp-spatial-mode').removeAttr('disabled').val('');  
@@ -1718,17 +1719,15 @@ var kbpublish = {
                                 kbpublish.close_confirmation_modal()
                             });
                             $(".publish-cddp-update").click(function() {
-
                                 let data = $(this).data('json')
                                 let selected_id = parseInt(data.id)
-                                let geoserver_publish_channel_obj = null
+                                let cddp_publish_channel_obj = null
                                 for(let response of responsejson){
                                     if (response.id == selected_id){
-                                        geoserver_publish_channel_obj = response
+                                        cddp_publish_channel_obj = response
                                     }
                                 }
-
-                                kbpublish.show_new_update_cddp_modal(responsejson[i]);
+                                kbpublish.show_new_update_cddp_modal(cddp_publish_channel_obj);
                             });
                         }
                     } else {
