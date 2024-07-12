@@ -15,6 +15,14 @@ log = logging.getLogger(__name__)
 
 
 @reversion.register()
+class GeoServerUserGroupService(mixins.RevisionedMixin):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+@reversion.register()
 class GeoServerRole(mixins.RevisionedMixin):
     name = models.CharField(max_length=255, unique=True)
     active = models.BooleanField(default=True)
