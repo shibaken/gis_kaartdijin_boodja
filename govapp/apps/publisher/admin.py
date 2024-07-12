@@ -1,5 +1,6 @@
 """Kaartdijin Boodja Publisher Django Application Administration."""
 
+import pprint
 
 # Third-Party
 from typing import Any
@@ -40,7 +41,7 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     search_fields = ('id', 'name', 'url',)
-    list_display = ('id', 'name', 'url_link', 'num_of_layers', 'username', 'enabled', 'created_at')
+    list_display = ('id', 'name', 'url_link', 'version', 'num_of_layers', 'username', 'enabled', 'created_at')
     list_filter = ('enabled',)
     list_display_links = ('id', 'name',)
     ordering = ('id', 'name')
@@ -52,6 +53,17 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     def url_link(self, obj):
         return format_html(f'<a href="{obj.url}" target="_blank">{obj.url}</a>')
     url_link.short_description = 'URL'
+
+    def version(self, obj):
+        try:
+            version = obj.get_about_version()
+            for resource in version['about']['resource']:
+                if resource['@name'] == "GeoServer":
+                    return resource['Version']
+            return '---'
+        except Exception as e:
+            return '---'
+    version.short_description = 'Geoserver Version'
 
 
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
@@ -141,7 +153,8 @@ class GeoServerRoleUserInline(admin.TabularInline):
 
 class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'name',)
-    list_display = ('id', 'name', 'parent_role', 'get_geoserver_users', 'active', 'created_at',)
+    list_display = ('id', 'name', 'get_geoserver_users', 'active', 'created_at',)
+    exclude = ('parent_role',)  # API doesn't support to handle parent role.  Hide this field for now.
     list_filter = ('active', )
     list_display_links = ('id', 'name')
     inlines = [GeoServerRoleUserInline,]

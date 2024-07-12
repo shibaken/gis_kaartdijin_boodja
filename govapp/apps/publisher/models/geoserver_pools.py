@@ -7,6 +7,7 @@ import reversion
 import logging
 import httpx
 import json
+import urllib
 
 # Local
 from govapp import settings
@@ -15,6 +16,13 @@ from govapp.common.utils import handle_http_exceptions
 
 
 log = logging.getLogger(__name__)
+
+
+def encode(s):
+    # s = urllib.parsquote(s, safe='')
+    s = urllib.parse.quote(s) 
+    return s
+
 
 @reversion.register()
 class GeoServerPool(mixins.RevisionedMixin):
@@ -105,7 +113,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def update_existing_user(self, user_data):
         response = httpx.post(
-            url=f"{self.base_url}/usergroup/user/{user_data['user']['userName']}",
+            url=f"{self.base_url}/usergroup/user/{encode(user_data['user']['userName'])}.json",
             headers={"Content-Type": "application/json"},
             content=json.dumps(user_data),
             auth=self.auth
@@ -127,15 +135,46 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     @handle_http_exceptions(log)
+    def create_new_usergroup(self):
+        usergroup_data = {
+            "userGroupService": {
+                "name": "dbca",
+                "fileName": "users.xml",
+                "passwordEncoderName": "pbePasswordEncoder"
+            }
+        }
+        response = httpx.post(
+            url=f"{self.base_url}/usergroup/service",
+            headers={"Content-Type": "application/json"},
+            content=json.dumps(usergroup_data),
+            auth=self.auth
+        )
+        response.raise_for_status()
+        log.info(f'DONE!')
+        return response
+
+    @handle_http_exceptions(log)
     def delete_existing_user(self, username):
         response = httpx.delete(
-            url=f"{self.base_url}/usergroup/user/{username}",
+            url=f"{self.base_url}/usergroup/user/{encode(username)}.json",
             auth=self.auth
         )
         response.raise_for_status()
         log.info(f"User: [{username}] has been deleted successfully from the GeoServer: [{self}].")
         return response
     
+
+    @handle_http_exceptions(log)
+    def get_about_version(self):
+        response = httpx.get(
+            url=f"{self.url}/rest/about/version",
+            headers={"Accept": "application/json"},
+            auth=self.auth
+        )
+        response.raise_for_status()
+        res = response.json()
+        return res
+
 
     ### Group
     @handle_http_exceptions(log)
@@ -152,7 +191,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def get_all_groups_for_user(self, username):
         response = httpx.get(
-            url=f"{self.base_url}/usergroup/user/{username}/groups",
+            url=f"{self.base_url}/usergroup/user/{encode(username)}/groups",
             headers={"Accept": "application/json"},
             auth=self.auth
         )
@@ -163,7 +202,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def create_new_group(self, group_name):
         response = httpx.post(
-            url=f"{self.base_url}/usergroup/group/{group_name}",
+            url=f"{self.base_url}/usergroup/group/{encode(group_name)}.json",
             auth=self.auth
         )
         log.info(f"Group: [{group_name}] has been created successfully in the GeoServer: [{self}].")
@@ -176,7 +215,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             return
 
         response = httpx.delete(
-            url=f"{self.base_url}/usergroup/group/{group_name}",
+            url=f"{self.base_url}/usergroup/group/{encode(group_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -186,7 +225,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def associate_user_with_group(self, username, group_name):
         response = httpx.post(
-            url=f"{self.base_url}/usergroup/user/{username}/group/{group_name}",
+            url=f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -196,7 +235,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def disassociate_user_from_group(self, username, group_name):
         response = httpx.delete(
-            url=f"{self.base_url}//usergroup/user/{username}/group/{group_name}",
+            url=f"{self.base_url}//usergroup/user/{encode(username)}/group/{encode(group_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -218,7 +257,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     
     def get_all_roles_for_user(self, username):
         response = httpx.get(
-            url=f"{self.base_url}/roles/user/{username}",
+            url=f"{self.base_url}/roles/user/{encode(username)}.json",
             headers={"Accept": "application/json"},
             auth=self.auth
         )
@@ -228,7 +267,7 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     def get_all_roles_for_group(self, group_name):
         response = httpx.get(
-            url=f"{self.base_url}/roles/group/{group_name}",
+            url=f"{self.base_url}/roles/group/{encode(group_name)}.json",
             headers={"Accept": "application/json"},
             auth=self.auth
         )
@@ -238,7 +277,7 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     def create_new_role(self, role_name):
         response = httpx.post(
-            url=f"{self.base_url}/roles/role/{role_name}",
+            url=f"{self.base_url}/roles/role/{encode(role_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -251,25 +290,25 @@ class GeoServerPool(mixins.RevisionedMixin):
             return
 
         response = httpx.delete(
-            url=f"{self.base_url}/roles/role/{role_name}",
+            url=f"{self.base_url}/roles/role/{encode(role_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
         log.info(f"Role: [{role_name}] has been deleted successfully in the GeoServer: [{self}].")
         return response
 
-    def associate_role_with_user(self, role_name, username):
+    def associate_role_with_user(self, username, role_name):
         response = httpx.post(
-            url=f"{self.base_url}/roles/role/{role_name}/user/{username}",
+            url=f"{self.base_url}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
             auth=self.auth
         )
         response.raise_for_status()
         log.info(f"Role: [{role_name}] has been associated successfully with the user: [{username}] in the GeoServer: [{self}].")
         return response
 
-    def disassociate_role_from_user(self, role_name, username):
+    def disassociate_role_from_user(self, username, role_name):
         response = httpx.delete(
-            url=f"{self.base_url}/roles/role/{role_name}/user/{username}",
+            url=f"{self.base_url}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -278,7 +317,7 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     def associate_role_with_group(self, role_name, group_name):
         response = httpx.post(
-            url=f"{self.base_url}/roles/role/{role_name}/group/{group_name}",
+            url=f"{self.base_url}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -287,7 +326,7 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     def disassociate_role_from_group(self, role_name, group_name):
         response = httpx.delete(
-            url=f"{self.base_url}/roles/role/{role_name}/group/{group_name}",
+            url=f"{self.base_url}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
