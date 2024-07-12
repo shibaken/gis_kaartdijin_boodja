@@ -3,7 +3,7 @@ import logging
 import django
 
 from govapp import settings
-from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRole
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRole, GeoServerUserGroupService
 
 
 logger = logging.getLogger(__name__)
@@ -27,3 +27,11 @@ class DefaultDataManager(object):
                     logger.info(f"Created GeoServerRole: {role_name}")
             except Exception as e:
                 logger.error(f'{e}, GeoServerRole name: {role_name}')
+
+        for ug_service_name in settings.GEOSERVER_USERGROUP_SERVICE_NAMES:
+            try:
+                service_name, created = GeoServerUserGroupService.objects.get_or_create(name=ug_service_name)
+                if created:
+                    logger.info(f"Created GeoServerUserGroupService: {service_name}")
+            except Exception as e:
+                logger.error(f'{e}, GeoServerUserGroupService: {service_name}')

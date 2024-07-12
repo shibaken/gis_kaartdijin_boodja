@@ -100,9 +100,10 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     ### User
     @handle_http_exceptions(log)
-    def get_all_users(self):
+    def get_all_users(self, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/users/" if service_name else f"{self.base_url}/usergroup/users/"
         response = httpx.get(
-            url=f"{self.base_url}/usergroup/users/",
+            url=url,
             headers={"Accept": "application/json"},
             auth=self.auth
         )
@@ -111,9 +112,10 @@ class GeoServerPool(mixins.RevisionedMixin):
         return existing_users['users']
 
     @handle_http_exceptions(log)
-    def update_existing_user(self, user_data):
+    def update_existing_user(self, user_data, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(user_data['user']['userName'])}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(user_data['user']['userName'])}.json"
         response = httpx.post(
-            url=f"{self.base_url}/usergroup/user/{encode(user_data['user']['userName'])}.json",
+            url=url,
             headers={"Content-Type": "application/json"},
             content=json.dumps(user_data),
             auth=self.auth
@@ -123,9 +125,10 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     @handle_http_exceptions(log)
-    def create_new_user(self, user_data):
+    def create_new_user(self, user_data, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/users/" if service_name else f"{self.base_url}/usergroup/users/"
         response = httpx.post(
-            url=f"{self.base_url}/usergroup/users/",
+            url=url,
             headers={"Content-Type": "application/json"},
             content=json.dumps(user_data),
             auth=self.auth
@@ -135,34 +138,15 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     @handle_http_exceptions(log)
-    def create_new_usergroup(self):
-        usergroup_data = {
-            "userGroupService": {
-                "name": "dbca",
-                "fileName": "users.xml",
-                "passwordEncoderName": "pbePasswordEncoder"
-            }
-        }
-        response = httpx.post(
-            url=f"{self.base_url}/usergroup/service",
-            headers={"Content-Type": "application/json"},
-            content=json.dumps(usergroup_data),
-            auth=self.auth
-        )
-        response.raise_for_status()
-        log.info(f'DONE!')
-        return response
-
-    @handle_http_exceptions(log)
-    def delete_existing_user(self, username):
+    def delete_existing_user(self, username, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}.json"
         response = httpx.delete(
-            url=f"{self.base_url}/usergroup/user/{encode(username)}.json",
+            url=url,
             auth=self.auth
         )
         response.raise_for_status()
         log.info(f"User: [{username}] has been deleted successfully from the GeoServer: [{self}].")
         return response
-    
 
     @handle_http_exceptions(log)
     def get_about_version(self):
@@ -175,12 +159,12 @@ class GeoServerPool(mixins.RevisionedMixin):
         res = response.json()
         return res
 
-
     ### Group
     @handle_http_exceptions(log)
-    def get_all_groups(self):
+    def get_all_groups(self, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/groups/" if service_name else f"{self.base_url}/usergroup/groups/"
         response = httpx.get(
-            url=f"{self.base_url}/usergroup/groups/",
+            url=url,
             headers={"Accept": "application/json"},
             auth=self.auth
         )
@@ -189,9 +173,10 @@ class GeoServerPool(mixins.RevisionedMixin):
         return existing_groups['groups']
 
     @handle_http_exceptions(log)
-    def get_all_groups_for_user(self, username):
+    def get_all_groups_for_user(self, username, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/groups" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/groups"
         response = httpx.get(
-            url=f"{self.base_url}/usergroup/user/{encode(username)}/groups",
+            url=url,
             headers={"Accept": "application/json"},
             auth=self.auth
         )
@@ -200,22 +185,24 @@ class GeoServerPool(mixins.RevisionedMixin):
         return groups_for_user['groups']
 
     @handle_http_exceptions(log)
-    def create_new_group(self, group_name):
+    def create_new_group(self, group_name, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/group/{encode(group_name)}.json"
         response = httpx.post(
-            url=f"{self.base_url}/usergroup/group/{encode(group_name)}.json",
+            url=url,
             auth=self.auth
         )
         log.info(f"Group: [{group_name}] has been created successfully in the GeoServer: [{self}].")
         return response
 
     @handle_http_exceptions(log)
-    def delete_existing_group(self, group_name):
+    def delete_existing_group(self, group_name, service_name=''):
         if group_name in settings.NON_DELETABLE_USERGROUPS:
             log.info(f'Group: [{group_name}] cannot be deleted from the geoserver: [{self}]. (USERGROUPS_TO_KEEP: [{settings.NON_DELETABLE_USERGROUPS}])')
             return
-
+        
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/group/{encode(group_name)}.json"
         response = httpx.delete(
-            url=f"{self.base_url}/usergroup/group/{encode(group_name)}.json",
+            url=url,
             auth=self.auth
         )
         response.raise_for_status()
@@ -223,9 +210,10 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     @handle_http_exceptions(log)
-    def associate_user_with_group(self, username, group_name):
+    def associate_user_with_group(self, username, group_name, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
         response = httpx.post(
-            url=f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json",
+            url=url,
             auth=self.auth
         )
         response.raise_for_status()
@@ -233,15 +221,15 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     @handle_http_exceptions(log)
-    def disassociate_user_from_group(self, username, group_name):
+    def disassociate_user_from_group(self, username, group_name, service_name=''):
+        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
         response = httpx.delete(
-            url=f"{self.base_url}//usergroup/user/{encode(username)}/group/{encode(group_name)}.json",
+            url=url,
             auth=self.auth
         )
         response.raise_for_status()
         log.info(f"User: [{username}] has been successfully unassociated from the group: [{group_name}] in the GeoServer: [{self}].")
         return response
-
 
     ### Role
     @handle_http_exceptions(log)

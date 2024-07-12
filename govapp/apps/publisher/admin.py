@@ -212,7 +212,8 @@ class GeoServerGroupForm(forms.ModelForm):
 
 class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'name',)
-    list_display = ('id', 'name', 'get_geoserver_roles', 'get_geoserver_users', 'active', 'created_at',)
+    list_display = ('id', 'name', 'get_geoserver_roles', 'get_geoserver_users', 'geoserver_usergroup_service','active', 'created_at',)
+    readonly_fields = ('geoserver_usergroup_service',)
     list_filter = ('active',)
     list_display_links = ('id', 'name')
     # form = GeoServerGroupForm  # <== This line adds the FilteredSelectMultiple widget.
