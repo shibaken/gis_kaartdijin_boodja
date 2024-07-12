@@ -24,6 +24,8 @@ class DefaultDataManager(object):
             try:
                 role, created = GeoServerRole.objects.get_or_create(name=role_name)
                 if created:
+                    role.default = True  # This role exists in the geoserver as a default role
+                    role.save()
                     logger.info(f"Created GeoServerRole: {role_name}")
             except Exception as e:
                 logger.error(f'{e}, GeoServerRole name: {role_name}')

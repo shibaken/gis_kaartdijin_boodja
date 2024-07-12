@@ -30,7 +30,7 @@ class GeoServerRole(mixins.RevisionedMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     parent_role = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_roles')
-    default = models.BooleanField(default=False)
+    default = models.BooleanField(default=False, verbose_name='Default at geoserver')
 
     class Meta:
         verbose_name = "GeoServer Role"
