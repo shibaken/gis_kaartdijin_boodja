@@ -14,27 +14,39 @@ UserModel = get_user_model()
 
 class Command(BaseCommand):
     help = 'Synchronize users, roles, and groups with GeoServer.'
-    USE_EMAIL_AS_USERNAME = True  # For now, set to False
+    USE_EMAIL_AS_USERNAME = True
 
     def handle(self, *args, **options):
-        # Local Storage Paths
-        if not os.path.exists(settings.GEOSERVER_SECURITY_FILE_PATH):
-            os.makedirs(settings.GEOSERVER_SECURITY_FILE_PATH)
+        # # Local Storage Paths
+        # if not os.path.exists(settings.GEOSERVER_SECURITY_FILE_PATH):
+        #     os.makedirs(settings.GEOSERVER_SECURITY_FILE_PATH)
 
-        # security/config.xml
-        generate_security_config_file(['default', settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME])
+        # # security/config.xml
+        # generate_security_config_file(['default', settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME])
 
-        # security/auth/config.xml
-        generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)
+        # # security/auth/config.xml
+        # generate_auth_files(settings.GEOSERVER_CUSTOM_AUTHENTICATION_PROVIDER_NAME)
 
-        # security/usergroup/config.xml
-        # security/usergroup/users.xml
-        # security/usergroup/users.xsd
-        generate_usergroup_files(settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, 'users.xml')
+        # # security/usergroup/config.xml
+        # # security/usergroup/users.xml
+        # # security/usergroup/users.xsd
+        # generate_usergroup_files(settings.GEOSERVER_CUSTOM_USERGROUP_SERVICE_NAME, 'users.xml')
 
-        # security/role/roles.xml
-        generate_role_files()
-        return
+        # # security/role/roles.xml
+        # generate_role_files()
+        # return
+
+        geoservers = GeoServerPool.objects.filter(enabled=True)
+        for geoserver in geoservers:
+            # Sync relations between users and groups, and users and roles
+            self.sync_users_groups_roles(geoserver)
+
+            # Sync relations between roles with grous ###
+            self.sync_groups_roles(geoserver)
+
+            # Cleanup
+            self.cleanup_groups(geoserver)
+            self.cleanup_roles(geoserver)
 
     def sync_groups_roles(self, geoserver):
         """Synchronize groups-roles with GeoServer."""
@@ -109,16 +121,16 @@ class Command(BaseCommand):
         }
 
         # Check if user already exists
-        existing_users = geoserver.get_all_users()
+        existing_users = geoserver.get_all_users(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         user_exists = any(user_in_geoserver['userName'] == user_data['user']['userName'] for user_in_geoserver in existing_users)
 
         # Create/Update user
         if user_exists:
             log.info(f'User: [{username}] exists in the geoserver: [{geoserver}]')
-            response = geoserver.update_existing_user(user_data)
+            response = geoserver.update_existing_user(user_data, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         else:
             log.info(f'User: [{username}] does not exist in the geoserver: [{geoserver}]')
-            response = geoserver.create_new_user(user_data)
+            response = geoserver.create_new_user(user_data, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
 
         response.raise_for_status()
 
@@ -169,10 +181,10 @@ class Command(BaseCommand):
         groups_for_user_in_kb = [obj.geoserver_group for obj in group_user_in_kb]
         log.info(f'Group(s): [{groups_for_user_in_kb}] found for the user: [{username}] in the KB')
 
-        all_groups_in_geoserver = geoserver.get_all_groups()
+        all_groups_in_geoserver = geoserver.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{geoserver}].')
 
-        groups_for_user_in_geoserver = geoserver.get_all_groups_for_user(username)
+        groups_for_user_in_geoserver = geoserver.get_all_groups_for_user(username, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         log.info(f'Group(s): [{groups_for_user_in_geoserver}] for the user: [{username}] found in the geoserver: [{geoserver}].')
 
         for group_in_kb in groups_for_user_in_kb:
@@ -184,26 +196,26 @@ class Command(BaseCommand):
                 group_exists = any(group_in_kb.name == group_in_geoserver for group_in_geoserver in all_groups_in_geoserver)
                 if not group_exists:
                     log.info(f'Group: [{group_in_kb.name}] does not exist in the geoserver: [{geoserver}].')
-                    geoserver.create_new_group(group_in_kb.name)
-                geoserver.associate_user_with_group(username, group_in_kb.name)
+                    geoserver.create_new_group(group_in_kb.name, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+                geoserver.associate_user_with_group(username, group_in_kb.name, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
 
         # Disassociate user from group
-        all_groups_in_geoserver = geoserver.get_all_groups()
+        all_groups_in_geoserver = geoserver.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{geoserver}].')
 
-        groups_for_user_in_geoserver = geoserver.get_all_groups_for_user(username)
+        groups_for_user_in_geoserver = geoserver.get_all_groups_for_user(username, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         log.info(f'Group(s): [{groups_for_user_in_geoserver}] for the user: [{username}] found in the geoserver: [{geoserver}].')
 
         for group_in_geoserver in groups_for_user_in_geoserver:
             group_associated = any(group_in_geoserver == group_in_kb.name for group_in_kb in groups_for_user_in_kb)
             if not group_associated:
                 log.info(f'Group: [{group_in_geoserver}] is associated with the user: [{username}] in the geoserver: [{geoserver}], but not in KB')
-                geoserver.disassociate_user_from_group(username, group_in_geoserver)
+                geoserver.disassociate_user_from_group(username, group_in_geoserver, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
 
     def cleanup_groups(self, geoserver):
         log.info(f'Cleaning up groups in the geoserver: [{geoserver}]...')
 
-        all_groups_in_geoserver = geoserver.get_all_groups()
+        all_groups_in_geoserver = geoserver.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         all_groups_in_kb = GeoServerGroup.objects.all()
 
         for group_in_geoserver in all_groups_in_geoserver:
@@ -211,12 +223,12 @@ class Command(BaseCommand):
 
             if not group_exists_in_kb and group_exists_in_kb not in settings.NON_DELETABLE_USERGROUPS:
                 log.info(f'Group: [{group_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
-                geoserver.delete_existing_group(group_in_geoserver)
+                geoserver.delete_existing_group(group_in_geoserver, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
 
     def cleanup_roles(self, geoserver):
         log.info(f'Cleaning up roles in the geoserver: [{geoserver}]...')
 
-        all_roles_in_geoserver = geoserver.get_all_groups()
+        all_roles_in_geoserver = geoserver.get_all_roles()
         all_roles_in_kb = GeoServerRole.objects.all()
 
         for role_in_geoserver in all_roles_in_geoserver:

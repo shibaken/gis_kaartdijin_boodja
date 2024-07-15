@@ -6,6 +6,7 @@ import reversion
 from django.db import models
 from django.contrib import auth
 
+from govapp import settings
 from govapp.apps.publisher.models.workspaces import Workspace
 from govapp.common import mixins
 
@@ -15,12 +16,21 @@ log = logging.getLogger(__name__)
 
 
 @reversion.register()
+class GeoServerUserGroupService(mixins.RevisionedMixin):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+@reversion.register()
 class GeoServerRole(mixins.RevisionedMixin):
     name = models.CharField(max_length=255, unique=True)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     parent_role = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_roles')
+    default = models.BooleanField(default=False, verbose_name='Default at geoserver')
 
     class Meta:
         verbose_name = "GeoServer Role"
@@ -45,6 +55,10 @@ class GeoServerGroupManager(models.Manager):
         return super().get_queryset().prefetch_related('geoserver_roles')
 
 
+def get_custom_usergroup_service():
+    return GeoServerUserGroupService.objects.get(name=settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+
+
 @reversion.register()
 class GeoServerGroup(mixins.RevisionedMixin):
     name = models.CharField(max_length=255, unique=True)
@@ -52,6 +66,7 @@ class GeoServerGroup(mixins.RevisionedMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     geoserver_roles = models.ManyToManyField(GeoServerRole, through='GeoServerGroupRole', related_name='geoserver_groups')
+    geoserver_usergroup_service = models.ForeignKey(GeoServerUserGroupService, null=True, blank=True, on_delete=models.CASCADE, default=get_custom_usergroup_service)
     objects = GeoServerGroupManager()
 
     class Meta:
