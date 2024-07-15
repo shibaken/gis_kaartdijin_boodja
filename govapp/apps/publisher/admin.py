@@ -1,9 +1,11 @@
 """Kaartdijin Boodja Publisher Django Application Administration."""
 
+import pprint
 
 # Third-Party
 from typing import Any
 from django import forms
+from django.contrib.admin.options import InlineModelAdmin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib import admin, auth
 from django.utils.safestring import mark_safe
@@ -40,7 +42,7 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     search_fields = ('id', 'name', 'url',)
-    list_display = ('id', 'name', 'url_link', 'num_of_layers', 'username', 'enabled', 'created_at')
+    list_display = ('id', 'name', 'url_link', 'version', 'num_of_layers', 'username', 'enabled', 'created_at')
     list_filter = ('enabled',)
     list_display_links = ('id', 'name',)
     ordering = ('id', 'name')
@@ -52,6 +54,17 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     def url_link(self, obj):
         return format_html(f'<a href="{obj.url}" target="_blank">{obj.url}</a>')
     url_link.short_description = 'URL'
+
+    def version(self, obj):
+        try:
+            version = obj.get_about_version()
+            for resource in version['about']['resource']:
+                if resource['@name'] == "GeoServer":
+                    return resource['Version']
+            return '---'
+        except Exception as e:
+            return '---'
+    version.short_description = 'Geoserver Version'
 
 
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
@@ -141,7 +154,8 @@ class GeoServerRoleUserInline(admin.TabularInline):
 
 class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'name',)
-    list_display = ('id', 'name', 'parent_role', 'get_geoserver_users', 'active', 'created_at',)
+    list_display = ('id', 'name', 'get_geoserver_users', 'default', 'active', 'created_at',)
+    exclude = ('parent_role',)  # API doesn't support to handle parent role.  Hide this field for now.
     list_filter = ('active', )
     list_display_links = ('id', 'name')
     inlines = [GeoServerRoleUserInline,]
@@ -151,6 +165,17 @@ class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
         users = '<br>'.join([geoserver_role_user.user.email for geoserver_role_user in geoserver_role_users])
         return format_html(users)
     get_geoserver_users.short_description = 'users'
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj.default:
+            return ['name', 'active', 'default',]
+        else:
+            return ['default',]
+    
+    def get_inline_instances(self, request, obj=None):
+        if obj.default:
+            return []
+        return super().get_inline_instances(request, obj)
 
 
 class WorkspaceAdmin(reversion.admin.VersionAdmin):
@@ -199,7 +224,8 @@ class GeoServerGroupForm(forms.ModelForm):
 
 class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'name',)
-    list_display = ('id', 'name', 'get_geoserver_roles', 'get_geoserver_users', 'active', 'created_at',)
+    list_display = ('id', 'name', 'get_geoserver_roles', 'get_geoserver_users', 'geoserver_usergroup_service','active', 'created_at',)
+    readonly_fields = ('geoserver_usergroup_service',)
     list_filter = ('active',)
     list_display_links = ('id', 'name')
     # form = GeoServerGroupForm  # <== This line adds the FilteredSelectMultiple widget.
