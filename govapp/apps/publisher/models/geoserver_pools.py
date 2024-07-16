@@ -381,12 +381,6 @@ class GeoServerPool(mixins.RevisionedMixin):
         return groups_for_user_in_kb
 
     def disassociate_user_from_groups(self, user, groups_for_user_in_kb):
-        all_groups_in_geoserver = self.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-        if all_groups_in_geoserver:
-            log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{self}].')
-        else:
-            log.info(f'No groups found in the geoserver: [{self}].')
-
         groups_for_user_in_geoserver = self.get_all_groups_for_user(user.email, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         if groups_for_user_in_geoserver:
             log.info(f'Group(s): [{groups_for_user_in_geoserver}] for the user: [{user.email}] found in the geoserver: [{self}].')
@@ -400,11 +394,11 @@ class GeoServerPool(mixins.RevisionedMixin):
                 self.disassociate_user_from_group(user.email, group_in_geoserver, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
 
     def disassociate_user_from_roles(self, user, roles_for_user_in_kb):
-        all_roles_in_geoserver = self.get_all_roles()
-        log.info(f'Role(s): [{all_roles_in_geoserver}] found in the geoserver: [{self}].')
-
         roles_for_user_in_geoserver = self.get_all_roles_for_user(user.email)
-        log.info(f'Role(s): [{roles_for_user_in_geoserver}] found for the user: [{user.email}] in the geoserver: [{self}].')
+        if roles_for_user_in_geoserver:
+            log.info(f'Role(s): [{roles_for_user_in_geoserver}] found for the user: [{user.email}] in the geoserver: [{self}].')
+        else:
+            log.info(f'No roles found for the user: [{user.email}] in the geoserver: [{self}].')
 
         for role_in_geoserver in roles_for_user_in_geoserver:
             role_associated = any(role_in_geoserver == role_in_kb.name for role_in_kb in roles_for_user_in_kb)
