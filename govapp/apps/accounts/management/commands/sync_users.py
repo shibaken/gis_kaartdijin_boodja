@@ -97,7 +97,7 @@ class Command(BaseCommand):
         """Synchronize users-groups and users-roles with GeoServer."""
         log.info(f'Synchronize users-groups and users-roles in the geoserver: [{geoserver}]...')
 
-        users = UserModel.objects.all()
+        users = UserModel.objects.all(is_active=True)
         for user in users:
             self.create_or_update_user(geoserver, user)
 
