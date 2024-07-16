@@ -3,6 +3,7 @@ import decouple
 import os
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 from govapp import settings
 from govapp.apps.accounts.utils import generate_auth_files, generate_role_files, generate_security_config_file, generate_usergroup_files
@@ -46,6 +47,7 @@ class Command(BaseCommand):
             # Cleanup
             self.cleanup_groups(geoserver)
             self.cleanup_roles(geoserver)
+            self.cleanup_users(geoserver)
 
     def sync_groups_roles(self, geoserver):
         """Synchronize groups-roles with GeoServer."""
@@ -97,8 +99,17 @@ class Command(BaseCommand):
         """Synchronize users-groups and users-roles with GeoServer."""
         log.info(f'Synchronize users-groups and users-roles in the geoserver: [{geoserver}]...')
 
-        users = UserModel.objects.all(is_active=True)
+        # Retrieve only users associated with active roles or groups
+        users = UserModel.objects.filter(
+            Q(geoserverroleuser__geoserver_role__active=True) |
+            Q(geoservergroupuser__geoserver_group__active=True)).distinct()
+
+        log.info(f'Users associated with active GeoServerRole or GeoServerGroup: [{users}]')
+
         for user in users:
+            if not user.email:
+                log.warning(f'User: [ID: {user.id}, username: {user.username}, first_name: {user.first_name}, last_name: {user.last_name}] does not have email address.  Skip the geoserver process for this user.')
+                continue
             self.create_or_update_user(geoserver, user)
 
             # Sync relations between users and groups
@@ -143,7 +154,7 @@ class Command(BaseCommand):
         log.info(f'Cleaning up groups in the geoserver: [{geoserver}]...')
 
         all_groups_in_geoserver = geoserver.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-        all_groups_in_kb = GeoServerGroup.objects.all()
+        all_groups_in_kb = GeoServerGroup.objects.filter(active=True)
 
         for group_in_geoserver in all_groups_in_geoserver:
             group_exists_in_kb = any(group_in_geoserver == group_in_kb.name for group_in_kb in all_groups_in_kb)
@@ -156,11 +167,26 @@ class Command(BaseCommand):
         log.info(f'Cleaning up roles in the geoserver: [{geoserver}]...')
 
         all_roles_in_geoserver = geoserver.get_all_roles()
-        all_roles_in_kb = GeoServerRole.objects.all()
+        all_roles_in_kb = GeoServerRole.objects.filter(active=True)
 
         for role_in_geoserver in all_roles_in_geoserver:
             role_exists_in_kb = any(role_in_geoserver == role_in_kb.name for role_in_kb in all_roles_in_kb)
 
-            if not role_exists_in_kb and role_exists_in_kb not in settings.NON_DELETABLE_ROLES and role_exists_in_kb not in settings.DEFAULT_ROLES_IN_GEOSERVER:
+            if not role_exists_in_kb and role_exists_in_kb not in settings.NON_DELETABLE_ROLES:
                 log.info(f'Role: [{role_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
                 geoserver.delete_existing_role(role_in_geoserver)
+    
+    def cleanup_users(self, geoserver):
+        log.info(f'Cleaning up users in the geoserver: [{geoserver}]...')
+
+        all_users_in_geoserver = geoserver.get_all_users(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+        all_users_in_kb = UserModel.objects.filter(
+            Q(geoserverroleuser__geoserver_role__active=True) |
+            Q(geoservergroupuser__geoserver_group__active=True)).distinct()
+
+        for user_in_geoserver in all_users_in_geoserver:
+            user_exists_in_kb = any(user_in_geoserver['userName'] == user_in_kb.email for user_in_kb in all_users_in_kb)
+
+            if not user_exists_in_kb and user_exists_in_kb not in settings.NON_DELETABLE_USERS:
+                log.info(f'User: [{user_in_geoserver}] exists in the geoserver: [{geoserver}], but not in KB.')
+                geoserver.delete_existing_user(user_in_geoserver['userName'], settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
