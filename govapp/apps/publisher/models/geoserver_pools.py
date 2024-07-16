@@ -409,13 +409,22 @@ class GeoServerPool(mixins.RevisionedMixin):
     def associate_user_with_roles(self, user):
         role_user_in_kb = GeoServerRoleUser.objects.filter(user=user, geoserver_role__active=True)
         roles_for_user_in_kb = [obj.geoserver_role for obj in role_user_in_kb]
-        log.info(f'Role(s): [{roles_for_user_in_kb}] found for the user: [{user.email}] in the geoserver: [{self}].')
+        if roles_for_user_in_kb:
+            log.info(f'Role(s): [{roles_for_user_in_kb}] found for the user: [{user.email}] in the geoserver: [{self}].')
+        else:
+            log.info(f'No roles found for the user: [{user.email}] in the geoserver: [{self}].')
 
         all_roles_in_geoserver = self.get_all_roles()
-        log.info(f'Role(s): [{all_roles_in_geoserver}] found in the geoserver: [{self}].')
+        if all_roles_in_geoserver:
+            log.info(f'Role(s): [{all_roles_in_geoserver}] found in the geoserver: [{self}].')
+        else:
+            log.info(f'No roles found in the geoserver: [{self}].')
 
         roles_for_user_in_geoserver = self.get_all_roles_for_user(user.email)
-        log.info(f'Role(s): [{roles_for_user_in_geoserver}] for the user: [{user.email}] found in the geoserver: [{self}].')
+        if roles_for_user_in_geoserver:
+            log.info(f'Role(s): [{roles_for_user_in_geoserver}] for the user: [{user.email}] found in the geoserver: [{self}].')
+        else:
+            log.info(f'No roles for the user: [{user.email}] found in the geoserver: [{self}].')
 
         for role_in_kb in roles_for_user_in_kb:
             role_associated = any(role_in_kb.name == role_in_geoserver for role_in_geoserver in roles_for_user_in_geoserver)
