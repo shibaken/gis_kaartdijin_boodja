@@ -14,7 +14,6 @@ UserModel = get_user_model()
 
 class Command(BaseCommand):
     help = 'Synchronize users, roles, and groups with GeoServer.'
-    USE_EMAIL_AS_USERNAME = True
 
     def handle(self, *args, **options):
         # # Local Storage Paths
@@ -98,7 +97,7 @@ class Command(BaseCommand):
         """Synchronize users-groups and users-roles with GeoServer."""
         log.info(f'Synchronize users-groups and users-roles in the geoserver: [{geoserver}]...')
 
-        users = UserModel.objects.all()
+        users = UserModel.objects.all(is_active=True)
         for user in users:
             self.create_or_update_user(geoserver, user)
 
@@ -110,11 +109,9 @@ class Command(BaseCommand):
 
     def create_or_update_user(self, geoserver, user):
         """Create or update a user in GeoServer."""
-        username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
-        
         user_data = {
             "user": {
-                "userName": username,
+                "userName": user.email,
                 "password": user.password,  # Replace with a secure password handling mechanism
                 "enabled": user.is_active
             }
@@ -126,10 +123,10 @@ class Command(BaseCommand):
 
         # Create/Update user
         if user_exists:
-            log.info(f'User: [{username}] exists in the geoserver: [{geoserver}]')
+            log.info(f'User: [{user.email}] exists in the geoserver: [{geoserver}]')
             response = geoserver.update_existing_user(user_data, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         else:
-            log.info(f'User: [{username}] does not exist in the geoserver: [{geoserver}]')
+            log.info(f'User: [{user.email}] does not exist in the geoserver: [{geoserver}]')
             response = geoserver.create_new_user(user_data, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
 
         response.raise_for_status()
