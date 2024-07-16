@@ -348,7 +348,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def associate_user_with_groups(self, user):
-        group_user_in_kb = GeoServerGroupUser.objects.filter(user=user)
+        group_user_in_kb = GeoServerGroupUser.objects.filter(user=user, geoserver_group__active=True)
         groups_for_user_in_kb = [obj.geoserver_group for obj in group_user_in_kb]
         if groups_for_user_in_kb:
             log.info(f'Group(s): [{groups_for_user_in_kb}] found for the user: [{user.email}] in the KB')
@@ -380,7 +380,7 @@ class GeoServerPool(mixins.RevisionedMixin):
                 self.associate_user_with_group(user.email, group_in_kb.name, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         return groups_for_user_in_kb
 
-    def disassociate_user_from_group(self, user, groups_for_user_in_kb):
+    def disassociate_user_from_groups(self, user, groups_for_user_in_kb):
         all_groups_in_geoserver = self.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
         if all_groups_in_geoserver:
             log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{self}].')
@@ -413,7 +413,7 @@ class GeoServerPool(mixins.RevisionedMixin):
                 self.disassociate_role_from_user(user.email, role_in_geoserver)
 
     def associate_user_with_roles(self, user):
-        role_user_in_kb = GeoServerRoleUser.objects.filter(user=user)
+        role_user_in_kb = GeoServerRoleUser.objects.filter(user=user, geoserver_role__active=True)
         roles_for_user_in_kb = [obj.geoserver_role for obj in role_user_in_kb]
         log.info(f'Role(s): [{roles_for_user_in_kb}] found for the user: [{user.email}] in the geoserver: [{self}].')
 
