@@ -167,13 +167,13 @@ class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
     get_geoserver_users.short_description = 'users'
 
     def get_readonly_fields(self, request, obj=None):
-        if obj.default:
+        if obj and obj.default:
             return ['name', 'active', 'default',]
         else:
             return ['default',]
     
     def get_inline_instances(self, request, obj=None):
-        if obj.default:
+        if obj and obj.default:
             return []
         return super().get_inline_instances(request, obj)
 
