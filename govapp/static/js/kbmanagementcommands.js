@@ -117,7 +117,8 @@ var kbmanagementcommands = {
                 $('#run-geoserver-sync-' + items_to_sync + '-loader').hide();
             },
             error: function (error) {
-                $('#geoserver-sync-' + items_to_sync + '-job-response-error').html("Error running job");
+                text = error?.responseJSON?.detail ?? '' 
+                $('#geoserver-sync-' + items_to_sync + '-job-response-error').html("Error running job. " + text);
                 $('#run-geoserver-sync-' + items_to_sync).removeAttr('disabled');
                 $('#run-geoserver-sync-' + items_to_sync + '-loader').hide();
             },

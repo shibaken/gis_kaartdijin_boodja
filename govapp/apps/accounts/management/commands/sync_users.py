@@ -135,82 +135,12 @@ class Command(BaseCommand):
         response.raise_for_status()
 
     def sync_relations_users_roles(self, geoserver, user):
-        username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
-
-        # Associate role with user
-        role_user_in_kb = GeoServerRoleUser.objects.filter(user=user)
-        roles_for_user_in_kb = [obj.geoserver_role for obj in role_user_in_kb]
-        log.info(f'Role(s): [{roles_for_user_in_kb}] found for the user: [{username}] in the geoserver: [{geoserver}].')
-
-        all_roles_in_geoserver = geoserver.get_all_roles()
-        log.info(f'Role(s): [{all_roles_in_geoserver}] found in the geoserver: [{geoserver}].')
-
-        roles_for_user_in_geoserver = geoserver.get_all_roles_for_user(username)
-        log.info(f'Role(s): [{roles_for_user_in_geoserver}] for the user: [{username}] found in the geoserver: [{geoserver}].')
-
-        for role_in_kb in roles_for_user_in_kb:
-            role_associated = any(role_in_kb.name == role_in_geoserver for role_in_geoserver in roles_for_user_in_geoserver)
-            if role_associated:
-                log.info(f'Role: [{role_in_kb.name}] is already associated with the user: [{username}] in the geoserver: [{geoserver}].')
-            else:
-                log.info(f'Role: [{role_in_kb.name}] is not associated with the user: [{username}] in the geoserver: [{geoserver}].')
-                role_exists = any(role_in_kb.name == role_in_geoserver for role_in_geoserver in all_roles_in_geoserver)
-                if not role_exists:
-                    log.info(f'Role: [{role_in_kb.name}] does not exist in the geoserver: [{geoserver}].')
-                    geoserver.create_new_role(role_in_kb.name)
-                geoserver.associate_role_with_user(username, role_in_kb.name)
-
-        # Disassociate role from user
-        all_roles_in_geoserver = geoserver.get_all_roles()
-        log.info(f'Role(s): [{all_roles_in_geoserver}] found in the geoserver: [{geoserver}].')
-
-        roles_for_user_in_geoserver = geoserver.get_all_roles_for_user(username)
-        log.info(f'Role(s): [{roles_for_user_in_geoserver}] found for the user: [{username}] in the geoserver: [{geoserver}].')
-
-        for role_in_geoserver in roles_for_user_in_geoserver:
-            role_associated = any(role_in_geoserver == role_in_kb.name for role_in_kb in roles_for_user_in_kb)
-            if not role_associated:
-                log.info(f'Role: [{role_in_geoserver}] is associated with the user: [{username}] in the geoserver: [{geoserver}], but not in KB')
-                geoserver.disassociate_role_from_user(username, role_in_geoserver)
+        roles_for_user_in_kb = geoserver.associate_user_with_roles(user)
+        geoserver.disassociate_user_from_roles(user, roles_for_user_in_kb)
 
     def sync_relations_users_groups(self, geoserver, user):
-        username = user.email if self.USE_EMAIL_AS_USERNAME else user.username
-
-        # Associate user with group
-        group_user_in_kb = GeoServerGroupUser.objects.filter(user=user)
-        groups_for_user_in_kb = [obj.geoserver_group for obj in group_user_in_kb]
-        log.info(f'Group(s): [{groups_for_user_in_kb}] found for the user: [{username}] in the KB')
-
-        all_groups_in_geoserver = geoserver.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-        log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{geoserver}].')
-
-        groups_for_user_in_geoserver = geoserver.get_all_groups_for_user(username, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-        log.info(f'Group(s): [{groups_for_user_in_geoserver}] for the user: [{username}] found in the geoserver: [{geoserver}].')
-
-        for group_in_kb in groups_for_user_in_kb:
-            group_associated = any(group_in_kb.name == group_in_geoserver for group_in_geoserver in groups_for_user_in_geoserver)
-            if group_associated:
-                log.info(f'Group: [{group_in_kb.name}] is already associated with the user: [{username}] in the geoserver: [{geoserver}].')
-            else:
-                log.info(f'Group: [{group_in_kb.name}] is not associated with the user: [{username}] in the geoserver: [{geoserver}].')
-                group_exists = any(group_in_kb.name == group_in_geoserver for group_in_geoserver in all_groups_in_geoserver)
-                if not group_exists:
-                    log.info(f'Group: [{group_in_kb.name}] does not exist in the geoserver: [{geoserver}].')
-                    geoserver.create_new_group(group_in_kb.name, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-                geoserver.associate_user_with_group(username, group_in_kb.name, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-
-        # Disassociate user from group
-        all_groups_in_geoserver = geoserver.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-        log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{geoserver}].')
-
-        groups_for_user_in_geoserver = geoserver.get_all_groups_for_user(username, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
-        log.info(f'Group(s): [{groups_for_user_in_geoserver}] for the user: [{username}] found in the geoserver: [{geoserver}].')
-
-        for group_in_geoserver in groups_for_user_in_geoserver:
-            group_associated = any(group_in_geoserver == group_in_kb.name for group_in_kb in groups_for_user_in_kb)
-            if not group_associated:
-                log.info(f'Group: [{group_in_geoserver}] is associated with the user: [{username}] in the geoserver: [{geoserver}], but not in KB')
-                geoserver.disassociate_user_from_group(username, group_in_geoserver, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+        groups_for_user_in_kb = geoserver.associate_user_with_groups(user)
+        geoserver.disassociate_user_from_groups(user, groups_for_user_in_kb)
 
     def cleanup_groups(self, geoserver):
         log.info(f'Cleaning up groups in the geoserver: [{geoserver}]...')

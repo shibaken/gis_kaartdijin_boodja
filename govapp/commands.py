@@ -2,7 +2,6 @@
 
 
 # Standard
-import json
 import logging
 
 # Third-Party
@@ -19,6 +18,7 @@ from rest_framework.exceptions import ValidationError
 
 # Local
 from govapp.apps.accounts import permissions
+from govapp.common.utils import UserGroupServiceNotFoundError
 
 # Logging
 log = logging.getLogger(__name__)
@@ -178,13 +178,25 @@ class ManagementCommands(viewsets.ViewSet):
                 management.call_command("geoserver_sync_rules")
             elif items_to_sync == 'users':
                 management.call_command("sync_users")
+            else:
+                raise ValidationError('Invalid items_to_sync value')
+            # Return Response
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-        except Exception as exc:
-            # Log
-            log.error(f"Unable to perform scan: {exc}")
-
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+        except ValidationError as e:
+            # Handle validation errors separately
+            log.error(f"Validation error: {e}")
+            return response.Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except UserGroupServiceNotFoundError as e:
+            # Handle custom HttpStatusError
+            log.error(f"HTTP status error: {e}")
+            return response.Response({'detail': str(e), 'error': str(e)}, status=e.status_code)
+        except Exception as e:
+            # Handle unexpected exceptions
+            log.error(f"Unexpected error: {e}")
+            # If the exception has a status_code attribute, use it; otherwise, use 500
+            status_code = getattr(e, 'status_code', status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return response.Response({'detail': 'Internal server error', 'error': str(e)}, status=status_code)
 
     
 # Router

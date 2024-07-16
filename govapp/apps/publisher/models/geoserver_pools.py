@@ -3,6 +3,7 @@
 
 # Third-Party
 from django.db import models
+from django.forms import ValidationError
 import reversion
 import logging
 import httpx
@@ -11,6 +12,7 @@ import urllib
 
 # Local
 from govapp import settings
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroupUser, GeoServerRoleUser
 from govapp.common import mixins
 from govapp.common.utils import handle_http_exceptions
 
@@ -137,8 +139,13 @@ class GeoServerPool(mixins.RevisionedMixin):
         log.info(f"User: [{user_data['user']['userName']}] has been created successfully in the GeoServer: [{self}].")
         return response
 
+    def check_variable(self, variable, variable_name):
+        if not variable:
+            raise ValidationError(f'{variable_name} cannot be empty string.')
+
     @handle_http_exceptions(log)
     def delete_existing_user(self, username, service_name=''):
+        self.check_variable(username, 'Username')
         url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}.json"
         response = httpx.delete(
             url=url,
@@ -174,6 +181,7 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def get_all_groups_for_user(self, username, service_name=''):
+        self.check_variable(username, 'Username')
         url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/groups" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/groups"
         response = httpx.get(
             url=url,
@@ -186,6 +194,7 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def create_new_group(self, group_name, service_name=''):
+        self.check_variable(group_name, 'Group name')
         url = f"{self.base_url}/usergroup/service/{encode(service_name)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/group/{encode(group_name)}.json"
         response = httpx.post(
             url=url,
@@ -196,6 +205,7 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def delete_existing_group(self, group_name, service_name=''):
+        self.check_variable(group_name, 'Group name')
         if group_name in settings.NON_DELETABLE_USERGROUPS:
             log.info(f'Group: [{group_name}] cannot be deleted from the geoserver: [{self}]. (USERGROUPS_TO_KEEP: [{settings.NON_DELETABLE_USERGROUPS}])')
             return
@@ -211,6 +221,8 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def associate_user_with_group(self, username, group_name, service_name=''):
+        self.check_variable(username, 'Username')
+        self.check_variable(group_name, 'Group name')
         url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
         response = httpx.post(
             url=url,
@@ -222,6 +234,8 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def disassociate_user_from_group(self, username, group_name, service_name=''):
+        self.check_variable(username, 'Username')
+        self.check_variable(group_name, 'Group name')
         url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
         response = httpx.delete(
             url=url,
@@ -244,6 +258,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         return existing_roles['roles']
     
     def get_all_roles_for_user(self, username):
+        self.check_variable(username, 'Username')
         response = httpx.get(
             url=f"{self.base_url}/roles/user/{encode(username)}.json",
             headers={"Accept": "application/json"},
@@ -254,6 +269,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         return roles_for_user['roles']
 
     def get_all_roles_for_group(self, group_name):
+        self.check_variable(group_name, 'Group name')
         response = httpx.get(
             url=f"{self.base_url}/roles/group/{encode(group_name)}.json",
             headers={"Accept": "application/json"},
@@ -264,6 +280,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         return roles_for_group['roles']
 
     def create_new_role(self, role_name):
+        self.check_variable(role_name, 'Role name')
         response = httpx.post(
             url=f"{self.base_url}/roles/role/{encode(role_name)}.json",
             auth=self.auth
@@ -273,6 +290,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def delete_existing_role(self, role_name):
+        self.check_variable(role_name, 'Role name')
         if role_name in settings.NON_DELETABLE_ROLES:  # We don't want to delete the default group 'ADMIN'
             log.info(f'Role: [{role_name}] cannot be deleted from the geoserver: [{self}]. (ROLES_TO_KEEP: [{settings.NON_DELETABLE_ROLES}])')
             return
@@ -286,6 +304,8 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def associate_role_with_user(self, username, role_name):
+        self.check_variable(username, 'Username')
+        self.check_variable(role_name, 'Role name')
         response = httpx.post(
             url=f"{self.base_url}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
             auth=self.auth
@@ -295,6 +315,8 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def disassociate_role_from_user(self, username, role_name):
+        self.check_variable(username, 'Username')
+        self.check_variable(role_name, 'Role name')
         response = httpx.delete(
             url=f"{self.base_url}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
             auth=self.auth
@@ -304,6 +326,8 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def associate_role_with_group(self, role_name, group_name):
+        self.check_variable(role_name, 'Role name')
+        self.check_variable(group_name, 'Group name')
         response = httpx.post(
             url=f"{self.base_url}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
             auth=self.auth
@@ -313,6 +337,8 @@ class GeoServerPool(mixins.RevisionedMixin):
         return response
 
     def disassociate_role_from_group(self, role_name, group_name):
+        self.check_variable(role_name, 'Role name')
+        self.check_variable(group_name, 'Group name')
         response = httpx.delete(
             url=f"{self.base_url}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
             auth=self.auth
@@ -320,3 +346,92 @@ class GeoServerPool(mixins.RevisionedMixin):
         response.raise_for_status()
         log.info(f"Role: [{role_name}] has been disassociated successfully from the group: [{group_name}] in the GeoServer: [{self}].")
         return response
+
+    def associate_user_with_groups(self, user):
+        group_user_in_kb = GeoServerGroupUser.objects.filter(user=user)
+        groups_for_user_in_kb = [obj.geoserver_group for obj in group_user_in_kb]
+        if groups_for_user_in_kb:
+            log.info(f'Group(s): [{groups_for_user_in_kb}] found for the user: [{user.email}] in the KB')
+        else:
+            log.info(f'No groups found for the user: [{user.email}] in the KB')
+
+        all_groups_in_geoserver = self.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+        if all_groups_in_geoserver:
+            log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{self}].')
+        else:
+            log.info(f'No groups found in the geoserver: [{self}].')
+
+        groups_for_user_in_geoserver = self.get_all_groups_for_user(user.email, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+        if groups_for_user_in_geoserver:
+            log.info(f'Group(s): [{groups_for_user_in_geoserver}] for the user: [{user.email}] found in the geoserver: [{self}].')
+        else:
+            log.info(f'No groups for the user: [{user.email}] found in the geoserver: [{self}].')
+
+        for group_in_kb in groups_for_user_in_kb:
+            group_associated = any(group_in_kb.name == group_in_geoserver for group_in_geoserver in groups_for_user_in_geoserver)
+            if group_associated:
+                log.info(f'Group: [{group_in_kb.name}] is already associated with the user: [{user.email}] in the geoserver: [{self}].')
+            else:
+                log.info(f'Group: [{group_in_kb.name}] is not associated with the user: [{user.email}] in the geoserver: [{self}].')
+                group_exists = any(group_in_kb.name == group_in_geoserver for group_in_geoserver in all_groups_in_geoserver)
+                if not group_exists:
+                    log.info(f'Group: [{group_in_kb.name}] does not exist in the geoserver: [{self}].')
+                    self.create_new_group(group_in_kb.name, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+                self.associate_user_with_group(user.email, group_in_kb.name, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+        return groups_for_user_in_kb
+
+    def disassociate_user_from_group(self, user, groups_for_user_in_kb):
+        all_groups_in_geoserver = self.get_all_groups(settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+        if all_groups_in_geoserver:
+            log.info(f'Group(s): [{all_groups_in_geoserver}] found in the geoserver: [{self}].')
+        else:
+            log.info(f'No groups found in the geoserver: [{self}].')
+
+        groups_for_user_in_geoserver = self.get_all_groups_for_user(user.email, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+        if groups_for_user_in_geoserver:
+            log.info(f'Group(s): [{groups_for_user_in_geoserver}] for the user: [{user.email}] found in the geoserver: [{self}].')
+        else:
+            log.info(f'No groups for the user: [{user.email}] found in the geoserver: [{self}].')
+
+        for group_in_geoserver in groups_for_user_in_geoserver:
+            group_associated = any(group_in_geoserver == group_in_kb.name for group_in_kb in groups_for_user_in_kb)
+            if not group_associated:
+                log.info(f'Group: [{group_in_geoserver}] is associated with the user: [{user.email}] in the geoserver: [{self}], but not in KB')
+                self.disassociate_user_from_group(user.email, group_in_geoserver, settings.GEOSERVER_USERGROUP_SERVICE_NAME_CUSTOM)
+
+    def disassociate_user_from_roles(self, user, roles_for_user_in_kb):
+        all_roles_in_geoserver = self.get_all_roles()
+        log.info(f'Role(s): [{all_roles_in_geoserver}] found in the geoserver: [{self}].')
+
+        roles_for_user_in_geoserver = self.get_all_roles_for_user(user.email)
+        log.info(f'Role(s): [{roles_for_user_in_geoserver}] found for the user: [{user.email}] in the geoserver: [{self}].')
+
+        for role_in_geoserver in roles_for_user_in_geoserver:
+            role_associated = any(role_in_geoserver == role_in_kb.name for role_in_kb in roles_for_user_in_kb)
+            if not role_associated:
+                log.info(f'Role: [{role_in_geoserver}] is associated with the user: [{user.email}] in the geoserver: [{self}], but not in KB')
+                self.disassociate_role_from_user(user.email, role_in_geoserver)
+
+    def associate_user_with_roles(self, user):
+        role_user_in_kb = GeoServerRoleUser.objects.filter(user=user)
+        roles_for_user_in_kb = [obj.geoserver_role for obj in role_user_in_kb]
+        log.info(f'Role(s): [{roles_for_user_in_kb}] found for the user: [{user.email}] in the geoserver: [{self}].')
+
+        all_roles_in_geoserver = self.get_all_roles()
+        log.info(f'Role(s): [{all_roles_in_geoserver}] found in the geoserver: [{self}].')
+
+        roles_for_user_in_geoserver = self.get_all_roles_for_user(user.email)
+        log.info(f'Role(s): [{roles_for_user_in_geoserver}] for the user: [{user.email}] found in the geoserver: [{self}].')
+
+        for role_in_kb in roles_for_user_in_kb:
+            role_associated = any(role_in_kb.name == role_in_geoserver for role_in_geoserver in roles_for_user_in_geoserver)
+            if role_associated:
+                log.info(f'Role: [{role_in_kb.name}] is already associated with the user: [{user.email}] in the geoserver: [{self}].')
+            else:
+                log.info(f'Role: [{role_in_kb.name}] is not associated with the user: [{user.email}] in the geoserver: [{self}].')
+                role_exists = any(role_in_kb.name == role_in_geoserver for role_in_geoserver in all_roles_in_geoserver)
+                if not role_exists:
+                    log.info(f'Role: [{role_in_kb.name}] does not exist in the geoserver: [{self}].')
+                    self.create_new_role(role_in_kb.name)
+                self.associate_role_with_user(user.email, role_in_kb.name)
+        return roles_for_user_in_kb
