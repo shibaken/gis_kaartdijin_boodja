@@ -86,9 +86,9 @@ class GeoServer:
             log.info(f"Workspace '{workspace_name}' already exists in the geoserver: [{self.service_url}].")
 
     @handle_http_exceptions(log)
-    def create_store_if_not_exists(self, workspace_name, store_name, data):
+    def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):
         # URL to check the existence of the store
-        store_get_url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores/{store_name}"
+        store_get_url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}/{store_name}"
         log.info(f'store_get_url: {store_get_url}')
 
         # Headers with authentication information
@@ -100,7 +100,7 @@ class GeoServer:
             response = client.get(store_get_url, headers=headers)
 
         # Construct URL
-        url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores"
+        url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}"
 
         # Decide whether to perform a POST or PUT request based on the existence of the store
         if response.status_code == 404: 
@@ -293,7 +293,7 @@ class GeoServer:
         
         data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
 
-        response = self.create_store_if_not_exists(workspace, store_name, data)
+        response = self.create_store_if_not_exists(workspace, store_name, data, datastore_type='wmsstores')
         
         # Log
         log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")

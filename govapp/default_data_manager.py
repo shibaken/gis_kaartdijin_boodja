@@ -36,4 +36,4 @@ class DefaultDataManager(object):
                 if created:
                     logger.info(f"Created GeoServerUserGroupService: {service_name}")
             except Exception as e:
-                logger.error(f'{e}, GeoServerUserGroupService: {service_name}')
+                logger.error(f'{e}, GeoServerUserGroupService: {ug_service_name}')
