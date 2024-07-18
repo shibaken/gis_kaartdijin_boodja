@@ -25,6 +25,7 @@ from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_su
 from govapp.apps.catalogue.models import layer_subscriptions as catalogue_layer_subscription_models
 from govapp.apps.catalogue import utils as catalogue_utils
 from govapp.apps.accounts import utils
+from govapp.common import local_storage
 
 # Typing
 from typing import Any
@@ -86,7 +87,7 @@ class PendingImportsView(base.TemplateView):
     template_name = "govapp/pending_imports.html"
 
     def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
-        pathToFolder = settings.PENDING_IMPORT_PATH
+        pathToFolder = local_storage.LocalStorage.get_pending_import_path()
         file_list = os.listdir(pathToFolder)
 
         context = {'file_list': file_list}

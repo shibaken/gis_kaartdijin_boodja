@@ -44,7 +44,8 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoser
     try:
         ### Publish! ###
         # for special file
-        if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE, CatalogueEntryType.SUBSCRIPTION_QUERY]:
+        # if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE, CatalogueEntryType.SUBSCRIPTION_QUERY]:
+        if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE,]:
             geoserver_info.publish(symbology_only, geoserver)
         # for layer subscription
         else:
