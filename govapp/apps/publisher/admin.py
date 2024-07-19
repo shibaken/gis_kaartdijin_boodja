@@ -15,6 +15,7 @@ from django.utils.html import format_html
 # Local
 from govapp.apps.catalogue.admin import construct_catalogue_entry_link
 from govapp.apps.publisher import models
+from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroupUser, GeoServerRoleUser
 
 
@@ -104,7 +105,7 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     search_fields = ('id', 'publish_entry__catalogue_entry__name', 'submitter__email',)
-    list_display = ('id', 'publish_entry_link', 'symbology_only', 'status', 'success', 'submitter_link','started_at', 'completed_at', 'created_at')
+    list_display = ('id', 'publish_entry_link', 'symbology_only', 'coloured_status', 'success', 'submitter_link','started_at', 'completed_at', 'created_at')
     list_filter = ('symbology_only', 'status', 'success',)
     ordering = ('-id',)
     raw_id_fields = ('submitter', 'publish_entry')
@@ -112,6 +113,19 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     def publish_entry_link(self, obj):
         return construct_publish_entry_link(obj.publish_entry)
     publish_entry_link.short_description = 'Publish Entry'
+
+    def coloured_status(self, obj):
+        if obj.status == GeoServerQueueStatus.READY:
+            return format_html('<span style="color: gray;">{}</span>', obj.get_status_display())
+        elif obj.status == GeoServerQueueStatus.FAILED:
+            return format_html('<span style="color: red;">{}</span>', obj.get_status_display())
+        elif obj.status == GeoServerQueueStatus.ON_PUBLISHING:
+            return format_html('<span style="color: orange;">{}</span>', obj.get_status_display())
+        elif obj.status == GeoServerQueueStatus.PUBLISHED:
+            return format_html('<span style="color: green;">{}</span>', obj.get_status_display())
+        else:
+            return '---'
+    coloured_status.short_description = 'status'
 
     def submitter_link(self, obj):
         return format_html(f'<a href="/admin/auth/user/{obj.submitter.id}/change">{obj.submitter}</a>') if obj.submitter else '-'
