@@ -2,6 +2,7 @@ var kbmanagementcommands = {
     var: {
         "scan_url" :"/api/management/commands/scan_dir/",
         "get_sharepoint_submission_url" :"/api/management/commands/get_sharepoint_submissions/",
+        "get_postgis_submission_url" :"/api/management/commands/get_postgis_submissions/",
         "geoserver_queue_cron_job" :"/api/management/commands/excute_geoserver_queue/",
         "geoserver_queue_sync_job" : "/api/management/commands/excute_geoserver_sync/",
         "run_randomize_password": "/api/management/commands/randomize_password/",
@@ -49,6 +50,29 @@ var kbmanagementcommands = {
                 $('#geoserver-randomize-password-job-response-error').html("Error running job");
                 $('#run-randomize-password').removeAttr('disabled');
                 $('#run-randomize-password-loader').hide();
+            },
+        });
+    },
+    run_postgis_submissions: function() {
+        $('#postgis-scanner-job-response-success').html('');
+        $('#postgis-scanner-job-response-error').html('');
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        $('#run-postgis-scanner').attr('disabled','disabled');
+        $('#run-postgis-scanner-loader').show();
+        $.ajax({
+            url: kbmanagementcommands.var.get_postgis_submission_url,
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                $('#postgis-scanner-job-response-success').html("Completed");
+                $('#run-postgis-scanner').removeAttr('disabled');
+                $('#run-postgis-scanner-loader').hide();
+            },
+            error: function (error) {
+                $('#postgis-scanner-job-response-error').html("Error running job");
+                $('#run-postgis-scanner').removeAttr('disabled');
+                $('#run-postgis-scanner-loader').hide();
             },
         });
     },
@@ -131,6 +155,9 @@ var kbmanagementcommands = {
         $( "#run-sharepoint-scanner" ).click(function() {
             kbmanagementcommands.run_sharepoint_submissions();
         });
+        $( "#run-postgis-scanner" ).click(function() {
+            kbmanagementcommands.run_postgis_submissions();
+        });
         $( "#run-geoserver-queue" ).click(function() {
             kbmanagementcommands.run_geoserver_queue_cron_job();
         });
@@ -154,6 +181,7 @@ var kbmanagementcommands = {
         });
         $('#run-scanner-loader').hide();
         $('#run-sharepoint-scanner-loader').hide();
+        $('#run-postgis-scanner-loader').hide();
         $('#run-geoserver-queue-loader').hide();
     }
 }

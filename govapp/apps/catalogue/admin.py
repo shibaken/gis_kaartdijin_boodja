@@ -9,6 +9,7 @@ from django.utils.html import format_html
 
 # Local
 from govapp.apps.catalogue import models
+from govapp.apps.catalogue.models.layer_submissions import LayerSubmissionStatus
 
 # class CatalogueModelAdmin(reversion.admin.VersionAdmin):
 #     ordering = ('id', 'name')
@@ -79,7 +80,7 @@ class LayerMetadataAdmin(reversion.admin.VersionAdmin):
     
 class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'catalogue_entry__name', 'file')
-    list_display = ('id', 'status', 'is_active', 'catalogue_entry_link', 'file', 'created_at')
+    list_display = ('id', 'coloured_status', 'is_active', 'catalogue_entry_link', 'file', 'created_at')
     list_filter = ('status', 'is_active',)
     ordering = ('id',)
     raw_id_fields = ('catalogue_entry',)
@@ -87,6 +88,16 @@ class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
     def catalogue_entry_link(self, obj):
         return construct_catalogue_entry_link(obj.catalogue_entry)
     catalogue_entry_link.short_description = 'Catalogue Entry'
+
+    def coloured_status(self, obj):
+        if obj.status == LayerSubmissionStatus.SUBMITTED:
+            return format_html('<span style="color: gray;">{}</span>', obj.get_status_display())
+        elif obj.status == LayerSubmissionStatus.ACCEPTED:
+            return format_html('<span style="color: green;">{}</span>', obj.get_status_display())
+        elif obj.status == LayerSubmissionStatus.DECLINED:
+            return format_html('<span style="color: #dc3545;">{}</span>', obj.get_status_display())
+        else:
+            return '---'
 
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):

@@ -2,9 +2,7 @@
 
 {% block content %}
       {% if request.user.is_authenticated is True %}
-
             {% include "govapp/manage_editors_modal.html" %}
-
             <div class="container" id="dashboard-table-container">
                   <div class='row'>
                         <div class='col-6'>
@@ -33,14 +31,11 @@
                                     <div class='col-12 p-3 border-bottom'>
                                           <p><b>Communication</b><br>
                                           <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
-
                                     </div>
                                     <div class='col-12 p-3'>
                                           <p><b>Actions</b><br>
                                           <a href='#' id="log_actions_show">Show</a></p>
-
                                     </div>
-
                               </div>
                               <br>
                               <div class='col-12 border'>
@@ -55,11 +50,10 @@
                                                 <br>
                                                 <br>
                                                 <b>Currently assigned to</b>
-                                                
-                                                <div class='text-end'>                                          
+                                                <div class='text-end'>
                                                       <select class='form-control' id="catalogue-assigned-to">
                                                             <option value=''>-- Select One --</option>
-                                                            {% for su in system_users %}                                          
+                                                            {% for su in system_users %}
                                                                   {% if catalogue_entry_obj.assigned_to.id == su.id %}
                                                                         <option value='{{ su.id }}' selected>{{ su.first_name }} {{ su.last_name }}</option>
                                                                   {% else %}
@@ -67,33 +61,23 @@
                                                                   {% endif %}
                                                             {% endfor %}
                                                       </select>
-                                                
                                                       <button class='btn btn-primary btn-sm' id='catalogue-assigned-to-btn' href=''>Assign</button>
                                                 </div>
-
                                           </p>
-
                                     </div>
                                     <div class='col-12 p-3'>
                                           <p>
                                                 <b>Actions</b><br>
-                                                {% if catalogue_entry_obj.status == 2 %}                                          
+                                                {% if catalogue_entry_obj.status == 2 %}
                                                       <button class='btn btn-primary btn-sm' id='catalogue-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
-                                                {% else %}                                          
+                                                {% else %}
                                                       <button class='btn btn-primary btn-sm' id='catalogue-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
                                                 {% endif %}
-                                                
                                           </p>
-
                                     </div>
-
                               </div>
-
-
                         </div>
                         <div class='col-9'>
-
-
                             <ul class="nav nav-tabs">
                                 <li class="nav-item">
                                   <a class="nav-link {% if tab == 'details' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/details/">Details</a>
@@ -103,7 +87,7 @@
                                           <a class="nav-link {% if tab == 'attribute' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/attribute/">Attribute Table</a>
                                     {% endif %}
                                 </li>
-                                {% if symbology_definition %}
+                                {% if display_symbology_definition_tab %}
                                 <li class="nav-item">
                                       <a class="nav-link {% if tab == 'symbology' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/symbology/">Symbology</a>
                                 </li>
@@ -112,8 +96,6 @@
                                     <a class="nav-link {% if tab == 'metadata' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/metadata/">Metadata</a>
                                 </li>
                           </ul>
-
-
                               <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
                               <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id" value="{{ catalogue_entry_id  }}">
                               <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
@@ -128,12 +110,6 @@
                               {% elif tab == "metadata" %}
                                     {% include "govapp/catalogue_entries_view_metadata.html" %}                                   
                               {% endif %}
-
-
-
-
-
-
                   </div>
             </div>
 
