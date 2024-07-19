@@ -390,19 +390,6 @@
                               <BR>
                         {% endif %}
                         {% if subscription_obj.type is 3 %}
-                              <div class='col-12 pt-2'>
-                                    <div class='row'>
-                                          <div class='col-6'>
-                                                &nbsp;
-                                          </div>
-                                          <div class='col-6 text-end'>
-                                                {% if has_edit_access is True %}
-                                                      <button class="btn btn-primary" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
-                                                {% endif %}
-                                          </div>
-                                    </div>
-                              </div>
-                              <BR>
                               <div class="card" >
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
@@ -416,6 +403,18 @@
                                     </div>
                                     <div class="card-body collapse show" id="box4-card-body">
                                           <div class='row'>
+                                                <div class='col-12 pt-2'>
+                                                      <div class='row'>
+                                                            <div class='col-6'>
+                                                                  &nbsp;
+                                                            </div>
+                                                            <div class='col-6 text-end'>
+                                                                  {% if has_edit_access is True %}
+                                                                        <button class="btn btn-primary" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
+                                                                  {% endif %}
+                                                            </div>
+                                                      </div>
+                                                </div>
                                                 <div class='col-12'>
                                                       <div id='subscription-dbtable-custom-table'>
                                                             <table id="example" class="table" style="width:100%">
