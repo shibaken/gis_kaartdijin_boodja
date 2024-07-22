@@ -4,6 +4,7 @@
 # Third-Party
 from django.db import models
 import reversion
+import logging
 
 # Local
 from govapp.common import mixins
@@ -13,6 +14,10 @@ from govapp.apps.catalogue.models import layer_metadata
 
 # Typing
 from typing import cast
+
+
+# Logging
+log = logging.getLogger(__name__)
 
 
 class LayerSubmissionStatus(models.IntegerChoices):
@@ -109,15 +114,16 @@ class LayerSubmission(mixins.RevisionedMixin):
 
     def activate(self, raise_err=True) -> None:
         """Updates the Layer Submission's Catalogue Entry with this layer."""
+        log.info(f'Activating the LayerSubmission: [{self}]...')
         # Check the created date?
         # TODO
         ...
 
         # Calculate the Catalogue Entry's attributes hash
         attributes_hash = utils.attributes_hash(self.catalogue_entry.attributes.all())
-        print ("attributes_hash")
-        print (attributes_hash)
-        print (self.hash)
+        log.info(f"The attributes_hash of the LayerSubmission: [{self}] is [{attributes_hash}].")
+        log.info(f"Current attribute_hash is [{self.hash}]")
+
         # Check if they match!
         # Also check that Catalogue Entry is not declined
         if self.hash == attributes_hash and not self.catalogue_entry.is_declined():

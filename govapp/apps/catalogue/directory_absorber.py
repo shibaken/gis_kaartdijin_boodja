@@ -314,12 +314,27 @@ class Absorber:
         # Create New Layer Submission
         layer_submission = self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, False)
         
+        if catalogue_entry.type == models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY and not catalogue_entry.attributes.count():
+            # When subscribing a custom query in PostGIS, only the catalogue_entry object is created initially,
+            # and layer_attributes, layer_symbology, and layer_metadata need to be generated later here.
+
+            # Create Layer Metadata
+            self.create_layer_metadata(metadata, catalogue_entry)
+
+            # Loop through attributes
+            if attributes:
+                self.create_layer_attributes(attributes, catalogue_entry)
+
+            # Create Layer Symbology
+            if symbology:
+                self.create_layer_symbology(symbology, catalogue_entry)
+
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate(False)
         
         # Check Success
         success = not layer_submission.is_declined()
-        
+
         # Check Layer Submission
         if success:
             # Check for Publish Entry
@@ -350,27 +365,62 @@ class Absorber:
         return layer_submission
 
     def create_layer_metadata(self, metadata, catalogue_entry):
-        models.layer_metadata.LayerMetadata.objects.create(
-            created_at=metadata.created_at,
+        """
+        Creates or retrieves a LayerMetadata object for the given CatalogueEntry.
+        If the LayerMetadata object is created, it sets its created_at and additional_data fields.
+        If the LayerMetadata object already exists and its additional_data is empty, it updates the additional_data field.
+        """
+        layer_metadata, created = models.layer_metadata.LayerMetadata.objects.get_or_create(
             catalogue_entry=catalogue_entry,
-            additional_data=metadata.additional_data,
         )
+        if created:
+            layer_metadata.created_at = metadata.created_at
+            layer_metadata.additional_data = metadata.additional_data
+            layer_metadata.save()
+            log.info(f'LayerMetadata: [{layer_metadata}] has been created for the CatalogueEntry: [{catalogue_entry}].')
+        else:
+            if not layer_metadata.additional_data:
+                layer_metadata.additional_data = metadata.additional_data
+                layer_metadata.save()
+                log.info(f'The empty additional_data of the LayerMetadata: [{layer_metadata}] for the CatalogueEntry: [{catalogue_entry}]  has been replaced by the additional_data: [{metadata.additional_data}].')
+            else:
+                log.warning(f'The additional_data of LayerMetadata: [{layer_metadata}] has a value, but an attempt was made to update it.')
 
     def create_layer_attributes(self, attributes, catalogue_entry):
-        for attribute in attributes:
-            # Create Attribute
-            models.layer_attributes.LayerAttribute.objects.create(
-                name=attribute.name,
-                type=attribute.type,
-                order=attribute.order,
-                catalogue_entry=catalogue_entry,
-            )
+        existing_attributes = catalogue_entry.attributes.all()
+        if existing_attributes.count():
+            log.warning(f'There are already existing LayerAttributes: [{catalogue_entry.attributes}] of the CatalogueEntry: [{catalogue_entry}].')
+        else:
+            for attribute in attributes:
+                # Create Attribute
+                layer_attribute = models.layer_attributes.LayerAttribute.objects.create(
+                    name=attribute.name,
+                    type=attribute.type,
+                    order=attribute.order,
+                    catalogue_entry=catalogue_entry,
+                )
+                log.info(f'LayerMetadata: [{layer_attribute}] has been created for the CatalogueEntry: [{catalogue_entry}].')
 
     def create_layer_symbology(self, symbology, catalogue_entry):
-        models.layer_symbology.LayerSymbology.objects.create(
-            sld=symbology.sld,
+        """
+        Creates or retrieves a LayerSymbology object for the given CatalogueEntry.
+        If the LayerSymbology object is created, it sets its sld field.
+        If the LayerSymbology object already exists and its sld field is empty, it updates the sld field.
+        """
+        layer_symbology, created = models.layer_symbology.LayerSymbology.objects.get_or_create(
             catalogue_entry=catalogue_entry,
         )
+        if created:
+            layer_symbology.sld = symbology.sld
+            layer_symbology.save()
+            log.info(f'LayerSymbology: [{layer_symbology}] has been created for the CatalogueEntry: [{catalogue_entry}].')
+        else:
+            if not layer_symbology.sld:
+                layer_symbology.sld = symbology.sld
+                layer_symbology.save()
+                log.info(f'The empty sld of the LayerSymbology: [{layer_symbology}] for the CatalogueEntry: [{catalogue_entry}] has been replaced by the sld: [{symbology.sld}].')
+            else:
+                log.warning(f'The sld of the LayerSymbology: [{layer_symbology}] has a value, but an attempt was made to update it.')
 
     def convert_to_geojson(
         self, 
