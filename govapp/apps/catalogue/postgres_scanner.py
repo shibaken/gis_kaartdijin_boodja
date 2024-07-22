@@ -158,11 +158,19 @@ class Scanner:
                                 generate_shp = True
                 if generate_shp is True:  
                     try:
-                        co = conversions.postgres_to_shapefile(catalogue_entry_obj.name,catalogue_entry_obj.layer_subscription.host,catalogue_entry_obj.layer_subscription.username,catalogue_entry_obj.layer_subscription.userpassword,catalogue_entry_obj.layer_subscription.database,catalogue_entry_obj.layer_subscription.port,catalogue_entry_obj.sql_query)
-                        shutil.move(co["compressed_filepath"],conf.settings.PENDING_IMPORT_PATH)
+                        co = conversions.postgres_to_shapefile(
+                            catalogue_entry_obj.name,
+                            catalogue_entry_obj.layer_subscription.host,
+                            catalogue_entry_obj.layer_subscription.username,
+                            catalogue_entry_obj.layer_subscription.userpassword,
+                            catalogue_entry_obj.layer_subscription.database,
+                            catalogue_entry_obj.layer_subscription.port,
+                            catalogue_entry_obj.sql_query
+                        )
+                        new_path = shutil.move(co["compressed_filepath"], conf.settings.PENDING_IMPORT_PATH)
+                        log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].')
                     except Exception as e:
-                        log.error("ERROR Running POSTGIS to Shapefile conversation")
-                        print (e)
+                        log.error(f"ERROR Running POSTGIS to Shapefile conversation for the CatalogueEntry: [{catalogue_entry_obj}]")
                     
                     custom_query_freq.last_job_run = now_dt
                     custom_query_freq.save()

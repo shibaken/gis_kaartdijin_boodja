@@ -384,7 +384,7 @@ class Absorber:
                 layer_metadata.save()
                 log.info(f'The empty additional_data of the LayerMetadata: [{layer_metadata}] for the CatalogueEntry: [{catalogue_entry}]  has been replaced by the additional_data: [{metadata.additional_data}].')
             else:
-                log.warning(f'The additional_data of LayerMetadata: [{layer_metadata}] has a value, but an attempt was made to update it.')
+                log.warning(f'The additional_data of the existing LayerMetadata: [{layer_metadata}] has a value, but an attempt was made to update it.')
 
     def create_layer_attributes(self, attributes, catalogue_entry):
         existing_attributes = catalogue_entry.attributes.all()
@@ -420,7 +420,7 @@ class Absorber:
                 layer_symbology.save()
                 log.info(f'The empty sld of the LayerSymbology: [{layer_symbology}] for the CatalogueEntry: [{catalogue_entry}] has been replaced by the sld: [{symbology.sld}].')
             else:
-                log.warning(f'The sld of the LayerSymbology: [{layer_symbology}] has a value, but an attempt was made to update it.')
+                log.warning(f'The sld of the existing LayerSymbology: [{layer_symbology}] has a value, but an attempt was made to update it.')
 
     def convert_to_geojson(
         self, 
