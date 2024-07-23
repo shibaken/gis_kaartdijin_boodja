@@ -56,12 +56,13 @@
             <div class='col-9'>
                   <ul class="nav nav-tabs">
                         <li class="nav-item">
-                              <a class="nav-link {% if tab == 'details' %}active{% endif %}" aria-current="page"
-                                    href="/layer/submission/{{ layer_submission_obj.id }}/details/">Details</a>
+                              <a class="nav-link {% if tab == 'details' %}active{% endif %}" aria-current="page" href="/layer/submission/{{ layer_submission_obj.id }}/details/">Details</a>
                         </li>
                         <li class="nav-item">
-                              <a class="nav-link {% if tab == 'map' %}active{% endif %}" aria-current="page"
-                                    href="/layer/submission/{{ layer_submission_obj.id }}/map/">Map</a>
+                              <a class="nav-link {% if tab == 'attributes' %}active{% endif %}" aria-current="page" href="/layer/submission/{{ layer_submission_obj.id }}/attributes/">Attributes</a>
+                        </li>
+                        <li class="nav-item">
+                              <a class="nav-link {% if tab == 'map' %}active{% endif %}" aria-current="page" href="/layer/submission/{{ layer_submission_obj.id }}/map/">Map</a>
                         </li>
                   </ul>
 
@@ -73,6 +74,8 @@
                   <input type="hidden" id="layer_submission_obj_id" name="layer_submission_obj_id" value="{{ layer_submission_obj.id }}">
                   {% if tab == "details" %}
                   {% include "govapp/layer_submissions_view_details.html" %}
+                  {% elif tab == "attributes" %}
+                  {% include "govapp/layer_submissions_view_attributes.html" %}
                   {% elif tab == "map" %}
                   {% include "govapp/layer_submissions_view_map.html" %}
                   {% endif %}

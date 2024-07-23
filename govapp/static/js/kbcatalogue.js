@@ -4,11 +4,11 @@ var kbcatalogue = {
          catalogue_permission_url: "/api/catalogue/permission/",
          catalogue_layer_symbology_url: "/api/catalogue/layers/symbologies/",
          catalogue_status: {
-            1: "New Draft",
-            2: "Locked",
-            3: "Declined",
-            4: "Draft",
-            5: "Pending"
+            1: {"name": "New Draft", "colour": "darkgray"},
+            2: {"name": "Locked", "colour": "green"},
+            3: {"name": "Declined", "colour": "darkgray"},
+            4: {"name": "Draft", "colour": "darkgray"},
+            5: {"name": "Pending", "colour": "darkgray"}
         },
         catalogue_Type: {
             1: "Special File",
@@ -526,15 +526,19 @@ var kbcatalogue = {
                                 html+= "";
                             }
 
-                            html+= "</td>";
-                            html+= " <td>"+kbcatalogue.var.catalogue_status[response.results[i].status]+"</td>";
-                            html+= " <td>"+response.results[i].updated_at+"</td>";
-                            html+= " <td>"+assigned_to_friendly+"</td>";
-                            html+= " <td class='text-end'>";                        
-                            html+="  <a class='btn btn-primary btn-sm' href='/catalogue/entries/"+response.results[i].id+"/details/'>View</a>";
-                            html+="  <button class='btn btn-secondary  btn-sm'>History</button>";
-                            html+="  </td>";
-                            html+= "<tr>";
+                            html += "</td>";
+                            if (response.results[i].status == 2){
+                                html += " <td><strong><span style='color:" + kbcatalogue.var.catalogue_status[response.results[i].status].colour + ";'>" + kbcatalogue.var.catalogue_status[response.results[i].status].name + "<span></strong></td>";
+                            } else {
+                                html += " <td>" + kbcatalogue.var.catalogue_status[response.results[i].status].name + "</td>";
+                            }
+                            html += " <td>" + response.results[i].updated_at + "</td>";
+                            html += " <td>" + assigned_to_friendly + "</td>";
+                            html += " <td class='text-end'>";
+                            html += "  <a class='btn btn-primary btn-sm' href='/catalogue/entries/" + response.results[i].id + "/details/'>View</a>";
+                            html += "  <button class='btn btn-secondary  btn-sm'>History</button>";
+                            html += "  </td>";
+                            html += "<tr>";
                         }
 
                         $('#publish-tbody').html(html);

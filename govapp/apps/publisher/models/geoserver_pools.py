@@ -491,7 +491,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         user_data = {
             "user": {
                 "userName": user.email,
-                "password": generate_random_password(),
+                "password": generate_random_password(50),
                 "enabled": user.is_active
             }
         }

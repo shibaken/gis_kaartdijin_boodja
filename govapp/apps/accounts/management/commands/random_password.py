@@ -21,7 +21,7 @@ class Command(BaseCommand):
         for user in users:
             user_name = user["userName"]
             if user_name not in settings.NON_DELETABLE_USERS:
-                new_password = generate_random_password()
+                new_password = generate_random_password(50)
                 self.update_password(geoserver, user_name, new_password)
 
     def update_password(self, geoserver, user_name, new_password):
