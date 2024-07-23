@@ -330,6 +330,7 @@ class CatalogueEntriesView(base.TemplateView):
         # catalogue_layer_symbology_obj = catalogue_layer_symbology_models.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
         # if catalogue_layer_symbology_obj.count() > 0:
         #     display_symbology_definition_tab = catalogue_layer_symbology_obj[0]
+        layer_symbology = catalogue_entry_obj.symbology if hasattr(catalogue_entry_obj, 'symbology') else ''
         if catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_QUERY:
             display_symbology_definition_tab = True
         elif catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SPATIAL_FILE and not catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff',]:
@@ -348,6 +349,7 @@ class CatalogueEntriesView(base.TemplateView):
         context['catalogue_entry_id'] = self.kwargs['pk']
         context['tab'] = self.kwargs['tab']
         context['display_symbology_definition_tab'] = display_symbology_definition_tab
+        context['layer_symbology'] = layer_symbology
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['has_edit_access'] = has_edit_access
         context['display_attributes_tab'] = display_attributes_tab
