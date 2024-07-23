@@ -56,6 +56,21 @@ class CatalogueEntryType(models.IntegerChoices):
     SUBSCRIPTION_WMS = 3
     SUBSCRIPTION_POSTGIS = 4
     SUBSCRIPTION_QUERY = 5
+
+    @classmethod
+    def get_as_string(cls, num):
+        if num == cls.SPATIAL_FILE:
+            return 'Spatial file'
+        elif num == cls.SUBSCRIPTION_WFS:
+            return 'Subscription WFS'
+        elif num == cls.SUBSCRIPTION_WMS:
+            return 'Subscription WMS'
+        elif num == cls.SUBSCRIPTION_POSTGIS:
+            return 'Subscription Postgis'
+        elif num == cls.SUBSCRIPTION_QUERY:
+            return 'Subscription Query'
+        else:
+            return ''
     
 CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_CDDP = [
     CatalogueEntryType.SPATIAL_FILE,

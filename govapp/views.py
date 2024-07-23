@@ -138,14 +138,13 @@ class PublishPage(base.TemplateView):
 
         for ce in ce_obj:
             if ce.id not in pe_list:
-                catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+                catalogue_entry_list.append({'id': ce.id, 'name': ce.name, 'type': catalogue_entries_models.CatalogueEntryType.get_as_string(ce.type)})
                    
         is_administrator = utils.is_administrator(request.user)
 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
         context['is_administrator'] = is_administrator
-        # context['catalogue_entry_list'] = []
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
