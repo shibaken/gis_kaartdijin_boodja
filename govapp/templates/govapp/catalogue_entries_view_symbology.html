@@ -1,4 +1,4 @@
-<input type='hidden' value='{{ symbology_definition.id }}' name='catalogue-entry-symbology-definition-id' id='catalogue-entry-symbology-definition-id'>
+<input type='hidden' value='{{ layer_symbology.id }}' name='catalogue-entry-symbology-definition-id' id='catalogue-entry-symbology-definition-id'>
 
 <div class="card" >
     <div class="card-header fw-bold h4" style="padding:30px;">
@@ -15,10 +15,10 @@
           <div class='row'>
                 <div class='col-12'>
                       {% if has_edit_access is True %}
-                            <textarea class="form-control" rows='20' id="catalogue-entry-symbology-definition" >{{ symbology_definition.sld }}</textarea>                                    
+                            <textarea class="form-control" rows='20' id="catalogue-entry-symbology-definition" >{{ layer_symbology.sld }}</textarea>                                    
                             &nbsp;
                       {% else %}
-                            <textarea readonly class="form-control" rows='20' > {{ symbology_definition.sld }}</textarea>      
+                            <textarea readonly class="form-control" rows='20' > {{ layer_symbology.sld }}</textarea>      
                       {% endif %}
                 </div>
           </div>
