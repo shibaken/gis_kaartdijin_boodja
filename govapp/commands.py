@@ -130,6 +130,16 @@ class ManagementCommands(viewsets.ViewSet):
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=False, methods=["POST"])
+    def get_postgis_submissions(self, request: request.Request) -> response.Response:
+        try:
+            management.call_command("runcrons", "govapp.apps.catalogue.cron.PostgresScannerCronJob", "--force")
+        except Exception as exc:
+            log.error(f"Unable to perform scan: {exc}")
+
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=False, methods=["POST"])
     def excute_geoserver_queue(self, request: request.Request) -> response.Response:
         """Runs the `geoserver queue` Management Command.
 

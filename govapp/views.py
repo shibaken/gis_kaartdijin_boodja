@@ -25,6 +25,7 @@ from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_su
 from govapp.apps.catalogue.models import layer_subscriptions as catalogue_layer_subscription_models
 from govapp.apps.catalogue import utils as catalogue_utils
 from govapp.apps.accounts import utils
+from govapp.common import local_storage
 
 # Typing
 from typing import Any
@@ -86,6 +87,7 @@ class PendingImportsView(base.TemplateView):
     template_name = "govapp/pending_imports.html"
 
     def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        # pathToFolder = local_storage.LocalStorage.get_pending_import_path()
         pathToFolder = settings.PENDING_IMPORT_PATH
         file_list = os.listdir(pathToFolder)
 
@@ -136,14 +138,13 @@ class PublishPage(base.TemplateView):
 
         for ce in ce_obj:
             if ce.id not in pe_list:
-                catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+                catalogue_entry_list.append({'id': ce.id, 'name': ce.name, 'type': catalogue_entries_models.CatalogueEntryType.get_as_string(ce.type)})
                    
         is_administrator = utils.is_administrator(request.user)
 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
         context['is_administrator'] = is_administrator
-        # context['catalogue_entry_list'] = []
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
@@ -301,7 +302,7 @@ class CatalogueEntriesView(base.TemplateView):
         context: dict[str, Any] = {}
         has_edit_access = False
         catalogue_id = self.kwargs['pk']
-        symbology_definition = ''
+        display_symbology_definition_tab = False
         catalogue_layer_metadata = None
 
         custodians_obj = custodians_models.Custodian.objects.all()
@@ -321,21 +322,24 @@ class CatalogueEntriesView(base.TemplateView):
             
         system_users_list = [system_users_dict[key] for key in system_users_dict]
         
-                
         is_administrator = utils.is_administrator(request.user)
         if is_administrator is True and request.user == catalogue_entry_obj.assigned_to:
              if catalogue_entry_obj.status == 1 or catalogue_entry_obj.status == 4 or catalogue_entry_obj.status ==5:
                 has_edit_access = True
 
-        catalogue_layer_symbology_obj = catalogue_layer_symbology_models.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
-        if catalogue_layer_symbology_obj.count() > 0:
-            symbology_definition = catalogue_layer_symbology_obj[0]
+        # catalogue_layer_symbology_obj = catalogue_layer_symbology_models.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
+        # if catalogue_layer_symbology_obj.count() > 0:
+        #     display_symbology_definition_tab = catalogue_layer_symbology_obj[0]
+        if catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_QUERY:
+            display_symbology_definition_tab = True
+        elif catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SPATIAL_FILE and not catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff',]:
+            display_symbology_definition_tab = True
 
         catalogue_layer_metadata_obj = catalogue_layer_metadata_models.LayerMetadata.objects.filter(catalogue_entry=catalogue_id)
         if catalogue_layer_metadata_obj.count() > 0:
             catalogue_layer_metadata = catalogue_layer_metadata_obj[0]
 
-        display_attributes_tab = False if catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff'] else True
+        display_attributes_tab = False if catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff',] else True
 
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
@@ -343,16 +347,13 @@ class CatalogueEntriesView(base.TemplateView):
         context['system_users'] = system_users_list
         context['catalogue_entry_id'] = self.kwargs['pk']
         context['tab'] = self.kwargs['tab']
-        context['symbology_definition'] = symbology_definition
+        context['display_symbology_definition_tab'] = display_symbology_definition_tab
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['has_edit_access'] = has_edit_access
         context['display_attributes_tab'] = display_attributes_tab
 
-    
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
-        
-
 
 
 class LayerSubmission(base.TemplateView):

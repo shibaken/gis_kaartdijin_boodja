@@ -86,9 +86,9 @@ class GeoServer:
             log.info(f"Workspace '{workspace_name}' already exists in the geoserver: [{self.service_url}].")
 
     @handle_http_exceptions(log)
-    def create_store_if_not_exists(self, workspace_name, store_name, data):
+    def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):
         # URL to check the existence of the store
-        store_get_url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores/{store_name}"
+        store_get_url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}/{store_name}"
         log.info(f'store_get_url: {store_get_url}')
 
         # Headers with authentication information
@@ -100,24 +100,24 @@ class GeoServer:
             response = client.get(store_get_url, headers=headers)
 
         # Construct URL
-        url = f"{self.service_url}/rest/workspaces/{workspace_name}/wmsstores"
+        url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}"
 
+        # data = data.replace('\n', '')
         # Decide whether to perform a POST or PUT request based on the existence of the store
         if response.status_code == 404: 
             # Store does not exist, perform a POST request
-            log.info(f'Store does not exist. Performing POST request.')
+            log.info(f'Store: [{store_name}] does not exist. Performing POST request to create the store.')
             log.info(f'POST url: {url}')
             log.debug(f'data: {data}')
             with httpx.Client(auth=(self.username, self.password)) as client:
-                response = client.post(url=url, headers=headers, json=data)
-
+                response = client.post(url=url, headers=headers, data=data)
         else:          
             # Store exists, perform a PUT request
-            log.info(f'Store exists. Performing PUT request.')
+            log.info(f'Store: [{store_name}] exists. Performing PUT request to update the store.')
             log.info(f'PUT url: {store_get_url}')
             log.debug(f'data: {data}')
             with httpx.Client(auth=(self.username, self.password)) as client:
-                response = client.put(url=store_get_url, headers=headers, json=data)
+                response = client.put(url=store_get_url, headers=headers, data=data)
             
         return response
 
@@ -293,7 +293,7 @@ class GeoServer:
         
         data = render_to_string('govapp/geoserver/wms/wms_store.json', context)
 
-        response = self.create_store_if_not_exists(workspace, store_name, data)
+        response = self.create_store_if_not_exists(workspace, store_name, data, datastore_type='wmsstores')
         
         # Log
         log.info(f"GeoServer WMS response: '{response.status_code}: {response.text}'")
@@ -458,14 +458,8 @@ class GeoServer:
         # Log
         log.info(f"Uploading WFS/Postgis Layer to GeoServer...")
         
-        xml_data = render_to_string('govapp/geoserver/wfs/wfs_layer.json', context)
-
-        layer_get_url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes/{3}".format(
-            self.service_url,
-            workspace,
-            store_name,
-            layer_name
-        )
+        data_in_json = render_to_string('govapp/geoserver/wfs/wfs_layer.json', context)
+        layer_get_url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store_name}/featuretypes/{layer_name}"
 
         # Check if Layer Exists
         response = httpx.get(
@@ -475,7 +469,7 @@ class GeoServer:
             timeout=120.0
         )
         if response.status_code == 200:
-            log.info(f'Layer exists.  Perform delete request.')
+            log.info(f'Layer: [{layer_name}] exists.  Perform delete request.')
             response = httpx.delete(
                 url=layer_get_url+"?recurse=true",
                 auth=(self.username, self.password),
@@ -484,32 +478,25 @@ class GeoServer:
                 timeout=120.0
             )
         else:
-            log.info(f'Layer does not exist.')
-
+            log.info(f'Layer: [{layer_name}] does not exist.')
 
         # Create the layer
-        url = "{0}/rest/workspaces/{1}/datastores/{2}/featuretypes".format(
-            self.service_url,
-            workspace,
-            store_name
-        )
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store_name}/featuretypes"
+
         log.info(f'Creat the layer by post request...')
         log.info(f'Post url: { url }')
-        log.info(f'Post data: {xml_data}')
+        log.info(f'Post data: {data_in_json}')
         response = httpx.post(
             url=url,
             auth=(self.username, self.password),
-            data=xml_data,
-            # data=request_body,
+            data=data_in_json,
             headers={"content-type": "application/json","Accept": "application/json"},
             timeout=300.0
         )
-        
-        # Log
         log.info(f"GeoServer WFS response: '{response.status_code}: {response.text}'")
         
         # Check Response
-        response.raise_for_status()        
+        response.raise_for_status()
 
     @handle_http_exceptions(log)
     def upload_style(
@@ -781,7 +768,6 @@ class GeoServer:
         # return json_response['layer']
         return json_response
 
-    
     @handle_http_exceptions(log)
     def delete_layer(self, layer_name) -> None:
         # Construct URL

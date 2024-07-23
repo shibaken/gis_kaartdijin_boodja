@@ -52,7 +52,7 @@
                                                                   {% endif %}
                                                             {% endfor %}
                                                       </select>
-                                                      <button class='btn btn-primary btn-sm' id='subsctiption-assigned-to-btn' href=''>Assign</button>
+                                                      <button class='btn btn-primary btn-sm mt-1' id='subsctiption-assigned-to-btn' href=''>Assign</button>
                                                 </div>
                                           </p>
 
@@ -390,19 +390,6 @@
                               <BR>
                         {% endif %}
                         {% if subscription_obj.type is 3 %}
-                              <div class='col-12 pt-2'>
-                                    <div class='row'>
-                                          <div class='col-6'>
-                                                &nbsp;
-                                          </div>
-                                          <div class='col-6 text-end'>
-                                                {% if has_edit_access is True %}
-                                                      <button class="btn btn-primary" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
-                                                {% endif %}
-                                          </div>
-                                    </div>
-                              </div>
-                              <BR>
                               <div class="card" >
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
@@ -415,24 +402,27 @@
                                           </div>         
                                     </div>
                                     <div class="card-body collapse show" id="box4-card-body">
-                                          <div class='row'>
-                                                <div class='col-12'>
-                                                      <div id='subscription-dbtable-custom-table'>
-                                                            <table id="example" class="table" style="width:100%">
-                                                                  <thead class='table-dark' id='subscription-custom-query-table-thead'>
-                                                                  </thead>
-                                                                  <tbody id='subscription-custom-query-table-tbody'>
-                                                                        <tr> 
-                                                                              <td colspan="7" class='text-center'>
-                                                                                    <div class="progress">
-                                                                                          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                                    </div>           
-                                                                              </td> 
-                                                                        </tr>
-                                                                  </tbody>
-                                                            </table>
-                                                      </div>
-                                                </div>                        
+                                          <div class='row p-1'>
+                                                <div class='col-12 text-end'>
+                                                      {% if has_edit_access is True %}
+                                                            <button class="btn btn-primary btn-sm" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          <div id='subscription-dbtable-custom-table'>
+                                                <table id="example" class="table" style="width:100%">
+                                                      <thead class='table-dark' id='subscription-custom-query-table-thead'>
+                                                      </thead>
+                                                      <tbody id='subscription-custom-query-table-tbody'>
+                                                            <tr> 
+                                                                  <td colspan="7" class='text-center'>
+                                                                        <div class="progress">
+                                                                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                                                                        </div>
+                                                                  </td> 
+                                                            </tr>
+                                                      </tbody>
+                                                </table>
                                           </div>
                                     </div>
                               </div>
