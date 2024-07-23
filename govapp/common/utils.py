@@ -1,6 +1,8 @@
 """Kaartdijin Boodja Django Application Utility Functions."""
 
 import re
+import string
+import random
 
 # Third-Party
 from functools import wraps
@@ -99,3 +101,8 @@ def calculate_dict_differences(new_rules, existing_rules):
     items_to_delete = {key: existing_rules[key] for key in set(existing_rules.keys()) - set(new_rules.keys())}
 
     return items_to_update, items_to_create, items_to_delete
+
+def generate_random_password(self):
+    """Generate a secure random password."""
+    characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(characters) for i in range(12))
