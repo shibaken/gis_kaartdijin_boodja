@@ -21,7 +21,7 @@
                                    <select type="text" class="form-control" id="new-publish-entry-catalogue-entry" >
                                         <option value="">Select One</option>
                                         {% for ce in catalogue_entry_list %}
-                                             <option value="{{ ce.id }}">CE{{ ce.id }}: {{ ce.name }}</option>
+                                             <option value="{{ ce.id }}">CE{{ ce.id }}: <strong>{{ ce.name }}</strong> ({{ ce.type }})</option>
                                         {% endfor %}
                                    </select>
                               </div>

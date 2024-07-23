@@ -29,7 +29,7 @@ class Scanner:
     def scan(self) -> None:
         """Scans for new files in the staging area to be absorbed."""
         # Log
-        log.info("Scanning storage staging area for files to absorb")
+        log.info(f"Scanning storage staging area: [{self.storage.get_pending_import_path()}] for files to absorb")
 
         # Retrieve file from remote storage staging area
         import os

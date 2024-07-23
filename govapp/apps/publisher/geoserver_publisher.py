@@ -44,8 +44,7 @@ def publish(publish_entry: "PublishEntry", geoserver:geoserver.GeoServer, geoser
     try:
         ### Publish! ###
         # for special file
-        # if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE, CatalogueEntryType.SUBSCRIPTION_QUERY]:
-        if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE,]:
+        if publish_entry.catalogue_entry.type in [CatalogueEntryType.SPATIAL_FILE, CatalogueEntryType.SUBSCRIPTION_QUERY]:  # In the case of SUBSCRIPTION_QUERY, system generates spatial_file, which 
             geoserver_info.publish(symbology_only, geoserver)
         # for layer subscription
         else:
@@ -230,15 +229,5 @@ def _publish_postgis(
             "crs": geoserver_info.llb_crs,
         },
         "enabled": layer_subscription.enabled,
-        # "attributes": catalogue_entry.attributes.all()
-        # "description": "TES",
-        # "enabled": 'true',
-        # "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
     }
-        #     context = {
-        #     "name": self.publish_entry.catalogue_entry.metadata.name+"_wfs",
-        #     "description": "TES",
-        #     "enabled": 'true',
-        #     "capability_url" :"https://services.slip.wa.gov.au/arcgis/services/DBCA_Restricted_Services/DBCA_Fire_Preview_WFS/MapServer/WFSServer?service=wfs&request=GetCapabilities"
-        # }
     geoserver.upload_layer_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)  # We can use ths function for postgis, too.

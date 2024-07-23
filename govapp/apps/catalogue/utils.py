@@ -4,6 +4,7 @@
 # Standard
 import hashlib
 import json
+import logging
 
 # Third Party
 from functools import wraps
@@ -15,6 +16,9 @@ from rest_framework.serializers import ValidationError
 # Typing
 from typing import Any, Iterable, Optional
 
+
+# Logging
+log = logging.getLogger(__name__)
 
 def attributes_hash(attributes: Optional[Iterable[Any]]) -> str:
     """Calculates the hash of attributes.
@@ -56,6 +60,8 @@ def attributes_hash(attributes: Optional[Iterable[Any]]) -> str:
 
         # Update Hash
         hash.update(json_bytes)
+    
+    log.info(f'Hash calculated: [{hash.hexdigest()}] for the attributes: [{attributes}].')
 
     # Return
     return hash.hexdigest()

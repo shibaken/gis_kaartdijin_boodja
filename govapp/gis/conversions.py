@@ -27,7 +27,7 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
         pathlib.Path: Path to the converted GeoPackage file.
     """
     # Log
-    log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoPackage")
+    log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoPackage...")
 
     # Decompress and Flatten if Required
     filepath = compression.decompress(filepath)
@@ -84,7 +84,7 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str, export_m
         pathlib.Path: Path to the converted GeoJSON file.
     """
     # Log
-    log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoJSON")
+    log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoJSON...")
 
     # Decompress and Flatten if Required
     filepath = compression.decompress(filepath)
@@ -123,7 +123,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
         pathlib.Path: Path to the converted ShapeFile file.
     """
     # Log
-    log.info(f"Converting file '{filepath}' layer: '{layer}' to ShapeFile")
+    log.info(f"Converting file '{filepath}' layer: '{layer}' to ShapeFile...")
 
     # Decompress and Flatten if Required
     filepath = compression.decompress(filepath)
@@ -167,7 +167,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
         pathlib.Path: Path to the converted GeoDatabase file.
     """
     # Log
-    log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoDatabase")
+    log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoDatabase...")
 
     # Decompress and Flatten if Required
     filepath = compression.decompress(filepath)
@@ -217,6 +217,8 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 
 
 def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str,sqlquery: str) -> pathlib.Path: 
+    log.info(f"Converting custom query for the PostGIS to shapefile...")
+
     hash_array = {}
     output_dir = tempfile.mkdtemp()
     cleaned_sqlquery = sqlquery.replace('\n', ' ')
@@ -256,6 +258,8 @@ def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
     output_layer_name (str): Name of the layer to be added in the GeoPackage.
 
     """
+    log.info(f"Converting tiff file '{input_tiff}' to GeoDatabase...")
+
     # Open the input TIFF file
     tiff_dataset = gdal.Open(input_tiff)
     
