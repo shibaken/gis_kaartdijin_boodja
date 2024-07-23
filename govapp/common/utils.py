@@ -102,7 +102,7 @@ def calculate_dict_differences(new_rules, existing_rules):
 
     return items_to_update, items_to_create, items_to_delete
 
-def generate_random_password(self):
+def generate_random_password():
     """Generate a secure random password."""
     characters = string.ascii_letters + string.digits + string.punctuation
     return ''.join(random.choice(characters) for i in range(12))
