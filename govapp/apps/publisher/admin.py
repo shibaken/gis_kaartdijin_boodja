@@ -168,12 +168,14 @@ class GeoServerGroupUserInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerGroupUser
     extra = 1  # Number of empty forms to display
     fields = ['geoserver_group', 'user',]
+    raw_id_fields = ('user',)
 
 
 class GeoServerRoleUserInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerRoleUser
     extra = 1  # Number of empty forms to display
     fields = ['geoserver_role', 'user',]
+    raw_id_fields = ('user',)
 
 
 class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
@@ -197,8 +199,9 @@ class GeoServerRoleAdmin(reversion.admin.VersionAdmin):
             return ['default',]
     
     def get_inline_instances(self, request, obj=None):
-        if obj and obj.default:
-            return []
+        # if obj and obj.default:
+        #     return []
+        # return super().get_inline_instances(request, obj)
         return super().get_inline_instances(request, obj)
 
 
