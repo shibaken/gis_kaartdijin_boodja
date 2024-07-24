@@ -15,8 +15,7 @@ import httpx
 from typing import Any, Optional
 from django.template.loader import render_to_string
 
-from govapp import settings
-from govapp.common.utils import calculate_dict_differences, handle_http_exceptions
+from govapp.common.utils import handle_http_exceptions
 
 # Logging
 log = logging.getLogger(__name__)
@@ -53,59 +52,6 @@ class GeoServer:
     @property
     def headers_json(self):
         return {"content-type": "application/json","Accept": "application/json"}
-
-    @handle_http_exceptions(log)
-    def delete_workspace(self, workspace_name, recurse='false'):
-        workspace_url = f"{self.service_url}/rest/workspaces/{workspace_name}.json?recurse={recurse}"
-
-        with httpx.Client(auth=(self.username, self.password)) as client:
-            # Send a GET request to check the existence of the workspace
-            response = client.delete(workspace_url, headers=self.headers_json)
-        
-            if response.status_code == 200:
-                log.info(f"Workspace: [{workspace_name}] has been deleted successfully from the GeoServer: [{self}].")
-            elif response.status_code == 403:
-                log.error(f'Deleting the workspace: [{workspace_name}] from the GeoServer: [{self}], but the workspace or related Namespace is not empty (and recurse not true)')
-            elif response.status_code == 404:
-                log.error(f'Workspace: [{workspace_name}] does not exist in the GeoServer: [{self}].')
-            
-            return response
-
-    @handle_http_exceptions(log)
-    def create_workspace_if_not_exists(self, workspace_name):
-        # URL to check the existence of the workspace
-        workspace_url = f"{self.service_url}/rest/workspaces/{workspace_name}.json"
-
-        with httpx.Client(auth=(self.username, self.password)) as client:
-            # Send a GET request to check the existence of the workspace
-            response = client.get(workspace_url, headers=self.headers_json)
-
-        # Create the workspace only if it doesn't exist
-        if response.status_code == 404:
-            log.info(f"Workspace '{workspace_name}' does not exist in the geoserver: [{self.service_url}]. Creating...")
-
-            # URL to create the workspace
-            create_workspace_url = f"{self.service_url}/rest/workspaces"
-
-            # JSON data required to create the workspace
-            workspace_data = {
-                "workspace": {
-                    "name": workspace_name
-                }
-            }
-
-            with httpx.Client(auth=(self.username, self.password)) as client:
-                # Send a POST request to create the workspace
-                create_response = client.post(create_workspace_url, headers=self.headers_json, json=workspace_data)
-
-            # Check the status code to determine if the creation was successful
-            if create_response.status_code == 201:
-                log.info(f"Workspace '{workspace_name}' created successfully in the geoserver: [{self.service_url}].")
-            else:
-                log.info("Failed to create workspace.")
-                log.info(create_response.text)
-        else:
-            log.info(f"Workspace '{workspace_name}' already exists in the geoserver: [{self.service_url}].")
 
     @handle_http_exceptions(log)
     def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):
@@ -776,125 +722,6 @@ class GeoServer:
             log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
         else:
             log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
-
-    # Function to create a new group in GeoServer
-    @handle_http_exceptions(log)
-    def create_geoserver_group(self, group_name):
-        url = f"{self.service_url}/rest/security/usergroup/group/{group_name}"
-        response = httpx.post(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f"Created group: {group_name} on the geoserver: [{self.service_url}]")
-
-    # Function to create a new role in GeoServer
-    @handle_http_exceptions(log)
-    def create_geoserver_role(self, role_name):
-        url = f"{self.service_url}/rest/security/roles/role/{role_name}"
-        response = httpx.post(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f"Created role: {role_name} on the geoserver: [{self.service_url}]")
-
-    @handle_http_exceptions(log)
-    def update_workspace_security(self, workspace_name, role_to_modify, read_permission, write_permission, admin_permission):
-        """
-        Update security settings for a specific workspace in GeoServer.
-
-        :param workspace_name: The name of the workspace to update.
-        :param role_to_modify: The role to modify.
-        :param read_permission: Boolean value for read permission.
-        :param write_permission: Boolean value for write permission.
-        :param admin_permission: Boolean value for admin permission.
-        """
-
-        self.fetch_all_rules()
-
-        security_url = f"{self.service_url}/rest/security/acl/workspaces/{workspace_name}.json"
-        
-        # Construct the security settings JSON payload
-        security_settings = {
-            "rules": [
-                {
-                    "role": role_to_modify,
-                    "workspace": workspace_name,
-                    "access": {
-                        "read": read_permission,
-                        "write": write_permission,
-                        "admin": admin_permission
-                    }
-                }
-            ]
-        }
-        
-        with httpx.AsyncClient() as client:
-            response = client.put(
-                security_url,
-                json=security_settings,
-                auth=(self.username, self.password),
-                headers=self.headers_json
-            )
-        
-        if response.status_code == 200:
-            log.info(f"Security settings updated successfully for workspace '{workspace_name}' and role '{role_to_modify}'.")
-        else:
-            log.error(f"Failed to update security settings: {response.status_code}, Response: {response.text}")
-
-    def synchronize_rules(self, new_rules):
-        existing_rules = self.fetch_rules()
-
-        items_to_update, items_to_create, items_to_delete = calculate_dict_differences(new_rules, existing_rules)
-
-        log.info(f'Rules to update: {json.dumps(items_to_update, indent=4)}')
-        log.info(f'Rules to create: {json.dumps(items_to_create, indent=4)}')
-        log.info(f'Rules to delete: {json.dumps(items_to_delete, indent=4)}')
-
-        # Create new rules
-        if items_to_create:
-            self.create_rules(items_to_create)
-
-        # Update existing rules
-        if items_to_update:
-            self.update_rules(items_to_update)
-
-        # Delete existing rules
-        if items_to_delete:
-            for key in items_to_delete.keys():
-                self.delete_rule(key)
-
-    @handle_http_exceptions(log)
-    def fetch_rules(self):
-        """Fetch all access control rules."""
-        url = f"{self.service_url}/rest/security/acl/layers.json"
-        response = httpx.get(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        rules_data = response.json()
-        log.info(f'Successfully fetched ACL rules: [{json.dumps(rules_data, indent=4)}] from the geoserver: [{self.service_url}].')
-        return rules_data
-
-    @handle_http_exceptions(log)
-    def create_rules(self, rules):
-        """Add a set of access control rules."""
-        url = f"{self.service_url}/rest/security/acl/layers"
-        response = httpx.post(url, json=rules, headers=self.headers_json, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f'Successfully added ACL rules: [{json.dumps(rules)}].')
-        return {}
-
-    @handle_http_exceptions(log)
-    def update_rules(self, rules):
-        """Modify a set of access control rules."""
-        url = f"{self.service_url}/rest/security/acl/layers"
-        response = httpx.put(url, json=rules, headers=self.headers_json, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f'Successfully updated ACL rules: [{json.dumps(rules)}].')
-        return {}
-
-    @handle_http_exceptions(log)
-    def delete_rule(self, key):
-        """Delete a specific access control rule."""
-        url = f"{self.service_url}/rest/security/acl/layers/{key}"
-        response = httpx.delete(url, auth=(self.username, self.password))
-        response.raise_for_status()
-        log.info(f'Successfully deleted ACL rule: key=[{key}].')
-        return {}
 
 
 def geoserver() -> GeoServer:

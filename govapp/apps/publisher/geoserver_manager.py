@@ -1,7 +1,6 @@
 """Kaartdijin Boodja Publisher GeoServer Queue Excutor."""
 
 # Standard
-import asyncio
 import logging
 
 # Third-Party
@@ -47,17 +46,13 @@ class GeoServerQueueExcutor:
             self._init_excuting(queue_item=queue_item)
         
             for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
-                if geoserver_publish_channel.geoserver_pool.enabled:
-                    geoserver_obj = geoserver.geoserverWithCustomCreds(  # We want GeoServer obj
-                        geoserver_publish_channel.geoserver_pool.url,
-                        geoserver_publish_channel.geoserver_pool.username,
-                        geoserver_publish_channel.geoserver_pool.password
-                    )
-
+                geoserver_pool = geoserver_publish_channel.geoserver_pool
+                if geoserver_pool.enabled:
                     # Make sure all the workspace exist in the geoserver
                     workspaces_in_kb = Workspace.objects.all()
                     for workspace in workspaces_in_kb:
-                        geoserver_obj.create_workspace_if_not_exists(workspace.name)
+                        # geoserver_obj.create_workspace_if_not_exists(workspace.name)
+                        geoserver_pool.create_workspace_if_not_exists(workspace.name)
 
                     self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
 
@@ -129,9 +124,6 @@ class GeoServerSyncExcutor:
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
-            # Generate GeoServer obj
-            # geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
-            # geoserver_obj.synchronize_roles(geoserver_role_names)
             geoserver_info.synchronize_roles(geoserver_role_names)
 
     def sync_geoserver_groups(self):
@@ -145,9 +137,6 @@ class GeoServerSyncExcutor:
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
-            # Generate GeoServer obj
-            # geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
-            # geoserver_obj.synchronize_groups(geoserver_group_names)
             geoserver_info.synchronize_groups(geoserver_group_names)
 
     def sync_geoserver_role_permissions(self):
@@ -156,16 +145,25 @@ class GeoServerSyncExcutor:
         # List of the active geoservers in the KB
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
         new_rules = geoserver_roles_groups.GeoServerRolePermission.get_rules()
-        workspaces_in_kb = Workspace.objects.all()
+        workspaces_in_kb = set(list(Workspace.objects.all().values_list('name', flat=True)))
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             # Generate GeoServer obj
-            geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
+            # geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
             
             # Make sure all the workspace exist in the geoserver
             for workspace in workspaces_in_kb:
-                geoserver_obj.create_workspace_if_not_exists(workspace.name)
+                geoserver_info.create_workspace_if_not_exists(workspace)
             geoserver_obj.synchronize_rules(new_rules)
+
+            workspaces_in_geoserver = geoserver_info.get_all_workspaces()
+            workspaces_in_geoserver = set([workspace['name'] for workspace in workspaces_in_geoserver])
+            log.info(f'Workspaces: [{workspaces_in_geoserver}] exist in the geoserver: [{geoserver_info}].')
+
+            workspaces_to_be_deleted = workspaces_in_geoserver - workspaces_in_kb
+            for workspace_to_be_deleted in workspaces_to_be_deleted:
+                geoserver_info.delete_workspace(workspace_to_be_deleted)
+
 
     def sync_deleted_layers(self):
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")
