@@ -55,8 +55,8 @@ class GeoServerQueueExcutor:
                     )
 
                     # Make sure all the workspace exist in the geoserver
-                    workspaces = Workspace.objects.all()
-                    for workspace in workspaces:
+                    workspaces_in_kb = Workspace.objects.all()
+                    for workspace in workspaces_in_kb:
                         geoserver_obj.create_workspace_if_not_exists(workspace.name)
 
                     self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
@@ -156,14 +156,14 @@ class GeoServerSyncExcutor:
         # List of the active geoservers in the KB
         geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
         new_rules = geoserver_roles_groups.GeoServerRolePermission.get_rules()
-        workspaces = Workspace.objects.all()
+        workspaces_in_kb = Workspace.objects.all()
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             # Generate GeoServer obj
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
             
             # Make sure all the workspace exist in the geoserver
-            for workspace in workspaces:
+            for workspace in workspaces_in_kb:
                 geoserver_obj.create_workspace_if_not_exists(workspace.name)
             geoserver_obj.synchronize_rules(new_rules)
 
