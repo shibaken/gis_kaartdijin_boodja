@@ -1,0 +1,17 @@
+{% load custom_filters %}
+
+<div class="card">
+      <div class="card-header fw-bold h4" style="padding:30px;">
+            <div class="row">
+                  <div class="col-6">Attributes</div>
+                  <div class="col-6 text-end">
+                        <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body"onclick=""></i>
+                  </div>
+            </div>
+      </div>
+      <div class="card-body collapse show" id="box1-card-body">
+            <div class='row'>
+                  <div class='col-12 m-1 ml-3'>{{ layer_submission_obj.layer_attribute|add_newline_before_attribute|safe }}</div>
+            </div>
+      </div>
+</div>
