@@ -161,7 +161,7 @@ var kbmanagementcommands = {
         $( "#run-geoserver-queue" ).click(function() {
             kbmanagementcommands.run_geoserver_queue_cron_job();
         });
-        $( "#run-geoserver-sync" ).click(function() {
+        $( "#run-geoserver-sync-layers" ).click(function() {
             kbmanagementcommands.run_geoserver_sync_cron_job('layers');
         });
         $( "#run-geoserver-sync-roles" ).click(function() {

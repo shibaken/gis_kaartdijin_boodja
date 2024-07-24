@@ -16,7 +16,7 @@ import urllib
 from govapp import settings
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
 from govapp.common import mixins
-from govapp.common.utils import handle_http_exceptions
+from govapp.common.utils import generate_random_password, handle_http_exceptions
 
 log = logging.getLogger(__name__)
 UserModel = get_user_model()
@@ -491,7 +491,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         user_data = {
             "user": {
                 "userName": user.email,
-                "password": user.password,  # Replace with a secure password handling mechanism
+                "password": generate_random_password(50),
                 "enabled": user.is_active
             }
         }
