@@ -467,7 +467,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             wfs (bool): Whether to enable WFS capabilities.
         """
         # Log
-        log.info(f"Publishing '{self}' (Layer) to GeoServer")
+        log.info(f"Publishing '[{self.publish_entry.catalogue_entry}]' (Layer) to GeoServer: [{geoserver}]...")
 
         # geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
 

@@ -48,10 +48,13 @@ class Scanner:
         }
         catalogue_entry_list = catalogue_entries.CatalogueEntry.objects.filter(
             type=catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
-            layer_subscription__status=layer_subscriptions.LayerSubscriptionStatus.LOCKED
         )
-        log.debug(f'[{catalogue_entry_list}]')
+
         for catalogue_entry_obj in catalogue_entry_list:
+            if catalogue_entry_obj.status != layer_subscriptions.LayerSubscriptionStatus.LOCKED:
+                log.warn(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because it is not LOCKED.')
+                continue
+
             cqf = custom_query_frequency.CustomQueryFrequency.objects.filter(catalogue_entry=catalogue_entry_obj)
             for custom_query_freq in cqf:
                 is_time_to_run = False

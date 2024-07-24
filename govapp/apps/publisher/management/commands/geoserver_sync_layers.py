@@ -20,7 +20,7 @@ class Command(base.BaseCommand):
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """Handles the management command functionality."""
         # Display information
-        self.stdout.write("Starting to sync layers between GeoServers and GIS")
+        self.stdout.write("Starting to remove layers from Geoservers that have been deleted from the KB...")
 
         # Go!
         # geoserver_queue_manager.GeoServerQueueExcutor().excute()
