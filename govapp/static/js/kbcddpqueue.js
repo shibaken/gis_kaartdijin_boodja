@@ -42,7 +42,6 @@ var kbcddpweb = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                console.log({response})
                 for(let i in response.results){
                     if(response.results[i].status == 'FAILED') response.results[i].success = false;
                     else if(response.results[i].status == 'PUBLISHED') response.results[i].success = true;

@@ -511,3 +511,8 @@ class CDDPQueueView(base.TemplateView):
     
     # Template name
     template_name = "govapp/cddpqueue.html"
+
+
+class UsergroupsView(base.TemplateView):
+    """ Handle usergroups """
+    template_name = "govapp/usergroups.html"
