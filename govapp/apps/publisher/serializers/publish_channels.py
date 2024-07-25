@@ -2,6 +2,7 @@
 
 
 # Third-Party
+import pytz
 from rest_framework import serializers
 
 # Local
@@ -53,6 +54,7 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
     geoserver_pool_name = serializers.ReadOnlyField(source='geoserver_pool.name')
     geoserver_pool_url = serializers.SerializerMethodField()
     store_type_name = serializers.ReadOnlyField(source='get_store_type_display')
+    published_at = serializers.SerializerMethodField()
     
     class Meta:
         """GeoServer Publish Channel Model Serializer Metadata."""
@@ -70,6 +72,15 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
             "geoserver_pool_name",
             "geoserver_pool_url",
         )
+
+    def get_published_at(self, obj):
+        """Convert published_at to the desired format."""
+        if obj.published_at:
+            # Convert to local time
+            local_time = obj.published_at.astimezone(pytz.timezone('Australia/Perth'))
+            # Return formatted string
+            return local_time.strftime('%d %b %Y %I:%M %p')
+        return None
 
     def get_geoserver_pool_url(self, obj):
         url = ''
