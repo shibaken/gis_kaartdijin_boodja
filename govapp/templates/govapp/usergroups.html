@@ -22,9 +22,8 @@
                   </div>
                   <div class="card-body collapse show" id="box1-card-body">
                         <div class="container">
-                              <button id="add-box-pair-container" class="btn btn-success mb-3">Add Box Pair Container</button>
-                              <div id="box-pair-containers">
-                                  <!-- Box pair containers will be dynamically added here -->
+                              <div id="box-pair-container">
+                                  <!-- Box pairs will be statically added here -->
                               </div>
                           </div>
                   </div>
@@ -54,32 +53,28 @@
         .selected {
             background-color: #aaf;
         }
-        .box-pair, .box-pair-container {
+        .box-pair {
             border: 1px solid #000;
             padding: 10px;
             margin: 10px;
             position: relative;
         }
-        .remove-box-pair, .remove-box-pair-container {
+        .remove-box-pair {
             position: absolute;
             top: 10px;
             right: 10px;
             cursor: pointer;
             color: red;
         }
-        .box-pair-container {
-            border: 2px solid #000;
-            padding: 20px;
-        }
       </style>
 
       <script>
         // Namespace to avoid global scope pollution
         var MoveItemsApp = (function() {
-            let boxPairContainerCount = 0;
+            let boxPairCount = 0;
 
             // Function to create a new box pair
-            function createBoxPair(boxPairId) {
+            function createBoxPair(boxPairId, items) {
                 const box1Id = `box1-${boxPairId}`;
                 const box2Id = `box2-${boxPairId}`;
                 const moveRightId = `move-right-${boxPairId}`;
@@ -107,48 +102,38 @@
                 `;
             }
 
-            // Function to create a new box pair container
-            function createBoxPairContainer(items1, items2, items3, items4) {
-                const boxPairContainerId = `box-pair-container-${boxPairContainerCount}`;
-                const boxPair1Id = `box-pair-1-${boxPairContainerCount}`;
-                const boxPair2Id = `box-pair-2-${boxPairContainerCount}`;
-                const removeContainerId = `remove-container-${boxPairContainerCount}`;
+            // Function to initialize a box pair container with given items
+            function initializeBoxPairContainer(items1, items2) {
+                const boxPair1Id = `box-pair-1`;
+                const boxPair2Id = `box-pair-2`;
 
                 // Create HTML structure for the box pair container
                 const boxPairContainerHtml = `
-                    <div id="${boxPairContainerId}" class="box-pair-container">
-                        <span class="remove-box-pair-container" id="${removeContainerId}">&times;</span>
-                        <div id="${boxPair1Id}" class="box-pair"></div>
-                        <div id="${boxPair2Id}" class="box-pair"></div>
+                    <div id="box-pair-container">
+                        ${createBoxPair(boxPair1Id, items1)}
+                        ${createBoxPair(boxPair2Id, items2)}
                     </div>
                 `;
-                $('#box-pair-containers').append(boxPairContainerHtml);
+                $('#box-pair-container').html(boxPairContainerHtml);
 
-                // Create box pairs and append to the new container
-                $(`#${boxPair1Id}`).html(createBoxPair(`box-pair-1-${boxPairContainerCount}`));
-                $(`#${boxPair2Id}`).html(createBoxPair(`box-pair-2-${boxPairContainerCount}`));
+                // Add initial items to the boxes
+                addItemsToBox(`box1-${boxPair1Id}`, items1);
+                addItemsToBox(`box2-${boxPair1Id}`, items1);
+                addItemsToBox(`box1-${boxPair2Id}`, items2);
+                addItemsToBox(`box2-${boxPair2Id}`, items2);
 
-                // Add initial items to the new box pairs
-                addItemsToBox(`box1-box-pair-1-${boxPairContainerCount}`, items1);
-                addItemsToBox(`box2-box-pair-1-${boxPairContainerCount}`, items2);
-                addItemsToBox(`box1-box-pair-2-${boxPairContainerCount}`, items3);
-                addItemsToBox(`box2-box-pair-2-${boxPairContainerCount}`, items4);
-
-                // Attach event handlers for the new box pairs
-                attachBoxPairEvents($(`#${boxPair1Id}`), `box-pair-1-${boxPairContainerCount}`);
-                attachBoxPairEvents($(`#${boxPair2Id}`), `box-pair-2-${boxPairContainerCount}`);
-                $(`#${removeContainerId}`).click(() => removeBoxPairContainer(boxPairContainerId));
+                // Attach event handlers for the box pairs
+                attachBoxPairEvents($(`#${boxPair1Id}`), boxPair1Id);
+                attachBoxPairEvents($(`#${boxPair2Id}`), boxPair2Id);
 
                 // Toggle selection state on item click
-                $(`#${boxPairContainerId}`).on('click', '.item', function() {
+                $('#box-pair-container').on('click', '.item', function() {
                     $(this).toggleClass('selected');
                 });
 
                 // Update lists initially
-                updateLists(`box1-box-pair-1-${boxPairContainerCount}`, `box2-box-pair-1-${boxPairContainerCount}`);
-                updateLists(`box1-box-pair-2-${boxPairContainerCount}`, `box2-box-pair-2-${boxPairContainerCount}`);
-
-                boxPairContainerCount++;
+                updateLists(`box1-${boxPair1Id}`, `box2-${boxPair1Id}`);
+                updateLists(`box1-${boxPair2Id}`, `box2-${boxPair2Id}`);
             }
 
             // Function to add items to a box
@@ -164,6 +149,7 @@
                 const moveLeftId = `move-left-${boxPairId}`;
                 $boxPair.find(`#${moveRightId}`).click(() => moveItems(`box1-${boxPairId}`, `box2-${boxPairId}`));
                 $boxPair.find(`#${moveLeftId}`).click(() => moveItems(`box2-${boxPairId}`, `box1-${boxPairId}`));
+                $boxPair.find('.remove-box-pair').click(() => $boxPair.remove());
             }
 
             // Function to move selected items from one box to another
@@ -172,11 +158,6 @@
                     $(this).removeClass('selected').appendTo(`#${toBoxId}`);
                 });
                 updateLists(fromBoxId, toBoxId);
-            }
-
-            // Function to remove a box pair container
-            function removeBoxPairContainer(boxPairContainerId) {
-                $(`#${boxPairContainerId}`).remove();
             }
 
             // Function to update the lists and log the current state
@@ -198,22 +179,10 @@
 
             // Initialization function
             function init() {
-                // Add button click handler
-                $('#add-box-pair-container').click(() => {
-                    // Example items for demonstration
-                    const items1 = ['Role 1', 'Role 2', 'Role 3'];
-                    const items2 = ['Role 4', 'Role 5', 'Role 6'];
-                    const items3 = ['User 4', 'User 5', 'User 6'];
-                    const items4 = ['User 4', 'User 5', 'User 6'];
-                    createBoxPairContainer(items1, items2, items3, items4);
-                });
-
-                // Add initial box pair container on load
-                const initialItems1 = ['Role 1', 'Role 2', 'Role 3'];
-                const initialItems2 = ['Role 4', 'Role 5', 'Role 6'];
-                const initialItems3 = ['User 1', 'User 2', 'User 3'];
-                const initialItems4 = ['User 4', 'User 5', 'User 6'];
-                createBoxPairContainer(initialItems1, initialItems2, initialItems3, initialItems4);
+                // Initialize box pairs with example items
+                const initialItems1 = ['Item 1', 'Item 2', 'Item 3'];
+                const initialItems2 = ['Item 4', 'Item 5', 'Item 6'];
+                initializeBoxPairContainer(initialItems1, initialItems2);
             }
 
             // Expose the init function to be called on document ready
