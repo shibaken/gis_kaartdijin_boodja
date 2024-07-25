@@ -4,6 +4,7 @@ import django
 
 from govapp import settings
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerRole, GeoServerUserGroupService
+from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 
 
 logger = logging.getLogger(__name__)
@@ -37,3 +38,6 @@ class DefaultDataManager(object):
                     logger.info(f"Created GeoServerUserGroupService: {service_name}")
             except Exception as e:
                 logger.error(f'{e}, GeoServerUserGroupService: {ug_service_name}')
+
+        # For bulk-updated data, if the 'active' field contains 'Null', set it to 'True'
+        GeoServerPublishChannel.objects.filter(active__isnull=True).update(active=True)
