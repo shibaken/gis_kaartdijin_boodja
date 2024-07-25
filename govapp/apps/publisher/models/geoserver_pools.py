@@ -16,7 +16,7 @@ import urllib
 from govapp import settings
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole, GeoServerRoleUser
 from govapp.common import mixins
-from govapp.common.utils import generate_random_password, handle_http_exceptions
+from govapp.common.utils import calculate_dict_differences, generate_random_password, handle_http_exceptions
 
 log = logging.getLogger(__name__)
 UserModel = get_user_model()
@@ -53,12 +53,16 @@ class GeoServerPool(mixins.RevisionedMixin):
         return f"{self.id}: {self.name}" if self.name else f'{self.id}'
     
     @property
-    def base_url(self):
+    def base_url_security(self):
         return f"{self.url}/rest/security"
     
     @property
     def auth(self):
         return (self.username, self.password)
+
+    @property
+    def headers_json(self):
+        return {"content-type": "application/json","Accept": "application/json"}
 
     @property
     def total_active_layers(self):
@@ -102,13 +106,141 @@ class GeoServerPool(mixins.RevisionedMixin):
         except Exception as e:
             log.error(f'An error occurred during synchronization: {e}')
 
+    ### Workspace
+    @handle_http_exceptions(log)
+    def get_all_workspaces(self, service_name=''):
+        url = f"{self.url}/rest/workspaces"
+        response = httpx.get(
+            url=url,
+            headers=self.headers_json,
+            auth=self.auth
+        )
+        response.raise_for_status()
+        workspaces = response.json()
+        return workspaces['workspaces']['workspace']
+
+    @handle_http_exceptions(log)
+    def create_workspace_if_not_exists(self, workspace_name):
+        # URL to check the existence of the workspace
+        workspace_url = f"{self.url}/rest/workspaces/{workspace_name}.json"
+
+        with httpx.Client(auth=self.auth) as client:
+            # Send a GET request to check the existence of the workspace
+            response = client.get(workspace_url, headers=self.headers_json)
+
+        # Create the workspace only if it doesn't exist
+        if response.status_code == 404:
+            log.info(f"Workspace '{workspace_name}' does not exist in the geoserver: [{self.url}]. Creating...")
+
+            # URL to create the workspace
+            create_workspace_url = f"{self.url}/rest/workspaces"
+
+            # JSON data required to create the workspace
+            workspace_data = {
+                "workspace": {
+                    "name": workspace_name
+                }
+            }
+
+            with httpx.Client(auth=self.auth) as client:
+                # Send a POST request to create the workspace
+                create_response = client.post(create_workspace_url, headers=self.headers_json, json=workspace_data)
+
+            # Check the status code to determine if the creation was successful
+            if create_response.status_code == 201:
+                log.info(f"Workspace '{workspace_name}' created successfully in the geoserver: [{self.url}].")
+            else:
+                log.info("Failed to create workspace.")
+                log.info(create_response.text)
+        else:
+            log.info(f"Workspace '{workspace_name}' already exists in the geoserver: [{self.url}].")
+
+    @handle_http_exceptions(log)
+    def delete_workspace(self, workspace_name, recurse='false'):
+        workspace_url = f"{self.url}/rest/workspaces/{workspace_name}.json?recurse={recurse}"
+
+        with httpx.Client(auth=(self.username, self.password)) as client:
+            # Send a GET request to check the existence of the workspace
+            response = client.delete(workspace_url, headers=self.headers_json)
+        
+            if response.status_code == 200:
+                log.info(f"Workspace: [{workspace_name}] has been deleted successfully from the GeoServer: [{self}].")
+            elif response.status_code == 403:
+                log.error(f'Deleting the workspace: [{workspace_name}] from the GeoServer: [{self}], but the workspace or related Namespace is not empty (and recurse not true)')
+            elif response.status_code == 404:
+                log.error(f'Workspace: [{workspace_name}] does not exist in the GeoServer: [{self}].')
+            
+            return response
+    
+
+    ### Permission
+    def synchronize_rules(self, new_rules):
+        existing_rules = self.fetch_rules()
+
+        items_to_update, items_to_create, items_to_delete = calculate_dict_differences(new_rules, existing_rules)
+
+        log.info(f'Rules to update: {json.dumps(items_to_update, indent=4)}')
+        log.info(f'Rules to create: {json.dumps(items_to_create, indent=4)}')
+        log.info(f'Rules to delete: {json.dumps(items_to_delete, indent=4)}')
+
+        # Create new rules
+        if items_to_create:
+            self.create_rules(items_to_create)
+
+        # Update existing rules
+        if items_to_update:
+            self.update_rules(items_to_update)
+
+        # Delete existing rules
+        if items_to_delete:
+            for key in items_to_delete.keys():
+                self.delete_rule(key)
+
+    @handle_http_exceptions(log)
+    def fetch_rules(self):
+        """Fetch all access control rules."""
+        url = f"{self.base_url_security}/acl/layers.json"
+        response = httpx.get(url, auth=self.auth)
+        response.raise_for_status()
+        rules_data = response.json()
+        log.info(f'Successfully fetched ACL rules: [{json.dumps(rules_data, indent=4)}] from the geoserver: [{self}].')
+        return rules_data
+
+    @handle_http_exceptions(log)
+    def create_rules(self, rules):
+        """Add a set of access control rules."""
+        url = f"{self.base_url_security}/acl/layers"
+        response = httpx.post(url, json=rules, headers=self.headers_json, auth=self.auth)
+        response.raise_for_status()
+        log.info(f'Successfully added ACL rules: [{json.dumps(rules)}] to the geoserver: [{self}].')
+        return {}
+
+    @handle_http_exceptions(log)
+    def update_rules(self, rules):
+        """Modify a set of access control rules."""
+        url = f"{self.base_url_security}/acl/layers"
+        response = httpx.put(url, json=rules, headers=self.headers_json, auth=self.auth)
+        response.raise_for_status()
+        log.info(f'Successfully updated ACL rules: [{json.dumps(rules)}] in the geoserver: [{self}].')
+        return {}
+
+    @handle_http_exceptions(log)
+    def delete_rule(self, key):
+        """Delete a specific access control rule."""
+        url = f"{self.base_url_security}/acl/layers/{key}"
+        response = httpx.delete(url, auth=self.auth)
+        response.raise_for_status()
+        log.info(f'Successfully deleted ACL rule: key=[{key}] from the geoserver: [{self}].')
+        return {}
+
+
     ### User
     @handle_http_exceptions(log)
     def get_all_users(self, service_name=''):
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/users/" if service_name else f"{self.base_url}/usergroup/users/"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/users/" if service_name else f"{self.base_url_security}/usergroup/users/"
         response = httpx.get(
             url=url,
-            headers={"Accept": "application/json"},
+            headers=self.headers_json,
             auth=self.auth
         )
         response.raise_for_status()
@@ -117,10 +249,10 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def update_existing_user(self, user_data, service_name=''):
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(user_data['user']['userName'])}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(user_data['user']['userName'])}.json"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/user/{encode(user_data['user']['userName'])}.json" if service_name else f"{self.base_url_security}/usergroup/user/{encode(user_data['user']['userName'])}.json"
         response = httpx.post(
             url=url,
-            headers={"Content-Type": "application/json"},
+            headers=self.headers_json,
             content=json.dumps(user_data),
             auth=self.auth
         )
@@ -130,10 +262,10 @@ class GeoServerPool(mixins.RevisionedMixin):
 
     @handle_http_exceptions(log)
     def create_new_user(self, user_data, service_name=''):
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/users/" if service_name else f"{self.base_url}/usergroup/users/"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/users/" if service_name else f"{self.base_url_security}/usergroup/users/"
         response = httpx.post(
             url=url,
-            headers={"Content-Type": "application/json"},
+            headers=self.headers_json,
             content=json.dumps(user_data),
             auth=self.auth
         )
@@ -148,7 +280,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def delete_existing_user(self, username, service_name=''):
         self.check_variable(username, 'Username')
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}.json"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/user/{encode(username)}.json" if service_name else f"{self.base_url_security}/usergroup/user/{encode(username)}.json"
         response = httpx.delete(
             url=url,
             auth=self.auth
@@ -161,7 +293,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     def get_about_version(self):
         response = httpx.get(
             url=f"{self.url}/rest/about/version",
-            headers={"Accept": "application/json"},
+            headers=self.headers_json,
             auth=self.auth
         )
         response.raise_for_status()
@@ -171,10 +303,10 @@ class GeoServerPool(mixins.RevisionedMixin):
     ### Group
     @handle_http_exceptions(log)
     def get_all_groups(self, service_name=''):
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/groups/" if service_name else f"{self.base_url}/usergroup/groups/"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/groups/" if service_name else f"{self.base_url_security}/usergroup/groups/"
         response = httpx.get(
             url=url,
-            headers={"Accept": "application/json"},
+            headers=self.headers_json,
             auth=self.auth
         )
         response.raise_for_status()
@@ -184,10 +316,10 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def get_all_groups_for_user(self, username, service_name=''):
         self.check_variable(username, 'Username')
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/groups" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/groups"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/user/{encode(username)}/groups" if service_name else f"{self.base_url_security}/usergroup/user/{encode(username)}/groups"
         response = httpx.get(
             url=url,
-            headers={"Accept": "application/json"},
+            headers=self.headers_json,
             auth=self.auth
         )
         response.raise_for_status()
@@ -197,7 +329,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def create_new_group(self, group_name, service_name=''):
         self.check_variable(group_name, 'Group name')
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/group/{encode(group_name)}.json"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url_security}/usergroup/group/{encode(group_name)}.json"
         response = httpx.post(
             url=url,
             auth=self.auth
@@ -212,7 +344,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             log.info(f'Group: [{group_name}] cannot be deleted from the geoserver: [{self}]. (USERGROUPS_TO_KEEP: [{settings.NON_DELETABLE_USERGROUPS}])')
             return
         
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/group/{encode(group_name)}.json"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url_security}/usergroup/group/{encode(group_name)}.json"
         response = httpx.delete(
             url=url,
             auth=self.auth
@@ -225,7 +357,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     def associate_user_with_group(self, username, group_name, service_name=''):
         self.check_variable(username, 'Username')
         self.check_variable(group_name, 'Group name')
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url_security}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
         response = httpx.post(
             url=url,
             auth=self.auth
@@ -238,7 +370,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     def disassociate_user_from_group(self, username, group_name, service_name=''):
         self.check_variable(username, 'Username')
         self.check_variable(group_name, 'Group name')
-        url = f"{self.base_url}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
+        url = f"{self.base_url_security}/usergroup/service/{encode(service_name)}/user/{encode(username)}/group/{encode(group_name)}.json" if service_name else f"{self.base_url_security}/usergroup/user/{encode(username)}/group/{encode(group_name)}.json"
         response = httpx.delete(
             url=url,
             auth=self.auth
@@ -251,8 +383,8 @@ class GeoServerPool(mixins.RevisionedMixin):
     @handle_http_exceptions(log)
     def get_all_roles(self):
         response = httpx.get(
-            url=f"{self.base_url}/roles/",
-            headers={"Accept": "application/json"},
+            url=f"{self.base_url_security}/roles/",
+            headers=self.headers_json,
             auth=self.auth
         )
         response.raise_for_status()
@@ -262,8 +394,8 @@ class GeoServerPool(mixins.RevisionedMixin):
     def get_all_roles_for_user(self, username):
         self.check_variable(username, 'Username')
         response = httpx.get(
-            url=f"{self.base_url}/roles/user/{encode(username)}.json",
-            headers={"Accept": "application/json"},
+            url=f"{self.base_url_security}/roles/user/{encode(username)}.json",
+            headers=self.headers_json,
             auth=self.auth
         )
         response.raise_for_status()
@@ -273,8 +405,8 @@ class GeoServerPool(mixins.RevisionedMixin):
     def get_all_roles_for_group(self, group_name):
         self.check_variable(group_name, 'Group name')
         response = httpx.get(
-            url=f"{self.base_url}/roles/group/{encode(group_name)}.json",
-            headers={"Accept": "application/json"},
+            url=f"{self.base_url_security}/roles/group/{encode(group_name)}.json",
+            headers=self.headers_json,
             auth=self.auth
         )
         response.raise_for_status()
@@ -284,7 +416,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     def create_new_role(self, role_name):
         self.check_variable(role_name, 'Role name')
         response = httpx.post(
-            url=f"{self.base_url}/roles/role/{encode(role_name)}.json",
+            url=f"{self.base_url_security}/roles/role/{encode(role_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -298,7 +430,7 @@ class GeoServerPool(mixins.RevisionedMixin):
             return
 
         response = httpx.delete(
-            url=f"{self.base_url}/roles/role/{encode(role_name)}.json",
+            url=f"{self.base_url_security}/roles/role/{encode(role_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -309,7 +441,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         self.check_variable(username, 'Username')
         self.check_variable(role_name, 'Role name')
         response = httpx.post(
-            url=f"{self.base_url}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
+            url=f"{self.base_url_security}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -320,7 +452,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         self.check_variable(username, 'Username')
         self.check_variable(role_name, 'Role name')
         response = httpx.delete(
-            url=f"{self.base_url}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
+            url=f"{self.base_url_security}/roles/role/{encode(role_name)}/user/{encode(username)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -331,7 +463,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         self.check_variable(role_name, 'Role name')
         self.check_variable(group_name, 'Group name')
         response = httpx.post(
-            url=f"{self.base_url}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
+            url=f"{self.base_url_security}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
@@ -342,7 +474,7 @@ class GeoServerPool(mixins.RevisionedMixin):
         self.check_variable(role_name, 'Role name')
         self.check_variable(group_name, 'Group name')
         response = httpx.delete(
-            url=f"{self.base_url}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
+            url=f"{self.base_url_security}/roles/role/{encode(role_name)}/group/{encode(group_name)}.json",
             auth=self.auth
         )
         response.raise_for_status()
