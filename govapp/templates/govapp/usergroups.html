@@ -22,7 +22,7 @@
                   </div>
                   <div class="card-body collapse show" id="box1-card-body">
                         <div class="container">
-                              <button id="add-box-pair-container" class="btn btn-success mb-3">Add Group</button>
+                              <button id="add-box-pair-container" class="btn btn-success mb-3">Add Box Pair Container</button>
                               <div id="box-pair-containers">
                                   <!-- Box pair containers will be dynamically added here -->
                               </div>
@@ -77,10 +77,9 @@
         // Namespace to avoid global scope pollution
         var MoveItemsApp = (function() {
             let boxPairContainerCount = 0;
-            let boxPairCount = 0;
 
             // Function to create a new box pair
-            function createBoxPair(boxPairId, leftBoxTitle, rightBoxTitle) {
+            function createBoxPair(boxPairId) {
                 const box1Id = `box1-${boxPairId}`;
                 const box2Id = `box2-${boxPairId}`;
                 const moveRightId = `move-right-${boxPairId}`;
@@ -92,7 +91,7 @@
                         <span class="remove-box-pair">&times;</span>
                         <div class="row">
                             <div class="col">
-                                <h3>${leftBoxTitle}</h3>
+                                <h3>Box 1</h3>
                                 <div id="${box1Id}" class="box"></div>
                             </div>
                             <div class="col-2 controls">
@@ -100,7 +99,7 @@
                                 <button id="${moveLeftId}" class="btn btn-primary">&larr;</button>
                             </div>
                             <div class="col">
-                                <h3>${rightBoxTitle}</h3>
+                                <h3>Box 2</h3>
                                 <div id="${box2Id}" class="box"></div>
                             </div>
                         </div>
@@ -109,7 +108,7 @@
             }
 
             // Function to create a new box pair container
-            function createBoxPairContainer() {
+            function createBoxPairContainer(items1, items2, items3, items4) {
                 const boxPairContainerId = `box-pair-container-${boxPairContainerCount}`;
                 const boxPair1Id = `box-pair-1-${boxPairContainerCount}`;
                 const boxPair2Id = `box-pair-2-${boxPairContainerCount}`;
@@ -126,14 +125,14 @@
                 $('#box-pair-containers').append(boxPairContainerHtml);
 
                 // Create box pairs and append to the new container
-                $(`#${boxPair1Id}`).html(createBoxPair(`box-pair-1-${boxPairContainerCount}`, 'Role', 'Role (selected)'));
-                $(`#${boxPair2Id}`).html(createBoxPair(`box-pair-2-${boxPairContainerCount}`, 'User', 'User (selected)'));
+                $(`#${boxPair1Id}`).html(createBoxPair(`box-pair-1-${boxPairContainerCount}`));
+                $(`#${boxPair2Id}`).html(createBoxPair(`box-pair-2-${boxPairContainerCount}`));
 
                 // Add initial items to the new box pairs
-                addItemsToBox(`box1-box-pair-1-${boxPairContainerCount}`, ['Item 1', 'Item 2', 'Item 3']);
-                addItemsToBox(`box2-box-pair-1-${boxPairContainerCount}`, ['Item 4', 'Item 5', 'Item 6']);
-                addItemsToBox(`box1-box-pair-2-${boxPairContainerCount}`, ['Item 7', 'Item 8', 'Item 9']);
-                addItemsToBox(`box2-box-pair-2-${boxPairContainerCount}`, ['Item 10', 'Item 11', 'Item 12']);
+                addItemsToBox(`box1-box-pair-1-${boxPairContainerCount}`, items1);
+                addItemsToBox(`box2-box-pair-1-${boxPairContainerCount}`, items2);
+                addItemsToBox(`box1-box-pair-2-${boxPairContainerCount}`, items3);
+                addItemsToBox(`box2-box-pair-2-${boxPairContainerCount}`, items4);
 
                 // Attach event handlers for the new box pairs
                 attachBoxPairEvents($(`#${boxPair1Id}`), `box-pair-1-${boxPairContainerCount}`);
@@ -150,7 +149,6 @@
                 updateLists(`box1-box-pair-2-${boxPairContainerCount}`, `box2-box-pair-2-${boxPairContainerCount}`);
 
                 boxPairContainerCount++;
-                boxPairCount += 2;
             }
 
             // Function to add items to a box
@@ -201,10 +199,21 @@
             // Initialization function
             function init() {
                 // Add button click handler
-                $('#add-box-pair-container').click(createBoxPairContainer);
+                $('#add-box-pair-container').click(() => {
+                    // Example items for demonstration
+                    const items1 = ['Role 1', 'Role 2', 'Role 3'];
+                    const items2 = ['Role 4', 'Role 5', 'Role 6'];
+                    const items3 = ['User 4', 'User 5', 'User 6'];
+                    const items4 = ['User 4', 'User 5', 'User 6'];
+                    createBoxPairContainer(items1, items2, items3, items4);
+                });
 
                 // Add initial box pair container on load
-                createBoxPairContainer();
+                const initialItems1 = ['Role 1', 'Role 2', 'Role 3'];
+                const initialItems2 = ['Role 4', 'Role 5', 'Role 6'];
+                const initialItems3 = ['User 1', 'User 2', 'User 3'];
+                const initialItems4 = ['User 4', 'User 5', 'User 6'];
+                createBoxPairContainer(initialItems1, initialItems2, initialItems3, initialItems4);
             }
 
             // Expose the init function to be called on document ready
