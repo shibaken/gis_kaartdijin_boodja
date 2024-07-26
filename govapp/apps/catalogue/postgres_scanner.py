@@ -94,7 +94,9 @@ class Scanner:
                         log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because it has never been run.')
                     else:
                         now_dt_string = now_dt.strftime("%Y-%m-%d")
-                        last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
+                        # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
+                        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+                        last_job_run_string = last_job_run.strftime("%Y-%m-%d")
                         if now_dt_string != last_job_run_string:
                             is_time_to_run = True
                             log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because now_dt_string: [{now_dt_string}] is not same as the last_job_run_string: [{last_job_run_string}].')
@@ -116,8 +118,11 @@ class Scanner:
                     if custom_query_freq.last_job_run is None:
                         is_time_to_run = True
                     else:
-                        last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
-                        last_job_run_string_dow = custom_query_freq.last_job_run.strftime("%a")
+                        # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
+                        # last_job_run_string_dow = custom_query_freq.last_job_run.strftime("%a")
+                        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+                        last_job_run_string = last_job_run.strftime("%Y-%m-%d")
+                        last_job_run_string_dow = last_job_run.strftime("%a")
                         now_dt_string_dow = now_dt.strftime("%a")
 
                         print (now_dt_string_dow)
@@ -144,9 +149,12 @@ class Scanner:
                         is_time_to_run = True
                     else:                
                         now_dt_string = now_dt.strftime("%Y-%m-%d")
-                        last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")       
                         now_dt_string_dom = now_dt.strftime("%-d")
-                        last_job_run_string_dom = custom_query_freq.last_job_run.strftime("%-d")
+                        # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")       
+                        # last_job_run_string_dom = custom_query_freq.last_job_run.strftime("%-d")
+                        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+                        last_job_run_string = last_job_run.strftime("%Y-%m-%d")       
+                        last_job_run_string_dom = last_job_run.strftime("%-d")
 
                         if now_dt_string == last_job_run_string:
                             is_time_to_run = False
