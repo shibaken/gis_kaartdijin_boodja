@@ -31,7 +31,7 @@ from govapp.common import local_storage
 from typing import Any
 
 from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
-from govapp.apps.publisher.models.publish_channels import StoreType
+from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel, StoreType
 
 UserModel = auth.get_user_model()
 
@@ -124,6 +124,9 @@ class PublishPage(base.TemplateView):
         Returns:
             http.HttpResponse: The rendered template response.
         """
+        # For bulk-updated data, if the 'active' field contains 'Null', set it to 'True'
+        GeoServerPublishChannel.objects.filter(active__isnull=True).update(active=True)
+
         # Construct Context
         context: dict[str, Any] = {}
         pe_list = []

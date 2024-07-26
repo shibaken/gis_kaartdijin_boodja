@@ -33,6 +33,7 @@ class GeoServerPool(mixins.RevisionedMixin):
     """Model for an Geoserver Pool."""
     name = models.CharField(max_length=200, null=True)
     url = models.URLField()
+    url_ui = models.URLField(null=True, blank=True)
     username = models.TextField()
     password = models.TextField()
     enabled = models.BooleanField(default=True)

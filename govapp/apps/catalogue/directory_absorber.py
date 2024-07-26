@@ -370,13 +370,16 @@ class Absorber:
         If the LayerMetadata object is created, it sets its created_at and additional_data fields.
         If the LayerMetadata object already exists and its additional_data is empty, it updates the additional_data field.
         """
-        layer_metadata, created = models.layer_metadata.LayerMetadata.objects.get_or_create(
-            catalogue_entry=catalogue_entry,
-        )
+        get_params = {
+            'catalogue_entry': catalogue_entry
+        }
+        create_params = {
+            'catalogue_entry': catalogue_entry,
+            'created_at': metadata.created_at,
+            'additional_data': metadata.additional_data
+        }
+        layer_metadata, created = models.layer_metadata.LayerMetadata.objects.get_or_create(defaults=create_params, **get_params)
         if created:
-            layer_metadata.created_at = metadata.created_at
-            layer_metadata.additional_data = metadata.additional_data
-            layer_metadata.save()
             log.info(f'LayerMetadata: [{layer_metadata}] has been created for the CatalogueEntry: [{catalogue_entry}].')
         else:
             if not layer_metadata.additional_data:

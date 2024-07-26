@@ -1342,12 +1342,12 @@ var kbpublish = {
                             let button_json = '{"id": "' + geoserver_publish_channel.id + '", "geoserver_pool_name": "' + geoserver_publish_channel.geoserver_pool_name + '"}'
 
                             html+= "<tr>";
-                            html+= " <td>"+geoserver_publish_channel.id+"</td>";                        
-                            html+= " <td><a href='"+geoserver_publish_channel.geoserver_pool_url+"'>"+geoserver_publish_channel.geoserver_pool_name+"</a></td>";                        
-                            html+= " <td>"+kbpublish.var.publish_geoserver_format[geoserver_publish_channel.mode]+"</td>";                        
-                            html+= " <td>"+kbpublish.var.publish_geoserver_frequency[geoserver_publish_channel.frequency]+"</td>";                                                    
-                            html+= " <td>"+geoserver_publish_channel.workspace_name+"</td>"; 
-                            html+= " <td>"+geoserver_publish_channel.store_type_name+"</td>"; 
+                            html+= " <td>" + geoserver_publish_channel.id + "</td>";
+                            html+= " <td><a href='" + geoserver_publish_channel.geoserver_pool_url_ui + "'>" + geoserver_publish_channel.geoserver_pool_name + "</a></td>";
+                            html+= " <td>" + kbpublish.var.publish_geoserver_format[geoserver_publish_channel.mode] + "</td>";
+                            html+= " <td>" + kbpublish.var.publish_geoserver_frequency[geoserver_publish_channel.frequency] + "</td>";
+                            html+= " <td>" + geoserver_publish_channel.workspace_name + "</td>"; 
+                            html+= " <td>" + geoserver_publish_channel.store_type_name + "</td>"; 
                             html+= " <td>";
                             if (geoserver_publish_channel.published_at == null) {
                                 html+= "Not Published";   
