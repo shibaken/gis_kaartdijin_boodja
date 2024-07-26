@@ -82,6 +82,9 @@ urlpatterns = [
     # CDDPQueue
     urls.path("cddp-queue/", views.CDDPQueueView.as_view()),
 
+    # Usergroups
+    urls.path("usergroups/", views.UsergroupsView.as_view()),
+
     urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
 
     # sentry

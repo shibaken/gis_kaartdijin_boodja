@@ -1,0 +1,204 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+
+{% if request.user.is_authenticated is True %}
+      {% include "govapp/common_entity_modal.html" %}
+
+      <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+
+      <div class="container" id="dashboard-table-container">
+            
+            <div class="card" >
+                  <div class="card-header fw-bold h4" style="padding:30px;">
+                        <div class="row">
+                        <div class="col-6">
+                              Usergroups
+                        </div>
+                        <div class="col-6 text-end">
+                              <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                        </div>
+                  </div>         
+                  </div>
+                  <div class="card-body collapse show" id="box1-card-body">
+                        <div class="container">
+                              <div id="box-pair-container">
+                                  <!-- Box pairs will be statically added here -->
+                              </div>
+                          </div>
+                  </div>
+            </div>
+      </div>
+      
+      <style>
+        .box {
+            border: 1px solid #ccc;
+            min-height: 200px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #f9f9f9;
+            overflow-y: auto;
+        }
+        .item {
+            padding: 5px;
+            margin: 5px;
+            background-color: #ddd;
+            cursor: pointer;
+            user-select: none;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .selected {
+            background-color: #aaf;
+        }
+        .box-pair {
+            border: 1px solid #000;
+            padding: 10px;
+            margin: 10px;
+            position: relative;
+        }
+        .remove-box-pair {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: red;
+        }
+      </style>
+
+      <script>
+        // Namespace to avoid global scope pollution
+        var MoveItemsApp = (function() {
+            let boxPairCount = 0;
+
+            // Function to create a new box pair
+            function createBoxPair(boxPairId, items) {
+                const box1Id = `box1-${boxPairId}`;
+                const box2Id = `box2-${boxPairId}`;
+                const moveRightId = `move-right-${boxPairId}`;
+                const moveLeftId = `move-left-${boxPairId}`;
+
+                // Create HTML structure for the box pair
+                return `
+                    <div id="${boxPairId}" class="box-pair">
+                        <span class="remove-box-pair">&times;</span>
+                        <div class="row">
+                            <div class="col">
+                                <h3>Box 1</h3>
+                                <div id="${box1Id}" class="box"></div>
+                            </div>
+                            <div class="col-2 controls">
+                                <button id="${moveRightId}" class="btn btn-primary mb-2">&rarr;</button>
+                                <button id="${moveLeftId}" class="btn btn-primary">&larr;</button>
+                            </div>
+                            <div class="col">
+                                <h3>Box 2</h3>
+                                <div id="${box2Id}" class="box"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Function to initialize a box pair container with given items
+            function initializeBoxPairContainer(items1, items2) {
+                const boxPair1Id = `box-pair-1`;
+                const boxPair2Id = `box-pair-2`;
+
+                // Create HTML structure for the box pair container
+                const boxPairContainerHtml = `
+                    <div id="box-pair-container">
+                        ${createBoxPair(boxPair1Id, items1)}
+                        ${createBoxPair(boxPair2Id, items2)}
+                    </div>
+                `;
+                $('#box-pair-container').html(boxPairContainerHtml);
+
+                // Add initial items to the boxes
+                addItemsToBox(`box1-${boxPair1Id}`, items1);
+                addItemsToBox(`box2-${boxPair1Id}`, items1);
+                addItemsToBox(`box1-${boxPair2Id}`, items2);
+                addItemsToBox(`box2-${boxPair2Id}`, items2);
+
+                // Attach event handlers for the box pairs
+                attachBoxPairEvents($(`#${boxPair1Id}`), boxPair1Id);
+                attachBoxPairEvents($(`#${boxPair2Id}`), boxPair2Id);
+
+                // Toggle selection state on item click
+                $('#box-pair-container').on('click', '.item', function() {
+                    $(this).toggleClass('selected');
+                });
+
+                // Update lists initially
+                updateLists(`box1-${boxPair1Id}`, `box2-${boxPair1Id}`);
+                updateLists(`box1-${boxPair2Id}`, `box2-${boxPair2Id}`);
+            }
+
+            // Function to add items to a box
+            function addItemsToBox(boxId, items) {
+                items.forEach(item => {
+                    $(`<div class="item">${item}</div>`).appendTo(`#${boxId}`);
+                });
+            }
+
+            // Function to attach events to a box pair
+            function attachBoxPairEvents($boxPair, boxPairId) {
+                const moveRightId = `move-right-${boxPairId}`;
+                const moveLeftId = `move-left-${boxPairId}`;
+                $boxPair.find(`#${moveRightId}`).click(() => moveItems(`box1-${boxPairId}`, `box2-${boxPairId}`));
+                $boxPair.find(`#${moveLeftId}`).click(() => moveItems(`box2-${boxPairId}`, `box1-${boxPairId}`));
+                $boxPair.find('.remove-box-pair').click(() => $boxPair.remove());
+            }
+
+            // Function to move selected items from one box to another
+            function moveItems(fromBoxId, toBoxId) {
+                $(`#${fromBoxId} .selected`).each(function() {
+                    $(this).removeClass('selected').appendTo(`#${toBoxId}`);
+                });
+                updateLists(fromBoxId, toBoxId);
+            }
+
+            // Function to update the lists and log the current state
+            function updateLists(box1Id, box2Id) {
+                let box1Items = [];
+                let box2Items = [];
+
+                $(`#${box1Id} .item`).each(function() {
+                    box1Items.push($(this).text());
+                });
+
+                $(`#${box2Id} .item`).each(function() {
+                    box2Items.push($(this).text());
+                });
+
+                console.log(`Box 1 (${box1Id}) Items: `, box1Items);
+                console.log(`Box 2 (${box2Id}) Items: `, box2Items);
+            }
+
+            // Initialization function
+            function init() {
+                // Initialize box pairs with example items
+                const initialItems1 = ['Item 1', 'Item 2', 'Item 3'];
+                const initialItems2 = ['Item 4', 'Item 5', 'Item 6'];
+                initializeBoxPairContainer(initialItems1, initialItems2);
+            }
+
+            // Expose the init function to be called on document ready
+            return {
+                init: init
+            };
+        })();
+
+        // Initialize the application when document is ready
+        $(document).ready(function() {
+            MoveItemsApp.init();
+        });
+      </script>
+{% else %}
+      <div class="container" id="dashboard-table-container">
+            <h3>Permission Denied.  You are not authenticated.</h3>
+      </div>
+{% endif %}
+{% endblock %}
