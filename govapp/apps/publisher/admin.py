@@ -42,8 +42,8 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     """Custom Django Admin for GeoServer Pool."""
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
-    search_fields = ('id', 'name', 'url',)
-    list_display = ('id', 'name', 'url_link', 'version', 'num_of_layers', 'username', 'enabled', 'created_at')
+    search_fields = ('id', 'name', 'url', 'url_ui')
+    list_display = ('id', 'name', 'url_link', 'url_ui_link', 'version', 'num_of_layers', 'username', 'enabled', 'created_at')
     list_filter = ('enabled',)
     list_display_links = ('id', 'name',)
     ordering = ('id', 'name')
@@ -53,8 +53,12 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
     num_of_layers.short_description = 'active layers (total layers)'
 
     def url_link(self, obj):
-        return format_html(f'<a href="{obj.url}" target="_blank">{obj.url}</a>')
+        return format_html(f'<a href="{obj.url}" target="_blank">{obj.url}</a>') if obj.url else '---'
     url_link.short_description = 'URL'
+
+    def url_ui_link(self, obj):
+        return format_html(f'<a href="{obj.url_ui}" target="_blank">{obj.url_ui}</a>') if obj.url_ui else '---'
+    url_link.short_description = 'URL UI'
 
     def version(self, obj):
         try:
