@@ -26,15 +26,12 @@ log = logging.getLogger(__name__)
 
 
 class Scanner:
-    """Scans for files to be absorbed into the system."""
-
     def __init__(self) -> None:
         """Instantiates the Scanner."""
         # Storage        
         #self.storage = local_storage.LocalStorage()
 
     def scan(self) -> None:
-        """Scans for new files in the staging area to be absorbed."""        
         # Log
         log.info("Scanning Postgres Queries...")
         days_of_week = {
@@ -51,7 +48,7 @@ class Scanner:
         )
 
         for catalogue_entry_obj in catalogue_entry_list:
-            if catalogue_entry_obj.status != layer_subscriptions.LayerSubscriptionStatus.LOCKED:
+            if catalogue_entry_obj.layer_subscription.status != layer_subscriptions.LayerSubscriptionStatus.LOCKED:
                 log.warn(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because it is not LOCKED.')
                 continue
 

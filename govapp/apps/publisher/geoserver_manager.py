@@ -154,7 +154,7 @@ class GeoServerSyncExcutor:
             # Make sure all the workspace exist in the geoserver
             for workspace in workspaces_in_kb:
                 geoserver_info.create_workspace_if_not_exists(workspace)
-            geoserver_obj.synchronize_rules(new_rules)
+            geoserver_info.synchronize_rules(new_rules)
 
             workspaces_in_geoserver = geoserver_info.get_all_workspaces()
             workspaces_in_geoserver = set([workspace['name'] for workspace in workspaces_in_geoserver])
@@ -168,7 +168,7 @@ class GeoServerSyncExcutor:
     def sync_deleted_layers(self):
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")
         
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.all()  # Do we need active=True filter?  We want to delete layers regardless of the geoserver enabled status, don't we?
+        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
         for geoserver_info in geoserver_pool:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
             
