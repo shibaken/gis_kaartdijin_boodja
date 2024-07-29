@@ -33,3 +33,4 @@ sentry-sdk==1.44
 requests>=2.32.3
 anyio>=4.4.0
 GDAL==3.8.4
+setuptools==72.0.0
