@@ -85,8 +85,6 @@ USER oim
 #ENV POETRY_VERSION=1.3.2
 RUN virtualenv /app/venv
 ENV PATH=/app/venv/bin:$PATH
-RUN whereis python
-RUN ls -al /app/venv/bin
 
 # RUN curl -sSL https://install.python-poetry.org | python -
 #RUN ln -s /root/.local/bin/poetry /usr/bin/poetry
