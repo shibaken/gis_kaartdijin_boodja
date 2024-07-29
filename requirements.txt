@@ -4,7 +4,7 @@ djangorestframework>=3.14.0
 python-decouple>=3.6
 dj-database-url>=1.0.0
 psycopg2>=^2.9.4
-gunicorn==21.2.0
+gunicorn>=21.2.0
 whitenoise==5.3.0
 git+https://github.com/dbca-wa/dbca-utils.git#egg=dbca-utils
 git+https://github.com/dbca-wa/webtemplate2.git#egg=webtemplate_dbca
@@ -23,10 +23,10 @@ lxml>=4.9.2
 owslib==0.29.2
 numpy==2.0.1
 git+https://github.com/dbca-wa/appmonitor_client.git#egg=appmonitor_client
-cryptography==42.0.7
+cryptography>=42.0.7
 pillow==10.3.0
 pyjwt==2.8.0
-urllib3==2.1.0
+urllib3>=2.1.0
 wheel==0.42.0
 oauthlib==3.2.2
 sentry-sdk==1.44
