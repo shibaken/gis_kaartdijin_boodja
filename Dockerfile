@@ -105,6 +105,7 @@ COPY --chown=oim:oim gunicorn.ini manage.py ./
 RUN touch /app/.env
 COPY .git ./.git
 COPY --chown=oim:oim govapp ./govapp
+COPY python-cron ./
 #RUN pip install GDAL==3.8.4
 RUN python manage.py collectstatic --noinput
 
