@@ -17,7 +17,7 @@ RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent 
+RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent
 RUN apt-get install --no-install-recommends -y libpq-dev patch virtualenv
 RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
@@ -76,7 +76,6 @@ RUN cd /tmp/azcopy/ ; tar -xzvf azcopy.tar.gz
 RUN cp /tmp/azcopy/azcopy_linux_amd64_10.25.1/azcopy /bin/azcopy
 RUN chmod 755 /bin/azcopy
 
-
 COPY startup.sh /
 RUN chmod 755 /startup.sh
 
@@ -106,7 +105,6 @@ COPY --chown=oim:oim govapp ./govapp
 COPY python-cron ./
 #RUN pip install GDAL==3.8.4
 RUN python manage.py collectstatic --noinput
-
 
 USER root
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
