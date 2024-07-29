@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "govapp.apps.publisher",
     "govapp.apps.swagger",
     "rest_framework",
+    "rest_framework_datatables",
     "drf_spectacular",
     "django_filters",
     "reversion",
@@ -69,6 +70,15 @@ INSTALLED_APPS = [
     "appmonitor_client",
     "django_extensions",
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'rest_framework_datatables.renderers.DatatablesRenderer',
+    ),
+    # 'DEFAULT_PAGINATION_CLASS': 'datatablefilter.rest_framework.DatatablesPageNumberPagination',
+    # 'PAGE_SIZE': 10,
+}
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

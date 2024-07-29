@@ -22,6 +22,8 @@ from rest_framework.mixins import ListModelMixin
 # Local
 from govapp import settings
 from govapp.apps.accounts.utils import get_file_list
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup
+from govapp.apps.publisher.serializers.geoserver_group import GeoServerGroupSerializer
 from govapp.common import mixins
 from govapp.common import utils
 from govapp.apps.accounts import permissions as accounts_permissions
@@ -874,3 +876,17 @@ class CDDPContentsViewSet(
         else:
             logger.error(f'File does not exist: [{filepath}]')
             raise http.Http404("File does not exist")
+
+from rest_framework.pagination import PageNumberPagination
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework_datatables.filters import DatatablesFilterBackend
+
+
+class GeoServerGroupPagination(PageNumberPagination):
+    page_size = 10
+
+
+class GeoServerGroupViewSet(viewsets.ModelViewSet):
+    queryset = GeoServerGroup.objects.all()
+    serializer_class = GeoServerGroupSerializer
+    pagination_class = GeoServerGroupPagination
