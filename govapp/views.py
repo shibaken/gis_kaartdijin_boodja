@@ -30,7 +30,7 @@ from govapp.common import local_storage
 # Typing
 from typing import Any
 
-from govapp.apps.publisher.models.geoserver_pools import GeoServerPool
+from govapp.apps.publisher.models.geoserver_pools import GeoServerPool, GeoServerGroup, GeoServerGroupUser
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel, StoreType
 
 UserModel = auth.get_user_model()
@@ -516,6 +516,25 @@ class CDDPQueueView(base.TemplateView):
     template_name = "govapp/cddpqueue.html"
 
 
-class UsergroupsView(base.TemplateView):
-    """ Handle usergroups """
+class GeoServerGroupsView(base.TemplateView):
     template_name = "govapp/usergroups.html"
+
+
+class GeoServerGroupView(base.TemplateView):
+    template_name = "govapp/usergroup.html"
+
+    def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
+        usergroup_id = self.kwargs['pk']
+        geoserver_group = GeoServerGroup.objects.get(id=usergroup_id)
+
+        # roles_related = geoserver_group.geoserver_roles
+        # geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=geoserver_group)
+        # users_related = [geoserver_group_user.user.email for geoserver_group_user in geoserver_group_users]
+
+        context = {
+            'geoserver_group': geoserver_group,
+            # 'roles_related': roles_related,
+            # 'users_related': users_related,
+        }
+
+        return shortcuts.render(request, self.template_name, context)
