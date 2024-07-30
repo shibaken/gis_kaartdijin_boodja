@@ -349,6 +349,10 @@ SUBSCRIPTION_CACHE_TTL = 3600
 APPLICATION_VERSION = decouple.config("APPLICATION_VERSION", default="1.0.0" + "-" + GIT_COMMIT_HASH[:7])
 RUNNING_DEVSERVER = len(sys.argv) > 1 and sys.argv[1] == "runserver"
 
+CSRF_TRUSTED_ORIGINS_STRING = decouple.config("CSRF_TRUSTED_ORIGINS", default='[]')
+CSRF_TRUSTED_ORIGINS = json.loads(str(CSRF_TRUSTED_ORIGINS_STRING))
+
+
 # Sentry settings
 SENTRY_DSN = decouple.config("SENTRY_DSN", default=None)
 SENTRY_SAMPLE_RATE = decouple.config("SENTRY_SAMPLE_RATE", default=1.0)  # Error sampling rate
