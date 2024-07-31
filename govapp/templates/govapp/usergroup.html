@@ -15,7 +15,7 @@
             <div class="card-body collapse show" id="box1-card-body">
                 <div class="row">
                     <div class="col-12 text-end">
-                        <button id="addGeoServerGroup" class="btn btn-primary mb-3">Add GeoServer Group</button>
+                        <button id="addGeoServerRole" class="btn btn-primary mb-3">Add GeoServer Role to the Usergroup</button>
                     </div>
                 </div>
                 <table id="geoservergroup_roles_table" class="display" style="width:100%">
@@ -44,22 +44,147 @@
         </div>
     </div>
 
+    <div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoleModalLabel">Add GeoServer Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addRoleForm">
+                        <div class="mb-3">
+                            <label for="roleSelect" class="form-label">Select Role</label>
+                            <select class="form-select" id="roleSelect" required>
+                                <option value="">Choose a role...</option>
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="addRoleButton">Add Role</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Feedback Modal -->
+    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">Operation Result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="feedbackModalBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this role?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveRole">Remove</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-body.text-success {
+            color: #28a745;
+        }
+
+        .modal-body.text-danger {
+            color: #dc3545;
+        }
+    </style>
+
     <script src="/static/common/js/datatables.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
+
     <script>
         // Namespace to avoid global scope pollution
         var MoveItemsApp = function() {
-            // Initialization function
-            function init() {
-                console.log('in init()')
-                construct_roles_table()
-            }
+            let roleToRemove = null;
 
+            function setupEventHandlers() {
+                $('#geoservergroup_roles_table').on('click', '.remove-role', function() {
+                    const roleId = $(this).data('role-id');
+                    showConfirmation(roleId);
+                });
+
+                $('#confirmRemoveRole').on('click', function() {
+                    if (roleToRemove) {
+                        removeRole(roleToRemove);
+                        $('#confirmationModal').modal('hide');
+                        roleToRemove = null;
+                    }
+                });
+
+                $('#addGeoServerRole').on('click', function() {
+                    fetchAvailableRoles();
+                    var modal = new bootstrap.Modal(document.getElementById('addRoleModal'));
+                    modal.show();
+                });
+
+                $('#addRoleButton').on('click', addRole);
+            }
+            function showFeedback(message, isSuccess) {
+                const modalBody = document.getElementById('feedbackModalBody');
+                modalBody.textContent = message;
+                modalBody.className = isSuccess ? 'text-success' : 'text-danger';
+                
+                const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+                feedbackModal.show();
+            }
+            function showConfirmation(roleId) {
+                roleToRemove = roleId;
+                const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                confirmationModal.show();
+            }
+            function removeRole(roleId) {
+                $.ajax({
+                    url: '/api/publish/geoservergroup/{{ geoserver_group.id }}/remove_role/',
+                    type: 'POST',
+                    data: {
+                        csrfmiddlewaretoken: $('#csrfmiddlewaretoken').val(),
+                        role_id: roleId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#geoservergroup_roles_table').DataTable().ajax.reload();
+                            showFeedback("Role removed successfully.", true);
+                        } else {
+                            showFeedback("Failed to remove role: " + response.error, false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error removing role:", error);
+                        showFeedback("Failed to remove role. Please try again.", false);
+                    }
+                });
+            }
             function construct_roles_table(){
                 $('#geoservergroup_roles_table').DataTable({
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles",
+                        "url": "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles_related",
                         "type": "GET",
                         "dataSrc": function(data_in_json) {
                             return data_in_json;
@@ -73,7 +198,7 @@
                             "data": "id",
                             "render": function(data, type, row) {
                                 return `
-                                    <a href="/usergroup/${data}" class="btn btn-sm btn-danger">Delete</a>
+                                    <button class="btn btn-sm btn-danger remove-role" data-role-id="${data}">Remove Role</button>
                                 `;
                             }
                         }
@@ -85,6 +210,60 @@
                     "searching": false,
                     "ordering": true
                 });
+            }
+            function fetchAvailableRoles() {
+                $.ajax({
+                    url: "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles_available",
+                    type: 'GET',
+                    success: function(data) {
+                        var select = $('#roleSelect');
+                        select.empty();
+                        select.append($('<option></option>').attr('value', '').text('Choose a role...'));
+                        $.each(data, function(i, role) {
+                            select.append($('<option></option>').attr('value', role.id).text(role.name));
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching roles:", error);
+                        alert("Failed to fetch available roles. Please try again.");
+                    }
+                });
+            }
+            function addRole() {
+                var roleId = $('#roleSelect').val();
+                if (!roleId) {
+                    showFeedback("Please select a role.", false);
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/publish/geoservergroup/{{ geoserver_group.id }}/add_role/',
+                    type: 'POST',
+                    data: {
+                        role_id: roleId,
+                        csrfmiddlewaretoken: $('#csrfmiddlewaretoken').val()
+                    },
+                    success: function(response) {
+                        console.log({response})
+                        if (response.success) {
+                            $('#addRoleModal').modal('hide');
+                            $('#geoservergroup_roles_table').DataTable().ajax.reload();
+                            showFeedback("Role added successfully.", true);
+                        } else {
+                            showFeedback("Failed to add role: " + response.error, false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error adding role:", error);
+                        showFeedback("Failed to add role. Please try again.", false);
+                    }
+                });
+            }
+
+            // Initialization function
+            function init() {
+                construct_roles_table();
+                setupEventHandlers();
             }
 
             // Expose the init function to be called on document ready

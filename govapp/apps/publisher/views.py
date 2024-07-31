@@ -911,11 +911,9 @@ class GeoServerGroupViewSet(
     search_fields = ["id", "name",]
 
     def get_queryset(self):
-        log.debug(f'in get_queryset')
         return super().get_queryset()
 
     def list(self, request, *args, **kwargs):
-        log.debug(f'in list()')
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -925,9 +923,16 @@ class GeoServerGroupViewSet(
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
-    def roles(self, request, pk=None):
+    def roles_related(self, request, pk=None):
         group = self.get_object()
         roles = group.geoserver_roles.all()
+        serializer = GeoServerRoleSerializer(roles, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def roles_available(self, request, pk=None):
+        group = self.get_object()
+        roles = GeoServerRole.objects.all().values('id', 'name')
         serializer = GeoServerRoleSerializer(roles, many=True)
         return Response(serializer.data)
 
@@ -938,11 +943,17 @@ class GeoServerGroupViewSet(
         if role_id:
             try:
                 role = GeoServerRole.objects.get(id=role_id)
-                group.geoserver_roles.add(role)
-                return Response({'status': 'role added'})
+                if role not in group.geoserver_roles.all():
+                    group.geoserver_roles.add(role)
+                    return Response({'success': True})
+                else:
+                    return Response({'success': False, 'error': 'Role already exists in the group'})
+            except GeoServerGroup.DoesNotExist:
+                return Response({'success': False, 'error': 'Group not found'}, status=404)
             except GeoServerRole.DoesNotExist:
-                return Response({'error': 'Role not found'}, status=status.HTTP_404_NOT_FOUND)
-        return Response({'error': 'role_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'success': False, 'error': 'Role not found'}, status=404)
+            except Exception as e:
+                return Response({'success': False, 'error': str(e)}, status=500)
 
     @action(detail=True, methods=['post'])
     def remove_role(self, request, pk=None):
@@ -951,8 +962,11 @@ class GeoServerGroupViewSet(
         if role_id:
             try:
                 role = GeoServerRole.objects.get(id=role_id)
-                group.geoserver_roles.remove(role)
-                return Response({'status': 'role removed'})
-            except GeoServerRole.DoesNotExist:
-                return Response({'error': 'Role not found'}, status=status.HTTP_404_NOT_FOUND)
+                if role in group.geoserver_roles.all():
+                    group.geoserver_roles.remove(role)
+                    return Response({'success': True})
+                else:
+                    return Response({'success': False, 'error': 'Role is not associated with this group'})
+            except Exception as e:
+                return Response({'success': False, 'error': str(e)}, status=500)
         return Response({'error': 'role_id is required'}, status=status.HTTP_400_BAD_REQUEST)
