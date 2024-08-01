@@ -928,7 +928,7 @@ class GeoServerGroupViewSet(
     # Role
     @action(detail=True, methods=['get'])
     def roles_related(self, request, pk=None):
-        group = self.get_object()
+        group = shortcuts.get_object_or_404(GeoServerGroup, pk=pk)
         roles = group.geoserver_roles.all()
         serializer = GeoServerRoleSerializer(roles, many=True)
         return Response(serializer.data)
@@ -979,7 +979,7 @@ class GeoServerGroupViewSet(
     # User
     @action(detail=True, methods=['get'])
     def users_related(self, request, pk=None):
-        group = self.get_object()
+        group = shortcuts.get_object_or_404(GeoServerGroup, pk=pk)
         geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=group)
         users = [geoserver_group_user.user for geoserver_group_user in geoserver_group_users]
         serializer = UserSerializer(users, many=True)
