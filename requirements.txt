@@ -1,6 +1,7 @@
 django>=3.2.23
 django-extensions>=3.2.3
 djangorestframework>=3.14.0
+djangorestframework-datatables>=0.7.2
 python-decouple>=3.6
 dj-database-url>=1.0.0
 psycopg2>=^2.9.4

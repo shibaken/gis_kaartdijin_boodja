@@ -20,6 +20,7 @@ router.register("notifications/emails", views.EmailNotificationViewSet)
 router.register("workspaces", views.WorkspaceViewSet)
 router.register("geoserverweb", views.GeoServerQueueViewSet)
 router.register("cddp-contents", views.CDDPContentsViewSet, basename='cddp-contents')
+router.register("geoservergroup", views.GeoServerGroupViewSet)
 
 
 # Catalogue URL Patterns
