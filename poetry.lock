@@ -807,6 +807,21 @@ files = [
 django = ">=3.0"
 
 [[package]]
+name = "djangorestframework-datatables"
+version = "0.7.2"
+description = "Seamless integration between Django REST framework and Datatables (https://datatables.net)"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "djangorestframework_datatables-0.7.2-py2.py3-none-any.whl", hash = "sha256:fd5747b1e3d0bfb84713a975394dd4d879b57ee8bc66cc0f97566fa67f4406f4"},
+    {file = "djangorestframework_datatables-0.7.2.tar.gz", hash = "sha256:d7953968088ceb14968621a0c0a83d2f39ec1cda24b5ebe1240f3c9619bc7129"},
+]
+
+[package.dependencies]
+djangorestframework = ">=3.14.0"
+
+[[package]]
 name = "djangorestframework-stubs"
 version = "1.7.0"
 description = "PEP-484 stubs for django-rest-framework"
@@ -3298,4 +3313,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "99c6a8477c5b2d6e7cf78517ab7edfba905f0930f1a309a6f27d222bbf2d3369"
+content-hash = "876170e7b988c1674e8ce57536905fc99714b5ba984cd4b55929dd02c25970de"
