@@ -279,7 +279,7 @@ class CatalogueEntryViewSet(
         return response.Response(status=status.HTTP_204_NO_CONTENT)
     
     @decorators.action(detail=False, methods=["GET"], permission_classes=[accounts_permissions.IsAuthenticated],
-                       url_path='(?P<name>\w+)/layer')
+                       url_path=r'(?P<name>\w+)/layer')
     def layer_by_name(self, request: request.Request, name: str):
         """ Api to provide geojson file
 
@@ -298,7 +298,7 @@ class CatalogueEntryViewSet(
                                      status=status.HTTP_400_BAD_REQUEST)
         
     @decorators.action(detail=False, methods=["GET"], permission_classes=[accounts_permissions.IsAuthenticated],
-                       url_path='(?P<id>\d+)/layer')
+                       url_path=r'(?P<id>\d+)/layer')
     def layer_by_id(self, request: request.Request, id: int):
         """ Api to provide geojson file
 

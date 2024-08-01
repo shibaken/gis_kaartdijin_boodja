@@ -17,11 +17,13 @@ from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.mixins import ListModelMixin
+from rest_framework.decorators import action
 
 # Local
 from govapp import settings
 from govapp.apps.accounts.utils import get_file_list
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerRole
+from govapp.apps.publisher.serializers.geoserver_group import GeoServerGroupSerializer, GeoServerRoleSerializer
 from govapp.common import mixins
 from govapp.common import utils
 from govapp.apps.accounts import permissions as accounts_permissions
@@ -33,7 +35,6 @@ from govapp.apps.publisher import permissions
 from govapp.apps.publisher import serializers
 from govapp.apps.publisher import geoserver_manager
 from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
-from govapp.apps.catalogue.models import catalogue_entries
 
 # Typing
 from typing import cast, Any
@@ -43,7 +44,7 @@ from typing import cast, Any
 UserModel = auth.get_user_model()
 
 # Log
-logger = logging.getLogger('__name__')
+log = logging.getLogger('__name__')
 
 
 @drf_utils.extend_schema(tags=["Publisher - Publish Entries"])
@@ -815,10 +816,10 @@ class CDDPContentsViewSet(
         - filepath: The path of the file to retrieve.
         """
         filepath = request.query_params.get('filepath')
-        logger.info(f'Retrieving file: [{filepath}]')
+        log.info(f'Retrieving file: [{filepath}]')
 
         if not filepath:
-            logger.error('Filepath query parameter is required')
+            log.error('Filepath query parameter is required')
             return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         filepath = os.path.join(self.pathToFolder, filepath)
@@ -830,10 +831,10 @@ class CDDPContentsViewSet(
                     response['Content-Disposition'] = f'attachment; filename="{os.path.basename(filepath)}"'
                     return response
             except Exception as e:
-                logger.error(f'Error retrieving file [{filepath}]: [{str(e)}]')
+                log.error(f'Error retrieving file [{filepath}]: [{str(e)}]')
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            logger.error(f'File does not exist: [{filepath}]')
+            log.error(f'File does not exist: [{filepath}]')
             raise http.Http404("File does not exist")
 
     @decorators.action(detail=False, methods=['delete'], url_path='delete-file')
@@ -849,28 +850,123 @@ class CDDPContentsViewSet(
         - filepath: The path of the file to delete.
         """
         filepath = request.query_params.get('filepath')
-        logger.info(f'Deleting file: [{filepath}]')
+        log.info(f'Deleting file: [{filepath}]')
 
         if not filepath:
-            logger.error('Filepath query parameter is required')
+            log.error('Filepath query parameter is required')
             return Response({'error': 'Filepath query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         filepath = os.path.join(self.pathToFolder, filepath)
         if os.path.exists(filepath):
             try:
                 os.remove(filepath)
-                logger.info(f'File [{filepath}] deleted successfully')
+                log.info(f'File [{filepath}] deleted successfully')
 
                 # Check if the directory is empty
                 dirpath = os.path.dirname(filepath)
                 if not os.listdir(dirpath) and dirpath != self.pathToFolder:
                     os.rmdir(dirpath)
-                    logger.info(f'Directory [{dirpath}] deleted successfully')
+                    log.info(f'Directory [{dirpath}] deleted successfully')
 
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except Exception as e:
-                logger.error(f'Error deleting file [{filepath}]: {str(e)}')
+                log.error(f'Error deleting file [{filepath}]: {str(e)}')
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            logger.error(f'File does not exist: [{filepath}]')
+            log.error(f'File does not exist: [{filepath}]')
             raise http.Http404("File does not exist")
+
+
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework_datatables.filters import DatatablesFilterBackend
+
+
+# class GeoServerGroupFilterBackend(DatatablesFilterBackend):
+#     def filter_queryset(self, request, queryset, view):
+#         log.debug(f'in filter_queryset')
+#         return super().filter_queryset(request, queryset, view)
+
+
+class CustomPageNumberPagination(DatatablesPageNumberPagination):
+    page_size_query_param = 'length'  # DataTablesのページサイズパラメータ
+    max_page_size = 100
+
+    def get_paginated_response(self, data):
+        return Response({
+            'draw': int(self.request.query_params.get('draw', 1)),  # DataTablesの描画カウンター
+            'recordsTotal': self.page.paginator.count,
+            'recordsFiltered': self.page.paginator.count,
+            'data': data
+        })
+
+
+class GeoServerGroupViewSet(
+        viewsets.mixins.ListModelMixin,
+        viewsets.GenericViewSet,
+    ):
+    # filter_backends = (GeoServerGroupFilterBackend,)
+    queryset = GeoServerGroup.objects.all()
+    serializer_class = GeoServerGroupSerializer
+    pagination_class = CustomPageNumberPagination
+    search_fields = ["id", "name",]
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def roles_related(self, request, pk=None):
+        group = self.get_object()
+        roles = group.geoserver_roles.all()
+        serializer = GeoServerRoleSerializer(roles, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def roles_available(self, request, pk=None):
+        group = self.get_object()
+        roles = GeoServerRole.objects.all().values('id', 'name')
+        serializer = GeoServerRoleSerializer(roles, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def add_role(self, request, pk=None):
+        group = self.get_object()
+        role_id = request.data.get('role_id')
+        if role_id:
+            try:
+                role = GeoServerRole.objects.get(id=role_id)
+                if role not in group.geoserver_roles.all():
+                    group.geoserver_roles.add(role)
+                    return Response({'success': True})
+                else:
+                    return Response({'success': False, 'error': 'Role already exists in the group'})
+            except GeoServerGroup.DoesNotExist:
+                return Response({'success': False, 'error': 'Group not found'}, status=404)
+            except GeoServerRole.DoesNotExist:
+                return Response({'success': False, 'error': 'Role not found'}, status=404)
+            except Exception as e:
+                return Response({'success': False, 'error': str(e)}, status=500)
+
+    @action(detail=True, methods=['post'])
+    def remove_role(self, request, pk=None):
+        group = self.get_object()
+        role_id = request.data.get('role_id')
+        if role_id:
+            try:
+                role = GeoServerRole.objects.get(id=role_id)
+                if role in group.geoserver_roles.all():
+                    group.geoserver_roles.remove(role)
+                    return Response({'success': True})
+                else:
+                    return Response({'success': False, 'error': 'Role is not associated with this group'})
+            except Exception as e:
+                return Response({'success': False, 'error': str(e)}, status=500)
+        return Response({'error': 'role_id is required'}, status=status.HTTP_400_BAD_REQUEST)
