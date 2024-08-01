@@ -119,7 +119,7 @@
                             "render": function(data, type, row) {
                                 return `
                                     <a href="/geoserver-group/${data}" class="btn btn-sm btn-primary">Edit</a>
-                                    <a href="/geoserver-group/${data}" class="btn btn-sm btn-danger">Delete</a>
+                                    <button class="btn btn-sm btn-danger remove-group" data-group-id="${data}" data-group-name="${row.name}">Delete</button>
                                 `;
                             }
                         }
@@ -144,6 +144,11 @@
                     $('#createGroupModal').modal('show')
                 });
                 $('#createGroupButton').on('click', createGroup);
+                $('#geoServerGroupTable').on('click', '.remove-group', function() {
+                    const groupId = $(this).data('group-id');
+                    const groupName = $(this).data('group-name')
+                    alert('Implement delete-group function')
+                });
             }
             function createGroup() {
                 const groupName = $('#groupName').val().trim();
