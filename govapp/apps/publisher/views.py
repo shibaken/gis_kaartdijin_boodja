@@ -2,14 +2,16 @@
 
 
 # Third-Party
-from math import ceil
 import os
 import logging
 from datetime import datetime
 from django import shortcuts
 from django.db import transaction
+from django.db.models import Q
 from django.contrib import auth
 from django import http
+from django.core.paginator import Paginator
+from django.core.exceptions import ValidationError
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -21,8 +23,9 @@ from rest_framework.decorators import action
 
 # Local
 from govapp import settings
+from govapp.apps.accounts.serializers import UserSerializer
 from govapp.apps.accounts.utils import get_file_list
-from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerRole
+from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole
 from govapp.apps.publisher.serializers.geoserver_group import GeoServerGroupSerializer, GeoServerRoleSerializer
 from govapp.common import mixins
 from govapp.common import utils
@@ -922,6 +925,7 @@ class GeoServerGroupViewSet(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    # Role
     @action(detail=True, methods=['get'])
     def roles_related(self, request, pk=None):
         group = self.get_object()
@@ -969,4 +973,139 @@ class GeoServerGroupViewSet(
                     return Response({'success': False, 'error': 'Role is not associated with this group'})
             except Exception as e:
                 return Response({'success': False, 'error': str(e)}, status=500)
-        return Response({'error': 'role_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'role_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # User
+    @action(detail=True, methods=['get'])
+    def users_related(self, request, pk=None):
+        group = self.get_object()
+        geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=group)
+        users = [geoserver_group_user.user for geoserver_group_user in geoserver_group_users]
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def remove_user(self, request, pk=None):
+        group = self.get_object()
+        user_id = request.data.get('user_id')
+        if user_id:
+            try:
+                user = UserModel.objects.get(id=user_id)
+                relation = GeoServerGroupUser.objects.filter(
+                    geoserver_group=group,
+                    user=user
+                ).first()
+                if relation:
+                    relation.delete()
+                    return Response({'success': True})
+                else:
+                    return Response({'success': False, 'error': 'User is not associated with this group'})
+            except Exception as e:
+                return Response({'success': False, 'error': str(e)}, status=500)
+        else:
+            return Response({'error': 'user_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def users_available(self, request, pk=None):
+        try:
+            geoserver_group = shortcuts.get_object_or_404(GeoServerGroup, pk=pk)
+            
+            existing_user_ids = GeoServerGroupUser.objects.filter(
+                geoserver_group=geoserver_group
+            ).values_list('user_id', flat=True)
+
+            search_query = request.query_params.get('search', '')
+            page = int(request.query_params.get('page', 1))
+            page_size = 20 
+
+            available_users = UserModel.objects.exclude(id__in=existing_user_ids)
+
+            if search_query:
+                available_users = available_users.filter(
+                    Q(username__icontains=search_query) |
+                    Q(email__icontains=search_query)
+                )
+
+            # pagination
+            paginator = Paginator(available_users, page_size)
+            current_page = paginator.page(page)
+
+            results = [
+                {
+                    "id": str(user.id),
+                    "text": f"{user.username} ({user.email})"
+                }
+                for user in current_page
+            ]
+
+            return Response({
+                "results": results,
+                "pagination": {
+                    "more": current_page.has_next()
+                }
+            })
+
+        except GeoServerGroup.DoesNotExist:
+            return Response(
+                {"error": "GeoServer Group not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=['POST'])
+    def add_user(self, request, pk=None):
+        try:
+            with transaction.atomic():
+                geoserver_group = shortcuts.get_object_or_404(GeoServerGroup, pk=pk)
+                user_id = request.data.get('user_id')
+
+                if not user_id:
+                    return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+                user = shortcuts.get_object_or_404(UserModel, pk=user_id)
+
+                # Check if the user is already in the group
+                if GeoServerGroupUser.objects.filter(geoserver_group=geoserver_group, user=user).exists():
+                    return Response({"error": "User is already in the group"}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Add user to the group
+                group_user = GeoServerGroupUser(geoserver_group=geoserver_group, user=user)
+                group_user.full_clean()  # Validate the model
+                group_user.save()
+
+                return Response({"message": f"User {user.username} added to group {geoserver_group.name} successfully"}, status=status.HTTP_201_CREATED)
+
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['POST'])
+    def create_group(self, request):
+        try:
+            with transaction.atomic():
+                name = request.data.get('name')
+                if not name:
+                    return Response({"error": "Group name is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Check if a group with this name already exists
+                if GeoServerGroup.objects.filter(name=name).exists():
+                    return Response({"error": "A group with this name already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Create the new group
+                new_group = GeoServerGroup(name=name)
+                new_group.full_clean()  # Validate the model
+                new_group.save()
+
+                serializer = self.get_serializer(new_group)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
