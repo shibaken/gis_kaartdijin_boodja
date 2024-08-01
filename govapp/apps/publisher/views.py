@@ -1084,3 +1084,28 @@ class GeoServerGroupViewSet(
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['POST'])
+    def create_group(self, request):
+        try:
+            with transaction.atomic():
+                name = request.data.get('name')
+                if not name:
+                    return Response({"error": "Group name is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Check if a group with this name already exists
+                if GeoServerGroup.objects.filter(name=name).exists():
+                    return Response({"error": "A group with this name already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Create the new group
+                new_group = GeoServerGroup(name=name)
+                new_group.full_clean()  # Validate the model
+                new_group.save()
+
+                serializer = self.get_serializer(new_group)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
