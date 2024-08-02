@@ -258,7 +258,7 @@ SHAREPOINT_OUTPUT_LIST = decouple.config("SHAREPOINT_OUTPUT_LIST", default="Shar
 SHAREPOINT_OUTPUT_PUBLISH_AREA = decouple.config("SHAREPOINT_OUTPUT_PUBLISH_AREA", default="GIS1-Corporate/Data")  # noqa: E501
 
 # Azure Settings
-# Azure Output settings are for the Publisher (Output)
+# Azure Output settings are for the Publisher (Output) CDDP
 AZURE_OUTPUT_SYNC_DIRECTORY = decouple.config("AZURE_OUTPUT_SYNC_DIRECTORY", default="sync")
 if not os.path.exists(AZURE_OUTPUT_SYNC_DIRECTORY):
     os.mkdir(AZURE_OUTPUT_SYNC_DIRECTORY)

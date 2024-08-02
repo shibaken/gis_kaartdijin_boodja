@@ -54,6 +54,5 @@ class GeoServerGroupSerializer(serializers.ModelSerializer):
         return format_html(roles)
 
     def get_users(self, obj):
-        geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=obj)
-        users = '<br>'.join([geoserver_group_user.user.email for geoserver_group_user in geoserver_group_users])
+        users = '<br>'.join([geoserver_group_user.email for geoserver_group_user in obj.users])
         return format_html(users)

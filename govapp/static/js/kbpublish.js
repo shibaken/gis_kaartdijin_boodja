@@ -18,8 +18,10 @@ var kbpublish = {
         ftp_server_url : "/api/publish/channels/ftp-server/",
         log_communication_type_url:"/api/logs/communications/type/",
         publish_status: {
-            1: "Locked",
-            2: "Unlocked"
+            // 1: "Locked",
+            // 2: "Unlocked"
+            1: {"name": "Locked", "colour": "green"},
+            2: {"name": "Unlocked", "colour": "darkgray"},
         },
         publish_geoserver_format: {
             1: "WMS",  
@@ -1041,8 +1043,13 @@ var kbpublish = {
                             } else {
                                 html+= "";
                             }
-                            html+= "</td>";                            
-                            html+= " <td>"+kbpublish.var.publish_status[response.results[i].status]+"</td>";
+                            html+= "</td>";
+
+                            if (response.results[i].status == 1){
+                                html += "<td><strong><span style='color:" + kbpublish.var.publish_status[response.results[i].status].colour + ";'>" + kbpublish.var.publish_status[response.results[i].status].name + "<span></strong></td>";
+                            } else {
+                                html += "<td>" + kbpublish.var.publish_status[response.results[i].status].name + "</td>";
+                            }
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             // html+= " <td class='text-end'>";
