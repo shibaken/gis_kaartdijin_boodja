@@ -527,11 +527,14 @@ var kbcatalogue = {
                             }
 
                             html += "</td>";
+
+                            // Status
                             if (response.results[i].status == 2){
                                 html += " <td><strong><span style='color:" + kbcatalogue.var.catalogue_status[response.results[i].status].colour + ";'>" + kbcatalogue.var.catalogue_status[response.results[i].status].name + "<span></strong></td>";
                             } else {
                                 html += " <td>" + kbcatalogue.var.catalogue_status[response.results[i].status].name + "</td>";
                             }
+
                             html += " <td>" + response.results[i].updated_at + "</td>";
                             html += " <td>" + assigned_to_friendly + "</td>";
                             html += " <td class='text-end'>";

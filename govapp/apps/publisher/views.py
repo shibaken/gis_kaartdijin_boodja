@@ -1109,3 +1109,20 @@ class GeoServerGroupViewSet(
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['DELETE'])
+    def delete_group(self, request, pk=None):
+        try:
+            with transaction.atomic():
+                group = shortcuts.get_object_or_404(GeoServerGroup, pk=pk)
+                group_name = group.name
+                
+                # Check if the group has any associated users or resources
+                if group.users or group.geoserver_roles.all():
+                    return Response({"error": "Cannot delete group. It has associated users or roles."}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    group.delete()
+                    return Response({"message": f"Group '{group_name}' has been successfully deleted."}, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            return Response({"error": f"An error occurred while deleting the group: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

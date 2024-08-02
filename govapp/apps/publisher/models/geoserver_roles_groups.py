@@ -76,6 +76,12 @@ class GeoServerGroup(mixins.RevisionedMixin):
     def __str__(self) -> str:
         return self.name
 
+    @property
+    def users(self):
+        geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=self)
+        users = [geoserver_group_user.user for geoserver_group_user in geoserver_group_users]
+        return users
+
 
 @reversion.register()
 class GeoServerGroupRole(mixins.RevisionedMixin):
