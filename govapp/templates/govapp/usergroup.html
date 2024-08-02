@@ -1,7 +1,7 @@
 {% extends 'govapp/base.html' %}
 {% block content %}
 {% if request.user.is_authenticated is True %}
-    <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+    <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <div class="container" id="dashboard-table-container">
         <h3>Usergroup: {{ geoserver_group.name }}</h3>
 
@@ -149,14 +149,18 @@
                 $('#geoservergroup_roles_table').on('click', '.remove-role', function() {
                     const roleId = $(this).data('role-id');
                     const roleName = $(this).data('role-name')
-                    showConfirmation(roleId, 'role', 'the role: ' + roleName);
+                    roleToRemove = roleId;
+                    userToRemove = null;
+                    ConfirmationModal.showConfirmation(roleId, 'the role: ' + roleName);
                 });
                 $('#geoservergroup_users_table').on('click', '.remove-user', function() {
                     const userId = $(this).data('user-id');
                     const userName = $(this).data('user-name')
-                    showConfirmation(userId, 'user', 'the user: ' + userName);
+                    roleToRemove = null;
+                    userToRemove = userId;
+                    ConfirmationModal.showConfirmation(userId, 'the user: ' + userName);
                 });
-                $('#confirmRemoveItem').on('click', function() {
+                $('#confirmDeleteBtn').on('click', function() {
                     if (roleToRemove) {
                         removeRole(roleToRemove);
                     } else if (userToRemove) {
@@ -183,17 +187,6 @@
                 $('#addUserModal').on('shown.bs.modal', function () {
                     $('#userSelect').select2('open');
                 });
-            }
-            function showConfirmation(id, type, delete_text) {
-                if (type === 'role'){
-                    roleToRemove = id;
-                    userToRemove = null;
-                } else {
-                    roleToRemove = null;
-                    userToRemove = id;
-                }
-                $('#item_to_be_deleted').text(delete_text)
-                $('#deleteConfirmationModal').modal('show')
             }
 
             // Role
@@ -229,6 +222,12 @@
                             return data_in_json;
                         }
                     },
+                    "columnDefs": [
+                        {
+                            targets: [3], // column#3 is Action currently.
+                            className: 'text-end'
+                        }
+                    ],
                     "columns": [
                         { "data": "id" },
                         { "data": "name" },
@@ -334,6 +333,12 @@
                             return data_in_json;
                         }
                     },
+                    "columnDefs": [
+                        {
+                            targets: [6], // column#6 is Action currently.
+                            className: 'text-end'
+                        }
+                    ],
                     "columns": [
                         { "data": "id" },
                         { "data": "username" },

@@ -1,8 +1,7 @@
 {% extends 'govapp/base.html' %}
 {% block content %}
 {% if request.user.is_authenticated is True %}
-    <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
-
+    <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <div class="container" id="dashboard-table-container">
         <div class="card" >
             <div class="card-header fw-bold h4" style="padding:30px;">
@@ -76,6 +75,8 @@
 
     <script>
         let UserGroupsApp = function(){
+            let groupToRemove = null;
+
             function constructGroupsTable(){
                 $('#geoServerGroupTable').DataTable({
                     "processing": true,
@@ -144,10 +145,16 @@
                     $('#createGroupModal').modal('show')
                 });
                 $('#createGroupButton').on('click', createGroup);
-                $('#geoServerGroupTable').on('click', '.remove-group', function() {
+                $('#geoServerGroupTable').on('click', '.remove-group', function(){
                     const groupId = $(this).data('group-id');
                     const groupName = $(this).data('group-name')
-                    alert('Implement delete-group function')
+                    groupToRemove = groupId;
+                    ConfirmationModal.showConfirmation(groupId, 'the group: ' + groupName);
+                });
+                $('#confirmDeleteBtn').on('click', function() {
+                    deleteGroup(groupToRemove);
+                    $('#deleteConfirmationModal').modal('hide');
+                    groupToRemove = null;
                 });
             }
             function createGroup() {
@@ -178,6 +185,27 @@
                             errorMessage = xhr.responseJSON.error;
                         }
                         FeedbackModal.showFeedback('Error: ' + errorMessage, false);
+                    }
+                });
+            }
+
+            function deleteGroup(groupId) {
+                $.ajax({
+                    url: '/api/publish/geoservergroup/' + groupId + '/delete_group/',
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': $('#csrfmiddlewaretoken').val()
+                    },
+                    data: {
+                        csrfmiddlewaretoken: $('#csrfmiddlewaretoken').val()
+                        // group_id: groupId
+                    },
+                    success: function(response) {
+                        $('#geoServerGroupTable').DataTable().ajax.reload();
+                        FeedbackModal.showFeedback("Group deleted successfully.", true);
+                    },
+                    error: function(xhr, status, error) {
+                        FeedbackModal.showFeedback("Failed to delete group. " + xhr.responseJSON.error, false);
                     }
                 });
             }

@@ -250,7 +250,7 @@ class GeoServerGroupForm(forms.ModelForm):
 
 class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'name',)
-    list_display = ('id', 'name', 'get_geoserver_roles', 'get_geoserver_users', 'geoserver_usergroup_service','active', 'created_at',)
+    list_display = ('id', 'name', 'get_geoserver_roles', 'get_geoserver_user_emails', 'geoserver_usergroup_service','active', 'created_at',)
     readonly_fields = ('geoserver_usergroup_service',)
     list_filter = ('active',)
     list_display_links = ('id', 'name')
@@ -262,11 +262,10 @@ class GeoServerGroupAdmin(reversion.admin.VersionAdmin):
         return format_html(roles)
     get_geoserver_roles.short_description = 'roles'
 
-    def get_geoserver_users(self, obj):
-        geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=obj)
-        users = '<br>'.join([geoserver_group_user.user.email for geoserver_group_user in geoserver_group_users])
+    def get_geoserver_user_emails(self, obj):
+        users = '<br>'.join([geoserver_group_user.email for geoserver_group_user in obj.users])
         return format_html(users)
-    get_geoserver_users.short_description = 'users'
+    get_geoserver_user_emails.short_description = 'users'
 
 
 class EmailNotificationAdmin(reversion.admin.VersionAdmin):

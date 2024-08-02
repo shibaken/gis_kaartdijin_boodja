@@ -16,3 +16,12 @@
         </div>
     </div>
 </div>
+
+<script>
+    let ConfirmationModal = {
+        showConfirmation: function(id, delete_text) {
+            $('#item_to_be_deleted').text(delete_text)
+            $('#deleteConfirmationModal').modal('show')
+        }
+    }
+</script>
