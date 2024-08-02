@@ -3,9 +3,38 @@
 {% if request.user.is_authenticated is True %}
     <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <div class="container" id="dashboard-table-container">
-        <h3>Usergroup: {{ geoserver_group.name }}</h3>
 
-        <div class="card">
+        <h4 class="d-flex align-items-center">
+            <div class="me-auto">
+                Group: <span id="group-name">{{ geoserver_group.name }}</span>
+                <span id="group-active-badge" class="badge {% if geoserver_group.active %}bg-success{% else %}bg-secondary{% endif %}">
+                    {% if geoserver_group.active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            <button id="edit-button" class="btn btn-primary ms-2">Edit Group Name</button>
+        </h4>
+
+        <div id="edit-form" class="row align-items-center my-2" style="display: none;">
+            <div class="col-auto">
+                <input type="text" id="name-input" class="form-control" value="{{ geoserver_group.name }}" placeholder="Group Name">
+            </div>
+            <div class="col-auto">
+                <div class="form-check">
+                    <input type="checkbox" id="active-input" class="form-check-input" {% if geoserver_group.active %}checked{% endif %}>
+                    <label class="form-check-label" for="active-input">
+                        Active
+                    </label>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button id="save-button" class="btn btn-primary">Save</button>
+            </div>
+            <div class="col-auto">
+                <button id="cancel-button" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+
+        <div class="card mb-4">
             <div class="card-header fw-bold h4" style="padding:30px;">
                 <div class="row">
                     <div class="col-6">Role</div>
@@ -18,7 +47,7 @@
                         <button id="addGeoServerRole" class="btn btn-primary mb-3">Add Role to the Usergroup</button>
                     </div>
                 </div>
-                <table id="geoservergroup_roles_table" class="display" style="width:100%">
+                <table id="geoservergroup_roles_table" class="table table-striped table-bordered table-hover" style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -44,7 +73,7 @@
                         <button id="addGeoServerUser" class="btn btn-primary mb-3">Add User to the Usergroup</button>
                     </div>
                 </div>
-                <table id="geoservergroup_users_table" class="display" style="width:100%">
+                <table id="geoservergroup_users_table" class="table table-striped table-bordered table-hover" style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -146,6 +175,50 @@
             let userToRemove = null;
 
             function setupEventHandlers() {
+                const editButton = $('#edit-button');
+                const editForm = $('#edit-form');
+                const saveButton = $('#save-button');
+                const cancelButton = $('#cancel-button');
+                const nameInput = $('#name-input');
+                const activeInput = $('#active-input');
+                const groupName = $('#group-name');
+                const groupActive = $('#group-active');
+                editButton.click(function() {
+                    editForm.show();
+                    editButton.hide();
+                });
+                cancelButton.click(function() {
+                    editForm.hide();
+                    editButton.show();
+                });
+                saveButton.click(function() {
+                    const newName = nameInput.val();
+                    const newActive = activeInput.prop('checked');
+
+                    $.ajax({
+                        // url: `/api/geoserver-groups/${groupName.text()}/`,
+                        url: '/api/publish/geoservergroup/{{ geoserver_group.id }}/update_group/',
+                        method: 'PATCH',
+                        data: JSON.stringify({
+                            name: newName,
+                            active: newActive
+                        }),
+                        contentType: 'application/json',
+                        headers: {
+                            'X-CSRFToken': $('#csrfmiddlewaretoken').val()
+                        },
+                        success: function(response) {
+                            editForm.hide();
+                            editButton.show();
+                            updateGroupDisplay(response.group);
+                            FeedbackModal.showFeedback("Group updated successfully.", true);
+                        },
+                        error: function(xhr, status, error) {
+                            FeedbackModal.showFeedback("Failed to delete group. " + xhr.responseJSON.error, false);
+                        }
+                    });
+                });
+
                 $('#geoservergroup_roles_table').on('click', '.remove-role', function() {
                     const roleId = $(this).data('role-id');
                     const roleName = $(this).data('role-name')
@@ -189,6 +262,17 @@
                 });
             }
 
+            function updateGroupDisplay(data) {
+                $('#group-name').text(data.name);
+                
+                const $badge = $('#group-active-badge');
+                if (data.active) {
+                    $badge.removeClass('bg-secondary').addClass('bg-success').text('Active');
+                } else {
+                    $badge.removeClass('bg-success').addClass('bg-secondary').text('Inactive');
+                }
+            }
+
             // Role
             function removeRole(roleId) {
                 $.ajax({
@@ -211,6 +295,7 @@
                     }
                 });
             }
+
             function constructRolesTable(){
                 $('#geoservergroup_roles_table').DataTable({
                     "processing": true,
@@ -254,6 +339,7 @@
                     "ordering": true
                 });
             }
+
             function fetchAvailableRoles() {
                 $.ajax({
                     url: "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles_available",
@@ -271,6 +357,7 @@
                     }
                 });
             }
+
             function addRole() {
                 var roleId = $('#roleSelect').val();
                 if (!roleId) {
@@ -441,6 +528,7 @@
                 constructUsersTable();
                 setupEventHandlers();
                 initializeAddUserModal();
+                updateGroupDisplay(geoserver_group);
             }
 
             // Expose the init function to be called on document ready
