@@ -20,6 +20,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework import filters as rest_filters
 
 # Local
 from govapp import settings
@@ -884,19 +885,13 @@ from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
 
-# class GeoServerGroupFilterBackend(DatatablesFilterBackend):
-#     def filter_queryset(self, request, queryset, view):
-#         log.debug(f'in filter_queryset')
-#         return super().filter_queryset(request, queryset, view)
-
-
 class CustomPageNumberPagination(DatatablesPageNumberPagination):
-    page_size_query_param = 'length'  # DataTablesのページサイズパラメータ
+    page_size_query_param = 'length'
     max_page_size = 100
 
     def get_paginated_response(self, data):
         return Response({
-            'draw': int(self.request.query_params.get('draw', 1)),  # DataTablesの描画カウンター
+            'draw': int(self.request.query_params.get('draw', 1)),
             'recordsTotal': self.page.paginator.count,
             'recordsFiltered': self.page.paginator.count,
             'data': data
@@ -907,11 +902,13 @@ class GeoServerGroupViewSet(
         viewsets.mixins.ListModelMixin,
         viewsets.GenericViewSet,
     ):
-    # filter_backends = (GeoServerGroupFilterBackend,)
     queryset = GeoServerGroup.objects.all()
     serializer_class = GeoServerGroupSerializer
     pagination_class = CustomPageNumberPagination
-    search_fields = ["id", "name",]
+    
+    # For searching at the backend
+    filter_backends = [rest_filters.SearchFilter,]
+    search_fields = ["id", "name", "geoserver_roles__name", "geoservergroupuser__user__email"]
 
     def get_queryset(self):
         return super().get_queryset()
@@ -1126,3 +1123,33 @@ class GeoServerGroupViewSet(
                 
         except Exception as e:
             return Response({"error": f"An error occurred while deleting the group: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['PATCH'])
+    def update_group(self, request, pk=None):
+        try:
+            with transaction.atomic():
+                group = shortcuts.get_object_or_404(GeoServerGroup, pk=pk)
+                group_name_old = group.name
+                
+                new_name = request.data.get('name', '')
+                new_active = request.data.get('active', '')
+
+                if not new_name:
+                    return Response({"error": f"Name cannot be blank."}, status=status.HTTP_400_BAD_REQUEST)
+                if new_active == '':
+                    return Response({"error": f"Active status cannot be blank."}, status=status.HTTP_400_BAD_REQUEST)
+
+                serializer = GeoServerGroupSerializer(group, data=request.data)
+                serializer.is_valid(raise_exception=True)
+                group = serializer.save()
+                
+                return Response({
+                    "message": f"Group '{group_name_old}' has been successfully updated.",
+                    "group": {
+                        "name": group.name,
+                        "active": group.active
+                    }
+                }, status=status.HTTP_200_OK)
+                
+        except Exception as e:
+            return Response({"error": f"An error occurred while updating the group: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

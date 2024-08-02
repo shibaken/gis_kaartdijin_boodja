@@ -87,6 +87,7 @@
                         "data": function(d){
                             d.page = (d.start / d.length) + 1;
                             d.page_size = d.length;
+                            d.search = d.search.value;
                         },
                         "dataSrc": function (json) {
                             return json.data;
@@ -94,7 +95,10 @@
                     },
                     "columns": [
                         { "data": "id" },
-                        { "data": "name" },
+                        { 
+                            "data": "name",
+                            "name": "name",
+                        },
                         { 
                             "data": "active",
                             "render": function(data, type, row) {
