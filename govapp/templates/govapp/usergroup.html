@@ -5,22 +5,21 @@
     <div class="container" id="dashboard-table-container">
 
         <h4>
-            <!-- Usergroup: <span id="group-name">{{ geoserver_group.name }}</span> -->
             Usergroup: <span id="group-name">{{ geoserver_group.name }}</span>
             <span id="group-active-badge" class="badge {% if geoserver_group.active %}bg-success{% else %}bg-secondary{% endif %}">
                 {% if geoserver_group.active %}Active{% else %}Inactive{% endif %}
             </span>
         </h4>
 
-        <button id="edit-button">Edit</button>
+        <button id="edit-button" class="btn btn-sm btn-primary">Edit</button>
         <div id="edit-form" style="display: none;">
             <input type="text" id="name-input" value="{{ geoserver_group.name }}">
             <label>
                 <input type="checkbox" id="active-input" {% if geoserver_group.active %}checked{% endif %}>
                 Active
             </label>
-            <button id="save-button">Save</button>
-            <button id="cancel-button">Cancel</button>
+            <button id="save-button" class="btn btn-sm btn-primary">Save</button>
+            <button id="cancel-button" class="btn btn-sm btn-secondary">Cancel</button>
         </div>
     
         <div class="card mb-4">
