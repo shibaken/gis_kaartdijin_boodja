@@ -4,24 +4,36 @@
     <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <div class="container" id="dashboard-table-container">
 
-        <h4>
-            Usergroup: <span id="group-name">{{ geoserver_group.name }}</span>
-            <span id="group-active-badge" class="badge {% if geoserver_group.active %}bg-success{% else %}bg-secondary{% endif %}">
-                {% if geoserver_group.active %}Active{% else %}Inactive{% endif %}
-            </span>
+        <h4 class="d-flex align-items-center">
+            <div class="me-auto">
+                Group: <span id="group-name">{{ geoserver_group.name }}</span>
+                <span id="group-active-badge" class="badge {% if geoserver_group.active %}bg-success{% else %}bg-secondary{% endif %}">
+                    {% if geoserver_group.active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            <button id="edit-button" class="btn btn-sm btn-primary ms-2">Edit Group Name</button>
         </h4>
 
-        <button id="edit-button" class="btn btn-sm btn-primary">Edit</button>
-        <div id="edit-form" style="display: none;">
-            <input type="text" id="name-input" value="{{ geoserver_group.name }}">
-            <label>
-                <input type="checkbox" id="active-input" {% if geoserver_group.active %}checked{% endif %}>
-                Active
-            </label>
-            <button id="save-button" class="btn btn-sm btn-primary">Save</button>
-            <button id="cancel-button" class="btn btn-sm btn-secondary">Cancel</button>
+        <div id="edit-form" class="row align-items-center my-2" style="display: none;">
+            <div class="col-auto">
+                <input type="text" id="name-input" class="form-control" value="{{ geoserver_group.name }}" placeholder="Group Name">
+            </div>
+            <div class="col-auto">
+                <div class="form-check">
+                    <input type="checkbox" id="active-input" class="form-check-input" {% if geoserver_group.active %}checked{% endif %}>
+                    <label class="form-check-label" for="active-input">
+                        Active
+                    </label>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button id="save-button" class="btn btn-primary">Save</button>
+            </div>
+            <div class="col-auto">
+                <button id="cancel-button" class="btn btn-secondary">Cancel</button>
+            </div>
         </div>
-    
+
         <div class="card mb-4">
             <div class="card-header fw-bold h4" style="padding:30px;">
                 <div class="row">
