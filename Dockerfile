@@ -73,7 +73,7 @@ RUN chmod 755 /bin/scheduler.py
 RUN mkdir /tmp/azcopy/
 RUN wget https://aka.ms/downloadazcopy-v10-linux -O /tmp/azcopy/azcopy.tar.gz
 RUN cd /tmp/azcopy/ ; tar -xzvf azcopy.tar.gz
-RUN cp /tmp/azcopy/azcopy_linux_amd64_10.26.0/azcopy /bin/azcopy
+RUN cp /tmp/azcopy/azcopy_linux_amd64_10.*/azcopy /bin/azcopy
 RUN chmod 755 /bin/azcopy
 
 
