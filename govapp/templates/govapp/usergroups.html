@@ -106,7 +106,21 @@
                             }
                         },
                         { "data": "roles" },
-                        { "data": "users" },
+                        // { "data": "users" },
+                        {
+                            "data": "users",
+                            "render": function(data, type, row) {
+                                if (data.length > 1) {
+                                    let usersList = data.slice(0, 1).map(user => user.email).join('<br>');
+                                    return `
+                                        <span>${usersList}</span>
+                                        <a href="#" class="more-users" data-users='${JSON.stringify(data).replace(/'/g, '&apos;')}'> more...</a>
+                                    `;
+                                } else {
+                                    return data.map(user => user.email).join('<br>');
+                                }
+                            }
+                        },
                         { 
                             "data": "created_at",
                             "render": function(data, type, row) {
@@ -141,6 +155,13 @@
                         var api = this.api();
                         var json = api.ajax.json();
                         api.page.info().pages = Math.ceil(json.count / api.page.info().length);
+
+                        $('.more-users').off('click').on('click', function(e) {
+                            e.preventDefault();
+                            const users = JSON.parse($(this).attr('data-users').replace(/&apos;/g, "'"));
+                            const usersList = users.map(user => user.email).join('<br>');
+                            $(this).parent().html(usersList);
+                        });
                     }
                 });
             }

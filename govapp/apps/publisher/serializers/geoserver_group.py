@@ -1,5 +1,6 @@
 import pytz
 from rest_framework import serializers
+from govapp.apps.accounts.serializers import UserSerializer
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole
 from django.utils.html import format_html
 
@@ -54,5 +55,8 @@ class GeoServerGroupSerializer(serializers.ModelSerializer):
         return format_html(roles)
 
     def get_users(self, obj):
-        users = '<br>'.join([geoserver_group_user.email for geoserver_group_user in obj.users])
-        return format_html(users)
+        # users = '<br>'.join([geoserver_group_user.email for geoserver_group_user in obj.users])
+        # return format_html(users)
+        geoserver_group_users = GeoServerGroupUser.objects.filter(geoserver_group=obj)
+        users = [geoserver_group_user.user for geoserver_group_user in geoserver_group_users]
+        return UserSerializer(users, many=True).data
