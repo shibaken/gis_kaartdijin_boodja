@@ -6,7 +6,13 @@ var kblayersubscription = {
         subscription_table_date_format: "DD MMM YYYY HH:mm:ss",
         workspace_map: {}, // will be filled later
         subscription_type_map: {1:"WMS", 2:"WFS", 3:"POST GIS"},
-        status_map: {1:"NEW DRAFT", 2:"LOCKED", 3:"DECLINED", 4:"DRAFT", 5:"PENDING"},
+        status_map: {
+            1: {"name": "NEW DRAFT", "class": "badge badge-pill bg-secondary"},
+            2: {"name": "LOCKED", "class": "badge badge-pill bg-success"},
+            3: {"name": "DECLINED", "class": "badge badge-pill bg-danger"},
+            4: {"name": "DRAFT", "class": "badge badge-pill bg-secondary"},
+            5: {"name": "PENDING", "class": "badge badge-pill bg-warning"}
+        },
         required_fields:{
             1:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
                 'connection_timeout', 'max_connections', 'read_timeout'],
@@ -121,36 +127,48 @@ var kblayersubscription = {
                     return;
                 }
                 for(let i in response.results){
-                    response.results[i]['created_at'] = utils.convert_datetime_format(response.results[i].created_at, kblayersubscription.var.subscription_table_date_format);
-                    response.results[i]['type_str'] = kblayersubscription.var.subscription_type_map[+response.results[i].type];
-                    response.results[i]['workspace_str'] = kblayersubscription.var.workspace_map[+response.results[i].workspace];
-                    response.results[i]['status_str'] = kblayersubscription.var.status_map[+response.results[i].status];
-                    response.results[i]['assigned_to_name'] = null;
-                    if(response.results[i]['assigned_to_first_name'])
-                        response.results[i]['assigned_to_name'] = response.results[i]['assigned_to_first_name'] + ' ' 
-                                                                + response.results[i]['assigned_to_last_name'];
+                    let layer_subscription = response.results[i]
+                    layer_subscription['created_at'] = utils.convert_datetime_format(layer_subscription.created_at, kblayersubscription.var.subscription_table_date_format);
+                    layer_subscription['type_str'] = kblayersubscription.var.subscription_type_map[+layer_subscription.type];
+                    layer_subscription['workspace_str'] = kblayersubscription.var.workspace_map[+layer_subscription.workspace];
+                    layer_subscription['status_str'] = kblayersubscription.var.status_map[+layer_subscription.status].name;
+                    layer_subscription['assigned_to_name'] = null;
+                    if(layer_subscription['assigned_to_first_name'])
+                        layer_subscription['assigned_to_name'] = layer_subscription['assigned_to_first_name'] + ' ' + layer_subscription['assigned_to_last_name'];
                 }
-                // ID, Name, Status, Type, Workspace, Enabled, URL, Updated at, Assigned to
-                buttons={View:(subscription)=>window.location.href = '/layer/subscriptions/'+subscription.id+'/',
-                                         History:(subscription)=>kblayersubscription.get_layer_subscription()};
-                if($('#is-administrator').val() == "True"){
-                    buttons['Delete']=(subscription)=>kblayersubscription.delete_subscription(subscription);
+
+                // Construct the table
+                $('#subscription-tbody').empty()
+                for(let i in response.results){
+                    let layer_subscription = response.results[i]
+                    console.log({layer_subscription})
+
+                    let row = $('<tr>')
+                    row.append($('<td>').text(layer_subscription.id))
+                    row.append($('<td>').text(layer_subscription.name))
+                    row.append($('<td>').append($('<span>').addClass(kblayersubscription.var.status_map[+layer_subscription.status].class).text(layer_subscription.status_str)))
+                    row.append($('<td>').text(layer_subscription.type_str))
+                    row.append($('<td>').text(layer_subscription.workspace_str))
+                    row.append($('<td>').append($('<span>').addClass(layer_subscription.enabled ? 'badge badge-pill bg-success' : 'badge badge-pill bg-danger').text(layer_subscription.enabled)))
+                    row.append($('<td>').text(layer_subscription.updated_at))
+                    row.append($('<td>').text(layer_subscription.assigned_to_name))
+                    
+                    // Buttons
+                    let td_for_buttons = $('<td class="text-end">')
+                    let button_view = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-view">View</button>')
+                    let button_history = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
+                    let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-delete">Delete</button>')
+                    button_view.click(()=>window.location.href = '/layer/subscriptions/' + layer_subscription.id + '/')
+                    button_history.click(()=>kblayersubscription.get_layer_subscription())
+                    button_delete.click(()=>kblayersubscription.delete_subscription(layer_subscription))
+                    td_for_buttons.append(button_view)
+                    td_for_buttons.append(button_history)
+                    td_for_buttons.append(button_delete)
+
+                    row.append(td_for_buttons)
+                    $('#subscription-tbody').append(row)
                 }
-                table.set_tbody(
-                    $('#subscription-tbody'),
-                    response.results, 
-                    [
-                        {id:"text"},
-                        {name:'text'},
-                        {status_str:'text'},
-                        {type_str:'text'},
-                        {workspace_str:'text'},
-                        {enabled:'text'},
-                        {updated_at:'text'},
-                        {assigned_to_name:'text'}
-                    ],
-                    buttons=buttons
-                );
+
                 common_pagination.init(response.count, params, kblayersubscription.get_layer_subscription, $('#subscription-navi'));
             },
             error: function (error){
