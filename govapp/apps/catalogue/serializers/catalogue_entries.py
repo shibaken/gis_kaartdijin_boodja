@@ -75,7 +75,8 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             # Convert to local time
             local_time = obj.updated_at.astimezone(pytz.timezone('Australia/Perth'))
             # Return formatted string
-            return local_time.strftime('%d %b %Y %I:%M %p')
+            # return local_time.strftime('%d %b %Y %I:%M %p')
+            return local_time.strftime('%d-%m-%Y %H:%M:%S')
         return None
 
 
