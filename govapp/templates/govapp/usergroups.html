@@ -76,6 +76,7 @@
     <script>
         let UserGroupsApp = function(){
             let groupToRemove = null;
+            let defaultNumOfUsersDisplay = 3;
 
             function constructGroupsTable(){
                 $('#geoServerGroupTable').DataTable({
@@ -106,7 +107,21 @@
                             }
                         },
                         { "data": "roles" },
-                        { "data": "users" },
+                        // { "data": "users" },
+                        {
+                            "data": "users",
+                            "render": function(data, type, row) {
+                                if (data.length > defaultNumOfUsersDisplay) {
+                                    let usersList = data.slice(0, defaultNumOfUsersDisplay).map(user => user.email).join('<br>');
+                                    return `
+                                        <span>${usersList}</span>
+                                        <a href="#" class="more-users" data-users='${JSON.stringify(data).replace(/'/g, '&apos;')}'> more...</a>
+                                    `;
+                                } else {
+                                    return data.map(user => user.email).join('<br>');
+                                }
+                            }
+                        },
                         { 
                             "data": "created_at",
                             "render": function(data, type, row) {
@@ -141,6 +156,32 @@
                         var api = this.api();
                         var json = api.ajax.json();
                         api.page.info().pages = Math.ceil(json.count / api.page.info().length);
+
+                        $(document).off('click', '.more-users').on('click', '.more-users', function(e) {
+                            e.preventDefault();
+                            const users = JSON.parse($(this).attr('data-users').replace(/&apos;/g, "'"));
+                            const usersList = users.map(user => user.email).join('<br>');
+                            const parent = $(this).parent();
+                            parent.fadeOut(300, function() {
+                                parent.html(`
+                                    <span>${usersList}</span>
+                                    <a href="#" class="less-users" data-users='${JSON.stringify(users).replace(/'/g, '&apos;')}'> less...</a>
+                                `).fadeIn(300);
+                            });
+                        });
+
+                        $(document).off('click', '.less-users').on('click', '.less-users', function(e) {
+                            e.preventDefault();
+                            const users = JSON.parse($(this).attr('data-users').replace(/&apos;/g, "'"));
+                            const usersList = users.slice(0, defaultNumOfUsersDisplay).map(user => user.email).join('<br>');
+                            const parent = $(this).parent();
+                            parent.fadeOut(300, function() {
+                                parent.html(`
+                                    <span>${usersList}</span>
+                                    <a href="#" class="more-users" data-users='${JSON.stringify(users).replace(/'/g, '&apos;')}'> more...</a>
+                                `).fadeIn(300);
+                            });
+                        });
                     }
                 });
             }
