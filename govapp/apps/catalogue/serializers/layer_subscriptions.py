@@ -32,6 +32,8 @@ class LayerSubscriptionSerializer(serializers.ModelSerializer):
     """Layer Subscription Model Serializer."""
     assigned_to_first_name = serializers.ReadOnlyField(source='assigned_to.first_name',)
     assigned_to_last_name = serializers.ReadOnlyField(source='assigned_to.last_name',)
+    updated_at = serializers.SerializerMethodField()
+
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
         model = models.layer_subscriptions.LayerSubscription
@@ -41,6 +43,10 @@ class LayerSubscriptionSerializer(serializers.ModelSerializer):
                   "host", "port", "database", "schema", "fetch_size", "status", 
                   "assigned_to_first_name", "assigned_to_last_name")
         read_only_fields = ("id", "assigned_to", "status", "created_at", "updated_at")
+
+    def get_updated_at(self, obj):
+        return obj.updated_at.strftime("%d-%m-%Y %H:%M:%S")
+
         
 class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
     """Layer Subscription Model Serializer."""

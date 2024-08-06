@@ -20,8 +20,9 @@ var kbpublish = {
         publish_status: {
             // 1: "Locked",
             // 2: "Unlocked"
-            1: {"name": "Locked", "colour": "green"},
-            2: {"name": "Unlocked", "colour": "darkgray"},
+            1: {"name": "Locked", "colour": "green", "class": "badge bg-success"},
+            2: {"name": "Unlocked", "colour": "darkgray", "class": "badge bg-secondary"},
+            // 1: {"name": "New Draft", "colour": "darkgray", "class": "badge bg-secondary"},
         },
         publish_geoserver_format: {
             1: "WMS",  
@@ -1043,13 +1044,9 @@ var kbpublish = {
                             } else {
                                 html+= "";
                             }
-                            html+= "</td>";
 
-                            if (response.results[i].status == 1){
-                                html += "<td><strong><span style='color:" + kbpublish.var.publish_status[response.results[i].status].colour + ";'>" + kbpublish.var.publish_status[response.results[i].status].name + "<span></strong></td>";
-                            } else {
-                                html += "<td>" + kbpublish.var.publish_status[response.results[i].status].name + "</td>";
-                            }
+                            html+= "</td>";
+                            html += "<td><span class='" + kbpublish.var.publish_status[response.results[i].status].class + "'>" + kbpublish.var.publish_status[response.results[i].status].name + "<span></td>";
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             // html+= " <td class='text-end'>";
