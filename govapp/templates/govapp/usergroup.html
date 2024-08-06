@@ -184,12 +184,12 @@
                 const groupName = $('#group-name');
                 const groupActive = $('#group-active');
                 editButton.click(function() {
-                    editForm.show();
-                    editButton.hide();
+                    editForm.fadeIn();
+                    editButton.fadeOut();
                 });
                 cancelButton.click(function() {
-                    editForm.hide();
-                    editButton.show();
+                    editForm.fadeOut();
+                    editButton.fadeIn();
                 });
                 saveButton.click(function() {
                     const newName = nameInput.val();
@@ -263,6 +263,7 @@
             }
 
             function updateGroupDisplay(data) {
+                console.log({data})
                 $('#group-name').text(data.name);
                 
                 const $badge = $('#group-active-badge');
@@ -528,7 +529,7 @@
                 constructUsersTable();
                 setupEventHandlers();
                 initializeAddUserModal();
-                updateGroupDisplay(geoserver_group);
+                // updateGroupDisplay(geoserver_group);
             }
 
             // Expose the init function to be called on document ready
