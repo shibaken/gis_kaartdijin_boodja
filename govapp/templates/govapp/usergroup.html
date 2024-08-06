@@ -184,12 +184,12 @@
                 const groupName = $('#group-name');
                 const groupActive = $('#group-active');
                 editButton.click(function() {
-                    editForm.show();
-                    editButton.hide();
+                    editForm.fadeIn();
+                    editButton.fadeOut();
                 });
                 cancelButton.click(function() {
-                    editForm.hide();
-                    editButton.show();
+                    editForm.fadeOut();
+                    editButton.fadeIn();
                 });
                 saveButton.click(function() {
                     const newName = nameInput.val();
