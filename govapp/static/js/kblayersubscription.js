@@ -141,7 +141,6 @@ var kblayersubscription = {
                 $('#subscription-tbody').empty()
                 for(let i in response.results){
                     let layer_subscription = response.results[i]
-                    console.log({layer_subscription})
 
                     let row = $('<tr>')
                     row.append($('<td>').text(layer_subscription.id))
@@ -156,7 +155,7 @@ var kblayersubscription = {
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
                     let button_view = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-view">View</button>')
-                    let button_history = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
+                    let button_history = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
                     let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-delete">Delete</button>')
                     button_view.click(()=>window.location.href = '/layer/subscriptions/' + layer_subscription.id + '/')
                     button_history.click(()=>kblayersubscription.get_layer_subscription())

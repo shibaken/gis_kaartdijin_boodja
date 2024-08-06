@@ -41,6 +41,11 @@ if TYPE_CHECKING:
 UserModel = auth.get_user_model()
 
 
+class CatalogueEntryPermissionType(models.IntegerChoices):
+    PUBLIC = 1, 'Public'
+    RESTRICTED = 2, 'Restricted'
+
+
 class CatalogueEntryStatus(models.IntegerChoices):
     """Enumeration for a Catalogue Entry Status."""
     NEW_DRAFT = 1
@@ -127,6 +132,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
         related_name="assigned",
         on_delete=models.SET_NULL,
     )
+    permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.PUBLIC)
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.
