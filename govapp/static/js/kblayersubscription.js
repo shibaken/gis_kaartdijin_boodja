@@ -163,7 +163,6 @@ var kblayersubscription = {
                     td_for_buttons.append(button_view)
                     td_for_buttons.append(button_history)
                     td_for_buttons.append(button_delete)
-
                     row.append(td_for_buttons)
                     $('#subscription-tbody').append(row)
                 }
@@ -824,29 +823,45 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                if(!response || !response.results){
-                    table.message_tbody(tbody, "No results found");
+                thead.empty();
+                let tr = $('<tr>');
+                tr.append($('<th>').attr('class', 'col-4').text("Catalogue Name"))
+                tr.append($('<th>').attr('class', 'col-5').text("Description"))
+                tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
+                thead.append(tr);
+
+                if(!response || !response.results.length){
+                    tbody.html("<tr><td colspan='3' class='text-center'>No results found</td></tr>");
                     return;
                 }
-                let buttons = null;
-                if($('#has_edit_access').val() == "True"){
-                    buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
-                            DELETE:(query)=>kblayersubscription.delete_custom_query(query)};
-                }
-                table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
-                let rows = []
-                for(let i in response.results){
-                    rows.push(response.results[i]);
-                }
-                table.set_tbody(tbody, rows, [{name:"text"}, {description:"text"}], buttons);
-                if(rows.length == 0){
-                    table.message_tbody(tbody, "No results found");
+
+                tbody.empty();
+                for(let item of response.results){
+                    console.log({item})
+                    let row = $('<tr>');
+                    row.append($('<td>').text(item.name))
+                    row.append($('<td>').text(item.description))
+
+                    // Buttons
+                    let td_for_buttons = $('<td class="text-end">')
+                    if($('#has_edit_access').val() == "True"){
+                        let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + item.id + '-view">Run</button>')
+                        let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + item.id + '-history">Edit</button>')
+                        let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + item.id + '-delete">Delete</button>')
+                        button_run.click(()=>{ /* TODO: implement RUN */ })
+                        button_edit.click(()=>kblayersubscription.show_custom_query_modal(item))
+                        button_delete.click(()=>kblayersubscription.delete_custom_query(item))
+                        td_for_buttons.append(button_run)
+                        td_for_buttons.append(button_edit)
+                        td_for_buttons.append(button_delete)
+                    }
+                    row.append(td_for_buttons)
+                    tbody.append(row);
                 }
             },
             error: (error)=> {
                 table.message_tbody(tbody, "No results found");
                 common_entity_modal.show_alert("An error occured while getting mappings.");
-                // console.error(error);
             },
         });
     },
