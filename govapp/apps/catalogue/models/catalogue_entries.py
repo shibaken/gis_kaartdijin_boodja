@@ -45,6 +45,10 @@ class CatalogueEntryPermissionType(models.IntegerChoices):
     PUBLIC = 1, 'Public'
     RESTRICTED = 2, 'Restricted'
 
+    @staticmethod
+    def get_choices_dict():
+        return {choice.value: choice.label for choice in CatalogueEntryPermissionType}
+
 
 class CatalogueEntryStatus(models.IntegerChoices):
     """Enumeration for a Catalogue Entry Status."""

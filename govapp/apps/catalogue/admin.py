@@ -115,13 +115,10 @@ class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
 
     def coloured_status(self, obj):
         if obj.status == LayerSubmissionStatus.SUBMITTED:
-            # return format_html('<span style="color: gray;">{}</span>', obj.get_status_display())
             return format_html('<span class="badge badge-pill bg-secondary">' + obj.get_status_display() + '</span>')
         elif obj.status == LayerSubmissionStatus.ACCEPTED:
-            # return format_html('<span style="color: green;">{}</span>', obj.get_status_display())
             return format_html('<span class="badge badge-pill bg-success">' + obj.get_status_display() + '</span>')
         elif obj.status == LayerSubmissionStatus.DECLINED:
-            # return format_html('<span style="color: #dc3545;">{}</span>', obj.get_status_display())
             return format_html('<span class="badge badge-pill bg-danger">' + obj.get_status_display() + '</span>')
         else:
             return '---'
@@ -202,8 +199,9 @@ class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
 
 class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'catalogue_entry__name',)
-    list_display = ('id', 'user_link', 'catalogue_entry_link', 'active')
+    list_display = ('id', 'user_link', 'catalogue_entry_link', 'permission', 'active')
     list_filter = ('active', 'user',)
+    raw_id_fields = ('user', 'catalogue_entry',)
 
     def catalogue_entry_link(self, obj):
         return construct_catalogue_entry_link(obj.catalogue_entry)

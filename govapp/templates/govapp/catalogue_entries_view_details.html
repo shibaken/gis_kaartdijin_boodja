@@ -74,10 +74,23 @@
             <div class="row">
                   <div class='col-3'>Permission Type</div>
                   <div class='col-5 p-1'>
-                        {% if catalogue_entry_obj.permission_type == 1 %}
-                              Public
-                        {% elif catalogue_entry_obj.permission_type == 2 %}
-                              Restricted
+                        {% if has_edit_access is True %}
+                              <select type="text" class="form-control" id="catalogue-permission-type" >
+                                    <option value="">Select One</option>
+                                    {% for value, label in permission_types %}
+                                          {% if catalogue_entry_obj.permission_type == value %} 
+                                                <option value="{{ value }}" selected>{{ label }}</option>
+                                          {% else %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                          {% endif %}
+                                    {% endfor %}
+                              </select>
+                        {% else %}
+                              {% if catalogue_entry_obj.permission_type == 1 %}
+                                    Public
+                              {% elif catalogue_entry_obj.permission_type == 2 %}
+                                    Restricted
+                              {% endif %}
                         {% endif %}
                   </div>
             </div>

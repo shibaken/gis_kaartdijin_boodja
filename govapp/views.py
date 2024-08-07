@@ -310,6 +310,8 @@ class CatalogueEntriesView(base.TemplateView):
 
         custodians_obj = custodians_models.Custodian.objects.all()
         catalogue_entry_obj = catalogue_entries_models.CatalogueEntry.objects.get(id=self.kwargs['pk'])
+        # permission_types = catalogue_entries_models.CatalogueEntryPermissionType.get_choices_dict()
+        permission_types = catalogue_entries_models.CatalogueEntryPermissionType.choices
 
         system_users_dict = {}
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
@@ -356,6 +358,7 @@ class CatalogueEntriesView(base.TemplateView):
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['has_edit_access'] = has_edit_access
         context['display_attributes_tab'] = display_attributes_tab
+        context['permission_types'] = permission_types
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)

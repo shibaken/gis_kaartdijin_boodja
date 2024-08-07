@@ -70,6 +70,9 @@ class CatalogueEntryViewSet(
     search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]    
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
     @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
     def delete_file(self, request: request.Request):
         filenameToDelete = request.POST.get('newFileName', '')
