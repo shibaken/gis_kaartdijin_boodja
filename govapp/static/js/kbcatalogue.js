@@ -10,9 +10,12 @@ var kbcatalogue = {
             4: {"name": "Draft", "colour": "darkgray", "class": "badge bg-secondary"},
             5: {"name": "Pending", "colour": "darkgray", "class": "badge bg-warning"}
         },
-        catalogue_Type: {
+        spatial_type: {
             1: "Special File",
-            2: "Subscription",
+            2: "Subscription WFS",
+            3: "Subscription WMS",
+            4: "Subscription PostGIS",
+            5: "Custom Query"
         },
         catalogue_date_format: "dd/mm/yyyy",
         catalogue_table_date_format: "DD MMM YYYY HH:mm:ss",
@@ -490,6 +493,8 @@ var kbcatalogue = {
                     if (response.results.length > 0) {
                         for (let i = 0; i < response.results.length; i++) {
                             let catalogue_entry = response.results[i]
+                            console.log({catalogue_entry})
+
                             assigned_to_friendly = "";
 
                             if (catalogue_entry.assigned_to_first_name != null) {
@@ -507,32 +512,19 @@ var kbcatalogue = {
 
                             button_json = '{"id": "'+catalogue_entry.id+'"}'
 
-                            html+= "<tr>";
-                            html+= " <td>CE"+catalogue_entry.id+"</td>";
-                            html+= " <td>"+catalogue_entry.name+"</td>";
-                            html+= " <td>";
-                            if (catalogue_entry.type == 1) {
-                                html+= "Spatial File";
-                            } else if (catalogue_entry.type == 5) {
-                                html+= "Subscription";
-                            }
-
-                            html+= "</td>";
-                            html+= " <td>";
-                            if (catalogue_entry.custodian_name != null) { 
-                                html+= catalogue_entry.custodian_name;
-                            } else {
-                                html+= "";
-                            }
-
+                            html += "<tr>";
+                            html += "<td>CE" + catalogue_entry.id + "</td>";
+                            html += "<td>" + catalogue_entry.name + "</td>";
+                            html += "<td>" + kbcatalogue.var.spatial_type[catalogue_entry.type] + "</td>";
+                            html += "<td>" + catalogue_entry.permission_type_str + "</td>"
+                            html += "<td>" + (catalogue_entry.custodian_name != null ? catalogue_entry.custodian_name : "") + "</td>"
+                            html += "<td><span class='" + kbcatalogue.var.catalogue_status[catalogue_entry.status].class + "'>" + kbcatalogue.var.catalogue_status[catalogue_entry.status].name + "<span></td>";
+                            html += "<td>" + catalogue_entry.updated_at + "</td>";
+                            html += "<td>" + assigned_to_friendly + "</td>";
+                            html += "<td class='text-end'>";
+                            html += "<a class='btn btn-primary btn-sm' href='/catalogue/entries/" + catalogue_entry.id + "/details/'>View</a>";
+                            html += "<button class='btn btn-secondary  btn-sm'>History</button>";
                             html += "</td>";
-                            html += " <td><span class='" + kbcatalogue.var.catalogue_status[catalogue_entry.status].class + "'>" + kbcatalogue.var.catalogue_status[catalogue_entry.status].name + "<span></td>";
-                            html += " <td>" + catalogue_entry.updated_at + "</td>";
-                            html += " <td>" + assigned_to_friendly + "</td>";
-                            html += " <td class='text-end'>";
-                            html += "  <a class='btn btn-primary btn-sm' href='/catalogue/entries/" + catalogue_entry.id + "/details/'>View</a>";
-                            html += "  <button class='btn btn-secondary  btn-sm'>History</button>";
-                            html += "  </td>";
                             html += "<tr>";
                         }
 
