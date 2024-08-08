@@ -1091,20 +1091,21 @@ class LayerSubscriptionViewSet(
             for freq in sql_query.custom_query_frequencies.all():
                 frequencies.append({
                     'type':freq.type, 
+                    'type_label': freq.get_type_display(),
                     'minutes':freq.every_minutes, 
                     'hours':freq.every_hours,
                     'hour':freq.hour,
                     'minute':freq.minute,
                     'day':freq.day_of_week,
                     'date':freq.date,
-                    })
+                })
             results.append({
                 'id': sql_query.id,
                 'name': sql_query.name,
                 'description' : sql_query.description,
                 'sql_query' : sql_query.sql_query,
                 'frequencies' : frequencies,
-                })
+            })
             
         # Return Response
         return response.Response({'results':results}, content_type='application/json', status=status.HTTP_200_OK)

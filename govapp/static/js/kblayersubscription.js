@@ -825,8 +825,9 @@ var kblayersubscription = {
             success: (response) => {
                 thead.empty();
                 let tr = $('<tr>');
-                tr.append($('<th>').attr('class', 'col-4').text("Catalogue Name"))
-                tr.append($('<th>').attr('class', 'col-5').text("Description"))
+                tr.append($('<th>').attr('class', 'col-3').text("Catalogue Name"))
+                tr.append($('<th>').attr('class', 'col-4').text("Description"))
+                tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
                 tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
                 thead.append(tr);
 
@@ -841,6 +842,9 @@ var kblayersubscription = {
                     let row = $('<tr>');
                     row.append($('<td>').text(item.name))
                     row.append($('<td>').text(item.description))
+                    let typeLabels = item.frequencies.map(frequency => frequency.type_label).join('<br>');
+                    let td = $('<td>').text(typeLabels);
+                    row.append(td);
 
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')

@@ -52,9 +52,9 @@ class Scanner:
                 log.warn(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because it is not LOCKED.')
                 continue
 
-            cqf = custom_query_frequency.CustomQueryFrequency.objects.filter(catalogue_entry=catalogue_entry_obj)
-            for custom_query_freq in cqf:
+            for custom_query_freq in catalogue_entry_obj.custom_query_frequencies.all():
                 log.info(f'Working on the CustomQueryFrequency: [{custom_query_freq}] for the CatalogueEntry: [{catalogue_entry_obj}]...')
+
                 is_time_to_run = False
                 generate_shp = False
                 now_dt = datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))

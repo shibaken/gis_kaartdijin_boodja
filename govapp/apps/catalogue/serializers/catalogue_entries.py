@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 # Local
 from govapp.apps.catalogue import models
+from govapp.apps.catalogue.serializers.custom_query_frequency_serializer import CustomQueryFrequencySerializer
 
 
 class CatalogueEntrySerializer(serializers.ModelSerializer):
