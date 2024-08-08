@@ -148,7 +148,7 @@ var kblayersubscription = {
                     row.append($('<td>').append($('<span>').addClass(kblayersubscription.var.status_map[+layer_subscription.status].class).text(layer_subscription.status_str)))
                     row.append($('<td>').text(layer_subscription.type_str))
                     row.append($('<td>').text(layer_subscription.workspace_str))
-                    row.append($('<td>').append($('<span>').addClass(layer_subscription.enabled ? 'badge badge-pill bg-success' : 'badge badge-pill bg-danger').text(layer_subscription.enabled)))
+                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
                     row.append($('<td>').text(layer_subscription.updated_at))
                     row.append($('<td>').text(layer_subscription.assigned_to_name))
                     
@@ -879,10 +879,11 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                console.log('success')
+                console.log({response})
+                FeedbackModal.showFeedback(response.message, true);
             },
-            error: (error) => {
-                console.log('error')
+            error: function(xhr, status, error) {
+                FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.error, false);
             }
         })
     },

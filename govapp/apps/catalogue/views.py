@@ -1112,9 +1112,12 @@ class LayerSubscriptionViewSet(
     
     @decorators.action(detail=True, methods=["POST"], url_path=r"convert-query/(?P<catalogue_id>\d+)")
     def convert_query(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
-        catalogue_entry_obj = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=catalogue_id)
-        Scanner.run_postgres_to_shapefile(catalogue_entry_obj)
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            catalogue_entry_obj = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=catalogue_id)
+            new_path = Scanner.run_postgres_to_shapefile(catalogue_entry_obj)
+            return response.Response({'message': f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return response.Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryGetSubscriptionQuerySerializer,

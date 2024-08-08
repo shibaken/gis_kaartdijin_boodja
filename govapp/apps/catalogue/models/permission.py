@@ -14,7 +14,7 @@ from govapp.apps.catalogue.models import catalogue_entries
 UserModel = auth.get_user_model()
 
 
-class CatalogueEntryPermission(models.IntegerChoices):
+class CatalogueEntryAccessPermission(models.IntegerChoices):
     NONE = 1, 'None'
     READ = 2, 'Read'
     READ_WRITE = 3, 'Read and Write'
@@ -28,7 +28,7 @@ class CatalogueEntryPermission(mixins.RevisionedMixin):
         on_delete=models.CASCADE)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
-    permission = models.IntegerField(choices=CatalogueEntryPermission.choices, default=CatalogueEntryPermission.NONE)
+    access_permission = models.IntegerField(choices=CatalogueEntryAccessPermission.choices, default=CatalogueEntryAccessPermission.NONE)
     
     def __str__(self):
         return str(self.catalogue_entry)
