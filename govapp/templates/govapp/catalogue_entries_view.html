@@ -6,7 +6,7 @@
             <div class="container" id="dashboard-table-container">
                   <div class='row'>
                         <div class='col-6'>
-                              <h3>{{ catalogue_entry_obj.name }}</h3>
+                              <h3>CE{{ catalogue_entry_obj.id }}: {{ catalogue_entry_obj.name }}</h3>
                         </div>
                         <div class='col-6 text-end'>
                               {% if has_edit_access is True %}

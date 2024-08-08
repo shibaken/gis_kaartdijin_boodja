@@ -825,7 +825,8 @@ var kblayersubscription = {
             success: (response) => {
                 thead.empty();
                 let tr = $('<tr>');
-                tr.append($('<th>').attr('class', 'col-3').text("Catalogue Name"))
+                tr.append($('<th>').attr('class', 'col-1').text("Number"))
+                tr.append($('<th>').attr('class', 'col-2').text("Catalogue Name"))
                 tr.append($('<th>').attr('class', 'col-4').text("Description"))
                 tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
                 tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
@@ -837,24 +838,24 @@ var kblayersubscription = {
                 }
 
                 tbody.empty();
-                for(let item of response.results){
-                    console.log({item})
+                for(let catalogue_entry of response.results){
                     let row = $('<tr>');
-                    row.append($('<td>').text(item.name))
-                    row.append($('<td>').text(item.description))
-                    let typeLabels = item.frequencies.map(frequency => frequency.type_label).join('<br>');
+                    row.append($('<td>').text('CE' + catalogue_entry.id))
+                    row.append($('<td>').text(catalogue_entry.name))
+                    row.append($('<td>').text(catalogue_entry.description))
+                    let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
                     let td = $('<td>').text(typeLabels);
                     row.append(td);
 
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
                     if($('#has_edit_access').val() == "True"){
-                        let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + item.id + '-view">Run</button>')
-                        let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + item.id + '-history">Edit</button>')
-                        let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + item.id + '-delete">Delete</button>')
-                        button_run.click(()=>{ /* TODO: implement RUN */ })
-                        button_edit.click(()=>kblayersubscription.show_custom_query_modal(item))
-                        button_delete.click(()=>kblayersubscription.delete_custom_query(item))
+                        let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-view">Convert</button>')
+                        let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-history">Edit</button>')
+                        let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-delete">Delete</button>')
+                        button_run.click(()=>kblayersubscription.convert_custom_query(catalogue_entry))
+                        button_edit.click(()=>kblayersubscription.show_custom_query_modal(catalogue_entry))
+                        button_delete.click(()=>kblayersubscription.delete_custom_query(catalogue_entry))
                         td_for_buttons.append(button_run)
                         td_for_buttons.append(button_edit)
                         td_for_buttons.append(button_delete)
@@ -868,6 +869,22 @@ var kblayersubscription = {
                 common_entity_modal.show_alert("An error occured while getting mappings.");
             },
         });
+    },
+    convert_custom_query: function(catalogue_entry){
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/convert-query/" + catalogue_entry.id + "/";
+        $.ajax({
+            url: url,
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response) => {
+                console.log('success')
+            },
+            error: (error) => {
+                console.log('error')
+            }
+        })
     },
     show_custom_query_modal: function(prev){
         //options

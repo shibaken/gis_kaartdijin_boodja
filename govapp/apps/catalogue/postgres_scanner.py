@@ -4,7 +4,7 @@
 import logging
 import os 
 import shutil
-from datetime import datetime,timezone
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # Third-Party
@@ -171,60 +171,32 @@ class Scanner:
                                 generate_shp = True
 
                 if generate_shp is True:  
-                    try:
-                        co = conversions.postgres_to_shapefile(
-                            catalogue_entry_obj.name,
-                            catalogue_entry_obj.layer_subscription.host,
-                            catalogue_entry_obj.layer_subscription.username,
-                            catalogue_entry_obj.layer_subscription.userpassword,
-                            catalogue_entry_obj.layer_subscription.database,
-                            catalogue_entry_obj.layer_subscription.port,
-                            catalogue_entry_obj.sql_query
-                        )
-                        new_path = shutil.move(co["compressed_filepath"], conf.settings.PENDING_IMPORT_PATH)
-                        log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].')
-                    except Exception as e:
-                        log.error(f"ERROR Running POSTGIS to Shapefile conversation for the CatalogueEntry: [{catalogue_entry_obj}]. error: [{e}]")
-                    
-                    custom_query_freq.last_job_run = now_dt
-                    custom_query_freq.save()
-                    
-
-                        #row.last_job_run = datetime.now()
-                        #row.save()
-
-        # Retrieve file from remote storage staging area
-    
-
-        #files_array = os.listdir(self.storage.get_pending_import_path())
-
-        #print (files_array)
-
-
-        # files = self.storage.list(conf.settings.SHAREPOINT_INPUT_STAGING_AREA)
-
-        # Check for files
-        #if not files_array:
-        #     # Log
-        #     log.info("No files found")
-
-        # # Loop through files
-        # for file in files_array:
-        #     # Log
-        #     log.info(f"Discovered file '{file}'")
-
-        #     # Handle errors
-        #     # For example, if someone drops in a malformed file or a non-GIS file
-        #     try:
-        #         # Absorb!
-        #         directory_absorber.Absorber().absorb(file)
-
-        #     except Exception as exc:
-        #         # Log and continue
-        #         log.error(f"Error absorbing file '{file}': {exc}")
-
-        #         # Notify!                
-        #         #notifications.file_absorb_failure(file)
+                    Scanner.run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq, now_dt)
 
         # Log
         log.info("Scanning storage staging area complete!")
+
+    @staticmethod
+    def run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq=None, now_dt=datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))):
+        try:
+            co = conversions.postgres_to_shapefile(
+                catalogue_entry_obj.name,
+                catalogue_entry_obj.layer_subscription.host,
+                catalogue_entry_obj.layer_subscription.username,
+                catalogue_entry_obj.layer_subscription.userpassword,
+                catalogue_entry_obj.layer_subscription.database,
+                catalogue_entry_obj.layer_subscription.port,
+                catalogue_entry_obj.sql_query
+            )
+            new_path = shutil.move(co["compressed_filepath"], conf.settings.PENDING_IMPORT_PATH)
+            log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].')
+        except Exception as e:
+            log.error(f"ERROR Running POSTGIS to Shapefile conversation for the CatalogueEntry: [{catalogue_entry_obj}]. error: [{e}]")
+            raise
+
+        if custom_query_freq:
+            custom_query_freq.last_job_run = now_dt
+            custom_query_freq.save()
+        else:
+            catalogue_entry_obj.custom_query_frequencies.update(last_job_run=now_dt)
+
