@@ -523,7 +523,7 @@ var kbcatalogue = {
                             html += "<td>" + assigned_to_friendly + "</td>";
                             html += "<td class='text-end'>";
                             html += "<a class='btn btn-primary btn-sm' href='/catalogue/entries/" + catalogue_entry.id + "/details/'>View</a>";
-                            html += "<button class='btn btn-secondary  btn-sm'>History</button>";
+                            html += "<button class='btn btn-secondary btn-sm ml-1'>History</button>";
                             html += "</td>";
                             html += "<tr>";
                         }
@@ -563,53 +563,42 @@ var kbcatalogue = {
     get_catalogue_editors: function(permissioned=true){
         var catalogue_id = $('#catalogue_entry_id').val();
         $.ajax({
-            url: kbcatalogue.var.catalogue_permission_url+"?catalogue_entry="+catalogue_id,
+            url: kbcatalogue.var.catalogue_permission_url + "?catalogue_entry=" + catalogue_id,
             method: 'GET',
             dataType: 'json',
             contentType: 'application/json',
             success: function (response) {
-                var html = '';
-                
-                if (response != null) {
-                    if (response.length > 0) {
-                        for (let i = 0; i < response.length; i++) {
-                            button_json = '{"id": "'+response[i].id+'"}'
+                if (response != null && response.length > 0) {
+                    $('#manage-editors-tbody').empty();
+                    for (let i = 0; i < response.length; i++) {
+                        let catalogue_entry_permission = response[i]
+                        button_json = '{"id": "' + catalogue_entry_permission.id + '"}'
 
-                            html+= "<tr>";
-                            html+= " <td>"+response[i].id+"</td>";
-                            html+= " <td>"+response[i].first_name+"</td>";
-                            html+= " <td>"+response[i].last_name+"</td>";                        
-                            html+= " <td>"+response[i].email+"</td>";
-                            if(permissioned){                                                    
-                                html+= " <td class='text-end'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='"+button_json+"' >Delete</button></td>";
-                            } else {
-                                html+= "<td></td>";   
-                            }
-                            html+= "<tr>";
-                        }
-                                                                   
-                        $('#manage-editors-tbody').html(html);
-                        $( ".manage-editors-delete" ).click(function() {
-                            console.log($(this).attr('data-json'));
-                            var btndata_json = $(this).attr('data-json');
-                            var btndata = JSON.parse(btndata_json);
-                            kbcatalogue.delete_catalogue_editors(btndata.id);
-                        });                         
-                    } else {
-                        $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
+                        let tr_elem = $('<tr>')
+                        tr_elem.append($('<td>').text(catalogue_entry_permission.id))
+                        tr_elem.append($('<td>').text(catalogue_entry_permission.first_name))
+                        tr_elem.append($('<td>').text(catalogue_entry_permission.last_name))
+                        tr_elem.append($('<td>').text(catalogue_entry_permission.email))
+                        tr_elem.append($('<td class="text-center">').append(catalogue_entry_permission.active ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
+                        tr_elem.append($('<td>').text(catalogue_entry_permission.access_permission_label))
+                        tr_elem.append(permissioned ? $(`<td class='text-center'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='${button_json}'>Delete</button></td>`) : $('<td>'))
+                        $('#manage-editors-tbody').append(tr_elem);
                     }
+
+                    $(".manage-editors-delete").click(function() {
+                        console.log($(this).attr('data-json'));
+                        var btndata_json = $(this).attr('data-json');
+                        var btndata = JSON.parse(btndata_json);
+                        kbcatalogue.delete_catalogue_editors(btndata.id);
+                    });
                 } else {
                       $('#manage-editors-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }
-
-       
             },
             error: function (error) {
                 $('#manage-popup-error').text(error.responseText);
                 $('#manage-popup-error').show();
                 $('#manage-editors-tbody').html('');
-
-                console.log('Error Loading manage data');
             },
         });
     },
