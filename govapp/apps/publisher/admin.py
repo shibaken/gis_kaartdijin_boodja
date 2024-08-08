@@ -12,6 +12,7 @@ from govapp.apps.catalogue.admin import construct_catalogue_entry_link
 from govapp.apps.publisher import models
 from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroupUser, GeoServerRoleUser
+from govapp.apps.publisher.models.publish_entries import PublishEntryStatus
 
 
 def construct_publish_entry_link(publish_entry):
@@ -24,13 +25,25 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     search_fields = ('id', 'catalogue_entry__name',)
     filter_horizontal = ["editors"]
-    list_display = ('id', 'catalogue_entry_link', 'status', 'assigned_to', 'published_at')
+    list_display = ('id', 'catalogue_entry_link', 'get_status', 'assigned_to', 'published_at')
     list_filter = ('status', 'assigned_to',)
     ordering = ('-id',)
+
+    class Media:
+        css = {'all': ('common/css/admin_custom.css',)}
 
     def catalogue_entry_link(self, obj):
         return construct_catalogue_entry_link(obj.catalogue_entry)
     catalogue_entry_link.short_description = 'Catalogue Entry'
+
+    def get_status(self, obj):
+        if obj.status == PublishEntryStatus.LOCKED:
+            return format_html('<span class="badge badge-pill bg-success">Locked</span>')
+        elif obj.status == PublishEntryStatus.UNLOCKED:
+            return format_html('<span class="badge badge-pill bg-secondary">Unlocked</span>')
+        else:
+            return ''
+    get_status.short_description = 'Status'
 
 
 class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
@@ -109,19 +122,22 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     ordering = ('-id',)
     raw_id_fields = ('submitter', 'publish_entry')
 
+    class Media:
+        css = {'all': ('common/css/admin_custom.css',)}
+
     def publish_entry_link(self, obj):
         return construct_publish_entry_link(obj.publish_entry)
     publish_entry_link.short_description = 'Publish Entry'
 
     def coloured_status(self, obj):
         if obj.status == GeoServerQueueStatus.READY:
-            return format_html('<span style="color: #ffc107;">{}</span>', obj.get_status_display())
+            return format_html('<span class="badge badge-pill bg-secondary">' + obj.get_status_display() + '</span>')
         elif obj.status == GeoServerQueueStatus.FAILED:
-            return format_html('<span style="color: #dc3545;">{}</span>', obj.get_status_display())
+            return format_html('<span class="badge badge-pill bg-danger">' + obj.get_status_display() + '</span>')
         elif obj.status == GeoServerQueueStatus.ON_PUBLISHING:
-            return format_html('<span style="color: orange;">{}</span>', obj.get_status_display())
+            return format_html('<span class="badge badge-pill bg-warning">' + obj.get_status_display() + '</span>')
         elif obj.status == GeoServerQueueStatus.PUBLISHED:
-            return format_html('<span style="color: green;">{}</span>', obj.get_status_display())
+            return format_html('<span class="badge badge-pill bg-success">' + obj.get_status_display() + '</span>')
         else:
             return '---'
     coloured_status.short_description = 'status'

@@ -17,7 +17,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
     assigned_to_last_name = serializers.ReadOnlyField(source='assigned_to.last_name',)
     assigned_to_email = serializers.ReadOnlyField(source='assigned_to.email',)
     updated_at = serializers.SerializerMethodField()
-    # file_extension = serializers.ReadOnlyField()
+    permission_type_str = serializers.SerializerMethodField()
 
     class Meta:
         """Catalogue Entry Model Serializer Metadata."""
@@ -29,10 +29,8 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "status",
             "created_at",
             "updated_at",
-            # "editors",
             "custodian",
             "assigned_to",
-            # "subscription",
             "active_layer",
             "type",
             "layers",
@@ -46,17 +44,15 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "assigned_to_first_name",
             "assigned_to_last_name",
             "assigned_to_email",
-            # "file_extension",
+            "permission_type",
+            "permission_type_str",
         )
         read_only_fields = (
             "id",
-            #"name",
             "status",
             "created_at",
             "updated_at",
-            # "editors",
             "assigned_to",
-            # "subscription",
             "active_layer",
             "type",
             "layers",
@@ -66,8 +62,10 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "metadata",
             "symbology",
             "publish_entry",
-            # "file_extension",
         )
+
+    def get_permission_type_str(self, obj):
+        return obj.get_permission_type_display()
 
     def get_updated_at(self, obj):
         """Convert updated_at to the desired format."""
@@ -75,7 +73,8 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             # Convert to local time
             local_time = obj.updated_at.astimezone(pytz.timezone('Australia/Perth'))
             # Return formatted string
-            return local_time.strftime('%d %b %Y %I:%M %p')
+            # return local_time.strftime('%d %b %Y %I:%M %p')
+            return local_time.strftime('%d-%m-%Y %H:%M:%S')
         return None
 
 

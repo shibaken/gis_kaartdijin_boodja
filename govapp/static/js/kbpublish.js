@@ -20,8 +20,9 @@ var kbpublish = {
         publish_status: {
             // 1: "Locked",
             // 2: "Unlocked"
-            1: {"name": "Locked", "colour": "green"},
-            2: {"name": "Unlocked", "colour": "darkgray"},
+            1: {"name": "Locked", "colour": "green", "class": "badge bg-success"},
+            2: {"name": "Unlocked", "colour": "darkgray", "class": "badge bg-secondary"},
+            // 1: {"name": "New Draft", "colour": "darkgray", "class": "badge bg-secondary"},
         },
         publish_geoserver_format: {
             1: "WMS",  
@@ -1043,13 +1044,9 @@ var kbpublish = {
                             } else {
                                 html+= "";
                             }
-                            html+= "</td>";
 
-                            if (response.results[i].status == 1){
-                                html += "<td><strong><span style='color:" + kbpublish.var.publish_status[response.results[i].status].colour + ";'>" + kbpublish.var.publish_status[response.results[i].status].name + "<span></strong></td>";
-                            } else {
-                                html += "<td>" + kbpublish.var.publish_status[response.results[i].status].name + "</td>";
-                            }
+                            html+= "</td>";
+                            html += "<td><span class='" + kbpublish.var.publish_status[response.results[i].status].class + "'>" + kbpublish.var.publish_status[response.results[i].status].name + "<span></td>";
                             html+= " <td>"+response.results[i].updated_at+"</td>";
                             html+= " <td>"+assigned_to_friendly+"</td>";
                             // html+= " <td class='text-end'>";
@@ -1576,20 +1573,6 @@ var kbpublish = {
         bbox_div.append(bbox_row_div);
         return [bbox_div, labels_fields, ids, ids_list];
     },
-    // show_update_geoserver_modal: function(prev){
-    //     common_entity_modal.init("Publish Update Geoserver", "submit");
-    //     common_entity_modal.add_field(label="Name", type="text", value=$('#catalogue-name-id').val(), option_map=null, disabled=true);
-    //     let geoserver_pool_id = common_entity_modal.add_field(label="GeoServer Pool", type="select", value=prev.geoserver_pool, option_map=kbpublish.var.publish_geoserver_pools);
-    //     let format_id = common_entity_modal.add_field(label="Spatial Format", type="select", value=prev.mode, option_map=kbpublish.var.publish_geoserver_format);
-    //     let frequency_id = common_entity_modal.add_field(label="Frequency Type", type="select", value=prev.frequency, option_map=kbpublish.var.publish_geoserver_frequency);
-    //     // let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace_id, option_map=kbpublish.var.publish_workspace_map);
-    //     let workspace_id = common_entity_modal.add_field(label="Workspace", type="select", value=prev.workspace, option_map=kbpublish.var.publish_workspace_map);
-        
-    //     common_entity_modal.add_callbacks(submit_callback=(success_callback, error_callback)=> 
-    //                                         this.update_publish_geoserver(success_callback, error_callback, geoserver_pool_id, format_id, frequency_id, workspace_id, prev.id),
-    //                                         success_callback=this.get_publish_geoservers);
-    //     common_entity_modal.show();
-    // },
     write_geoserver_subscription: function(success_callback, error_callback, ids, geoserver_id){
         const publish_id = $('#publish_id').val(); 
         // prefixed. could be changed in the future

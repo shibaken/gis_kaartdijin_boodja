@@ -6,7 +6,13 @@ var kblayersubscription = {
         subscription_table_date_format: "DD MMM YYYY HH:mm:ss",
         workspace_map: {}, // will be filled later
         subscription_type_map: {1:"WMS", 2:"WFS", 3:"POST GIS"},
-        status_map: {1:"NEW DRAFT", 2:"LOCKED", 3:"DECLINED", 4:"DRAFT", 5:"PENDING"},
+        status_map: {
+            1: {"name": "NEW DRAFT", "class": "badge badge-pill bg-secondary"},
+            2: {"name": "LOCKED", "class": "badge badge-pill bg-success"},
+            3: {"name": "DECLINED", "class": "badge badge-pill bg-danger"},
+            4: {"name": "DRAFT", "class": "badge badge-pill bg-secondary"},
+            5: {"name": "PENDING", "class": "badge badge-pill bg-warning"}
+        },
         required_fields:{
             1:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
                 'connection_timeout', 'max_connections', 'read_timeout'],
@@ -121,26 +127,46 @@ var kblayersubscription = {
                     return;
                 }
                 for(let i in response.results){
-                    response.results[i]['created_at'] = utils.convert_datetime_format(response.results[i].created_at, kblayersubscription.var.subscription_table_date_format);
-                    response.results[i]['type_str'] = kblayersubscription.var.subscription_type_map[+response.results[i].type];
-                    response.results[i]['workspace_str'] = kblayersubscription.var.workspace_map[+response.results[i].workspace];
-                    response.results[i]['status_str'] = kblayersubscription.var.status_map[+response.results[i].status];
-                    response.results[i]['assigned_to_name'] = null;
-                    if(response.results[i]['assigned_to_first_name'])
-                        response.results[i]['assigned_to_name'] = response.results[i]['assigned_to_first_name'] + ' ' 
-                                                                + response.results[i]['assigned_to_last_name'];
+                    let layer_subscription = response.results[i]
+                    layer_subscription['created_at'] = utils.convert_datetime_format(layer_subscription.created_at, kblayersubscription.var.subscription_table_date_format);
+                    layer_subscription['type_str'] = kblayersubscription.var.subscription_type_map[+layer_subscription.type];
+                    layer_subscription['workspace_str'] = kblayersubscription.var.workspace_map[+layer_subscription.workspace];
+                    layer_subscription['status_str'] = kblayersubscription.var.status_map[+layer_subscription.status].name;
+                    layer_subscription['assigned_to_name'] = null;
+                    if(layer_subscription['assigned_to_first_name'])
+                        layer_subscription['assigned_to_name'] = layer_subscription['assigned_to_first_name'] + ' ' + layer_subscription['assigned_to_last_name'];
+                }
+
+                // Construct the table
+                $('#subscription-tbody').empty()
+                for(let i in response.results){
+                    let layer_subscription = response.results[i]
+
+                    let row = $('<tr>')
+                    row.append($('<td>').text(layer_subscription.id))
+                    row.append($('<td>').text(layer_subscription.name))
+                    row.append($('<td>').append($('<span>').addClass(kblayersubscription.var.status_map[+layer_subscription.status].class).text(layer_subscription.status_str)))
+                    row.append($('<td>').text(layer_subscription.type_str))
+                    row.append($('<td>').text(layer_subscription.workspace_str))
+                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
+                    row.append($('<td>').text(layer_subscription.updated_at))
+                    row.append($('<td>').text(layer_subscription.assigned_to_name))
                     
+                    // Buttons
+                    let td_for_buttons = $('<td class="text-end">')
+                    let button_view = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-view">View</button>')
+                    let button_history = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
+                    let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-delete">Delete</button>')
+                    button_view.click(()=>window.location.href = '/layer/subscriptions/' + layer_subscription.id + '/')
+                    button_history.click(()=>kblayersubscription.get_layer_subscription())
+                    button_delete.click(()=>kblayersubscription.delete_subscription(layer_subscription))
+                    td_for_buttons.append(button_view)
+                    td_for_buttons.append(button_history)
+                    td_for_buttons.append(button_delete)
+                    row.append(td_for_buttons)
+                    $('#subscription-tbody').append(row)
                 }
-                // ID, Name, Status, Type, Workspace, Enabled, URL, Updated at, Assigned to
-                buttons={View:(subscription)=>window.location.href = '/layer/subscriptions/'+subscription.id+'/',
-                                         History:(subscription)=>kblayersubscription.get_layer_subscription()};
-                if($('#is-administrator').val() == "True"){
-                    buttons['Delete']=(subscription)=>kblayersubscription.delete_subscription(subscription);
-                }
-                table.set_tbody($('#subscription-tbody'), response.results, 
-                                [{id:"text"}, {name:'text'}, {status_str:'text'}, {type_str:'text'},
-                                {workspace_str:'text'}, {enabled:'text'}, {updated_at:'text'}, {assigned_to_name:'text'}],
-                                buttons=buttons);
+
                 common_pagination.init(response.count, params, kblayersubscription.get_layer_subscription, $('#subscription-navi'));
             },
             error: function (error){
@@ -797,31 +823,69 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                if(!response || !response.results){
-                    table.message_tbody(tbody, "No results found");
+                thead.empty();
+                let tr = $('<tr>');
+                tr.append($('<th>').attr('class', 'col-1').text("Number"))
+                tr.append($('<th>').attr('class', 'col-2').text("Catalogue Name"))
+                tr.append($('<th>').attr('class', 'col-4').text("Description"))
+                tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
+                tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
+                thead.append(tr);
+
+                if(!response || !response.results.length){
+                    tbody.html("<tr><td colspan='3' class='text-center'>No results found</td></tr>");
                     return;
                 }
-                let buttons = null;
-                if($('#has_edit_access').val() == "True"){
-                    buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
-                            DELETE:(query)=>kblayersubscription.delete_custom_query(query)};
-                }
-                table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
-                let rows = []
-                for(let i in response.results){
-                    rows.push(response.results[i]);
-                }
-                table.set_tbody(tbody, rows, [{name:"text"}, {description:"text"}], buttons);
-                if(rows.length == 0){
-                    table.message_tbody(tbody, "No results found");
+
+                tbody.empty();
+                for(let catalogue_entry of response.results){
+                    let row = $('<tr>');
+                    row.append($('<td>').text('CE' + catalogue_entry.id))
+                    row.append($('<td>').text(catalogue_entry.name))
+                    row.append($('<td>').text(catalogue_entry.description))
+                    let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
+                    let td = $('<td>').text(typeLabels);
+                    row.append(td);
+
+                    // Buttons
+                    let td_for_buttons = $('<td class="text-end">')
+                    if($('#has_edit_access').val() == "True"){
+                        let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-view">Convert</button>')
+                        let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-history">Edit</button>')
+                        let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-delete">Delete</button>')
+                        button_run.click(()=>kblayersubscription.convert_custom_query(catalogue_entry))
+                        button_edit.click(()=>kblayersubscription.show_custom_query_modal(catalogue_entry))
+                        button_delete.click(()=>kblayersubscription.delete_custom_query(catalogue_entry))
+                        td_for_buttons.append(button_run)
+                        td_for_buttons.append(button_edit)
+                        td_for_buttons.append(button_delete)
+                    }
+                    row.append(td_for_buttons)
+                    tbody.append(row);
                 }
             },
             error: (error)=> {
                 table.message_tbody(tbody, "No results found");
                 common_entity_modal.show_alert("An error occured while getting mappings.");
-                // console.error(error);
             },
         });
+    },
+    convert_custom_query: function(catalogue_entry){
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/convert-query/" + catalogue_entry.id + "/";
+        $.ajax({
+            url: url,
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response) => {
+                console.log({response})
+                FeedbackModal.showFeedback(response.message, true);
+            },
+            error: function(xhr, status, error) {
+                FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.error, false);
+            }
+        })
     },
     show_custom_query_modal: function(prev){
         //options

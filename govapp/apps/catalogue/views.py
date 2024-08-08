@@ -34,11 +34,11 @@ from govapp.apps.publisher import models as publish_models
 from govapp.apps.catalogue import permissions
 from govapp.apps.catalogue import serializers
 from govapp.apps.catalogue import utils as catalogue_utils
+from govapp.apps.catalogue.postgres_scanner import Scanner
 from govapp.apps.catalogue.utils import validate_request
 from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
 from govapp.apps.logs import mixins as logs_mixins
 from govapp.apps.logs import utils as logs_utils
-
 
 
 # Typing
@@ -69,6 +69,9 @@ class CatalogueEntryViewSet(
     filterset_class = filters.CatalogueEntryFilter
     search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]    
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
 
     @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
     def delete_file(self, request: request.Request):
@@ -1088,28 +1091,37 @@ class LayerSubscriptionViewSet(
             for freq in sql_query.custom_query_frequencies.all():
                 frequencies.append({
                     'type':freq.type, 
+                    'type_label': freq.get_type_display(),
                     'minutes':freq.every_minutes, 
                     'hours':freq.every_hours,
                     'hour':freq.hour,
                     'minute':freq.minute,
                     'day':freq.day_of_week,
                     'date':freq.date,
-                    })
+                })
             results.append({
                 'id': sql_query.id,
                 'name': sql_query.name,
                 'description' : sql_query.description,
                 'sql_query' : sql_query.sql_query,
                 'frequencies' : frequencies,
-                })
+            })
             
         # Return Response
         return response.Response({'results':results}, content_type='application/json', status=status.HTTP_200_OK)
     
+    @decorators.action(detail=True, methods=["POST"], url_path=r"convert-query/(?P<catalogue_id>\d+)")
+    def convert_query(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
+        try:
+            catalogue_entry_obj = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=catalogue_id)
+            new_path = Scanner.run_postgres_to_shapefile(catalogue_entry_obj)
+            return response.Response({'message': f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return response.Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryGetSubscriptionQuerySerializer,
         responses={status.HTTP_200_OK: None})
-    # @decorators.action(detail=True, methods=["GET"], url_path="query")
     @decorators.action(detail=True, methods=["DELETE"], url_path=r"delete-query/(?P<catalogue_id>\d+)")
     def delete_query(self, request: request.Request, pk: str, catalogue_id: str) -> response.Response:
         """delete a custom query.

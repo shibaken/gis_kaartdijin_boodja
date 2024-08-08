@@ -4,15 +4,18 @@ var kbcatalogue = {
          catalogue_permission_url: "/api/catalogue/permission/",
          catalogue_layer_symbology_url: "/api/catalogue/layers/symbologies/",
          catalogue_status: {
-            1: {"name": "New Draft", "colour": "darkgray"},
-            2: {"name": "Locked", "colour": "green"},
-            3: {"name": "Declined", "colour": "darkgray"},
-            4: {"name": "Draft", "colour": "darkgray"},
-            5: {"name": "Pending", "colour": "darkgray"}
+            1: {"name": "New Draft", "colour": "darkgray", "class": "badge bg-secondary"},
+            2: {"name": "Locked", "colour": "green", "class": "badge bg-success"},
+            3: {"name": "Declined", "colour": "darkgray", "class": "badge bg-danger"},
+            4: {"name": "Draft", "colour": "darkgray", "class": "badge bg-secondary"},
+            5: {"name": "Pending", "colour": "darkgray", "class": "badge bg-warning"}
         },
-        catalogue_Type: {
+        spatial_type: {
             1: "Special File",
-            2: "Subscription",
+            2: "Subscription WFS",
+            3: "Subscription WMS",
+            4: "Subscription PostGIS",
+            5: "Custom Query"
         },
         catalogue_date_format: "dd/mm/yyyy",
         catalogue_table_date_format: "DD MMM YYYY HH:mm:ss",
@@ -489,58 +492,39 @@ var kbcatalogue = {
                 if (response != null) {
                     if (response.results.length > 0) {
                         for (let i = 0; i < response.results.length; i++) {
+                            let catalogue_entry = response.results[i]
+                            console.log({catalogue_entry})
+
                             assigned_to_friendly = "";
-                            if (response.results[i].assigned_to_first_name != null) {
 
-                                assigned_to_friendly = response.results[i].assigned_to_first_name;
-
-                                if (response.results[i].assigned_to_last_name != null) {
-                                    assigned_to_friendly += " "+response.results[i].assigned_to_last_name;
+                            if (catalogue_entry.assigned_to_first_name != null) {
+                                assigned_to_friendly = catalogue_entry.assigned_to_first_name;
+                                if (catalogue_entry.assigned_to_last_name != null) {
+                                    assigned_to_friendly += " "+catalogue_entry.assigned_to_last_name;
                                 }
-
                             } 
                             
                             if (assigned_to_friendly.replace(" ","").length == 0) {
-                                if (response.results[i].assigned_to_email != null) {
-                                    assigned_to_friendly = response.results[i].assigned_to_email;
+                                if (catalogue_entry.assigned_to_email != null) {
+                                    assigned_to_friendly = catalogue_entry.assigned_to_email;
                                 }
                             }
 
-                            button_json = '{"id": "'+response.results[i].id+'"}'
+                            button_json = '{"id": "'+catalogue_entry.id+'"}'
 
-                            html+= "<tr>";
-                            html+= " <td>CE"+response.results[i].id+"</td>";
-                            html+= " <td>"+response.results[i].name+"</td>";
-                            html+= " <td>";
-                            if (response.results[i].type == 1) {
-                                html+= "Spatial File";
-                            } else if (response.results[i].type == 5) {
-                                html+= "Subscription";
-                            }
-
-                            html+= "</td>";
-                            html+= " <td>";
-                            if (response.results[i].custodian_name != null) { 
-                                html+= response.results[i].custodian_name;
-                            } else {
-                                html+= "";
-                            }
-
+                            html += "<tr>";
+                            html += "<td>CE" + catalogue_entry.id + "</td>";
+                            html += "<td>" + catalogue_entry.name + "</td>";
+                            html += "<td>" + kbcatalogue.var.spatial_type[catalogue_entry.type] + "</td>";
+                            html += "<td>" + catalogue_entry.permission_type_str + "</td>"
+                            html += "<td>" + (catalogue_entry.custodian_name != null ? catalogue_entry.custodian_name : "") + "</td>"
+                            html += "<td><span class='" + kbcatalogue.var.catalogue_status[catalogue_entry.status].class + "'>" + kbcatalogue.var.catalogue_status[catalogue_entry.status].name + "<span></td>";
+                            html += "<td>" + catalogue_entry.updated_at + "</td>";
+                            html += "<td>" + assigned_to_friendly + "</td>";
+                            html += "<td class='text-end'>";
+                            html += "<a class='btn btn-primary btn-sm' href='/catalogue/entries/" + catalogue_entry.id + "/details/'>View</a>";
+                            html += "<button class='btn btn-secondary  btn-sm'>History</button>";
                             html += "</td>";
-
-                            // Status
-                            if (response.results[i].status == 2){
-                                html += " <td><strong><span style='color:" + kbcatalogue.var.catalogue_status[response.results[i].status].colour + ";'>" + kbcatalogue.var.catalogue_status[response.results[i].status].name + "<span></strong></td>";
-                            } else {
-                                html += " <td>" + kbcatalogue.var.catalogue_status[response.results[i].status].name + "</td>";
-                            }
-
-                            html += " <td>" + response.results[i].updated_at + "</td>";
-                            html += " <td>" + assigned_to_friendly + "</td>";
-                            html += " <td class='text-end'>";
-                            html += "  <a class='btn btn-primary btn-sm' href='/catalogue/entries/" + response.results[i].id + "/details/'>View</a>";
-                            html += "  <button class='btn btn-secondary  btn-sm'>History</button>";
-                            html += "  </td>";
                             html += "<tr>";
                         }
 
