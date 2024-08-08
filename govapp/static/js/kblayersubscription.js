@@ -879,10 +879,11 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                console.log('success')
+                console.log({response})
+                FeedbackModal.showFeedback(response.message, true);
             },
-            error: (error) => {
-                console.log('error')
+            error: function(xhr, status, error) {
+                FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.error, false);
             }
         })
     },
