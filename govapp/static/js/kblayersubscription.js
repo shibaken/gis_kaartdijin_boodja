@@ -141,7 +141,6 @@ var kblayersubscription = {
                 $('#subscription-tbody').empty()
                 for(let i in response.results){
                     let layer_subscription = response.results[i]
-                    console.log({layer_subscription})
 
                     let row = $('<tr>')
                     row.append($('<td>').text(layer_subscription.id))
@@ -156,7 +155,7 @@ var kblayersubscription = {
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
                     let button_view = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-view">View</button>')
-                    let button_history = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
+                    let button_history = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
                     let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-delete">Delete</button>')
                     button_view.click(()=>window.location.href = '/layer/subscriptions/' + layer_subscription.id + '/')
                     button_history.click(()=>kblayersubscription.get_layer_subscription())
@@ -164,7 +163,6 @@ var kblayersubscription = {
                     td_for_buttons.append(button_view)
                     td_for_buttons.append(button_history)
                     td_for_buttons.append(button_delete)
-
                     row.append(td_for_buttons)
                     $('#subscription-tbody').append(row)
                 }
@@ -825,31 +823,68 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                if(!response || !response.results){
-                    table.message_tbody(tbody, "No results found");
+                thead.empty();
+                let tr = $('<tr>');
+                tr.append($('<th>').attr('class', 'col-1').text("Number"))
+                tr.append($('<th>').attr('class', 'col-2').text("Catalogue Name"))
+                tr.append($('<th>').attr('class', 'col-4').text("Description"))
+                tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
+                tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
+                thead.append(tr);
+
+                if(!response || !response.results.length){
+                    tbody.html("<tr><td colspan='3' class='text-center'>No results found</td></tr>");
                     return;
                 }
-                let buttons = null;
-                if($('#has_edit_access').val() == "True"){
-                    buttons={EDIT:(query)=>kblayersubscription.show_custom_query_modal(query),
-                            DELETE:(query)=>kblayersubscription.delete_custom_query(query)};
-                }
-                table.set_thead(thead, {"Catalogue Name":4, "Description":6, "Action":2});
-                let rows = []
-                for(let i in response.results){
-                    rows.push(response.results[i]);
-                }
-                table.set_tbody(tbody, rows, [{name:"text"}, {description:"text"}], buttons);
-                if(rows.length == 0){
-                    table.message_tbody(tbody, "No results found");
+
+                tbody.empty();
+                for(let catalogue_entry of response.results){
+                    let row = $('<tr>');
+                    row.append($('<td>').text('CE' + catalogue_entry.id))
+                    row.append($('<td>').text(catalogue_entry.name))
+                    row.append($('<td>').text(catalogue_entry.description))
+                    let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
+                    let td = $('<td>').text(typeLabels);
+                    row.append(td);
+
+                    // Buttons
+                    let td_for_buttons = $('<td class="text-end">')
+                    if($('#has_edit_access').val() == "True"){
+                        let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-view">Convert</button>')
+                        let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-history">Edit</button>')
+                        let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-delete">Delete</button>')
+                        button_run.click(()=>kblayersubscription.convert_custom_query(catalogue_entry))
+                        button_edit.click(()=>kblayersubscription.show_custom_query_modal(catalogue_entry))
+                        button_delete.click(()=>kblayersubscription.delete_custom_query(catalogue_entry))
+                        td_for_buttons.append(button_run)
+                        td_for_buttons.append(button_edit)
+                        td_for_buttons.append(button_delete)
+                    }
+                    row.append(td_for_buttons)
+                    tbody.append(row);
                 }
             },
             error: (error)=> {
                 table.message_tbody(tbody, "No results found");
                 common_entity_modal.show_alert("An error occured while getting mappings.");
-                // console.error(error);
             },
         });
+    },
+    convert_custom_query: function(catalogue_entry){
+        var url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/convert-query/" + catalogue_entry.id + "/";
+        $.ajax({
+            url: url,
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response) => {
+                console.log('success')
+            },
+            error: (error) => {
+                console.log('error')
+            }
+        })
     },
     show_custom_query_modal: function(prev){
         //options

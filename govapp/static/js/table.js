@@ -52,7 +52,7 @@ var table={
         }
     },
     message_tbody: function(tbody, message){
-        tbody.html("<tr><td colspan='7' class='text-center'>"+message+"<td></tr>");
+        tbody.html("<tr><td colspan='7' class='text-center'>" + message + "</td></tr>");
     },
 
     // ('#catalogue-detail-notification-tbody', response.results, {active:'switch'},

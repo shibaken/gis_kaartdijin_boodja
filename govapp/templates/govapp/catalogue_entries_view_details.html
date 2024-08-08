@@ -1,100 +1,103 @@
 {% include "govapp/common_entity_modal.html" %}
 
-<div class="card" >
-    <div class="card-header fw-bold h4" style="padding:30px;">
-          <div class="row">
-          <div class="col-6">
-                Details
-          </div>
-          <div class="col-6 text-end">
-                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
-          </div>
-          </div>         
-    </div>
-    <div class="card-body collapse show" id="box1-card-body">
+<div class="card mt-2">
+      <div class="card-header fw-bold h4" style="padding:30px;">
+            <div class="row">
+                  <div class="col-6">Details</div>
+                  <div class="col-6 text-end">
+                        <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                  </div>
+            </div>
+      </div>
 
-    
-          <div class='row'>
-                      <div class='col-3'>
-                            Name
-                      </div>
-                      <div class='col-5 p-1'>
-                              {% if catalogue_entry_obj.type == 1 %}
-                                    {% if has_edit_access is True %}
-                                          <input type="text"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
-                                    {% else %}
-                                          {{ catalogue_entry_obj.name }}
-                                    {% endif %}
+      <div class="card-body collapse show" id="box1-card-body">
+            <div class='row'>
+                  <div class='col-3'>Name</div>
+                  <div class='col-5 p-1'>
+                        {% if catalogue_entry_obj.type == 1 %}
+                              {% if has_edit_access is True %}
+                                    <input type="text"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
                               {% else %}
-                                    {% if has_edit_access is True %}
-                                          <input type="hidden"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
-                                          {{ catalogue_entry_obj.name }}  
-                                    {% else %}
-                                          {{ catalogue_entry_obj.name }}
-                                    {% endif %}
-                              {% endif %} 
-                      </div>
-                      <div class='col-4'>
-                            &nbsp;
-                      </div>                        
-
-                      <div class='col-3'>
-                            Custodian
-                      </div>
-                      <div class='col-5 p-1'>                       
-                            {% if has_edit_access is True %}                                          
-                                  <select type="text" class="form-control" id="catalogue-custodian-entry" >
-                                        <option value="">Select One</option>
-                                        {% for cd in custodians_obj %}
-                                              {% if catalogue_entry_obj.custodian.id == cd.id %} 
-                                                    <option value="{{ cd.id }}" selected>{{ cd.name }}</option>
-                                              {% else %}
-                                                    <option value="{{ cd.id }}">{{ cd.name }}</option>
-                                              {% endif %}
-                                        {% endfor %}                                                            
-                                  </select>                                 
-                            {% else %}
-                                 {{ catalogue_entry_obj.custodian.name }}
-                            {% endif %}
-                      </div>
-                      <div class='col-4'>
-                            &nbsp;
-                      </div>       
-
-                      <div class='col-3'>
-                            Last Updated Date Time
-                      </div>
-
-                      <div class='col-5 p-1'>                              
-                            {{ catalogue_entry_obj.updated_at }}
-                      </div>
-                      <div class='col-4'>
-                            &nbsp;
-                      </div>       
-
-
-                        <div class='col-3'>
-                        Spatial Type
-                        </div>
-
-                        <div class='col-5 p-1'>                              
-                              {% if catalogue_entry_obj.type == 1 %}
-                                    Spatial File
-                              {% elif catalogue_entry_obj.type == 2 %}
-                                    Subscription
+                                    {{ catalogue_entry_obj.name }}
                               {% endif %}
-
-                        </div>
-                        <div class='col-4'>
-                              &nbsp;
-                        </div>                         
-
-          </div>
-    </div>
-
+                        {% else %}
+                              {% if has_edit_access is True %}
+                                    <input type="hidden"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
+                                    {{ catalogue_entry_obj.name }}  
+                              {% else %}
+                                    {{ catalogue_entry_obj.name }}
+                              {% endif %}
+                        {% endif %} 
+                  </div>
+            </div>
+            <div class="row">
+                  <div class='col-3'>Custodian</div>
+                  <div class='col-5 p-1'>
+                        {% if has_edit_access is True %}
+                              <select type="text" class="form-control" id="catalogue-custodian-entry" >
+                                    <option value="">Select One</option>
+                                    {% for cd in custodians_obj %}
+                                          {% if catalogue_entry_obj.custodian.id == cd.id %} 
+                                                <option value="{{ cd.id }}" selected>{{ cd.name }}</option>
+                                          {% else %}
+                                                <option value="{{ cd.id }}">{{ cd.name }}</option>
+                                          {% endif %}
+                                    {% endfor %}
+                              </select>
+                        {% else %}
+                              {{ catalogue_entry_obj.custodian.name }}
+                        {% endif %}
+                  </div>
+            </div>
+            <div class="row">
+                  <div class='col-3'>Last Updated Date Time</div>
+                  <div class='col-5 p-1'>
+                        {{ catalogue_entry_obj.updated_at }}
+                  </div>
+            </div>
+            <div class="row">
+                  <div class='col-3'>Spatial Type</div>
+                  <div class='col-5 p-1'>
+                        {% if catalogue_entry_obj.type == 1 %}
+                              Spatial File
+                        {% elif catalogue_entry_obj.type == 2 %}
+                              Subscription WFS
+                        {% elif catalogue_entry_obj.type == 3 %}
+                              Subscription WMS
+                        {% elif catalogue_entry_obj.type == 4 %}
+                              Subscription PostGIS
+                        {% elif catalogue_entry_obj.type == 5 %}
+                              Custom Query
+                        {% endif %}
+                  </div>
+            </div>
+            <div class="row">
+                  <div class='col-3'>Permission Type</div>
+                  <div class='col-5 p-1'>
+                        {% if has_edit_access is True %}
+                              <select type="text" class="form-control" id="catalogue-permission-type" >
+                                    <option value="">Select One</option>
+                                    {% for value, label in permission_types %}
+                                          {% if catalogue_entry_obj.permission_type == value %} 
+                                                <option value="{{ value }}" selected>{{ label }}</option>
+                                          {% else %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                          {% endif %}
+                                    {% endfor %}
+                              </select>
+                        {% else %}
+                              {% if catalogue_entry_obj.permission_type == 1 %}
+                                    Public
+                              {% elif catalogue_entry_obj.permission_type == 2 %}
+                                    Restricted
+                              {% endif %}
+                        {% endif %}
+                  </div>
+            </div>
+      </div>
 </div>
-<BR>
-    <div class="card" >
+
+<div class="card mt-2">
         <div class="card-header fw-bold h4" style="padding:30px;">
               <div class="row">
               <div class="col-6">
@@ -121,9 +124,9 @@
                     </div>                        
               </div>
         </div>
-  </div>
-  <BR>
-    <div class="card" >
+</div>
+
+<div class="card mt-2">
         <div class="card-header fw-bold h4" style="padding:30px;">
               <div class="row">
               <div class="col-6">
@@ -214,22 +217,16 @@
                   </nav>
             </div>
         </div>
-  </div>
+</div>
   
-  <div class='col-12 pt-2'>
-    <div class='row'>
-          <div class='col-6'>
-                &nbsp;
-          </div>
-          <div class='col-6 text-end'>
+    <div class='row mt-2'>
+          <div class='col-12 text-end'>
                 {% if has_edit_access is True %}
                       <button class="btn btn-primary" id='catalogue-entry-btn-save' aria-current="page" >Save</button>  
                       <button class="btn btn-primary" id='catalogue-entry-btn-save-exit'  aria-current="page" >Save and exit</button>  
                 {% endif %}
           </div>
-
     </div>
-  </div>
   <script>
       kbcatalogue_detail.init_catalogue_detail();
   </script>

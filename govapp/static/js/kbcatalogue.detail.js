@@ -9,6 +9,7 @@ var kbcatalogue_detail = {
     },
 
     init_catalogue_detail: function(){
+        console.log('init_catalogue_detail')
         $( "#catalogue-entry-btn-save" ).click(() => kbcatalogue_detail.save_catalogue('save'));
         $( "#catalogue-entry-btn-save-exit" ).click(() => kbcatalogue_detail.save_catalogue('save-and-exit'));      
         $( "#catalogue-detail-btn-add-notification" ).click(kbcatalogue_detail.show_add_email_notification_modal);
@@ -69,24 +70,29 @@ var kbcatalogue_detail = {
         var catalogue_id = $('#catalogue_entry_id').val();
         var cataloguename = $('#catalogue-entry-name').val();
         var cataloguecustodianentry = $('#catalogue-custodian-entry').val();
+        var permission_type = $('#catalogue-permission-type').val();
         
         var cataloguedescription = $('#catalogue-entry-description').val();
-        var post_data = {"name": cataloguename, "description": cataloguedescription, "custodian": cataloguecustodianentry};
+        var post_data = {
+            "name": cataloguename,
+            "description": cataloguedescription,
+            "custodian": cataloguecustodianentry,
+            "permission_type": permission_type
+        };
         var csrf_token = $("#csrfmiddlewaretoken").val();
         var pagetab = $('#pagetab').val();
 
         $.ajax({
-            url: kbcatalogue.var.catalogue_data_url+catalogue_id+"/",            
+            url: kbcatalogue.var.catalogue_data_url+catalogue_id+"/",
             type: 'PUT',
             headers: {'X-CSRFToken' : csrf_token},
             data: JSON.stringify(post_data),
             contentType: 'application/json',
             success: function (response) {
-
                 if (save_status == 'save-and-exit') {
                     window.location = '/catalogue/entries/';
                 } else {
-                   window.location = "/catalogue/entries/"+catalogue_id+"/"+pagetab+"/"; 
+                    window.location = "/catalogue/entries/"+catalogue_id+"/"+pagetab+"/"; 
                 }
             },
             error: function (error) {
