@@ -310,7 +310,6 @@ class CatalogueEntriesView(base.TemplateView):
 
         custodians_obj = custodians_models.Custodian.objects.all()
         catalogue_entry_obj = catalogue_entries_models.CatalogueEntry.objects.get(id=self.kwargs['pk'])
-        # permission_types = catalogue_entries_models.CatalogueEntryPermissionType.get_choices_dict()
         permission_types = catalogue_entries_models.CatalogueEntryPermissionType.choices
 
         system_users_dict = {}

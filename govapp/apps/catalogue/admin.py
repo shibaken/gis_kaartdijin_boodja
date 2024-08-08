@@ -199,8 +199,9 @@ class WebhookNotificationAdmin(reversion.admin.VersionAdmin):
 
 class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'catalogue_entry__name',)
-    list_display = ('id', 'user_link', 'catalogue_entry_link', 'permission', 'active')
-    list_filter = ('active', 'user', 'permission',)
+    # list_display = ('id', 'user_link', 'catalogue_entry_link', 'permission', 'active')
+    list_display = ('id', 'user_link', 'catalogue_entry_link', 'active')
+    list_filter = ('active', 'user',)
     raw_id_fields = ('user', 'catalogue_entry',)
 
     def catalogue_entry_link(self, obj):
