@@ -903,6 +903,9 @@ var kblayersubscription = {
         
         const add_freq_btn_id = common_entity_modal.add_field("Add Frequency", "button", null, null, true);
 
+        console.log({common_entity_modal})
+        let force_run_postgres_scanner = common_entity_modal.add_field(label="Force Run Postgres Scanner", type="switch", prev.force_run_postgres_scanner)
+
         if(prev && prev.frequencies && prev.frequencies.length > 0){
             for(let i in prev.frequencies){
                 kblayersubscription.create_freq_option(div, prev.frequencies[i].type, prev.frequencies[i], freq_option_ids, div.children().length);
@@ -1039,7 +1042,9 @@ var kblayersubscription = {
             description : utils.validate_empty_input(common_entity_modal.get_label(ids.description_id), $('#'+ids.description_id).val()),
             sql_query : utils.validate_empty_input(common_entity_modal.get_label(ids.sql_query_id), $('#'+ids.sql_query_id).val()),
             frequency_type : utils.validate_empty_input(common_entity_modal.get_label(ids.frequency_id), +$('#'+ids.frequency_id).val()),
+            force_run_postgres_scanner: $('#common-entity-modal-force-run-postgres-scanner').prop('checked')
         };
+        console.log({custom_query_data})
         if(ids.freq_option_ids == null || ids.freq_option_ids.length == 0){
             throw new Error("At least one frequency option is required");
         }
