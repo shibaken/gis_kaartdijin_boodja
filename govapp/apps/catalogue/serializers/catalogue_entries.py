@@ -46,6 +46,7 @@ class CatalogueEntrySerializer(serializers.ModelSerializer):
             "assigned_to_email",
             "permission_type",
             "permission_type_str",
+            "force_run_postgres_scanner",
         )
         read_only_fields = (
             "id",

@@ -1039,6 +1039,7 @@ class LayerSubscriptionViewSet(
         catalogue_entry.name = data['name'] if 'name' in data else catalogue_entry.name
         catalogue_entry.description = data['description'] if 'description' in data else catalogue_entry.description
         catalogue_entry.sql_query = data['sql_query'] if 'sql_query' in data else catalogue_entry.sql_query
+        catalogue_entry.force_run_postgres_scanner = True if request.data.get('force_run_postgres_scanner', False) else False
         catalogue_entry.save()
         
         # Validation check
@@ -1084,11 +1085,11 @@ class LayerSubscriptionViewSet(
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
-        sql_queries = subscription.catalogue_entries.filter(sql_query__isnull=False).prefetch_related('custom_query_frequencies').all()
+        catalogue_entries = subscription.catalogue_entries.filter(sql_query__isnull=False).prefetch_related('custom_query_frequencies').all()
         results = []
-        for sql_query in sql_queries:
+        for catalogue_entry in catalogue_entries:
             frequencies = []
-            for freq in sql_query.custom_query_frequencies.all():
+            for freq in catalogue_entry.custom_query_frequencies.all():
                 frequencies.append({
                     'type':freq.type, 
                     'type_label': freq.get_type_display(),
@@ -1100,11 +1101,12 @@ class LayerSubscriptionViewSet(
                     'date':freq.date,
                 })
             results.append({
-                'id': sql_query.id,
-                'name': sql_query.name,
-                'description' : sql_query.description,
-                'sql_query' : sql_query.sql_query,
+                'id': catalogue_entry.id,
+                'name': catalogue_entry.name,
+                'description' : catalogue_entry.description,
+                'sql_query' : catalogue_entry.sql_query,
                 'frequencies' : frequencies,
+                'force_run_postgres_scanner': catalogue_entry.force_run_postgres_scanner,
             })
             
         # Return Response

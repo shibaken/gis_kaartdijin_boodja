@@ -137,6 +137,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
         on_delete=models.SET_NULL,
     )
     permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.PUBLIC)
+    force_run_postgres_scanner = models.BooleanField(default=False)
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.
