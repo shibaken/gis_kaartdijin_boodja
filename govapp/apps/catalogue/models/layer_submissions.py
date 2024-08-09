@@ -69,6 +69,14 @@ class LayerSubmission(mixins.RevisionedMixin):
         return self.catalogue_entry.name
     
     @property
+    def permission_type_str(self):
+        return self.catalogue_entry.get_permission_type_display()
+
+    @property
+    def permission_type(self):
+        return self.catalogue_entry.permission_type
+    
+    @property
     def status_name(self) -> str:
         """
         Provides the Status name to this model.

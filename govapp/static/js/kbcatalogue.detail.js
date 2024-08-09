@@ -9,15 +9,14 @@ var kbcatalogue_detail = {
     },
 
     init_catalogue_detail: function(){
-        console.log('init_catalogue_detail')
-        $( "#catalogue-entry-btn-save" ).click(() => kbcatalogue_detail.save_catalogue('save'));
-        $( "#catalogue-entry-btn-save-exit" ).click(() => kbcatalogue_detail.save_catalogue('save-and-exit'));      
-        $( "#catalogue-detail-btn-add-notification" ).click(kbcatalogue_detail.show_add_email_notification_modal);
-        $( "#catalogue-detail-notification-order-by" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
-        $( "#catalogue-detail-notification-limit" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
-        $( "#log_actions_show" ).click(kbcatalogue_detail.show_action_log);
-        $( "#log_communication_show" ).click(kbcatalogue_detail.show_communication_log);
-        $( "#log_communication_add" ).click(kbcatalogue_detail.add_communication_log);
+        $("#catalogue-entry-btn-save" ).click(() => kbcatalogue_detail.save_catalogue('save'));
+        $("#catalogue-entry-btn-save-exit" ).click(() => kbcatalogue_detail.save_catalogue('save-and-exit'));      
+        $("#catalogue-detail-btn-add-notification" ).click(kbcatalogue_detail.show_add_email_notification_modal);
+        $("#catalogue-detail-notification-order-by" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
+        $("#catalogue-detail-notification-limit" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
+        $("#log_actions_show" ).click(kbcatalogue_detail.show_action_log);
+        $("#log_communication_show" ).click(kbcatalogue_detail.show_communication_log);
+        $("#log_communication_add" ).click(kbcatalogue_detail.add_communication_log);
 
         kbcatalogue_detail.var.has_edit_access = $('#has_edit_access').val() == 'True';
         kbcatalogue_detail.retrieve_communication_types();

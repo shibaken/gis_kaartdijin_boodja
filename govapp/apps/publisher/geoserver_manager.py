@@ -47,15 +47,27 @@ class GeoServerQueueExcutor:
         
             for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
                 geoserver_pool = geoserver_publish_channel.geoserver_pool
-                if geoserver_pool.enabled:
-                    # Make sure all the workspace exist in the geoserver
-                    workspaces_in_kb = Workspace.objects.all()
-                    for workspace in workspaces_in_kb:
-                        # geoserver_obj.create_workspace_if_not_exists(workspace.name)
-                        geoserver_pool.create_workspace_if_not_exists(workspace.name)
 
-                    self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
+                if not geoserver_pool:
+                    # No geoserver_pool configured
+                    self.result_status = GeoServerQueueStatus.FAILED
+                    self.result_success = False
+                    self._add_publishing_log(f"[{queue_item.publish_entry.name}] Publishing failed.  No geoserver_pool configured.")
+                    continue
 
+                if not geoserver_pool.enabled:
+                    # No geoserver_pool configured
+                    self.result_status = GeoServerQueueStatus.FAILED
+                    self.result_success = False
+                    self._add_publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_pool.url}] Publishing failed.  Geoserver_pool is not enabled.")
+                    continue
+
+                # Make sure all the workspace exist in the geoserver
+                workspaces_in_kb = Workspace.objects.all()
+                for workspace in workspaces_in_kb:
+                    # geoserver_obj.create_workspace_if_not_exists(workspace.name)
+                    geoserver_pool.create_workspace_if_not_exists(workspace.name)
+                self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
             self._update_result(queue_item=queue_item)
 
     def _retrieve_target_items(self):
@@ -78,7 +90,6 @@ class GeoServerQueueExcutor:
         self.publishing_log += log_msg
         return log_msg
     
-        
     def _publish_to_a_geoserver(self, publish_entry: "PublishEntry", geoserver_info: GeoServerPublishChannel):
         geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.geoserver_pool.url, geoserver_info.geoserver_pool.username, geoserver_info.geoserver_pool.password)
         

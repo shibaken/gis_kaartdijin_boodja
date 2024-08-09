@@ -850,13 +850,13 @@ var kblayersubscription = {
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
                     if($('#has_edit_access').val() == "True"){
-                        let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-view">Convert</button>')
+                        // let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-view">Convert</button>')
                         let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-history">Edit</button>')
                         let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-delete">Delete</button>')
-                        button_run.click(()=>kblayersubscription.convert_custom_query(catalogue_entry))
+                        // button_run.click(()=>kblayersubscription.convert_custom_query(catalogue_entry))
                         button_edit.click(()=>kblayersubscription.show_custom_query_modal(catalogue_entry))
                         button_delete.click(()=>kblayersubscription.delete_custom_query(catalogue_entry))
-                        td_for_buttons.append(button_run)
+                        // td_for_buttons.append(button_run)
                         td_for_buttons.append(button_edit)
                         td_for_buttons.append(button_delete)
                     }
@@ -879,11 +879,10 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                console.log({response})
                 FeedbackModal.showFeedback(response.message, true);
             },
-            error: function(xhr, status, error) {
-                FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.error, false);
+            error: (xhr, status, error) => {
+                FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.message, false);
             }
         })
     },

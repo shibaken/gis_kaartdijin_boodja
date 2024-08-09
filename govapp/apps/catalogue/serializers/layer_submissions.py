@@ -24,6 +24,8 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "submitted_at",
             "created_at",
             "catalogue_entry",
+            "permission_type",
+            "permission_type_str",
         )
         read_only_fields = (
             "id",
@@ -36,4 +38,6 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "submitted_at",
             "created_at",
             "catalogue_entry",
+            "permission_type",
+            "permission_type_str",
         )

@@ -10,7 +10,7 @@
                         </div>
                         <div class='col-6 text-end'>
                               {% if has_edit_access is True %}
-                                    <button class='btn btn-primary btn-sm' id='catalogue-manage-editors-btn'>Manage Permission</button>
+                                    <button class='btn btn-primary btn-sm' id='catalogue-manage-editors-btn'>Manage Access Permission</button>
                               {% else %}
                                     <button class='btn btn-primary btn-sm' id='catalogue-show-permission-btn'>Show Permission</button>
                               {% endif %}
@@ -113,8 +113,19 @@
                   </div>
             </div>
 
+            <!-- datatables -->
+            <link href="/static/common/css/datatables.css" rel="stylesheet" />
+            <script src="/static/common/js/datatables.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
+
             <script>
                   kbcatalogue.init_catalogue_item();
+                  $('#catalogue_entry_permission_table').DataTable({
+                        paging: false,
+                        searching: false,
+                        ordering: false,
+                        info: false,
+                        lengthChange: false
+                  })
             </script>
       {% else %}
             <div class="container" id="dashboard-table-container">

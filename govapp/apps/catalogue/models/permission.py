@@ -28,7 +28,7 @@ class CatalogueEntryPermission(mixins.RevisionedMixin):
         on_delete=models.CASCADE)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
-    access_permission = models.IntegerField(choices=CatalogueEntryAccessPermission.choices, default=CatalogueEntryAccessPermission.NONE)
+    access_permission = models.IntegerField(choices=CatalogueEntryAccessPermission.choices, default=CatalogueEntryAccessPermission.READ)
     
     def __str__(self):
         return str(self.catalogue_entry)

@@ -1115,9 +1115,9 @@ class LayerSubscriptionViewSet(
         try:
             catalogue_entry_obj = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=catalogue_id)
             new_path = Scanner.run_postgres_to_shapefile(catalogue_entry_obj)
-            return response.Response({'message': f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].'}, status=status.HTTP_201_CREATED)
+            return response.Response({'message': f'[CE{catalogue_entry_obj.id}: {catalogue_entry_obj.name}] has been converted to the shapefile: [{new_path}].'}, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return response.Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return response.Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryGetSubscriptionQuerySerializer,
@@ -1211,8 +1211,8 @@ class CataloguePermissionViewSet(
 ):      
     """Catalogue Permission View Set."""
     queryset = models.permission.CatalogueEntryPermission.objects.all()
-    serializer_class = serializers.permission.CataloguePermissionSerializer
-    serializer_classes = {"create": serializers.permission.CataloguePermissionCreateSerializer}
+    serializer_class = serializers.permission.CatalogueEntryPermissionSerializer
+    serializer_classes = {"create": serializers.permission.CatalogueEntryPermissionCreateSerializer}
     filterset_class = filters.CataloguePermissionFilter
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
     pagination_class = None
