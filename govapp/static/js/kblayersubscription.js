@@ -825,8 +825,7 @@ var kblayersubscription = {
             success: (response) => {
                 thead.empty();
                 let tr = $('<tr>');
-                tr.append($('<th>').attr('class', 'col-1').text("Number"))
-                tr.append($('<th>').attr('class', 'col-2').text("Catalogue Name"))
+                tr.append($('<th>').attr('class', 'col-3').text("Catalogue Entry"))
                 tr.append($('<th>').attr('class', 'col-4').text("Description"))
                 tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
                 tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
@@ -840,8 +839,7 @@ var kblayersubscription = {
                 tbody.empty();
                 for(let catalogue_entry of response.results){
                     let row = $('<tr>');
-                    row.append($('<td>').text('CE' + catalogue_entry.id))
-                    row.append($('<td>').text(catalogue_entry.name))
+                    row.append($('<td>').append($('<a href="/catalogue/entries/' + catalogue_entry.id + '/details/" style="text-decoration: none;">').text(`CE${catalogue_entry.id}: ${catalogue_entry.name}`)))
                     row.append($('<td>').text(catalogue_entry.description))
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
                     let td = $('<td>').text(typeLabels);
