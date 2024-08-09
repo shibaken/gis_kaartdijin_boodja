@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-xl">
          <div class="modal-content">
               <div class="modal-header">
-                   <h5 class="modal-title" >Manage Permission</h5>
+                   <h5 class="modal-title" >Manage Access Permission for the catalogue entry</h5>
                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
@@ -10,70 +10,48 @@
               </div>
               <div class="alert alert-success" role="alert" id='manage-popup-success' style='display:none'>
               </div>
-              <form>
           </div>
-          <div id='manage-editors-details'>
-
-               <div class='col-12 round-box px-3' id='manage-editors'>
-                         <div class='col-12 bg-light p-3 p-1'>
-                              <div class='row'>
-                                   <div class='col-12 pb-2' id='manage-editors-add-area'>
-                                        <div class='col-6'>
-                                             <label for="manage-editors-search" class="form-label">Add Editor</label>
-                                             <select type="text" class="form-select" id="manage-editors-search"> </select>
-                                        </div>
-                                        <div class='col-3 pt-4'>
-                                             <button type="button" class="btn btn-primary btn-sm" id='manage-editors-add-btn'>Add</button>
-                                             &nbsp;
-                                       </div>
-                                   </div>
-                              </div>
-                         </div>
-                         <br>
-                         <table id="example" class="table" style="width:100%">
-                              <thead class='table-dark'>
+          <div id='manage-editors-details' class="container">
+               <div class='row d-flex align-items-center px-3' id='manage-editors-add-area'>
+                    <div class='col-6'>
+                        <select type="text" class="form-select" id="manage-editors-search"></select>
+                    </div>
+                    <div class='col-3'>
+                        <button type="button" class="btn btn-primary btn-sm" id='manage-editors-add-btn'>Add User</button>
+                    </div>
+                </div>
+                <div class="row px-3 mb-3">
+                    <table id="catalogue_entry_permission_table" class="table table-striped table-bordered table-hover dataTable" style="width:100%">
+                         <thead>
                               <tr>
                                    <th>ID</th>
                                    <th>First Name</th>
                                    <th>Last Name</th>
-                                   <th>Email</th>                              
-                                   <th>Action</th>
+                                   <th>Email</th>
+                                   <th class="text-center">Active</th>
+                                   <th>Access Permission</th>
+                                   <th class="text-center">Action</th>
                               </tr>
-                              </thead>
-                              <tbody id='manage-editors-tbody'>
-                              <tr>
-                                   <td colspan="7" class='text-center'>No Results</td>
-                              </tr>
-                              </tbody>
-                         </table>         
-
+                         </thead>
+                         <tbody id='manage-editors-tbody'>
+                         </tbody>
+                    </table>
                </div>
-    
-         </div>
+          </div>
  
           <div class='col-12 px-3'>
                     <div class='col-12'>
-                             <div class='col-12'>
-                             <label for="" class="form-label">&nbsp;</label>
-                             </div>
-                             <div class='col-12 text-end'>                           
-                                  &nbsp;&nbsp;
-                                  
-                                  <div class="spinner-border text-primary" role="status" style="display:none" id="new-manage-editors-loader-popup">
+                             <div class='col-12 text-end'>
+                                  <div class="spinner-border text-primary" role="status" style="display:none" id="new-manage-editors-loader-popup"></div>
                                        <span class="visually-hidden">Loading...</span>
                                   </div>
-                                  &nbsp;&nbsp;&nbsp;
-                                  <BR>
                              </div>
-                             <BR>
                     </div>
              </div>
-         </div>         
+         </div>
        </div>
-       </form>
-  
-       <div class="modal-footer">
-       </div>
+       <!-- <div class="modal-footer">
+       </div> -->
      </div>
    </div>
  </div>

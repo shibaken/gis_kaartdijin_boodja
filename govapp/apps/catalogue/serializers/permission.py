@@ -8,24 +8,39 @@ from rest_framework import serializers
 from govapp.apps.catalogue import models
 
 
-class CataloguePermissionSerializer(serializers.ModelSerializer):
+class CatalogueEntryPermissionSerializer(serializers.ModelSerializer):
     """Catalogue Permission Model Serializer."""
     first_name = serializers.ReadOnlyField(source='user.first_name',)
     last_name = serializers.ReadOnlyField(source='user.last_name',)
     email =  serializers.ReadOnlyField(source='user.email',)
+    access_permission_label = serializers.ReadOnlyField(source='get_access_permission_display',)
 
     class Meta:
         """Catalogue Permission Model Serializer Metadata."""
         model = models.permission.CatalogueEntryPermission
-        fields = ("id", "first_name", "last_name", "email")
-        read_only_fields = ("id", "first_name", "last_name", "email")
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "active",
+            "access_permission",
+            "access_permission_label",
+        )
+        read_only_fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+        )
 
-class CataloguePermissionCreateSerializer(serializers.ModelSerializer):
+
+class CatalogueEntryPermissionCreateSerializer(serializers.ModelSerializer):
     """Catalogue Permission Create Model Serializer."""
 
     class Meta:
         """Catalogue Permission Create Model Serializer Metadata."""
-        model = CataloguePermissionSerializer.Meta.model
+        model = CatalogueEntryPermissionSerializer.Meta.model
         fields = ('user', 'catalogue_entry')
         
     def validate_user(self, user):

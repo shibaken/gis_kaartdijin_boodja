@@ -45,6 +45,7 @@ class Scanner:
         }
         catalogue_entry_list = catalogue_entries.CatalogueEntry.objects.filter(
             type=catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
+            status=catalogue_entries.CatalogueEntryStatus.LOCKED
         )
 
         for catalogue_entry_obj in catalogue_entry_list:
@@ -52,126 +53,132 @@ class Scanner:
                 log.warn(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because it is not LOCKED.')
                 continue
 
-            for custom_query_freq in catalogue_entry_obj.custom_query_frequencies.all():
+            for custom_query_freq in catalogue_entry_obj.custom_query_frequencies.all():  # CatalogueEntry can have 0 or 1 custom_query_frequency.
                 log.info(f'Working on the CustomQueryFrequency: [{custom_query_freq}] for the CatalogueEntry: [{catalogue_entry_obj}]...')
 
                 is_time_to_run = False
                 generate_shp = False
                 now_dt = datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))
                 log.info(f'Now datetime is [{now_dt}].')
-                
-                # Every minute scheduler.
-                if custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_MINUTES:
-                    if custom_query_freq.last_job_run is None:
-                        is_time_to_run = True
-                    else:
-                        dt_diff = now_dt - custom_query_freq.last_job_run.astimezone()
-                        last_job_run_in_minutes = dt_diff.total_seconds() / 60
-                        print (last_job_run_in_minutes)
-                        if last_job_run_in_minutes > custom_query_freq.every_minutes:
-                            is_time_to_run = True
 
-                    if is_time_to_run is True:
-                        generate_shp = True
-
-                # Every hour scheduler.
-                elif custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_HOURS:
-                    if custom_query_freq.last_job_run is None:
-                        is_time_to_run = True
-                    else:
-                        dt_diff = now_dt - custom_query_freq.last_job_run.astimezone()
-                        last_job_run_in_hours = dt_diff.total_seconds() / 60 / 60
-                        if last_job_run_in_hours >= custom_query_freq.every_hours:
+                if catalogue_entry_obj.force_run_postgres_scanner:
+                    # When force_run_postgres_scanner is set to True, we don't need to check the schedule
+                    generate_shp = True
+                else:
+                    # Every minute scheduler.
+                    if custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_MINUTES:
+                        if custom_query_freq.last_job_run is None:
                             is_time_to_run = True
-                    if is_time_to_run is True:
-                        generate_shp = True
-
-                # Daily scheduler.
-                elif custom_query_freq.type == custom_query_frequency.FrequencyType.DAILY:
-                    log.info(f'CustomQueryFrequency: [{custom_query_freq}] type is DAILY.')
-                    if custom_query_freq.last_job_run is None:
-                        is_time_to_run = True
-                        log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because it has never been run.')
-                    else:
-                        now_dt_string = now_dt.strftime("%Y-%m-%d")
-                        # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
-                        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
-                        last_job_run_string = last_job_run.strftime("%Y-%m-%d")
-                        if now_dt_string != last_job_run_string:
-                            is_time_to_run = True
-                            log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because now_dt_string: [{now_dt_string}] is not same as the last_job_run_string: [{last_job_run_string}].')
                         else:
-                            log.info(f'is_time_to_run remains False because now_dt_string: [{now_dt_string}] is the same as the last_job_run_string: [{last_job_run_string}].')
+                            dt_diff = now_dt - custom_query_freq.last_job_run.astimezone()
+                            last_job_run_in_minutes = dt_diff.total_seconds() / 60
+                            print (last_job_run_in_minutes)
+                            if last_job_run_in_minutes > custom_query_freq.every_minutes:
+                                is_time_to_run = True
 
-                    if is_time_to_run:
-                        # Check if the current time has passed the specified time in a single condition
-                        if (now_dt.hour, now_dt.minute) >= (custom_query_freq.hour, custom_query_freq.minute):
-                            log.info(f'The time of now_dt has passed the one of the custom_query_freq.  Set True to the generate_shp.')
+                        if is_time_to_run is True:
                             generate_shp = True
+
+                    # Every hour scheduler.
+                    elif custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_HOURS:
+                        if custom_query_freq.last_job_run is None:
+                            is_time_to_run = True
                         else:
-                            log.info(f'Since the current time (now_dt): [{now_dt}] has not yet been reached the time of the custom_query_freq: [{custom_query_freq}], generate_shp remains False.')
-                    else:
-                        log.info("Conversion not requried to run.")
+                            dt_diff = now_dt - custom_query_freq.last_job_run.astimezone()
+                            last_job_run_in_hours = dt_diff.total_seconds() / 60 / 60
+                            if last_job_run_in_hours >= custom_query_freq.every_hours:
+                                is_time_to_run = True
+                        if is_time_to_run is True:
+                            generate_shp = True
 
-                # Weekly scedhuler
-                elif custom_query_freq.type == custom_query_frequency.FrequencyType.WEEKLY:
-                    if custom_query_freq.last_job_run is None:
-                        is_time_to_run = True
-                    else:
-                        # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
-                        # last_job_run_string_dow = custom_query_freq.last_job_run.strftime("%a")
-                        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
-                        last_job_run_string = last_job_run.strftime("%Y-%m-%d")
-                        last_job_run_string_dow = last_job_run.strftime("%a")
-                        now_dt_string_dow = now_dt.strftime("%a")
-
-                        print (now_dt_string_dow)
-                        print (last_job_run_string_dow)
-                        
-                        if now_dt_string_dow == last_job_run_string_dow:
-                            is_time_to_run = False
+                    # Daily scheduler.
+                    elif custom_query_freq.type == custom_query_frequency.FrequencyType.DAILY:
+                        log.info(f'CustomQueryFrequency: [{custom_query_freq}] type is DAILY.')
+                        if custom_query_freq.last_job_run is None:
+                            is_time_to_run = True
+                            log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because it has never been run.')
                         else:
-                            if custom_query_freq.day_of_week > 0:
-                                if days_of_week[custom_query_freq.day_of_week] == now_dt_string_dow:
-                                    if now_dt.hour >= custom_query_freq.hour or now_dt.hour == custom_query_freq.hour:
-                                        if now_dt.hour == custom_query_freq.hour:
-                                            if now_dt.minute >= custom_query_freq.minute or now_dt.minute == custom_query_freq.minute:
-                                                is_time_to_run = True
-                                        else:
-                                            is_time_to_run = True
+                            now_dt_string = now_dt.strftime("%Y-%m-%d")
+                            # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
+                            last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+                            last_job_run_string = last_job_run.strftime("%Y-%m-%d")
+                            if now_dt_string != last_job_run_string:
+                                is_time_to_run = True
+                                log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because now_dt_string: [{now_dt_string}] is not same as the last_job_run_string: [{last_job_run_string}].')
+                            else:
+                                log.info(f'is_time_to_run remains False because now_dt_string: [{now_dt_string}] is the same as the last_job_run_string: [{last_job_run_string}].')
 
-                    if is_time_to_run is True:
-                        generate_shp = True
-
-                # Monthly Schedule
-                elif custom_query_freq.type == custom_query_frequency.FrequencyType.MONTHLY:  
-                    if custom_query_freq.last_job_run is None:
-                        is_time_to_run = True
-                    else:                
-                        now_dt_string = now_dt.strftime("%Y-%m-%d")
-                        now_dt_string_dom = now_dt.strftime("%-d")
-                        # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")       
-                        # last_job_run_string_dom = custom_query_freq.last_job_run.strftime("%-d")
-                        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
-                        last_job_run_string = last_job_run.strftime("%Y-%m-%d")       
-                        last_job_run_string_dom = last_job_run.strftime("%-d")
-
-                        if now_dt_string == last_job_run_string:
-                            is_time_to_run = False
-                        else:
-                            if int(now_dt_string_dom) >= int(last_job_run_string_dom):
-                                    if now_dt.hour >= custom_query_freq.hour or now_dt.hour == custom_query_freq.hour:
-                                        if now_dt.hour == custom_query_freq.hour:
-                                            if now_dt.minute >= custom_query_freq.minute or now_dt.minute == custom_query_freq.minute:
-                                                is_time_to_run = True   
-                                        else:
-                                            is_time_to_run = True                       
-
-                            if is_time_to_run is True:
+                        if is_time_to_run:
+                            # Check if the current time has passed the specified time in a single condition
+                            if (now_dt.hour, now_dt.minute) >= (custom_query_freq.hour, custom_query_freq.minute):
+                                log.info(f'The time of now_dt has passed the one of the custom_query_freq.  Set True to the generate_shp.')
                                 generate_shp = True
+                            else:
+                                log.info(f'Since the current time (now_dt): [{now_dt}] has not yet been reached the time of the custom_query_freq: [{custom_query_freq}], generate_shp remains False.')
+                        else:
+                            log.info("Conversion not requried to run.")
 
-                if generate_shp is True:  
+                    # Weekly scedhuler
+                    elif custom_query_freq.type == custom_query_frequency.FrequencyType.WEEKLY:
+                        if custom_query_freq.last_job_run is None:
+                            is_time_to_run = True
+                        else:
+                            # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
+                            # last_job_run_string_dow = custom_query_freq.last_job_run.strftime("%a")
+                            last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+                            last_job_run_string = last_job_run.strftime("%Y-%m-%d")
+                            last_job_run_string_dow = last_job_run.strftime("%a")
+                            now_dt_string_dow = now_dt.strftime("%a")
+
+                            print (now_dt_string_dow)
+                            print (last_job_run_string_dow)
+                            
+                            if now_dt_string_dow == last_job_run_string_dow:
+                                is_time_to_run = False
+                            else:
+                                if custom_query_freq.day_of_week > 0:
+                                    if days_of_week[custom_query_freq.day_of_week] == now_dt_string_dow:
+                                        if now_dt.hour >= custom_query_freq.hour or now_dt.hour == custom_query_freq.hour:
+                                            if now_dt.hour == custom_query_freq.hour:
+                                                if now_dt.minute >= custom_query_freq.minute or now_dt.minute == custom_query_freq.minute:
+                                                    is_time_to_run = True
+                                            else:
+                                                is_time_to_run = True
+
+                        if is_time_to_run is True:
+                            generate_shp = True
+
+                    # Monthly Schedule
+                    elif custom_query_freq.type == custom_query_frequency.FrequencyType.MONTHLY:  
+                        if custom_query_freq.last_job_run is None:
+                            is_time_to_run = True
+                        else:                
+                            now_dt_string = now_dt.strftime("%Y-%m-%d")
+                            now_dt_string_dom = now_dt.strftime("%-d")
+                            # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")       
+                            # last_job_run_string_dom = custom_query_freq.last_job_run.strftime("%-d")
+                            last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+                            last_job_run_string = last_job_run.strftime("%Y-%m-%d")       
+                            last_job_run_string_dom = last_job_run.strftime("%-d")
+
+                            if now_dt_string == last_job_run_string:
+                                is_time_to_run = False
+                            else:
+                                if int(now_dt_string_dom) >= int(last_job_run_string_dom):
+                                        if now_dt.hour >= custom_query_freq.hour or now_dt.hour == custom_query_freq.hour:
+                                            if now_dt.hour == custom_query_freq.hour:
+                                                if now_dt.minute >= custom_query_freq.minute or now_dt.minute == custom_query_freq.minute:
+                                                    is_time_to_run = True   
+                                            else:
+                                                is_time_to_run = True                       
+
+                                if is_time_to_run is True:
+                                    generate_shp = True
+
+                if generate_shp:  
                     Scanner.run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq, now_dt)
+                    catalogue_entry_obj.force_run_postgres_scanner = False
+                    catalogue_entry_obj.save()
 
         # Log
         log.info("Scanning storage staging area complete!")

@@ -825,8 +825,7 @@ var kblayersubscription = {
             success: (response) => {
                 thead.empty();
                 let tr = $('<tr>');
-                tr.append($('<th>').attr('class', 'col-1').text("Number"))
-                tr.append($('<th>').attr('class', 'col-2').text("Catalogue Name"))
+                tr.append($('<th>').attr('class', 'col-3').text("Catalogue Entry"))
                 tr.append($('<th>').attr('class', 'col-4').text("Description"))
                 tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
                 tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
@@ -840,8 +839,7 @@ var kblayersubscription = {
                 tbody.empty();
                 for(let catalogue_entry of response.results){
                     let row = $('<tr>');
-                    row.append($('<td>').text('CE' + catalogue_entry.id))
-                    row.append($('<td>').text(catalogue_entry.name))
+                    row.append($('<td>').append($('<a href="/catalogue/entries/' + catalogue_entry.id + '/details/" style="text-decoration: none;">').text(`CE${catalogue_entry.id}: ${catalogue_entry.name}`)))
                     row.append($('<td>').text(catalogue_entry.description))
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
                     let td = $('<td>').text(typeLabels);
@@ -850,13 +848,13 @@ var kblayersubscription = {
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
                     if($('#has_edit_access').val() == "True"){
-                        let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-view">Convert</button>')
+                        // let button_run = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-view">Convert</button>')
                         let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-history">Edit</button>')
                         let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-delete">Delete</button>')
-                        button_run.click(()=>kblayersubscription.convert_custom_query(catalogue_entry))
+                        // button_run.click(()=>kblayersubscription.convert_custom_query(catalogue_entry))
                         button_edit.click(()=>kblayersubscription.show_custom_query_modal(catalogue_entry))
                         button_delete.click(()=>kblayersubscription.delete_custom_query(catalogue_entry))
-                        td_for_buttons.append(button_run)
+                        // td_for_buttons.append(button_run)
                         td_for_buttons.append(button_edit)
                         td_for_buttons.append(button_delete)
                     }
@@ -879,11 +877,10 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
-                console.log({response})
                 FeedbackModal.showFeedback(response.message, true);
             },
-            error: function(xhr, status, error) {
-                FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.error, false);
+            error: (xhr, status, error) => {
+                FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.message, false);
             }
         })
     },
@@ -903,6 +900,9 @@ var kblayersubscription = {
         common_entity_modal.add_div("Frequency Options", div);
         
         const add_freq_btn_id = common_entity_modal.add_field("Add Frequency", "button", null, null, true);
+
+        console.log({common_entity_modal})
+        let force_run_postgres_scanner = common_entity_modal.add_field(label="Force Run Postgres Scanner", type="switch", prev.force_run_postgres_scanner)
 
         if(prev && prev.frequencies && prev.frequencies.length > 0){
             for(let i in prev.frequencies){
@@ -1040,7 +1040,9 @@ var kblayersubscription = {
             description : utils.validate_empty_input(common_entity_modal.get_label(ids.description_id), $('#'+ids.description_id).val()),
             sql_query : utils.validate_empty_input(common_entity_modal.get_label(ids.sql_query_id), $('#'+ids.sql_query_id).val()),
             frequency_type : utils.validate_empty_input(common_entity_modal.get_label(ids.frequency_id), +$('#'+ids.frequency_id).val()),
+            force_run_postgres_scanner: $('#common-entity-modal-force-run-postgres-scanner').prop('checked')
         };
+        console.log({custom_query_data})
         if(ids.freq_option_ids == null || ids.freq_option_ids.length == 0){
             throw new Error("At least one frequency option is required");
         }
