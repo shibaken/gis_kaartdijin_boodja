@@ -74,9 +74,9 @@ var kbcatalogue = {
                 quietMillis: 100,
                 data: function (params, page) {
                     return {
-                        q: params.term,                        
+                        q: params.term,
                     };
-                },          
+                },
                   processResults: function (data) {
                     // Transforms the top-level key of the response object from 'items' to 'results'
                     var results = [];
@@ -89,7 +89,7 @@ var kbcatalogue = {
                     return {
                         results: results
                     };
-                  }                  
+                }
             },
         });
 
@@ -186,34 +186,34 @@ var kbcatalogue = {
                 quietMillis: 100,
                 data: function (params, page) {
                     return {
-                        q: params.term,                        
+                        q: params.term,
                     };
-                },          
+                },
                   processResults: function (data) {
                     // Transforms the top-level key of the response object from 'items' to 'results'
                     var results = [];
                     $.each(data.results, function(index, item){
                       results.push({
                         id: item.id,
-                        text: item.first_name+' '+item.last_name
+                        text: `${item.first_name} ${item.last_name} (${item.email})`
                       });
                     });
                     return {
                         results: results
                     };
-                  }                  
+                }
             },
         };
 
         $( "#catalogue-manage-editors-btn" ).click(function(){
-            kbcatalogue.get_catalogue_editors();
+            kbcatalogue.get_catalogue_entry_permissions();
             $('#manage-editors-search').val("").trigger('change');
             $('#manage-popup-error').hide();
             $('#ManageEditorsModal').modal('show');
         });
 
         $( '#catalogue-show-permission-btn' ).click(function(){
-            kbcatalogue.get_catalogue_editors(false);
+            kbcatalogue.get_catalogue_entry_permissions(false);
             $('#manage-editors-add-area').hide();
             $('#manage-popup-error').hide();
             $('#ManageEditorsModal').modal('show');
@@ -493,8 +493,7 @@ var kbcatalogue = {
                     if (response.results.length > 0) {
                         for (let i = 0; i < response.results.length; i++) {
                             let catalogue_entry = response.results[i]
-                            console.log({catalogue_entry})
-
+                            console.log(catalogue_entry)
                             assigned_to_friendly = "";
 
                             if (catalogue_entry.assigned_to_first_name != null) {
@@ -511,12 +510,13 @@ var kbcatalogue = {
                             }
 
                             button_json = '{"id": "'+catalogue_entry.id+'"}'
-
+                            let lock_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="13" height="16" style="fill: gray;"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>'
                             html += "<tr>";
                             html += "<td>CE" + catalogue_entry.id + "</td>";
                             html += "<td>" + catalogue_entry.name + "</td>";
                             html += "<td>" + kbcatalogue.var.spatial_type[catalogue_entry.type] + "</td>";
-                            html += "<td>" + catalogue_entry.permission_type_str + "</td>"
+                            html += "<td>" + (catalogue_entry.permission_type == 1 ? catalogue_entry.permission_type_str : catalogue_entry.permission_type_str + lock_icon) + "</td>"
+                            // html += "<td>" + catalogue_entry.permission_type_str + "</td>"
                             html += "<td>" + (catalogue_entry.custodian_name != null ? catalogue_entry.custodian_name : "") + "</td>"
                             html += "<td><span class='" + kbcatalogue.var.catalogue_status[catalogue_entry.status].class + "'>" + kbcatalogue.var.catalogue_status[catalogue_entry.status].name + "<span></td>";
                             html += "<td>" + catalogue_entry.updated_at + "</td>";
@@ -560,7 +560,7 @@ var kbcatalogue = {
             },
         });    
     },
-    get_catalogue_editors: function(permissioned=true){
+    get_catalogue_entry_permissions: function(permissioned=true){
         var catalogue_id = $('#catalogue_entry_id').val();
         $.ajax({
             url: kbcatalogue.var.catalogue_permission_url + "?catalogue_entry=" + catalogue_id,
@@ -612,8 +612,7 @@ var kbcatalogue = {
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {
-                console.log(response);
-                kbcatalogue.get_catalogue_editors();
+                kbcatalogue.get_catalogue_entry_permissions();
             },
             error: function (error) {
                 $('#manage-popup-error').text(error.responseText);
@@ -635,7 +634,7 @@ var kbcatalogue = {
             contentType: 'application/json',
             success: function (response) {
                 console.log(response);
-                kbcatalogue.get_catalogue_editors();
+                kbcatalogue.get_catalogue_entry_permissions();
             },
             error: function (error) {
                 $('#manage-popup-error').text(JSON.parse(error.responseText).user[0]);
