@@ -167,6 +167,37 @@ class CatalogueEntry(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.name}"
 
+    def get_user_access_permission(self, user):
+        from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermission, CatalogueEntryPermission
+
+        if self.is_restricted:
+            catalogue_entry_permissions = CatalogueEntryPermission.objects.filter(
+                catalogue_entry=self,
+                user=user,
+                active=True
+            )
+            if not catalogue_entry_permissions.exists():
+                return 'none'
+
+            strictest_permission = catalogue_entry_permissions.aggregate(
+                strictest=models.Min('access_permission')
+            )['strictest']
+            if strictest_permission == CatalogueEntryAccessPermission.NONE:
+                return 'none'
+            elif strictest_permission == CatalogueEntryAccessPermission.READ:
+                return 'read'
+            elif strictest_permission == CatalogueEntryAccessPermission.READ_WRITE:
+                return 'read_write'
+            else:
+                return 'none'  # Should not reach here
+        else:
+            # There is no restrictions for this catalogue entry.
+            return 'full'
+    
+    @property
+    def is_restricted(self):
+        return True if self.permission_type == CatalogueEntryPermissionType.RESTRICTED else False
+
     @property
     def file_extension(self):
         from govapp.apps.catalogue.models.layer_submissions import LayerSubmission

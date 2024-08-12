@@ -9,21 +9,17 @@
 <div class="container" id="dashboard-table-container">
       <div class='row'>
             <div class='col-6'>
-                  <h3>LM{{ layer_submission_obj.id }} - Layer Submission</h3>
+                  <h5>Layer Submission</h5>
+                  <h3>LM{{ layer_submission_obj.id }}: {{ layer_submission_obj.name }}</h3>
             </div>
             <div class='col-6 text-end'>
                   <button class='btn btn-primary btn-sm' id='catalogue-manage-editors-btn' style="display:none">Manage Editors</button>
             </div>
       </div>
-      <div class='row'>
-            <div class='col-12'>
-                  &nbsp;
-            </div>
-      </div>
 
       <div class='row'>
             <div class='col-3'>
-                  <div class='col-12 border'>
+                  <div class='col-12 border mb-2'>
                         <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
                               Logs
                         </div>
@@ -31,7 +27,6 @@
                               <p><b>Communication</b><br>
                                     <a href='#' id='log_communication_show'>Show</a> | <a href='#' id='log_communication_add'>Add Entry</a>
                               </p>
-
                         </div>
                         <div class='col-12 p-3'>
                               <p><b>Actions</b><br>
@@ -39,17 +34,13 @@
                               </p>
                         </div>
                   </div>
-                  <br>
                   <div class='col-12 border'>
                         <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
                               Workflow
                         </div>
                         <div class='col-12 p-3 border-bottom'>
-                              <b>Status</b>
-                              <br>
+                              <b>Status</b><br>
                               {{ layer_submission_obj.status_name }}
-                              <br>
-                              <br>
                         </div>
                   </div>
             </div>
@@ -61,9 +52,12 @@
                         <li class="nav-item">
                               <a class="nav-link {% if tab == 'attributes' %}active{% endif %}" aria-current="page" href="/layer/submission/{{ layer_submission_obj.id }}/attributes/">Attributes</a>
                         </li>
+                        {% if user_access_permission == 'read' or user_access_permission == 'read_write' or user_access_permission == 'full' %}
                         <li class="nav-item">
                               <a class="nav-link {% if tab == 'map' %}active{% endif %}" aria-current="page" href="/layer/submission/{{ layer_submission_obj.id }}/map/">Map</a>
                         </li>
+                        {% endif %}
+
                   </ul>
 
                   <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
@@ -73,11 +67,13 @@
                   <input type="hidden" id="pagetab" name="pagetab" value="{{ tab  }}">
                   <input type="hidden" id="layer_submission_obj_id" name="layer_submission_obj_id" value="{{ layer_submission_obj.id }}">
                   {% if tab == "details" %}
-                  {% include "govapp/layer_submissions_view_details.html" %}
+                        {% include "govapp/layer_submissions_view_details.html" %}
                   {% elif tab == "attributes" %}
-                  {% include "govapp/layer_submissions_view_attributes.html" %}
+                        {% include "govapp/layer_submissions_view_attributes.html" %}
                   {% elif tab == "map" %}
-                  {% include "govapp/layer_submissions_view_map.html" %}
+                        {% if user_access_permission == 'read' or user_access_permission == 'read_write' or user_access_permission == 'full' %}
+                              {% include "govapp/layer_submissions_view_map.html" %}
+                        {% endif %}
                   {% endif %}
             </div>
       </div>

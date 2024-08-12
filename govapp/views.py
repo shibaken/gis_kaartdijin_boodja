@@ -15,6 +15,7 @@ import json
 # Internal
 from govapp import settings
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
+from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermission, CatalogueEntryPermission
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
 from govapp.apps.publisher.models import workspaces as publish_workspaces_models
@@ -408,11 +409,15 @@ class LayerSubmissionView(base.TemplateView):
         """
         pk = self.kwargs['pk']
         layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.get(id=pk)
+        user_access_permission = layer_submission.get_user_access_permission(request.user)
 
         # Construct Context
         context: dict[str, Any] = {}
         context['tab'] = self.kwargs['tab']
         context['layer_submission_obj'] = layer_submission
+        context['is_restricted'] = layer_submission.is_restricted
+        context['user_access_permission'] = user_access_permission
+        context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission
         context['id'] = layer_submission.catalogue_entry.id
 
         # Render Template and Return
