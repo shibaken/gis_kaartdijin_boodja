@@ -2,10 +2,11 @@
 
 # Standard
 import logging
-import os 
 import shutil
+import calendar
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from dateutil.relativedelta import relativedelta
 
 # Third-Party
 from django import conf
@@ -33,7 +34,7 @@ class Scanner:
 
     def scan(self) -> None:
         # Log
-        log.info("Scanning Postgres Queries...")
+        log.info("Start scanning postgres queries...")
         days_of_week = {
             1 : "Mon",
             2 : "Tue",
@@ -45,17 +46,17 @@ class Scanner:
         }
         catalogue_entry_list = catalogue_entries.CatalogueEntry.objects.filter(
             type=catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
-            status=catalogue_entries.CatalogueEntryStatus.LOCKED
         )
 
         for catalogue_entry_obj in catalogue_entry_list:
+            log.info(f'Scanning postgres queries for the CatalogueEntry: [{catalogue_entry_obj}]...')
+
             if catalogue_entry_obj.layer_subscription.status != layer_subscriptions.LayerSubscriptionStatus.LOCKED:
-                log.warn(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because it is not LOCKED.')
+                log.warn(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because its layer_subscription is not LOCKED.')
                 continue
 
             for custom_query_freq in catalogue_entry_obj.custom_query_frequencies.all():  # CatalogueEntry can have 0 or 1 custom_query_frequency.
-                log.info(f'Working on the CustomQueryFrequency: [{custom_query_freq}] for the CatalogueEntry: [{catalogue_entry_obj}]...')
-
+                log.info(f'Working on the CustomQueryFrequency: [{catalogue_entry_obj}] for the CatalogueEntry: [{catalogue_entry_obj}]...')
                 is_time_to_run = False
                 generate_shp = False
                 now_dt = datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))
@@ -150,30 +151,7 @@ class Scanner:
 
                     # Monthly Schedule
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.MONTHLY:  
-                        if custom_query_freq.last_job_run is None:
-                            is_time_to_run = True
-                        else:                
-                            now_dt_string = now_dt.strftime("%Y-%m-%d")
-                            now_dt_string_dom = now_dt.strftime("%-d")
-                            # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")       
-                            # last_job_run_string_dom = custom_query_freq.last_job_run.strftime("%-d")
-                            last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
-                            last_job_run_string = last_job_run.strftime("%Y-%m-%d")       
-                            last_job_run_string_dom = last_job_run.strftime("%-d")
-
-                            if now_dt_string == last_job_run_string:
-                                is_time_to_run = False
-                            else:
-                                if int(now_dt_string_dom) >= int(last_job_run_string_dom):
-                                        if now_dt.hour >= custom_query_freq.hour or now_dt.hour == custom_query_freq.hour:
-                                            if now_dt.hour == custom_query_freq.hour:
-                                                if now_dt.minute >= custom_query_freq.minute or now_dt.minute == custom_query_freq.minute:
-                                                    is_time_to_run = True   
-                                            else:
-                                                is_time_to_run = True                       
-
-                                if is_time_to_run is True:
-                                    generate_shp = True
+                        generate_shp = Scanner.should_process_monthly(now_dt, custom_query_freq)
 
                 if generate_shp:  
                     Scanner.run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq, now_dt)
@@ -182,7 +160,43 @@ class Scanner:
 
         # Log
         log.info("Scanning storage staging area complete!")
+    
+    @staticmethod
+    def should_process_monthly(now, custom_query_freq):
+        if not custom_query_freq.last_job_run:
+            # Scanning has never been run so far.  --> Run job
+            log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has never been scanned for custom query.  Run scanning.')
+            return True
 
+        # Align timezone
+        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+
+        next_job_run = last_job_run + relativedelta(months=1)
+        if next_job_run < now:
+            # Somehow, the last job has been run before one month ago from now
+            log.info(f'The last job run: [{last_job_run}] is somehow more than one monthe before now: [{now}].  Run scanning.')
+            return True
+
+        # Calculate the scheduled time for the current month
+        try:
+            scheduled_time = now.replace(day=custom_query_freq.date, hour=custom_query_freq.hour, minute=custom_query_freq.minute, second=0, microsecond=0)
+        except ValueError:
+            # For invalid dates (e.g., February 30th), use the last day of the month
+            last_day = calendar.monthrange(now.year, now.month)[1]
+            scheduled_time = now.replace(day=last_day, hour=custom_query_freq.hour, minute=custom_query_freq.minute, second=0, microsecond=0)
+
+        if last_job_run < scheduled_time:
+            if scheduled_time <= now:
+                # Scheduled run datetime is after the last job run datetime, and It's before now. ==> Run the job
+                log.info(f'The last job run datetime: [{last_job_run}] is before the scheduled datetime: [{scheduled_time}] and it is before now: [{now}].  Run scanning.')
+                return True
+            else:
+                log.info(f'The last job run datetime: [{last_job_run}] is before the scheduled datetime: [{scheduled_time}] but the scheduled datetime is after now: [{now}].  Do not run scanning.')
+                return False
+        else:
+            log.info(f'The last job run datetime: [{last_job_run}] is after the scheduled datetime: [{scheduled_time}].  Do not run scanning.')
+            return False
+    
     @staticmethod
     def run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq=None, now_dt=datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))):
         try:
