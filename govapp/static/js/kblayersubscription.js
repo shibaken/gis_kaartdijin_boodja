@@ -681,9 +681,9 @@ var kblayersubscription = {
                 kblayersubscription.var.mapped_names = response.results;
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
-                    buttons={ADD:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
+                    buttons={Add:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
                                     is_valid:(mapping)=>!(mapping.name in response.results)},
-                            EDIT:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
+                            Edit:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
                                     is_valid:(mapping)=>mapping.name in response.results}};
                     // table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
                     table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:7, "Action":1});
@@ -845,7 +845,7 @@ var kblayersubscription = {
                     row.append($('<td>').append($('<a href="/catalogue/entries/' + catalogue_entry.id + '/details/" style="text-decoration: none;">').text(`CE${catalogue_entry.id}: ${catalogue_entry.name}`)))
                     row.append($('<td>').text(catalogue_entry.description))
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
-                    let td = $('<td>').text(typeLabels);
+                    let td = $('<td>').html(typeLabels);
                     row.append(td);
                     row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
 
@@ -990,7 +990,7 @@ var kblayersubscription = {
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 4){    //weekly
-            const label = add_element($('<label>').text("Every week(DAY:HH:MM)"),3);
+            const label = add_element($('<label>').text("Day of the week: Hour: Minute)"),3);
             const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
             const day_input = add_element(common_entity_modal.maker.select("day", value ? value.day : null, false, day_options), 2);
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
@@ -1007,7 +1007,7 @@ var kblayersubscription = {
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 5){    //monthly
-            const label = add_element($('<label>').text("Every week(DD:HH:MM)"),3);
+            const label = add_element($('<label>').text("Date: Hour: Minute"),3);
             const date_input = add_element(common_entity_modal.maker.number("date", value ? value.date : null));
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));

@@ -447,7 +447,6 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
 
     def save(self, *args, **kwargs):
-        print ("HERE")
         super(CatalogueEntry, self).save(*args, **kwargs)
         
         from govapp.apps.catalogue.models import layer_metadata

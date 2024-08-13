@@ -57,7 +57,6 @@ class Scanner:
 
             for custom_query_freq in catalogue_entry_obj.custom_query_frequencies.all():  # CatalogueEntry can have 0 or 1 custom_query_frequency.
                 log.info(f'Working on the CustomQueryFrequency: [{catalogue_entry_obj}] for the CatalogueEntry: [{catalogue_entry_obj}]...')
-                is_time_to_run = False
                 generate_shp = False
                 now_dt = datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))
                 log.info(f'Now datetime is [{now_dt}].')
@@ -65,93 +64,51 @@ class Scanner:
                 if catalogue_entry_obj.force_run_postgres_scanner:
                     # When force_run_postgres_scanner is set to True, we don't need to check the schedule
                     generate_shp = True
+                elif not custom_query_freq.last_job_run:
+                    # Scanning has never been run so far.  --> Run job
+                    log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has never been scanned for custom query.  Run scanning.')
+                    generate_shp = True
                 else:
+                    # Retrieve the last job run datetime
+                    last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))  # Align timezone
+
                     # Every minute scheduler.
                     if custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_MINUTES:
-                        if custom_query_freq.last_job_run is None:
-                            is_time_to_run = True
-                        else:
-                            dt_diff = now_dt - custom_query_freq.last_job_run.astimezone()
-                            last_job_run_in_minutes = dt_diff.total_seconds() / 60
-                            print (last_job_run_in_minutes)
-                            if last_job_run_in_minutes > custom_query_freq.every_minutes:
-                                is_time_to_run = True
-
-                        if is_time_to_run is True:
+                        dt_diff = now_dt - last_job_run
+                        last_job_run_in_minutes = dt_diff.total_seconds() / 60
+                        if last_job_run_in_minutes > custom_query_freq.every_minutes:
                             generate_shp = True
 
                     # Every hour scheduler.
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_HOURS:
-                        if custom_query_freq.last_job_run is None:
-                            is_time_to_run = True
-                        else:
-                            dt_diff = now_dt - custom_query_freq.last_job_run.astimezone()
-                            last_job_run_in_hours = dt_diff.total_seconds() / 60 / 60
-                            if last_job_run_in_hours >= custom_query_freq.every_hours:
-                                is_time_to_run = True
-                        if is_time_to_run is True:
+                        dt_diff = now_dt - last_job_run
+                        last_job_run_in_hours = dt_diff.total_seconds() / 60 / 60
+                        if last_job_run_in_hours >= custom_query_freq.every_hours:
                             generate_shp = True
 
                     # Daily scheduler.
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.DAILY:
-                        log.info(f'CustomQueryFrequency: [{custom_query_freq}] type is DAILY.')
-                        if custom_query_freq.last_job_run is None:
-                            is_time_to_run = True
-                            log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because it has never been run.')
-                        else:
-                            now_dt_string = now_dt.strftime("%Y-%m-%d")
-                            # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
-                            last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
-                            last_job_run_string = last_job_run.strftime("%Y-%m-%d")
-                            if now_dt_string != last_job_run_string:
-                                is_time_to_run = True
-                                log.info(f'is_time_to_run is set to True for the CustomQueryFrequency: [{custom_query_freq}] because now_dt_string: [{now_dt_string}] is not same as the last_job_run_string: [{last_job_run_string}].')
-                            else:
-                                log.info(f'is_time_to_run remains False because now_dt_string: [{now_dt_string}] is the same as the last_job_run_string: [{last_job_run_string}].')
+                        # Calculate most recent scheduled datetime
+                        most_recent_schedule = Scanner.get_most_recent_schedule_daily(now_dt, custom_query_freq)
 
-                        if is_time_to_run:
-                            # Check if the current time has passed the specified time in a single condition
-                            if (now_dt.hour, now_dt.minute) >= (custom_query_freq.hour, custom_query_freq.minute):
-                                log.info(f'The time of now_dt has passed the one of the custom_query_freq.  Set True to the generate_shp.')
-                                generate_shp = True
-                            else:
-                                log.info(f'Since the current time (now_dt): [{now_dt}] has not yet been reached the time of the custom_query_freq: [{custom_query_freq}], generate_shp remains False.')
-                        else:
-                            log.info("Conversion not requried to run.")
+                        # Compare the most recent scheduled datetime and the last job run datetime
+                        generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
 
                     # Weekly scedhuler
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.WEEKLY:
-                        if custom_query_freq.last_job_run is None:
-                            is_time_to_run = True
-                        else:
-                            # last_job_run_string = custom_query_freq.last_job_run.strftime("%Y-%m-%d")
-                            # last_job_run_string_dow = custom_query_freq.last_job_run.strftime("%a")
-                            last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
-                            last_job_run_string = last_job_run.strftime("%Y-%m-%d")
-                            last_job_run_string_dow = last_job_run.strftime("%a")
-                            now_dt_string_dow = now_dt.strftime("%a")
+                        # Calculate most recent scheduled datetime
+                        most_recent_schedule = Scanner.get_most_recent_schedule_weekly(now_dt, custom_query_freq)
 
-                            print (now_dt_string_dow)
-                            print (last_job_run_string_dow)
-                            
-                            if now_dt_string_dow == last_job_run_string_dow:
-                                is_time_to_run = False
-                            else:
-                                if custom_query_freq.day_of_week > 0:
-                                    if days_of_week[custom_query_freq.day_of_week] == now_dt_string_dow:
-                                        if now_dt.hour >= custom_query_freq.hour or now_dt.hour == custom_query_freq.hour:
-                                            if now_dt.hour == custom_query_freq.hour:
-                                                if now_dt.minute >= custom_query_freq.minute or now_dt.minute == custom_query_freq.minute:
-                                                    is_time_to_run = True
-                                            else:
-                                                is_time_to_run = True
-
-                        if is_time_to_run is True:
-                            generate_shp = True
+                        # Compare the most recent scheduled datetime and the last job run datetime
+                        generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
 
                     # Monthly Schedule
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.MONTHLY:  
-                        generate_shp = Scanner.should_process_monthly(now_dt, custom_query_freq)
+                        # Calculate most recent scheduled datetime
+                        most_recent_schedule = Scanner.get_most_recent_schedule_monthly(now_dt, custom_query_freq)
+
+                        # Compare the most recent scheduled datetime and the last job run datetime
+                        generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
 
                 if generate_shp:  
                     Scanner.run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq, now_dt)
@@ -160,41 +117,74 @@ class Scanner:
 
         # Log
         log.info("Scanning storage staging area complete!")
+
+    @staticmethod
+    def get_most_recent_schedule_weekly(now_dt, custom_query_freq):
+        # Convert day_of_week to 0-based index (0: Monday, 6: Sunday)
+        target_weekday = custom_query_freq.day_of_week - 1
+
+        # Calculate the difference in days to the target weekday
+        current_weekday = now_dt.weekday()
+        days_difference = (target_weekday - current_weekday) % 7
+
+        # If the target weekday is in the future, subtract 7 days to get the most recent past date
+        if days_difference >= 0:
+            days_difference -= 7
+
+        # Calculate the most recent schedule date
+        most_recent_date = now_dt + relativedelta(days=days_difference)
+
+        # Replace the time part with the scheduled time
+        most_recent_schedule = most_recent_date.replace(
+            hour=custom_query_freq.hour,
+            minute=custom_query_freq.minute,
+            second=0,
+            microsecond=0
+        )
+
+        return most_recent_schedule
+
+    @staticmethod
+    def get_most_recent_schedule_monthly(now_dt, custom_query_freq):
+        # Handle monthly schedule
+        most_recent_schedule = datetime(now_dt.year, now_dt.month, custom_query_freq.date, custom_query_freq.hour, custom_query_freq.minute).astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+
+        # If the target date is in the future, subtract one month
+        if most_recent_schedule > now_dt:
+            if now_dt.month == 1:
+                most_recent_schedule = most_recent_schedule.replace(year=now_dt.year - 1, month=12)
+            else:
+                most_recent_schedule = most_recent_schedule.replace(month=now_dt.month - 1)
+
+        return most_recent_schedule
     
     @staticmethod
-    def should_process_monthly(now, custom_query_freq):
-        if not custom_query_freq.last_job_run:
-            # Scanning has never been run so far.  --> Run job
-            log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has never been scanned for custom query.  Run scanning.')
-            return True
+    def get_most_recent_schedule_daily(now_dt, custom_query_freq):
+        # Handle daily schedule
+        most_recent_schedule = now_dt.replace(
+            hour=custom_query_freq.hour,
+            minute=custom_query_freq.minute,
+            second=0,
+            microsecond=0
+        )
 
-        # Align timezone
-        last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
+        # If the target time is in the future, subtract one day
+        if most_recent_schedule > now_dt:
+            most_recent_schedule -= relativedelta(days=1)
 
-        next_job_run = last_job_run + relativedelta(months=1)
-        if next_job_run < now:
-            # Somehow, the last job has been run before one month ago from now
-            log.info(f'The last job run: [{last_job_run}] is somehow more than one monthe before now: [{now}].  Run scanning.')
-            return True
+        return most_recent_schedule
 
-        # Calculate the scheduled time for the current month
-        try:
-            scheduled_time = now.replace(day=custom_query_freq.date, hour=custom_query_freq.hour, minute=custom_query_freq.minute, second=0, microsecond=0)
-        except ValueError:
-            # For invalid dates (e.g., February 30th), use the last day of the month
-            last_day = calendar.monthrange(now.year, now.month)[1]
-            scheduled_time = now.replace(day=last_day, hour=custom_query_freq.hour, minute=custom_query_freq.minute, second=0, microsecond=0)
-
-        if last_job_run < scheduled_time:
-            if scheduled_time <= now:
-                # Scheduled run datetime is after the last job run datetime, and It's before now. ==> Run the job
-                log.info(f'The last job run datetime: [{last_job_run}] is before the scheduled datetime: [{scheduled_time}] and it is before now: [{now}].  Run scanning.')
+    @staticmethod
+    def compare_dates(now_dt, last_job_run, most_recent_schedule):
+        if last_job_run < most_recent_schedule:
+            if most_recent_schedule < now_dt:
+                log.info(f'The last job run datetime: [{last_job_run}] is before the most recent scheduled datetime: [{most_recent_schedule}] and it is before now: [{now_dt}].  Run scanning.')
                 return True
             else:
-                log.info(f'The last job run datetime: [{last_job_run}] is before the scheduled datetime: [{scheduled_time}] but the scheduled datetime is after now: [{now}].  Do not run scanning.')
+                log.info(f'The last job run datetime: [{last_job_run}] is before the most recent scheduled datetime: [{most_recent_schedule}] but which is after now: [{now_dt}].  Do not run scanning.')
                 return False
         else:
-            log.info(f'The last job run datetime: [{last_job_run}] is after the scheduled datetime: [{scheduled_time}].  Do not run scanning.')
+            log.info(f'The last job run datetime: [{last_job_run}] is after the most recent scheduled datetime: [{most_recent_schedule}].  Do not run scanning.')
             return False
     
     @staticmethod
@@ -221,4 +211,3 @@ class Scanner:
         else:
             catalogue_entry_obj.custom_query_frequencies.update(last_job_run=now_dt)
         return new_path
-
