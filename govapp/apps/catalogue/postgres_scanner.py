@@ -63,14 +63,15 @@ class Scanner:
 
                 if catalogue_entry_obj.force_run_postgres_scanner:
                     # When force_run_postgres_scanner is set to True, we don't need to check the schedule
+                    log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has force_run_postgres_scanner=True.  Run scanning.')
                     generate_shp = True
                 elif not custom_query_freq.last_job_run:
                     # Scanning has never been run so far.  --> Run job
-                    log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has never been scanned for custom query.  Run scanning.')
+                    log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has never been scanned for custom query with this frequency: [{custom_query_freq}].  Run scanning.')
                     generate_shp = True
                 else:
                     # Retrieve the last job run datetime
-                    last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))  # Align timezone
+                    last_job_run = custom_query_freq.last_job_run.astimezone(ZoneInfo(conf.settings.TIME_ZONE))
 
                     # Every minute scheduler.
                     if custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_MINUTES:
@@ -90,24 +91,18 @@ class Scanner:
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.DAILY:
                         # Calculate most recent scheduled datetime
                         most_recent_schedule = Scanner.get_most_recent_schedule_daily(now_dt, custom_query_freq)
-
-                        # Compare the most recent scheduled datetime and the last job run datetime
                         generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
 
                     # Weekly scedhuler
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.WEEKLY:
                         # Calculate most recent scheduled datetime
                         most_recent_schedule = Scanner.get_most_recent_schedule_weekly(now_dt, custom_query_freq)
-
-                        # Compare the most recent scheduled datetime and the last job run datetime
                         generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
 
                     # Monthly Schedule
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.MONTHLY:  
                         # Calculate most recent scheduled datetime
                         most_recent_schedule = Scanner.get_most_recent_schedule_monthly(now_dt, custom_query_freq)
-
-                        # Compare the most recent scheduled datetime and the last job run datetime
                         generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
 
                 if generate_shp:  
