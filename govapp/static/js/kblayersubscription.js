@@ -681,15 +681,15 @@ var kblayersubscription = {
                 kblayersubscription.var.mapped_names = response.results;
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
-                    buttons={ADD:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
+                    buttons={Add:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
                                     is_valid:(mapping)=>!(mapping.name in response.results)},
-                            EDIT:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
+                            Edit:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
                                     is_valid:(mapping)=>mapping.name in response.results}};
                     // table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
-                    table.set_thead(thead, {"Catalogue Name":4, [title+"s"]:7, "Action":1});
+                    table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:7, "Action":1});
                 } else {
                     // table.set_thead(thead, {[title+"s"]:6, "Catalogue Name":6});
-                    table.set_thead(thead, {"Catalogue Name":4, [title+"s"]:8});
+                    table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:8});
                 }
                 let rows = []
                 for(let i in kblayersubscription.var.mapping_names){
@@ -703,6 +703,8 @@ var kblayersubscription = {
                     }
                 }
                 // table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
+                console.log({tbody})
+                console.log({rows})
                 table.set_tbody(tbody, rows, [{catalogue:"text"}, {name:"text"}], buttons);
                 if(rows.length == 0){
                     table.message_tbody(tbody, "No results found");
@@ -828,11 +830,12 @@ var kblayersubscription = {
                 tr.append($('<th>').attr('class', 'col-3').text("Catalogue Entry"))
                 tr.append($('<th>').attr('class', 'col-4').text("Description"))
                 tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
-                tr.append($('<th>').attr('class', 'col-3 text-end').text("Action"))
+                tr.append($('<th>').attr('class', 'col-1').text("Force Run"))
+                tr.append($('<th>').attr('class', 'col-2 text-end').text("Action"))
                 thead.append(tr);
 
                 if(!response || !response.results.length){
-                    tbody.html("<tr><td colspan='3' class='text-center'>No results found</td></tr>");
+                    tbody.html("<tr><td colspan='4' class='text-center'>No results found</td></tr>");
                     return;
                 }
 
@@ -842,8 +845,9 @@ var kblayersubscription = {
                     row.append($('<td>').append($('<a href="/catalogue/entries/' + catalogue_entry.id + '/details/" style="text-decoration: none;">').text(`CE${catalogue_entry.id}: ${catalogue_entry.name}`)))
                     row.append($('<td>').text(catalogue_entry.description))
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
-                    let td = $('<td>').text(typeLabels);
+                    let td = $('<td>').html(typeLabels);
                     row.append(td);
+                    row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
 
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
@@ -863,7 +867,7 @@ var kblayersubscription = {
                 }
             },
             error: (error)=> {
-                table.message_tbody(tbody, "No results found");
+                tbody.html("<tr><td colspan='4' class='text-center'>" + message + "</td></tr>");
                 common_entity_modal.show_alert("An error occured while getting mappings.");
             },
         });
@@ -892,17 +896,18 @@ var kblayersubscription = {
         const name_id = common_entity_modal.add_field("Catalogue Entry Name", "text", prev ? prev.name : null);
         const description_id = common_entity_modal.add_field("Description", "text", prev ? prev.description : null);
         const sql_query_id = common_entity_modal.add_field("SQL Query", "text_area", prev ? prev.sql_query : null);
+        
+        // Frequency
         let frequency_type = (prev && prev.frequencies && prev.frequencies.length > 0) ? prev.frequencies[0].type : null;
         const frequency_id = common_entity_modal.add_field("Frequency", "select", frequency_type, frequecy_options);
-
         const freq_option_ids = [];
         let div = common_entity_modal.maker.div();
         common_entity_modal.add_div("Frequency Options", div);
-        
         const add_freq_btn_id = common_entity_modal.add_field("Add Frequency", "button", null, null, true);
 
-        console.log({common_entity_modal})
-        let force_run_postgres_scanner = common_entity_modal.add_field(label="Force Run Postgres Scanner", type="switch", prev.force_run_postgres_scanner)
+        // Force run postgres scanner
+        $('#common-entity-modal-content').append($('<br>'))
+        common_entity_modal.add_field(label="Force Run Postgres Scanner", type="switch", prev ? prev.force_run_postgres_scanner : false)
 
         if(prev && prev.frequencies && prev.frequencies.length > 0){
             for(let i in prev.frequencies){
@@ -985,7 +990,7 @@ var kblayersubscription = {
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 4){    //weekly
-            const label = add_element($('<label>').text("Every week(DAY:HH:MM)"),3);
+            const label = add_element($('<label>').text("Day of the week: Hour: Minute)"),3);
             const day_options = {1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thurday', 5:'Friday', 6:'Saturday', 7:'Sunday'};
             const day_input = add_element(common_entity_modal.maker.select("day", value ? value.day : null, false, day_options), 2);
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
@@ -1002,7 +1007,7 @@ var kblayersubscription = {
             ids.hour = hour_input.attr('id');
             ids.minute = minute_input.attr('id');
         }else if(type == 5){    //monthly
-            const label = add_element($('<label>').text("Every week(DD:HH:MM)"),3);
+            const label = add_element($('<label>').text("Date: Hour: Minute"),3);
             const date_input = add_element(common_entity_modal.maker.number("date", value ? value.date : null));
             const hour_input = add_element(common_entity_modal.maker.number("hour", value ? value.hour : null));
             const minute_input = add_element(common_entity_modal.maker.number("minute", value ? value.minute : null));

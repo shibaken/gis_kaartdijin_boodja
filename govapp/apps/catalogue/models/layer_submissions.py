@@ -7,6 +7,7 @@ import reversion
 import logging
 
 # Local
+from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermission, CatalogueEntryPermission
 from govapp.common import mixins
 from govapp.apps.catalogue import utils
 from govapp.apps.catalogue.models import catalogue_entries
@@ -57,6 +58,13 @@ class LayerSubmission(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
+    
+    @property
+    def is_restricted(self):
+        return self.catalogue_entry.is_restricted
+
+    def get_user_access_permission(self, user):
+        return self.catalogue_entry.get_user_access_permission(user)
 
     @property
     def name(self) -> str:
