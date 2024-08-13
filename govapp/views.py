@@ -60,6 +60,7 @@ class HomePage(base.TemplateView):
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
 
+
 class OldCatalogueVue(base.TemplateView):
     """Home page view."""
 
@@ -95,6 +96,7 @@ class PendingImportsView(base.TemplateView):
         context = {'file_list': file_list}
         return shortcuts.render(request, self.template_name, context)
 
+
 class ManagementCommandsView(base.TemplateView):
     """Home page view."""
 
@@ -107,6 +109,7 @@ class ManagementCommandsView(base.TemplateView):
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
+
 
 class PublishPage(base.TemplateView):
     """Home page view."""
@@ -153,6 +156,7 @@ class PublishPage(base.TemplateView):
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
     
+
 class PublishView(base.TemplateView):
     """Home page view."""
 
@@ -284,7 +288,6 @@ class CatalogueEntriesPage(base.TemplateView):
         return shortcuts.render(request, self.template_name, context)
     
 
-
 class CatalogueEntriesView(base.TemplateView):
     """Home page view."""
 
@@ -327,9 +330,14 @@ class CatalogueEntriesView(base.TemplateView):
             
         system_users_list = [system_users_dict[key] for key in system_users_dict]
         
+        user_access_permission = catalogue_entry_obj.get_user_access_permission(request.user)
         is_administrator = utils.is_administrator(request.user)
-        if is_administrator is True and request.user == catalogue_entry_obj.assigned_to:
-             if catalogue_entry_obj.status == 1 or catalogue_entry_obj.status == 4 or catalogue_entry_obj.status ==5:
+        if is_administrator or user_access_permission == 'read_write' and request.user == catalogue_entry_obj.assigned_to:
+            if catalogue_entry_obj.status in [
+                catalogue_entries_models.CatalogueEntryStatus.NEW_DRAFT,
+                catalogue_entries_models.CatalogueEntryStatus.DRAFT,
+                catalogue_entries_models.CatalogueEntryStatus.PENDING,
+            ]:
                 has_edit_access = True
 
         # catalogue_layer_symbology_obj = catalogue_layer_symbology_models.LayerSymbology.objects.filter(catalogue_entry=catalogue_id)
@@ -359,6 +367,8 @@ class CatalogueEntriesView(base.TemplateView):
         context['has_edit_access'] = has_edit_access
         context['display_attributes_tab'] = display_attributes_tab
         context['permission_types'] = permission_types
+        context['user_access_permission'] = user_access_permission
+        context['CatalogueEntryType'] = catalogue_entries_models.CatalogueEntryType
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
@@ -415,7 +425,6 @@ class LayerSubmissionView(base.TemplateView):
         context: dict[str, Any] = {}
         context['tab'] = self.kwargs['tab']
         context['layer_submission_obj'] = layer_submission
-        context['is_restricted'] = layer_submission.is_restricted
         context['user_access_permission'] = user_access_permission
         context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission
         context['id'] = layer_submission.catalogue_entry.id

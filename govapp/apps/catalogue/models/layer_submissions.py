@@ -64,7 +64,7 @@ class LayerSubmission(mixins.RevisionedMixin):
         return self.catalogue_entry.is_restricted
 
     def get_user_access_permission(self, user):
-            return self.catalogue_entry.get_user_access_permission(user)
+        return self.catalogue_entry.get_user_access_permission(user)
 
     @property
     def name(self) -> str:

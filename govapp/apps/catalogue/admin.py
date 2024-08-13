@@ -31,7 +31,7 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     # filter_horizontal = ["editors"]
     search_fields = ('id', 'name', 'assigned_to__email', 'custodian__name', 'layer_subscription__name',)
     # list_display = ('id', 'name', 'status', 'type', 'permission_type', 'layer_subscription_link','custodian_link', 'assigned_to_link', 'created_at', 'updated_at')
-    list_display = ('id', 'name', 'get_status', 'type', 'permission_type', 'layer_subscription_link','custodian_link', 'assigned_to_link', 'created_at', 'updated_at')
+    list_display = ('id', 'name', 'get_status', 'type', 'permission_type', 'layer_subscription_link','custodian_link', 'assigned_to_link', 'get_active_layer', 'get_force_run_postgres_scanner', 'created_at', 'updated_at')
     list_filter = ('status', 'type', 'assigned_to', 'custodian', 'permission_type')
     list_display_links = ('id', 'name',)
     ordering = ('id',)
@@ -40,6 +40,12 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
 
     class Media:
         css = {'all': ('common/css/admin_custom.css',)}
+
+    def get_force_run_postgres_scanner(self, obj):
+        if obj.force_run_postgres_scanner:
+            return format_html('<img src="/static/admin/img/icon-yes.svg" alt="True">')
+        return format_html('<img src="/static/admin/img/icon-no.svg" alt="False">')
+    get_force_run_postgres_scanner.short_description = 'Force Run'
 
     def get_status(self, obj):
         if obj.status == CatalogueEntryStatus.NEW_DRAFT:
@@ -68,6 +74,12 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
         return format_html(f'<a href="/admin/catalogue/layersubscription/{obj.layer_subscription.id}/change">{obj.layer_subscription}</a>') if obj.layer_subscription else '-'
     layer_subscription_link.short_description = 'Layer Subscription'
 
+    def get_active_layer(self, obj):
+        if obj.active_layer:
+            return format_html(f'<a href="/admin/catalogue/layersubmission/{obj.active_layer.id}/change">{obj.active_layer}</a>')
+        return '---'
+    get_active_layer.short_description = 'Active Layer'
+    
 
 class CustodianAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id','name','contact_name','contact_email','contact_phone')
@@ -214,7 +226,7 @@ class CatalogueEntryPermissionAdmin(reversion.admin.VersionAdmin):
 
 class CustomQueryFrequencyAdmin(reversion.admin.VersionAdmin):   
     search_fields = ('id', 'catalogue_entry__name')
-    list_display = ('id', 'catalogue_entry_link','last_job_run','type', 'every_minutes','every_hours','hour','minute','day_of_week')
+    list_display = ('id', 'catalogue_entry_link', 'last_job_run', 'type', 'every_minutes', 'every_hours', 'date', 'hour', 'minute', 'day_of_week')
     list_filter = ('type',)
 
     def catalogue_entry_link(self, obj):
