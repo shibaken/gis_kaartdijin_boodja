@@ -101,10 +101,14 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str, export_m
                 "ogr2ogr",
                 "-unsetFid",
                 str(output_filepath),
-                str(filepath),            
+                str(filepath),
                 str(layer),
-            ]
+            ],
+            timeout=1800,  # 30min
         )
+    except subprocess.TimeoutExpired as e:
+        log.error(f"The command has reached a 30-minute timeout.  Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
+        raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON")
     except subprocess.CalledProcessError as e:
         log.error(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
         raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON")
