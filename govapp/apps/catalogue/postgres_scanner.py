@@ -58,7 +58,7 @@ class Scanner:
                     log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has force_run_postgres_scanner=True.  Run scanning.')
                     generate_shp = True
                 elif not custom_query_freq.last_job_run:
-                    # Scanning has never been run so far.  --> Run job
+                    # Scanning has never been run so far.  --> Run scanning
                     log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has never been scanned for custom query with this frequency: [{custom_query_freq}].  Run scanning.')
                     generate_shp = True
                 else:
@@ -75,7 +75,7 @@ class Scanner:
                     # Every hour scheduler.
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_HOURS:
                         dt_diff = now_dt - last_job_run
-                        last_job_run_in_hours = dt_diff.total_seconds() / 60 / 60
+                        last_job_run_in_hours = dt_diff.total_seconds() / 3600
                         if last_job_run_in_hours >= custom_query_freq.every_hours:
                             generate_shp = True
 
