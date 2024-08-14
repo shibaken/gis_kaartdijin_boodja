@@ -165,7 +165,40 @@ class CatalogueEntry(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.name}"
+        return f"CE{self.id}: {self.name}"
+
+    def get_user_access_permission(self, user):
+        from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermission, CatalogueEntryPermission
+
+        user_access_permission = 'none'
+
+        if self.is_restricted:
+            catalogue_entry_permissions = CatalogueEntryPermission.objects.filter(
+                catalogue_entry=self,
+                user=user,
+                active=True
+            )
+            if catalogue_entry_permissions.exists():
+                # Select the strictest permission if there are multiple permissions
+                strictest_permission = catalogue_entry_permissions.aggregate(
+                    strictest=models.Min('access_permission')
+                )['strictest']
+
+                if strictest_permission == CatalogueEntryAccessPermission.NONE:
+                    user_access_permission = 'none'
+                elif strictest_permission == CatalogueEntryAccessPermission.READ:
+                    user_access_permission = 'read'
+                elif strictest_permission == CatalogueEntryAccessPermission.READ_WRITE:
+                    user_access_permission = 'read_write'
+        else:
+            # There is no restrictions for this catalogue entry.
+            user_access_permission = 'read_write'
+
+        return user_access_permission
+    
+    @property
+    def is_restricted(self):
+        return True if self.permission_type == CatalogueEntryPermissionType.RESTRICTED else False
 
     @property
     def file_extension(self):
@@ -414,7 +447,6 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
 
     def save(self, *args, **kwargs):
-        print ("HERE")
         super(CatalogueEntry, self).save(*args, **kwargs)
         
         from govapp.apps.catalogue.models import layer_metadata

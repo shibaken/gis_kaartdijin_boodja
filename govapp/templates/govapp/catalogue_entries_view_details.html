@@ -58,15 +58,15 @@
             <div class="row">
                   <div class='col-3'>Spatial Type</div>
                   <div class='col-5 p-1'>
-                        {% if catalogue_entry_obj.type == 1 %}
+                        {% if catalogue_entry_obj.type == CatalogueEntryType.SPATIAL_FILE.value %}
                               Spatial File
-                        {% elif catalogue_entry_obj.type == 2 %}
+                        {% elif catalogue_entry_obj.type == CatalogueEntryType.SUBSCRIPTION_WFS.value %}
                               Subscription WFS
-                        {% elif catalogue_entry_obj.type == 3 %}
+                        {% elif catalogue_entry_obj.type == CatalogueEntryType.SUBSCRIPTION_WMS.value %}
                               Subscription WMS
-                        {% elif catalogue_entry_obj.type == 4 %}
+                        {% elif catalogue_entry_obj.type == CatalogueEntryType.SUBSCRIPTION_POSTGIS.value %}
                               Subscription PostGIS
-                        {% elif catalogue_entry_obj.type == 5 %}
+                        {% elif catalogue_entry_obj.type == CatalogueEntryType.SUBSCRIPTION_QUERY.value %}
                               Custom Query
                         {% endif %}
                   </div>

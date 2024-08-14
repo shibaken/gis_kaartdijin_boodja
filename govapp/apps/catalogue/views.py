@@ -449,6 +449,11 @@ class LayerSubmissionViewSet(
 
     @decorators.action(detail=True, methods=["GET"], url_path="file", permission_classes=[accounts_permissions.IsAuthenticated])
     def download_file(self, request: request.Request, pk: str):
+        layer_submission = shortcuts.get_object_or_404(models.layer_submissions.LayerSubmission, id=pk)
+        user_access_permission = layer_submission.get_user_access_permission(request.user)
+        if user_access_permission not in ['read', 'read_write',]:
+            return response.Response({'error_msg':f'User does not have permissions to access the file.'}, status=status.HTTP_403_FORBIDDEN)
+
         file_path = self.queryset.get(id=pk).file
 
         if file_path == None or os.path.exists(file_path) == False:

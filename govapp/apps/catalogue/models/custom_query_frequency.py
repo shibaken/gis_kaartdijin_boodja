@@ -93,8 +93,8 @@ class CustomQueryFrequency(mixins.RevisionedMixin):
 
     class Meta:
         """Custodian Model PostGisCustomQuery."""
-        verbose_name = "PostGisCustomQuery"
-        verbose_name_plural = "PostGisCustomQueries"
+        verbose_name = "PostGIS Query Frequency"
+        verbose_name_plural = "PostGIS Query Frequencies"
 
     def __str__(self) -> str:
         """Provides a string representation of the object.
