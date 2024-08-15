@@ -184,12 +184,14 @@ class CatalogueEntry(mixins.RevisionedMixin):
                     strictest=models.Min('access_permission')
                 )['strictest']
 
-                if strictest_permission == CatalogueEntryAccessPermission.NONE:
-                    user_access_permission = 'none'
-                elif strictest_permission == CatalogueEntryAccessPermission.READ:
+                # if strictest_permission == CatalogueEntryAccessPermission.NONE:
+                #     user_access_permission = 'none'
+                if strictest_permission == CatalogueEntryAccessPermission.READ:
                     user_access_permission = 'read'
                 elif strictest_permission == CatalogueEntryAccessPermission.READ_WRITE:
                     user_access_permission = 'read_write'
+                else:
+                    user_access_permission = 'none'  # Should not reach here
         else:
             # There is no restrictions for this catalogue entry.
             user_access_permission = 'read_write'

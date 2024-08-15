@@ -15,7 +15,7 @@ UserModel = auth.get_user_model()
 
 
 class CatalogueEntryAccessPermission(models.IntegerChoices):
-    NONE = 1, 'None'
+    # NONE = 1, 'None'
     READ = 2, 'Read'
     READ_WRITE = 3, 'Read and Write'
 
