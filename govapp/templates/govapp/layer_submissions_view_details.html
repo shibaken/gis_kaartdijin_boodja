@@ -11,7 +11,7 @@
             <div class='row'>
                   <div class='col-3'>Name</div> <div class='col-9 p-1'>{{ layer_submission_obj.name }}</div>
                   <div class='col-3'>Submitted Datetime</div> <div class='col-9 p-1'> {{ layer_submission_obj.submit_datetime }}</div>
-                  {% if user_access_permission == 'read' or user_access_permission == 'read_write' or user_access_permission == 'full' %}
+                  {% if accessible_to_download %}
                         <div class='col-3'>Link to file</div> <div class='col-9 p-1'><a href="#" id='file_download'>File Download</a></div>
                   {% endif %}
                   <div class='col-3'>Catalogue entry </div> <div class='col-9 p-1'> <a href="/catalogue/entries/{{ layer_submission_obj.catalogue_entry.id }}/details/">{{ layer_submission_obj.name }}</a></div>

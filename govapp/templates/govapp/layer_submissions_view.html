@@ -52,7 +52,7 @@
                         <li class="nav-item">
                               <a class="nav-link {% if tab == 'attributes' %}active{% endif %}" aria-current="page" href="/layer/submission/{{ layer_submission_obj.id }}/attributes/">Attributes</a>
                         </li>
-                        {% if user_access_permission == 'read' or user_access_permission == 'read_write' %}
+                        {% if accessible_to_map %}
                         <li class="nav-item">
                               <a class="nav-link {% if tab == 'map' %}active{% endif %}" aria-current="page" href="/layer/submission/{{ layer_submission_obj.id }}/map/">Map</a>
                         </li>
@@ -70,7 +70,7 @@
                   {% elif tab == "attributes" %}
                         {% include "govapp/layer_submissions_view_attributes.html" %}
                   {% elif tab == "map" %}
-                        {% if user_access_permission == 'read' or user_access_permission == 'read_write' or user_access_permission == 'full' %}
+                        {% if accessible_to_map %}
                               {% include "govapp/layer_submissions_view_map.html" %}
                         {% endif %}
                   {% endif %}

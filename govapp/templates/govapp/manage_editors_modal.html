@@ -27,8 +27,8 @@
                          <div class='col-2 text-end'><label for="access-permissions" class="form-label">Access Permission</label></div>
                          <div class='col-5'>
                               <select class="form-select" id="user-access-permission">
-                                   {% for option in user_access_permission_options %}
-                                        <option value="{{ option.value }}">{{ option.label }}</option>
+                                   {% for value, label in CatalogueEntryAccessPermission.choices %}
+                                        <option value="{{ value }}">{{ label }}</option>
                                    {% endfor %}
                               </select>
                          </div>

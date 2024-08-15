@@ -19,20 +19,12 @@ class CatalogueEntryAccessPermission(models.IntegerChoices):
     READ = 2, 'Read'
     READ_WRITE = 3, 'Read and Write'
 
-    @staticmethod
-    def get_all_as_options():
-        access_permission_options = [
-            {'value': value, 'label': label}
-            for value, label in CatalogueEntryAccessPermission.choices
-        ]
-        return access_permission_options
-
 
 @reversion.register()
 class CatalogueEntryPermission(mixins.RevisionedMixin):
     catalogue_entry = models.ForeignKey(
         catalogue_entries.CatalogueEntry, 
-        related_name="catalouge_permissions", 
+        related_name="catalogue_permissions", 
         on_delete=models.CASCADE)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)

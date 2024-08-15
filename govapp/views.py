@@ -307,39 +307,49 @@ class CatalogueEntriesView(base.TemplateView):
         """
         # Construct Context
         context: dict[str, Any] = {}
-        has_edit_access = False
         catalogue_id = self.kwargs['pk']
         display_symbology_definition_tab = False
         catalogue_layer_metadata = None
 
         custodians_obj = custodians_models.Custodian.objects.all()
         catalogue_entry_obj = catalogue_entries_models.CatalogueEntry.objects.get(id=self.kwargs['pk'])
-        permission_types = catalogue_entries_models.CatalogueEntryPermissionType.choices
 
+        ### Retirieve users for the assigned_to list
         system_users_dict = {}
+        # Users in the GROUP_ADMINISTRATORS
         system_users_obj = UserModel.objects.filter(is_active=True, groups__name=settings.GROUP_ADMINISTRATORS)
         for su in system_users_obj:
-             system_users_dict[su.id] = {'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email}
-        
-        for permission in catalogue_entry_obj.catalouge_permissions.all():
+            system_users_dict[su.id] = {
+                'first_name': su.first_name,
+                'last_name': su.last_name,
+                'id': su.id,
+                'email': su.email
+            }
+        # Users who have permissions to this catalogue_entry_obj
+        for permission in catalogue_entry_obj.catalogue_permissions.filter(active=True, access_permission=CatalogueEntryAccessPermission.READ_WRITE):
             system_users_dict[permission.user.id] = {
                 'first_name': permission.user.first_name, 
                 'last_name': permission.user.last_name, 
                 'id': permission.user.id, 
-                'email': permission.user.email}
-            
-        system_users_list = [system_users_dict[key] for key in system_users_dict]
+                'email': permission.user.email
+            }
+        read_write_users = [system_users_dict[key] for key in system_users_dict]
         
         user_access_permission = catalogue_entry_obj.get_user_access_permission(request.user)
         is_administrator = utils.is_administrator(request.user)
-        if is_administrator or user_access_permission == 'read_write' and request.user == catalogue_entry_obj.assigned_to:
-            if catalogue_entry_obj.status in [
-                catalogue_entries_models.CatalogueEntryStatus.NEW_DRAFT,
-                catalogue_entries_models.CatalogueEntryStatus.DRAFT,
-                catalogue_entries_models.CatalogueEntryStatus.PENDING,
-            ]:
-                has_edit_access = True
+        is_assigned = True if catalogue_entry_obj.assigned_to == request.user else False
+        has_read_write_access = True if is_administrator or user_access_permission == 'read_write' else False
 
+        has_edit_access = False  # True: user can edit right now
+        if has_read_write_access:
+            if is_assigned:
+                if catalogue_entry_obj.status in [
+                    catalogue_entries_models.CatalogueEntryStatus.NEW_DRAFT,
+                    catalogue_entries_models.CatalogueEntryStatus.DRAFT,
+                    catalogue_entries_models.CatalogueEntryStatus.PENDING,
+                ]:
+                    has_edit_access = True
+        
         layer_symbology = catalogue_entry_obj.symbology if hasattr(catalogue_entry_obj, 'symbology') else ''
         if catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_QUERY:
             display_symbology_definition_tab = True
@@ -355,18 +365,22 @@ class CatalogueEntriesView(base.TemplateView):
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
         context['custodians_obj'] = custodians_obj
-        context['system_users'] = system_users_list
+        context['read_write_users'] = read_write_users
         context['catalogue_entry_id'] = self.kwargs['pk']
         context['tab'] = self.kwargs['tab']
         context['display_symbology_definition_tab'] = display_symbology_definition_tab
         context['layer_symbology'] = layer_symbology
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
+        context['is_administrator'] = is_administrator
+        context['is_assigned'] = is_assigned
+        context['has_read_write_access'] = has_read_write_access
         context['has_edit_access'] = has_edit_access
         context['display_attributes_tab'] = display_attributes_tab
-        context['permission_types'] = permission_types
         context['user_access_permission'] = user_access_permission
-        context['user_access_permission_options'] = CatalogueEntryAccessPermission.get_all_as_options()
-        context['CatalogueEntryType'] = catalogue_entries_models.CatalogueEntryType
+        context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission  # READ, READ_WRITE
+        context['CatalogueEntryType'] = catalogue_entries_models.CatalogueEntryType  # SPATIAL_FILE, SUBSCRIPTION_WFS, ...
+        context['CatalogueEntryPermissionType'] = catalogue_entries_models.CatalogueEntryPermissionType  # PUBLIC, RESTRICTED
+        context['CatalogueEntryStatus'] = catalogue_entries_models.CatalogueEntryStatus  # NEW_DRAFT, LOCKED, ...
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
@@ -419,11 +433,26 @@ class LayerSubmissionView(base.TemplateView):
         layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.get(id=pk)
         user_access_permission = layer_submission.get_user_access_permission(request.user)
 
+        is_administrator = utils.is_administrator(request.user)
+
+        # Calculate accessibility to download link
+        accessible_to_download = False
+        if layer_submission.permission_type == catalogue_entries_models.CatalogueEntryPermissionType.PUBLIC:
+            accessible_to_download = True
+        elif layer_submission.permission_type == catalogue_entries_models.CatalogueEntryPermissionType.RESTRICTED:
+            if is_administrator or user_access_permission in ['read', 'read_write']:
+                accessible_to_download = True
+
+        # Calculate accessibility to the Map
+        accessible_to_map = accessible_to_download
+
         # Construct Context
         context: dict[str, Any] = {}
         context['tab'] = self.kwargs['tab']
         context['layer_submission_obj'] = layer_submission
         context['user_access_permission'] = user_access_permission
+        context['accessible_to_download'] = accessible_to_download
+        context['accessible_to_map'] = accessible_to_map
         context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission
         context['id'] = layer_submission.catalogue_entry.id
 
