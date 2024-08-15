@@ -624,12 +624,17 @@ var kbcatalogue = {
     },
     add_catalogue_editor: function(user_id) {        
         var catalogue_id = $('#catalogue_entry_id').val();
+        var user_access_permission_value = $('#user-access-permission').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
         $.ajax({
             url: kbcatalogue.var.catalogue_permission_url,
             type: 'POST',
-            data: JSON.stringify({'user':user_id, 'catalogue_entry':catalogue_id}),
+            data: JSON.stringify({
+                'user':user_id,
+                'catalogue_entry':catalogue_id,
+                'access_permission': user_access_permission_value
+            }),
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {

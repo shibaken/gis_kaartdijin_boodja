@@ -19,6 +19,14 @@ class CatalogueEntryAccessPermission(models.IntegerChoices):
     READ = 2, 'Read'
     READ_WRITE = 3, 'Read and Write'
 
+    @staticmethod
+    def get_all_as_options():
+        access_permission_options = [
+            {'value': value, 'label': label}
+            for value, label in CatalogueEntryAccessPermission.choices
+        ]
+        return access_permission_options
+
 
 @reversion.register()
 class CatalogueEntryPermission(mixins.RevisionedMixin):
