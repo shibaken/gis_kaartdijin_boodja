@@ -6,10 +6,11 @@
             <div class="container" id="dashboard-table-container">
                   <div class='row'>
                         <div class='col-6'>
+                              <h5>Catalogue Entry</h5>
                               <h3>CE{{ catalogue_entry_obj.id }}: {{ catalogue_entry_obj.name }}</h3>
                         </div>
                         <div class='col-6 text-end'>
-                              {% if has_edit_access is True %}
+                              {% if has_edit_access %}
                                     <button class='btn btn-primary btn-sm' id='catalogue-manage-editors-btn'>Manage Access Permission</button>
                               {% else %}
                                     <button class='btn btn-primary btn-sm' id='catalogue-show-permission-btn'>Show Access Permission</button>
@@ -43,10 +44,10 @@
                                           </div>
                                           <div>
                                                 <b>Currently assigned to</b>
-                                                <div class='text-end'>
+                                                      {% if has_read_write_access %}
                                                       <select class='form-control' id="catalogue-assigned-to">
                                                             <option value=''>-- Select One --</option>
-                                                            {% for su in system_users %}
+                                                            {% for su in read_write_users %}
                                                                   {% if catalogue_entry_obj.assigned_to.id == su.id %}
                                                                         <option value='{{ su.id }}' selected>{{ su.first_name }} {{ su.last_name }}</option>
                                                                   {% else %}
@@ -54,14 +55,16 @@
                                                                   {% endif %}
                                                             {% endfor %}
                                                       </select>
-                                                      <button class='btn btn-primary btn-sm mt-2 px-4' id='catalogue-assigned-to-btn' href=''>Assign</button>
-                                                </div>
+                                                      <div class="text-end"><button class='btn btn-primary btn-sm mt-2 px-4' id='catalogue-assigned-to-btn' href=''>Assign</button></div>
+                                                      {% else %}
+                                                      <div>{{ catalogue_entry_obj.assigned_to.first_name }} {{ catalogue_entry_obj.assigned_to.last_name }}</div>
+                                                      {% endif %}
                                           </div>
                                     </div>
-                                    {% if user_access_permission == 'read_write' %}
+                                    {% if has_read_write_access and is_assigned %}
                                     <div class='p-3'>
                                           <b>Actions</b><br>
-                                          {% if catalogue_entry_obj.status == 2 %}
+                                          {% if catalogue_entry_obj.status == CatalogueEntryStatus.LOCKED.value %}
                                                 <button class='btn btn-primary btn-sm px-4' id='catalogue-unlock'>Unlock</button>
                                           {% else %}
                                                 <button class='btn btn-primary btn-sm px-4' id='catalogue-lock'>Lock</button>

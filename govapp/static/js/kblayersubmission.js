@@ -13,7 +13,7 @@ var kblayersubmission = {
             format: this.var.layersubmission_date_format,
         });
         $('#layer-submission-submitted-to').datepicker({  dateFormat: this.var.layersubmission_date_format, 
-                format: this.var.layersubmission_date_format,
+            format: this.var.layersubmission_date_format,
         });
 
 
@@ -94,7 +94,6 @@ var kblayersubmission = {
                     if (response.results.length > 0) {
                         for (let i = 0; i < response.results.length; i++) {
                             let layer_submission = response.results[i]
-                            console.log(layer_submission)
                             assigned_to_friendly = ""
 
                             if (layer_submission.first_name != null) {
@@ -120,14 +119,11 @@ var kblayersubmission = {
                             
                             const formattedDate = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
-                            let lock_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="13" height="13" style="fill: gray;"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>'
-
                             // Number, Name, Submitted Date, Time, Catalogue, Status, Action
                             html += "<tr>";
                             html += "<td>LM" + layer_submission.id + "</td>";
                             html += "<td><a href='/catalogue/entries/" + layer_submission.catalogue_entry + "/details/' style='text-decoration: none;'>CE" + layer_submission.catalogue_entry + ": " + layer_submission.name + "</a></td>";
-                            // html += "<td>" + layer_submission.permission_type + "</td>";
-                            html += "<td>" + (layer_submission.permission_type == 1 ? layer_submission.permission_type_str : layer_submission.permission_type_str + lock_icon) + "</td>"
+                            html += "<td>" + (layer_submission.permission_type == 1 ? utils.public_icon() + layer_submission.permission_type_str : utils.restricted_icon() + layer_submission.permission_type_str) + "</td>"
                             html += "<td>" + formattedDate + "</td>";
                             if (layer_submission.status == 1){  // 1: Submitted
                                 html += "<td><span class='badge bg-secondary'>" + layer_submission.status_name + "</span></td>";

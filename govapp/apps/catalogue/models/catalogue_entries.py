@@ -101,7 +101,7 @@ CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP = [
         "email_notifications",
         "webhook_notifications",
         "publish_entry",
-        "catalouge_permissions",
+        "catalogue_permissions",
     )
 )
 class CatalogueEntry(mixins.RevisionedMixin):
@@ -148,7 +148,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     email_notifications: "models.Manager[notifications.EmailNotification]"
     webhook_notifications: "models.Manager[notifications.WebhookNotification]"
     publish_entry: "Optional[publish_entries.PublishEntry]"
-    catalouge_permissions: "models.Manager[permission.CatalogueEntryPermission]"
+    catalogue_permissions: "models.Manager[permission.CatalogueEntryPermission]"
 
     class Meta:
         """Catalogue Entry Model Metadata."""
@@ -172,29 +172,21 @@ class CatalogueEntry(mixins.RevisionedMixin):
 
         user_access_permission = 'none'
 
-        if self.is_restricted:
-            catalogue_entry_permissions = CatalogueEntryPermission.objects.filter(
-                catalogue_entry=self,
-                user=user,
-                active=True
-            )
-            if catalogue_entry_permissions.exists():
-                # Select the strictest permission if there are multiple permissions
-                strictest_permission = catalogue_entry_permissions.aggregate(
-                    strictest=models.Min('access_permission')
-                )['strictest']
+        catalogue_entry_permissions = CatalogueEntryPermission.objects.filter(
+            catalogue_entry=self,
+            user=user,
+            active=True
+        )
+        if catalogue_entry_permissions.exists():
+            # Select the strictest permission if there are multiple permissions
+            strictest_permission = catalogue_entry_permissions.aggregate(
+                strictest=models.Min('access_permission')
+            )['strictest']
 
-                # if strictest_permission == CatalogueEntryAccessPermission.NONE:
-                #     user_access_permission = 'none'
-                if strictest_permission == CatalogueEntryAccessPermission.READ:
-                    user_access_permission = 'read'
-                elif strictest_permission == CatalogueEntryAccessPermission.READ_WRITE:
-                    user_access_permission = 'read_write'
-                else:
-                    user_access_permission = 'none'  # Should not reach here
-        else:
-            # There is no restrictions for this catalogue entry.
-            user_access_permission = 'read_write'
+            if strictest_permission == CatalogueEntryAccessPermission.READ:
+                user_access_permission = 'read'
+            elif strictest_permission == CatalogueEntryAccessPermission.READ_WRITE:
+                user_access_permission = 'read_write'
 
         return user_access_permission
     
@@ -232,8 +224,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
         Returns:
             [auth_models.User] : a list of users
         """
-        return self.catalouge_permissions.all()
-        # permissions= list(self.catalouge_permissions.all())
+        return self.catalogue_permissions.all()
+        # permissions= list(self.catalogue_permissions.all())
         # obj = types.SimpleNamespace()
         # obj.all = lambda : permissions
 
