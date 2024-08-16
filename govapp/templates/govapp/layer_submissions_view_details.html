@@ -9,12 +9,34 @@
       </div>
       <div class="card-body collapse show" id="box1-card-body">
             <div class='row'>
-                  <div class='col-3'>Name</div> <div class='col-9 p-1'>{{ layer_submission_obj.name }}</div>
-                  <div class='col-3'>Submitted Datetime</div> <div class='col-9 p-1'> {{ layer_submission_obj.submit_datetime }}</div>
-                  {% if accessible_to_download %}
-                        <div class='col-3'>Link to file</div> <div class='col-9 p-1'><a href="#" id='file_download'>File Download</a></div>
+                  <div class='col-3'>Name</div>
+                  <div class='col-9 p-1'>{{ layer_submission_obj.name }}</div>
+            </div>
+            <div class='row'>
+                  <div class='col-3'>Submitted Datetime</div>
+                  <div class='col-9 p-1'> {{ layer_submission_obj.submit_datetime }}</div>
+            </div>
+            {% if accessible_to_download %}
+            <div class='row'>
+                  <div class='col-3'>Link to file</div>
+                  <div class='col-9 p-1'><a href="#" id='file_download' style="text-decoration: none;">File Download</a></div>
+            </div>
+            {% endif %}
+            <div class='row'>
+                  <div class='col-3'>Catalogue entry</div>
+                  <div class='col-9 p-1'><a href="/catalogue/entries/{{ layer_submission_obj.catalogue_entry.id }}/details/" style="text-decoration: none;">CE{{ layer_submission_obj.catalogue_entry.id }}: {{ layer_submission_obj.name }}</a></div>
+            </div>
+            <div class='row'>
+                  <div class='col-3'>Permission type</div>
+                  <div class='col-9 p-1'>
+                  {% if layer_submission_obj.catalogue_entry.permission_type == CatalogueEntryPermissionType.PUBLIC.value %}
+                        {% include 'govapp/public_icon.svg' %}Public
+                  {% elif layer_submission_obj.catalogue_entry.permission_type == CatalogueEntryPermissionType.RESTRICTED.value %}
+                        {% include 'govapp/restricted_icon.svg' %}Restricted
+                  {% else %}
+                        ---
                   {% endif %}
-                  <div class='col-3'>Catalogue entry </div> <div class='col-9 p-1'> <a href="/catalogue/entries/{{ layer_submission_obj.catalogue_entry.id }}/details/">{{ layer_submission_obj.name }}</a></div>
+                  </div>
             </div>
       </div>
 </div>

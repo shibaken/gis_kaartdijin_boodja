@@ -128,8 +128,9 @@ class CatalogueEntryViewSet(
         """
         # Retrieve Catalogue Entry
         # Help `mypy` by casting the resulting object to a Catalogue Entry
-        catalogue_entry = self.get_object()
-        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+        # catalogue_entry = self.get_object()
+        catalogue_entry = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=pk)
+        # catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
         # Lock
         success = catalogue_entry.lock()
@@ -163,8 +164,9 @@ class CatalogueEntryViewSet(
         """
         # Retrieve Catalogue Entry
         # Help `mypy` by casting the resulting object to a Catalogue Entry
-        catalogue_entry = self.get_object()
-        catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+        # catalogue_entry = self.get_object()
+        # catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+        catalogue_entry = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=pk)
 
         # Unlock
         success = catalogue_entry.unlock()

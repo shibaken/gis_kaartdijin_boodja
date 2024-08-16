@@ -454,6 +454,7 @@ class LayerSubmissionView(base.TemplateView):
         context['accessible_to_download'] = accessible_to_download
         context['accessible_to_map'] = accessible_to_map
         context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission
+        context['CatalogueEntryPermissionType'] = catalogue_entries_models.CatalogueEntryPermissionType
         context['id'] = layer_submission.catalogue_entry.id
 
         # Render Template and Return
