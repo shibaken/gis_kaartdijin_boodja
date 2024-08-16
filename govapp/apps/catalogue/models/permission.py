@@ -15,7 +15,7 @@ UserModel = auth.get_user_model()
 
 
 class CatalogueEntryAccessPermission(models.IntegerChoices):
-    NONE = 1, 'None'
+    # NONE = 1, 'None'
     READ = 2, 'Read'
     READ_WRITE = 3, 'Read and Write'
 
@@ -24,7 +24,7 @@ class CatalogueEntryAccessPermission(models.IntegerChoices):
 class CatalogueEntryPermission(mixins.RevisionedMixin):
     catalogue_entry = models.ForeignKey(
         catalogue_entries.CatalogueEntry, 
-        related_name="catalouge_permissions", 
+        related_name="catalogue_permissions", 
         on_delete=models.CASCADE)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)

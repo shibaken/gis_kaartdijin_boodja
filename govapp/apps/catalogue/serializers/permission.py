@@ -41,7 +41,11 @@ class CatalogueEntryPermissionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         """Catalogue Permission Create Model Serializer Metadata."""
         model = CatalogueEntryPermissionSerializer.Meta.model
-        fields = ('user', 'catalogue_entry')
+        fields = (
+            'user',
+            'catalogue_entry',
+            'access_permission',
+        )
         
     def validate_user(self, user):
          catalogue_entry = self.initial_data.get('catalogue_entry')

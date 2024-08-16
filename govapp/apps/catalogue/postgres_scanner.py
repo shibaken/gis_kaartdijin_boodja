@@ -35,15 +35,7 @@ class Scanner:
     def scan(self) -> None:
         # Log
         log.info("Start scanning postgres queries...")
-        days_of_week = {
-            1 : "Mon",
-            2 : "Tue",
-            3 : "Wed",
-            4 : "Thu",
-            5 : "Fri",
-            6 : "Sat",
-            7 : "Sun"
-        }
+
         catalogue_entry_list = catalogue_entries.CatalogueEntry.objects.filter(
             type=catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
         )
@@ -66,7 +58,7 @@ class Scanner:
                     log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has force_run_postgres_scanner=True.  Run scanning.')
                     generate_shp = True
                 elif not custom_query_freq.last_job_run:
-                    # Scanning has never been run so far.  --> Run job
+                    # Scanning has never been run so far.  --> Run scanning
                     log.info(f'CatalogueEntry: [{custom_query_freq.catalogue_entry}] has never been scanned for custom query with this frequency: [{custom_query_freq}].  Run scanning.')
                     generate_shp = True
                 else:
@@ -83,27 +75,27 @@ class Scanner:
                     # Every hour scheduler.
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_HOURS:
                         dt_diff = now_dt - last_job_run
-                        last_job_run_in_hours = dt_diff.total_seconds() / 60 / 60
+                        last_job_run_in_hours = dt_diff.total_seconds() / 3600
                         if last_job_run_in_hours >= custom_query_freq.every_hours:
                             generate_shp = True
 
                     # Daily scheduler.
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.DAILY:
                         # Calculate most recent scheduled datetime
-                        most_recent_schedule = Scanner.get_most_recent_schedule_daily(now_dt, custom_query_freq)
-                        generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
+                        most_recent_schedule = Scanner.get_most_recent_past_schedule_daily(now_dt, custom_query_freq)
+                        generate_shp = Scanner.should_run_scanner(last_job_run, most_recent_schedule)
 
                     # Weekly scedhuler
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.WEEKLY:
                         # Calculate most recent scheduled datetime
-                        most_recent_schedule = Scanner.get_most_recent_schedule_weekly(now_dt, custom_query_freq)
-                        generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
+                        most_recent_schedule = Scanner.get_most_recent_past_schedule_weekly(now_dt, custom_query_freq)
+                        generate_shp = Scanner.should_run_scanner(last_job_run, most_recent_schedule)
 
                     # Monthly Schedule
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.MONTHLY:  
                         # Calculate most recent scheduled datetime
-                        most_recent_schedule = Scanner.get_most_recent_schedule_monthly(now_dt, custom_query_freq)
-                        generate_shp = Scanner.compare_dates(now_dt, last_job_run, most_recent_schedule)
+                        most_recent_schedule = Scanner.get_most_recent_past_schedule_monthly(now_dt, custom_query_freq)
+                        generate_shp = Scanner.should_run_scanner(last_job_run, most_recent_schedule)
 
                 if generate_shp:  
                     Scanner.run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq, now_dt)
@@ -111,10 +103,10 @@ class Scanner:
                     catalogue_entry_obj.save()
 
         # Log
-        log.info("Scanning storage staging area complete!")
+        log.info("Scanning postgres queries complete!")
 
     @staticmethod
-    def get_most_recent_schedule_weekly(now_dt, custom_query_freq):
+    def get_most_recent_past_schedule_weekly(now_dt, custom_query_freq):
         # Convert day_of_week to 0-based index (0: Monday, 6: Sunday)
         target_weekday = custom_query_freq.day_of_week - 1
 
@@ -140,7 +132,7 @@ class Scanner:
         return most_recent_schedule
 
     @staticmethod
-    def get_most_recent_schedule_monthly(now_dt, custom_query_freq):
+    def get_most_recent_past_schedule_monthly(now_dt, custom_query_freq):
         # Handle monthly schedule
         most_recent_schedule = datetime(now_dt.year, now_dt.month, custom_query_freq.date, custom_query_freq.hour, custom_query_freq.minute).astimezone(ZoneInfo(conf.settings.TIME_ZONE))
 
@@ -154,7 +146,7 @@ class Scanner:
         return most_recent_schedule
     
     @staticmethod
-    def get_most_recent_schedule_daily(now_dt, custom_query_freq):
+    def get_most_recent_past_schedule_daily(now_dt, custom_query_freq):
         # Handle daily schedule
         most_recent_schedule = now_dt.replace(
             hour=custom_query_freq.hour,
@@ -170,14 +162,10 @@ class Scanner:
         return most_recent_schedule
 
     @staticmethod
-    def compare_dates(now_dt, last_job_run, most_recent_schedule):
+    def should_run_scanner(last_job_run, most_recent_schedule):
         if last_job_run < most_recent_schedule:
-            if most_recent_schedule < now_dt:
-                log.info(f'The last job run datetime: [{last_job_run}] is before the most recent scheduled datetime: [{most_recent_schedule}] and it is before now: [{now_dt}].  Run scanning.')
-                return True
-            else:
-                log.info(f'The last job run datetime: [{last_job_run}] is before the most recent scheduled datetime: [{most_recent_schedule}] but which is after now: [{now_dt}].  Do not run scanning.')
-                return False
+            log.info(f'The last job run datetime: [{last_job_run}] is before the most recent scheduled datetime: [{most_recent_schedule}].  Run scanning.')
+            return True
         else:
             log.info(f'The last job run datetime: [{last_job_run}] is after the most recent scheduled datetime: [{most_recent_schedule}].  Do not run scanning.')
             return False

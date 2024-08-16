@@ -8,8 +8,10 @@
             {% include "govapp/common_entity_modal.html" %}
 
             <div class="container" id="dashboard-table-container">
-                  <div class='col-6'> <h3>{{ subscription_obj.name }}</h3> </div>
-                  <div class='col-12'> &nbsp; </div>
+                  <div class='col-6'>
+                        <h5>Layer Subscription</h5>
+                        <h3>{{ subscription_obj.id }}: {{ subscription_obj.name }}</h3>
+                  </div>
 
                   <div class='row'>
                         <div class='col-3'>

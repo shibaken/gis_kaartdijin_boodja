@@ -510,13 +510,11 @@ var kbcatalogue = {
                             }
 
                             button_json = '{"id": "'+catalogue_entry.id+'"}'
-                            let lock_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="13" height="16" style="fill: gray;"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>'
                             html += "<tr>";
                             html += "<td>CE" + catalogue_entry.id + "</td>";
                             html += "<td>" + catalogue_entry.name + "</td>";
                             html += "<td>" + kbcatalogue.var.spatial_type[catalogue_entry.type] + "</td>";
-                            html += "<td>" + (catalogue_entry.permission_type == 1 ? catalogue_entry.permission_type_str : catalogue_entry.permission_type_str + lock_icon) + "</td>"
-                            // html += "<td>" + catalogue_entry.permission_type_str + "</td>"
+                            html += "<td>" + (catalogue_entry.permission_type == 1 ? utils.public_icon() + catalogue_entry.permission_type_str: utils.restricted_icon() + catalogue_entry.permission_type_str) + "</td>"
                             html += "<td>" + (catalogue_entry.custodian_name != null ? catalogue_entry.custodian_name : "") + "</td>"
                             html += "<td><span class='" + kbcatalogue.var.catalogue_status[catalogue_entry.status].class + "'>" + kbcatalogue.var.catalogue_status[catalogue_entry.status].name + "<span></td>";
                             html += "<td>" + catalogue_entry.updated_at + "</td>";
@@ -624,12 +622,17 @@ var kbcatalogue = {
     },
     add_catalogue_editor: function(user_id) {        
         var catalogue_id = $('#catalogue_entry_id').val();
+        var user_access_permission_value = $('#user-access-permission').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
         $.ajax({
             url: kbcatalogue.var.catalogue_permission_url,
             type: 'POST',
-            data: JSON.stringify({'user':user_id, 'catalogue_entry':catalogue_id}),
+            data: JSON.stringify({
+                'user':user_id,
+                'catalogue_entry':catalogue_id,
+                'access_permission': user_access_permission_value
+            }),
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {

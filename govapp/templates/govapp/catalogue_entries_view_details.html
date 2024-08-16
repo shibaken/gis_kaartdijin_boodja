@@ -15,13 +15,13 @@
                   <div class='col-3'>Name</div>
                   <div class='col-5 p-1'>
                         {% if catalogue_entry_obj.type == 1 %}
-                              {% if has_edit_access is True %}
+                              {% if has_edit_access %}
                                     <input type="text"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
                               {% else %}
                                     {{ catalogue_entry_obj.name }}
                               {% endif %}
                         {% else %}
-                              {% if has_edit_access is True %}
+                              {% if has_edit_access %}
                                     <input type="hidden"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
                                     {{ catalogue_entry_obj.name }}  
                               {% else %}
@@ -33,7 +33,7 @@
             <div class="row">
                   <div class='col-3'>Custodian</div>
                   <div class='col-5 p-1'>
-                        {% if has_edit_access is True %}
+                        {% if has_edit_access %}
                               <select type="text" class="form-control" id="catalogue-custodian-entry" >
                                     <option value="">Select One</option>
                                     {% for cd in custodians_obj %}
@@ -74,10 +74,10 @@
             <div class="row">
                   <div class='col-3'>Permission Type</div>
                   <div class='col-5 p-1'>
-                        {% if has_edit_access is True %}
+                        {% if has_edit_access %}
                               <select type="text" class="form-control" id="catalogue-permission-type" >
                                     <option value="">Select One</option>
-                                    {% for value, label in permission_types %}
+                                    {% for value, label in CatalogueEntryPermissionType.choices %}
                                           {% if catalogue_entry_obj.permission_type == value %} 
                                                 <option value="{{ value }}" selected>{{ label }}</option>
                                           {% else %}
@@ -86,10 +86,10 @@
                                     {% endfor %}
                               </select>
                         {% else %}
-                              {% if catalogue_entry_obj.permission_type == 1 %}
-                                    Public
-                              {% elif catalogue_entry_obj.permission_type == 2 %}
-                                    Restricted
+                              {% if catalogue_entry_obj.permission_type == CatalogueEntryPermissionType.PUBLIC.value %}
+                                    Public {% include 'govapp/public_icon.svg' %}
+                              {% elif catalogue_entry_obj.permission_type == CatalogueEntryPermissionType.RESTRICTED.value %}
+                                    Restricted {% include 'govapp/restricted_icon.svg' %}
                               {% endif %}
                         {% endif %}
                   </div>
@@ -112,7 +112,7 @@
               <div class='row'>
                     <div class='col-12'>
                         {% if catalogue_entry_obj.type == 1 %}
-                          {% if has_edit_access is True %}     
+                          {% if has_edit_access %}     
                                 <textarea class="form-control"id="catalogue-entry-description" rows="3">{{ catalogue_entry_obj.description }}</textarea>                                    
                                 &nbsp;
                           {% else %}
@@ -139,7 +139,7 @@
         </div>
         <div class="card-body collapse show" id="box4-card-body">
             <div class="col-12 text-end">
-            {% if has_edit_access is True %}
+            {% if has_edit_access %}
                   <button class="btn btn-primary left" id='catalogue-detail-btn-add-notification' aria-current="page" >Add Notification</button>
             {% endif %}
             </div>
@@ -219,14 +219,23 @@
         </div>
 </div>
   
-    <div class='row mt-2'>
-          <div class='col-12 text-end'>
-                {% if has_edit_access is True %}
-                      <button class="btn btn-primary" id='catalogue-entry-btn-save' aria-current="page" >Save</button>  
-                      <button class="btn btn-primary" id='catalogue-entry-btn-save-exit'  aria-current="page" >Save and exit</button>  
-                {% endif %}
-          </div>
-    </div>
-  <script>
+<div class='row mt-2'>
+      <div class='col-12 text-end'>
+            {% if has_edit_access %}
+                  <button class="btn btn-primary" id='catalogue-entry-btn-save' aria-current="page" >Save</button>  
+                  <button class="btn btn-primary" id='catalogue-entry-btn-save-exit'  aria-current="page" >Save and exit</button>  
+            {% endif %}
+      </div>
+</div>
+      <style>
+      .public-icon, .restricted-icon{
+            width: 16px;
+            height: 16px;
+            fill: gray;
+            color: gray;
+            margin-right: .5em;
+      }
+      </style>
+<script>
       kbcatalogue_detail.init_catalogue_detail();
-  </script>
+</script>

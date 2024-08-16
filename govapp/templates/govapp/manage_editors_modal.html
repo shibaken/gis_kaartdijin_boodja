@@ -18,15 +18,25 @@
           <div id='manage-editors-details' class="container">
                {% if catalogue_entry_obj.status == 2 %}
                {% else %}
-               <div class='row d-flex align-items-center px-3' id='manage-editors-add-area'>
-                    <div class='col-6'>
-                        <select type="text" class="form-select" id="manage-editors-search"></select>
+               <div id="manage-editors-add-area">
+                    <div class='row d-flex align-items-center px-3 mb-2'>
+                         <div class='col-2 text-end'><label for="manage-editors-search" class="form-label">User</label></div>
+                         <div class='col-5'><select type="text" class="form-select" id="manage-editors-search"></select></div>
                     </div>
-                    <div class='col-3'>
-                        <button type="button" class="btn btn-primary btn-sm" id='manage-editors-add-btn'>Add User</button>
+                    <div class='row d-flex align-items-center px-3 mb-2'>
+                         <div class='col-2 text-end'><label for="access-permissions" class="form-label">Access Permission</label></div>
+                         <div class='col-5'>
+                              <select class="form-select" id="user-access-permission">
+                                   {% for value, label in CatalogueEntryAccessPermission.choices %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                   {% endfor %}
+                              </select>
+                         </div>
+                         <div class='col-3'><button type="button" class="btn btn-primary btn-sm" id='manage-editors-add-btn'>Add User</button></div>
                     </div>
                 </div>
                {% endif %}
+
                 <div class="row px-3 mb-3">
                     <table id="catalogue_entry_permission_table" class="table table-striped table-bordered table-hover dataTable" style="width:100%">
                          <thead>
