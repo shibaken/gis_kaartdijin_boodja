@@ -93,6 +93,7 @@ MIDDLEWARE = [
     "dbca_utils.middleware.SSOLoginMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "govapp.middleware.CacheControl",
+    'django.middleware.locale.LocaleMiddleware',
 ]
 ROOT_URLCONF = "govapp.urls"
 TEMPLATES = [
@@ -132,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-au"
 #TIME_ZONE = "UTC"
 USE_I18N = True
 USE_L10N = True
@@ -341,6 +342,10 @@ DATA_STORAGE=decouple.config("DATA_STORAGE", default="./data_storage/")
 
 # Django Timezone
 TIME_ZONE = 'Australia/Perth'
+# DATE_FORMAT = 'dd/mm/YYYY'
+# DATETIME_FORMAT = 'dd/mm/YYYY HH:ii:ss'
+# SHORT_DATE_FORMAT = 'dd/mm/YY'
+# SHORT_DATETIME_FORMAT = 'dd/mm/YY HH:ii'
 
 # Layer Subscription
 WMS_URL = "https://mesonet.agron.iastate.edu/cgi-bin/wms/us/mrms.cgi?"
