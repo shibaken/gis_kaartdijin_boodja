@@ -366,6 +366,8 @@ SENTRY_DSN = decouple.config("SENTRY_DSN", default=None)
 SENTRY_SAMPLE_RATE = decouple.config("SENTRY_SAMPLE_RATE", default=1.0)  # Error sampling rate
 SENTRY_TRANSACTION_SAMPLE_RATE = decouple.config("SENTRY_TRANSACTION_SAMPLE_RATE", default=0.0)  # Transaction sampling
 
+WEBHOOK_ENABLED = decouple.config("WEBHOOK_ENABLED", default=False)
+
 if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
     import sentry_sdk
 

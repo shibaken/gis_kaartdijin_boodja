@@ -5,7 +5,7 @@
 import shutil
 
 # Local
-from govapp import gis
+from govapp import gis, settings
 from govapp.common import sharepoint
 from govapp.apps.accounts import utils
 from govapp.apps.catalogue import emails
@@ -75,11 +75,12 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
             layer=entry.metadata.name,
         )
 
-        # Send Webhook Posts
-        webhooks.post_geojson(
-            *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-            geojson=geojson,
-        )
+        if settings.WEBHOOK_ENABLED:
+            # Send Webhook Posts
+            webhooks.post_geojson(
+                *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
+                geojson=geojson,
+            )
 
         # Delete local temporary copy of file if we can
         shutil.rmtree(filepath.parent, ignore_errors=True)

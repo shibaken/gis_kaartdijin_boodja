@@ -6,7 +6,7 @@ import shutil
 import pathlib
 
 # Local
-from govapp import gis
+from govapp import gis, settings
 from govapp.common import sharepoint
 from govapp.common import local_storage
 from govapp.apps.accounts import utils
@@ -80,11 +80,12 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
             export_method=None
         )
 
-        # Send Webhook Posts
-        # webhooks.post_geojson(
-        #     *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-        #     geojson=output_filepath,
-        # )
+        if settings.WEBHOOK_ENABLED:
+            # Send Webhook Posts
+            webhooks.post_geojson(
+                *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
+                geojson=output_filepath,
+            )
     else:
         pass
 
