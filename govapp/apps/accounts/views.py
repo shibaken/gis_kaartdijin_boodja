@@ -13,6 +13,8 @@ from rest_framework import response
 from rest_framework import viewsets
 from rest_framework import views
 from rest_framework import permissions
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 # Local
@@ -103,6 +105,7 @@ class FileDownloadView(views.APIView):
             return HttpResponseForbidden("You do not have permission to access this file.")
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class FileDeleteView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
