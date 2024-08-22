@@ -761,7 +761,7 @@ class CDDPContentsViewSet(
     ViewSet for handling files within a specified directory.
     Provides list, retrieve, and delete functionalities.
     """
-    permission_classes=[accounts_permissions.IsAuthenticated, accounts_permissions.IsApiUserGroup]
+    permission_classes=[accounts_permissions.IsAuthenticated,]
     pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
 
     def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
