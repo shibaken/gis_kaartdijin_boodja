@@ -20,6 +20,7 @@ from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import filters as rest_filters
@@ -754,8 +755,14 @@ class GeoServerQueueViewSet(
     permission_classes = [accounts_permissions.IsInAdministratorsGroup]
 
 
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
+    
+
 # class CDDPContentsViewSet(viewsets.ViewSet):
-@method_decorator(csrf_exempt, name='dispatch')
+# @method_decorator(csrf_exempt, name='dispatch')
 class CDDPContentsViewSet(
     viewsets.mixins.ListModelMixin,
     viewsets.GenericViewSet
@@ -766,6 +773,13 @@ class CDDPContentsViewSet(
     """
     permission_classes=[accounts_permissions.CanAccessCDDP,]
     pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication,]
+
+    def enforce_csrf(self, *args, **kwargs):
+        '''
+        Bypass the CSRF checks altogether
+        '''
+        pass 
 
     def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
         """
