@@ -1,7 +1,8 @@
 {% extends 'govapp/base.html' %}
+{% load users %}
 
 {% block content %}
-    {% if request.user.is_authenticated is True %}
+    {% if request.user|is_authenticated_staff_or_superuser %}
             <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
             <div class="container" id="dashboard-table-container">
                 <div class='col-12'>

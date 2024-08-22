@@ -7,26 +7,23 @@ from django import http
 from django import shortcuts
 from django.views.generic import base
 from django.contrib import auth
-from django import conf
-from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from rest_framework.decorators import permission_classes
 from owslib.wms import WebMapService
 import json
 
 # Internal
 from govapp import settings
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
-from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermission, CatalogueEntryPermission
+from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermission
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
 from govapp.apps.publisher.models import workspaces as publish_workspaces_models
-from govapp.apps.catalogue.models import layer_symbology as catalogue_layer_symbology_models
-from govapp.apps.catalogue.models import layer_attributes as catalogue_layer_attribute_models
 from govapp.apps.catalogue.models import layer_metadata as catalogue_layer_metadata_models
 from govapp.apps.catalogue.models import layer_submissions as catalogue_layer_submissions_models
 from govapp.apps.catalogue.models import layer_subscriptions as catalogue_layer_subscription_models
 from govapp.apps.catalogue import utils as catalogue_utils
 from govapp.apps.accounts import utils
-from govapp.common import local_storage
 
 # Typing
 from typing import Any
@@ -88,8 +85,8 @@ class OldCatalogueVue(base.TemplateView):
 class PendingImportsView(base.TemplateView):
     template_name = "govapp/pending_imports.html"
 
+    @method_decorator(utils.check_option_menus_permission)
     def get(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
-        # pathToFolder = local_storage.LocalStorage.get_pending_import_path()
         pathToFolder = settings.PENDING_IMPORT_PATH
         file_list = os.listdir(pathToFolder)
 
