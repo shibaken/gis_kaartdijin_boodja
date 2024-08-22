@@ -13,6 +13,7 @@ import django
 from django.contrib import auth
 from django.contrib.auth import models
 from django.db.models import query
+from django.core.exceptions import PermissionDenied
 import govapp
 
 # Typing
@@ -29,6 +30,19 @@ logger = logging.getLogger(__name__)
 
 # Shortcuts
 UserModel = auth.get_user_model()
+
+
+def can_view_option_menus(user):
+    return user.is_superuser or user.is_staff
+
+
+def check_option_menus_permission(view_func):
+    def wrapper(request, *args, **kwargs):
+        if can_view_option_menus(request.user):
+            return view_func(request, *args, **kwargs)
+        else:
+            raise PermissionDenied
+    return wrapper
 
 
 def all_administrators() -> Iterable[models.User]:

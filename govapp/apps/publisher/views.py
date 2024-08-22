@@ -761,7 +761,7 @@ class CDDPContentsViewSet(
     ViewSet for handling files within a specified directory.
     Provides list, retrieve, and delete functionalities.
     """
-    permission_classes=[accounts_permissions.IsAuthenticated,]
+    permission_classes=[accounts_permissions.CanAccessCDDP,]
     pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
 
     def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
@@ -905,6 +905,7 @@ class GeoServerGroupViewSet(
     queryset = GeoServerGroup.objects.all()
     serializer_class = GeoServerGroupSerializer
     pagination_class = CustomPageNumberPagination
+    permission_classes = [accounts_permissions.CanAccessOptionMenu,]
     
     # For searching at the backend
     filter_backends = [rest_filters.SearchFilter,]
