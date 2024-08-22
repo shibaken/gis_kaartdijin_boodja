@@ -12,6 +12,8 @@ from django.contrib import auth
 from django import http
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -753,6 +755,7 @@ class GeoServerQueueViewSet(
 
 
 # class CDDPContentsViewSet(viewsets.ViewSet):
+@method_decorator(csrf_exempt, name='dispatch')
 class CDDPContentsViewSet(
     viewsets.mixins.ListModelMixin,
     viewsets.GenericViewSet
