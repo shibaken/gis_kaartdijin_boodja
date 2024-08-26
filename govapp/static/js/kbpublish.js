@@ -1087,7 +1087,7 @@ var kbpublish = {
                             }
                             html+="<div class='d-flex gap-1 mt-1'>"
                                 html+="<a class='btn btn-primary btn-sm flex-grow-1' href='/publish/"+response.results[i].id+"'>View</a>";
-                                html+="<button class='btn btn-secondary btn-sm flex-grow-1'>History</button>";
+                                // html+="<button class='btn btn-secondary btn-sm flex-grow-1'>History</button>";
                             html+="</div>"
 
                             html+="  </td>";
