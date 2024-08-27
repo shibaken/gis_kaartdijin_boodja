@@ -11,7 +11,7 @@ var kbcatalogue = {
             5: {"name": "Pending", "colour": "darkgray", "class": "badge bg-warning"}
         },
         spatial_type: {
-            1: "Special File",
+            1: "Spatial File",
             2: "Subscription WFS",
             3: "Subscription WMS",
             4: "Subscription PostGIS",
