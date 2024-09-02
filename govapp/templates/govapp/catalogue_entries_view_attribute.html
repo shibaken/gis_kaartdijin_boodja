@@ -16,91 +16,44 @@
                   </div>
             </div>
             <div class="card-body collapse show" id="box18-card-body">
-                  <div class='col-12 pt-4'>
-                        <div class='row'>
-                              <div class='col-6'>
-                                    &nbsp;
-                              </div>
-                              <div class='col-6 text-end'>
-                                    {% if has_edit_access is True %}
-                                          <button class="btn btn-primary btn-sm" aria-current="page"
-                                                id='catalogue-attribute-new-btn'>New Attribute Column</button>
-                                    {% endif %}
-                              </div>
-                        </div>
+                  <div class='col-12 text-end'>
+                        {% if has_edit_access is True %}
+                              <button class="btn btn-primary btn-sm" aria-current="page"
+                                    id='catalogue-attribute-new-btn'>New Attribute Column</button>
+                        {% endif %}
                   </div>
 
                   <div class='col-12 pt-2 pb-2 '>
                         <div class='row'>
                               <div class='col-6'>
-                                    <div class="row">
-                                          <div class="col-sm-12 col-md-6">
-                                                &nbsp;
-                                          </div>
+                                    <div class="dataTables_length" id="bookings-table_length">
+                                          <label>Show
+                                                <select name="bookings-table_length"
+                                                      aria-controls="bookings-table"
+                                                      class="form-select form-select-sm"
+                                                      id="catalogue-attribute-limit">
+                                                      <option value="5">5</option>
+                                                      <option value="10" >10</option>
+                                                      <option value="25" selected>25</option>
+                                                      <option value="50">50</option>
+                                                      <option value="100">100</option>
+                                                </select> entries
+                                          </label>
                                     </div>
                               </div>
                               <div class='col-6 text-end'>
-                                    <div class="row">
-                                          <div class='col-12 text-end'>
-                                                <form class="row ">
-                                                      <div class="col-1 text-end">
-                                                            &nbsp;
-                                                      </div>
-                                                      <div class="col-1 text-end">
-                                                            &nbsp;
-                                                      </div>
-                                                      <div class="col-10 text-end">
-                                                            <button class="btn btn-secondary btn-sm" aria-current="page"
-                                                                  href="#">Excel</button>
-                                                            <button class="btn btn-secondary btn-sm" aria-current="page"
-                                                                  href="#">CSV</button>
-                                                      </div>
-                                                </form>
-                                          </div>
-                                    </div>
-                              </div>
-                        </div>
-                  </div>
-
-                  <div class='col-12 pt-2 pb-2 '>
-                        <div class='row'>
-                              <div class='col-6'>
-                                    <div class="row">
-                                          <div class="col-sm-12 col-md-6">
-                                                <div class="dataTables_length" id="bookings-table_length">
-                                                      <label>Show
-                                                            <select name="bookings-table_length"
-                                                                  aria-controls="bookings-table"
-                                                                  class="form-select form-select-sm"
-                                                                  id="catalogue-attribute-limit">
-                                                                  <option value="5">5</option>
-                                                                  <option value="10" >10</option>
-                                                                  <option value="25" selected>25</option>
-                                                                  <option value="50">50</option>
-                                                                  <option value="100">100</option>
-                                                            </select> entries
-                                                      </label>
-                                                </div>
-                                          </div>
-                                    </div>
-                              </div>
-                              <div class='col-6 text-end'>
-                                    <div class="row">
-                                          <div class="col-sm-12 col-md-12 text-end">
-                                                <div class="dataTables_length" id="bookings-table_length">
-                                                      <label>Order By
-                                                            <select name="bookings-table_length"
-                                                                  aria-controls="bookings-table"
-                                                                  class="form-select form-select-sm"
-                                                                  id="catalogue-attribute-order-by">
-                                                                  <option value="id">ID</option>
-                                                                  <option value="name">Name</option>
-                                                                  <option value="type">Type</option>
-                                                                  <option value="order">Order</option>
-                                                            </select>
-                                                      </label>
-                                                </div>
-                                          </div>
+                                    <div class="dataTables_length" id="bookings-table_length">
+                                          <label>Order By
+                                                <select name="bookings-table_length"
+                                                      aria-controls="bookings-table"
+                                                      class="form-select form-select-sm"
+                                                      id="catalogue-attribute-order-by">
+                                                      <option value="id">ID</option>
+                                                      <option value="name">Name</option>
+                                                      <option value="type">Type</option>
+                                                      <option value="order">Order</option>
+                                                </select>
+                                          </label>
                                     </div>
                               </div>
                         </div>
