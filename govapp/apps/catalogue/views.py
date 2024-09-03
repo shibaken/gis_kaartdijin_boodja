@@ -453,7 +453,7 @@ class LayerSubmissionViewSet(
     def download_file(self, request: request.Request, pk: str):
         layer_submission = shortcuts.get_object_or_404(models.layer_submissions.LayerSubmission, id=pk)
         user_access_permission = layer_submission.get_user_access_permission(request.user)
-        if user_access_permission not in ['read', 'read_write',]:
+        if layer_submission.is_restricted and user_access_permission not in ['read', 'read_write',]:
             return response.Response({'error_msg':f'User does not have permissions to access the file.'}, status=status.HTTP_403_FORBIDDEN)
 
         file_path = self.queryset.get(id=pk).file

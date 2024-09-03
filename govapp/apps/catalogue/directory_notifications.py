@@ -6,7 +6,7 @@ import shutil
 import pathlib
 
 # Local
-from govapp import gis
+from govapp import gis, settings
 from govapp.common import sharepoint
 from govapp.common import local_storage
 from govapp.apps.accounts import utils
@@ -73,18 +73,19 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     extension = filepath.suffix.lower()
     if extension not in ['.tif', '.tiff']:
         # Convert Layer to GeoJSON
-        geojson = gis.conversions.to_geojson(
+        output_filepath = gis.conversions.to_geojson(
             filepath=filepath,
             layer=entry.metadata.name,
             catalogue_name=entry.name,
             export_method=None
         )
 
-        # Send Webhook Posts
-        webhooks.post_geojson(
-            *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-            geojson=geojson,
-        )
+        if settings.WEBHOOK_ENABLED:
+            # Send Webhook Posts
+            webhooks.post_geojson(
+                *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
+                geojson=output_filepath,
+            )
     else:
         pass
 

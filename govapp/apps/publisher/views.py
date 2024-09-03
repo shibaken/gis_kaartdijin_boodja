@@ -12,12 +12,15 @@ from django.contrib import auth
 from django import http
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
 from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import filters as rest_filters
@@ -752,7 +755,14 @@ class GeoServerQueueViewSet(
     permission_classes = [accounts_permissions.IsInAdministratorsGroup]
 
 
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
+    
+
 # class CDDPContentsViewSet(viewsets.ViewSet):
+# @method_decorator(csrf_exempt, name='dispatch')
 class CDDPContentsViewSet(
     viewsets.mixins.ListModelMixin,
     viewsets.GenericViewSet
@@ -761,8 +771,15 @@ class CDDPContentsViewSet(
     ViewSet for handling files within a specified directory.
     Provides list, retrieve, and delete functionalities.
     """
-    permission_classes=[accounts_permissions.IsAuthenticated, accounts_permissions.IsApiUserGroup]
+    permission_classes=[accounts_permissions.CanAccessCDDP,]
     pathToFolder = settings.AZURE_OUTPUT_SYNC_DIRECTORY
+    authentication_classes = [CsrfExemptSessionAuthentication, BasicAuthentication,]
+
+    def enforce_csrf(self, *args, **kwargs):
+        '''
+        Bypass the CSRF checks altogether
+        '''
+        pass 
 
     def list(self, request: http.HttpRequest, *args: Any, **kwargs: Any) -> http.HttpResponse:
         """
@@ -905,6 +922,7 @@ class GeoServerGroupViewSet(
     queryset = GeoServerGroup.objects.all()
     serializer_class = GeoServerGroupSerializer
     pagination_class = CustomPageNumberPagination
+    permission_classes = [accounts_permissions.CanAccessOptionMenu,]
     
     # For searching at the backend
     filter_backends = [rest_filters.SearchFilter,]

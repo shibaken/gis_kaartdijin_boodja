@@ -154,14 +154,14 @@ var kblayersubscription = {
                     
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
-                    let button_view = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-view">View</button>')
-                    let button_history = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
+                    let button_view = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-tbody-row-' + layer_subscription.id + '-view">View</button>')
+                    // let button_history = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-tbody-row-' + layer_subscription.id + '-history">History</button>')
                     let button_delete = $('<button class="btn btn-primary btn-sm" id="subscription-tbody-row-' + layer_subscription.id + '-delete">Delete</button>')
                     button_view.click(()=>window.location.href = '/layer/subscriptions/' + layer_subscription.id + '/')
-                    button_history.click(()=>kblayersubscription.get_layer_subscription())
+                    // button_history.click(()=>kblayersubscription.get_layer_subscription())
                     button_delete.click(()=>kblayersubscription.delete_subscription(layer_subscription))
                     td_for_buttons.append(button_view)
-                    td_for_buttons.append(button_history)
+                    // td_for_buttons.append(button_history)
                     td_for_buttons.append(button_delete)
                     row.append(td_for_buttons)
                     $('#subscription-tbody').append(row)

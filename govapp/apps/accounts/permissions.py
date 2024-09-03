@@ -18,11 +18,6 @@ class IsInCatalogueAdminGroup(permissions.BasePermission):
         return utils.is_catalogue_admin(request.user)
 
 
-class IsApiUserGroup(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return utils.is_api_user(request.user)
-
-
 class IsInAdministratorsGroup(permissions.BasePermission):
     """Permissions for the a user in the Administrators group."""
 
@@ -82,3 +77,20 @@ class IsAuthenticated(permissions.BasePermission):
         """
         # Return
         return request.user.is_authenticated
+
+
+class BaseStaffSuperuserPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            if request.user.is_staff or request.user.is_superuser:
+                return True
+        return False
+
+class CanAccessOptionMenu(BaseStaffSuperuserPermission):
+    pass
+
+class CanAccessCDDP(BaseStaffSuperuserPermission):
+    def has_permission(self, request, view):
+        if utils.is_api_user(request.user):  # This conditional is specific to the CDDP.  We allow the windows script to access the CDDP
+            return True
+        return super().has_permission(request, view)

@@ -11,7 +11,7 @@ var kbcatalogue = {
             5: {"name": "Pending", "colour": "darkgray", "class": "badge bg-warning"}
         },
         spatial_type: {
-            1: "Special File",
+            1: "Spatial File",
             2: "Subscription WFS",
             3: "Subscription WMS",
             4: "Subscription PostGIS",
@@ -493,7 +493,6 @@ var kbcatalogue = {
                     if (response.results.length > 0) {
                         for (let i = 0; i < response.results.length; i++) {
                             let catalogue_entry = response.results[i]
-                            console.log(catalogue_entry)
                             assigned_to_friendly = "";
 
                             if (catalogue_entry.assigned_to_first_name != null) {
@@ -521,7 +520,7 @@ var kbcatalogue = {
                             html += "<td>" + assigned_to_friendly + "</td>";
                             html += "<td class='text-end'>";
                             html += "<a class='btn btn-primary btn-sm' href='/catalogue/entries/" + catalogue_entry.id + "/details/'>View</a>";
-                            html += "<button class='btn btn-secondary btn-sm ml-1'>History</button>";
+                            // html += "<button class='btn btn-secondary btn-sm ml-1'>History</button>";
                             html += "</td>";
                             html += "<tr>";
                         }
