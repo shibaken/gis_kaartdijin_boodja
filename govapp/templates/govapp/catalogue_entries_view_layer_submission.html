@@ -1,0 +1,38 @@
+<div class="card mt-2">
+    <div class="card-header fw-bold h4" style="padding:30px;">
+        <div class="row">
+            <div class="col-6">
+                Layer Submission 
+            </div>
+            <div class="col-6 text-end">
+                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+            </div>
+        </div>
+    </div>
+    <div class="card-body collapse show" id="box2-card-body">        
+        Layer Submission here...
+    </div>
+</div>
+
+<script>
+    let catalogue_entry_layer_submission = {
+        get_layer_submissions: function(){
+            console.log('in get_layer_submissions')
+            let params_str = ''
+
+            $.ajax({
+                url: kblayersubmission.var.layersubmission_data_url+"?"+params_str,
+                method: 'GET',
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log({response})
+                },
+                error: function (error) {
+                    console.log({error})
+                },
+            });    
+        }
+    }
+    catalogue_entry_layer_submission.get_layer_submissions()
+</script>

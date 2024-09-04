@@ -8,26 +8,28 @@ var kblayersubmission = {
          communication_type:null,    // will be filled during initiation
     },
     init_dashboard: function() { 
-
         $('#layer-submission-submitted-from').datepicker({ dateFormat: this.var.layersubmission_date_format, 
             format: this.var.layersubmission_date_format,
         });
+
         $('#layer-submission-submitted-to').datepicker({  dateFormat: this.var.layersubmission_date_format, 
             format: this.var.layersubmission_date_format,
         });
 
-
         $( "#layer-submission-filter-btn" ).click(function() {
             kblayersubmission.get_layer_submissions();
         });
+
         $( "#layer-submission-limit" ).change(function() {
             common_pagination.var.current_page=0;
             kblayersubmission.get_layer_submissions();
         });
+
         $( "#layer-submission-order-by" ).change(function() {
             common_pagination.var.current_page=0;
             kblayersubmission.get_layer_submissions();
         });
+
         $( "#layer-submission-status" ).change(function() {
             kblayersubmission.get_layer_submissions();
         });
@@ -68,19 +70,19 @@ var kblayersubmission = {
         });
     },
     get_layer_submissions: function(params_str) {
-        console.log("Reload layer submission page.");
         params = {
-            status:                 $('#layer-submission-status').val(),
-            limit:                  $('#layer-submission-limit').val(),
-            order_by:               $('#layer-submission-order-by').val(),
-            submitted_after:        utils.convert_date_format($('#layer-submission-submitted-from').val(), kblayersubmission.var.layersubmission_date_format, hh="00", mm="00", ss="00"),
-            submitted_before:       utils.convert_date_format($('#layer-submission-submitted-to').val(), kblayersubmission.var.layersubmission_date_format,hh="23", mm="59", ss="59"),
+            status: $('#layer-submission-status').val(),
+            limit: $('#layer-submission-limit').val(),
+            order_by: $('#layer-submission-order-by').val(),
+            submitted_after: utils.convert_date_format($('#layer-submission-submitted-from').val(), kblayersubmission.var.layersubmission_date_format, hh="00", mm="00", ss="00"),
+            submitted_before: utils.convert_date_format($('#layer-submission-submitted-to').val(), kblayersubmission.var.layersubmission_date_format,hh="23", mm="59", ss="59"),
             catalogue_entry__name__icontains:  $('#layer-submission-name').val(),
         }
 
         if (!params_str){
             params_str = utils.make_query_params(params);
         }
+        console.log({params_str})
 
         $.ajax({
             url: kblayersubmission.var.layersubmission_data_url+"?"+params_str,
