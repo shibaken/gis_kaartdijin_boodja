@@ -18,7 +18,7 @@
     let catalogue_entry_layer_submission = {
         get_layer_submissions: function(){
             console.log('in get_layer_submissions')
-            let params_str = ''
+            let params_str = 'catalogue_entry_id={{ catalogue_entry_id }}'
 
             $.ajax({
                 url: kblayersubmission.var.layersubmission_data_url+"?"+params_str,

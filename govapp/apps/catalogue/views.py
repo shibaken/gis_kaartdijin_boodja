@@ -449,6 +449,9 @@ class LayerSubmissionViewSet(
     search_fields = ["description", "catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
     @decorators.action(detail=True, methods=["GET"], url_path="file", permission_classes=[accounts_permissions.IsAuthenticated])
     def download_file(self, request: request.Request, pk: str):
         layer_submission = shortcuts.get_object_or_404(models.layer_submissions.LayerSubmission, id=pk)

@@ -82,7 +82,6 @@ var kblayersubmission = {
         if (!params_str){
             params_str = utils.make_query_params(params);
         }
-        console.log({params_str})
 
         $.ajax({
             url: kblayersubmission.var.layersubmission_data_url+"?"+params_str,
