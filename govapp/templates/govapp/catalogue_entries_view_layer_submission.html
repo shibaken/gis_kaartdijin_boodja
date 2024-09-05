@@ -34,12 +34,14 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": "/api/catalogue/layers/submissions2/?"+params_str,
+                    "url": "/api/catalogue/layers/submissions2/?" + params_str,
                     "type": "GET",
+                    "dataSrc": 'data',
                     "data": function (d) {
                         d.search = d.search.value;
-                        // d.ordering = d.order[0].column === 0 ? 'id' : d.columns[d.order[0].column].data;
-                        // d.ordering += d.order[0].dir === 'asc' ? '' : '-';
+                        d.order = d.order;
+                        d.start = d.start;
+                        d.length = d.length;
                     }
                 },
                 "columns": [
@@ -52,38 +54,31 @@
                         }
                     },
                     {
-                        "data": "name",
-                        "title": "Catalogue Entry",
-                        "render": function(data, type, row){
-                            return 'CE' + row.catalogue_entry + ': ' + data
-                        }
-                    },
-                    {
-                        "data": "permission_type",
-                        "title": "Permission Type",
-                        "render": function(data, type, row){
-                            return row.permission_type_str
-                        }
-                    },
-                    {
                         "data": "submitted_at",
                         "title": "Submitted At",
                         "render": function(data, type, row){
-                            return data
+                            return row.submitted_at_str
                         }
                     },
                     {
                         "data": "status",
                         "title": "Status",
                         "render": function(data, type, row){
-                            return row.status_name
+                            if (data === 1){
+                                html = '<span class="badge badge-pill bg-secondary">' + row.status_name + '</span>'
+                            } else if (data === 2){
+                                html = '<span class="badge badge-pill bg-success">' + row.status_name + '</span>'
+                            } else if (data === 3){
+                                html = '<span class="badge badge-pill bg-danger">' + row.status_name + '</span>'
+                            }
+                            return html
                         }
                     },
                     {
                         "data": "id",
                         "title": "Action",
                         "render": function(data, type, row){
-                            return 'todo'
+                            return "<a class='btn btn-primary btn-sm' href='/layer/submission/" + row.id + "/details'>View</a>";
                         }
                     }
                 ],

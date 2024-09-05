@@ -17,6 +17,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework.response import Response
 from datetime import timedelta
 from django.core.cache import cache
@@ -437,6 +438,24 @@ class LayerMetadataViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
+# class DatatablesPageNumberPagination2(DatatablesPageNumberPagination):
+#     page_size_query_param = 'length'
+#     page_query_param = 'start'
+
+#     def get_paginated_response(self, data):
+#         return Response({
+#             'draw': int(self.request.GET.get('draw', 1)),
+#             'recordsTotal': self.page.paginator.count,
+#             'recordsFiltered': self.page.paginator.count,
+#             'data': data
+#         })
+
+#     def paginate_queryset(self, queryset, request, view=None):
+#         self.page_size = self.get_page_size(request)
+#         self.page_number = int(request.GET.get(self.page_query_param, 0)) // self.page_size + 1
+#         return super().paginate_queryset(queryset, request, view)
+
+
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions2"])
 class LayerSubmissionViewSet2(
     mixins.ChoicesMixin,
@@ -448,28 +467,57 @@ class LayerSubmissionViewSet2(
     queryset = models.layer_submissions.LayerSubmission.objects.all()
     serializer_class = serializers.layer_submissions.LayerSubmissionSerializer
     filterset_class = filters.LayerSubmissionFilter
-    search_fields = ["description", "catalogue_entry__name"]
+    search_fields = ["id",]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    pagination_class = DatatablesPageNumberPagination
 
     def list(self, request, *args, **kwargs):
         # return super().list(request, *args, **kwargs)
         queryset = self.filter_queryset(self.get_queryset())
 
-        # Pagination
-        paginator = PageNumberPagination()
-        paginator.page_size = request.GET.get('length', 10)  # DataTables sends 'length' parameter for pagination
-        page = paginator.paginate_queryset(queryset, request)
-        serializer = self.get_serializer(page, many=True)
+        # Sorting
+        ordering = request.GET.get('order[0][column]')
+        if ordering:
+            column_index = int(ordering)
+            column_name = request.GET.get('columns[{}][data]'.format(column_index))
+            order_dir = request.GET.get('order[0][dir]')
+            if column_name and order_dir:
+                if order_dir == 'asc':
+                    queryset = queryset.order_by(column_name)
+                else:
+                    queryset = queryset.order_by(f'-{column_name}')
+        
+        logger.debug(f'queryset Count: {queryset.count()}')
 
-        # Prepare the response in the format expected by DataTables
+        # Pagination
+        # paginator = PageNumberPagination()
+        # paginator.page_size = int(request.GET.get('length', 10))  # DataTables sends 'length' parameter for pagination
+        # page_number = int(request.GET.get('start', 0)) // paginator.page_size + 1
+        # paginator.page = page_number
+        # logger.debug(f'page_size: {paginator.page_size}')
+        # logger.debug(f'page_number: {page_number}')
+        # page = paginator.paginate_queryset(queryset, request)
+        # logger.debug(f'page count: {len(page)}')
+        # serializer = self.get_serializer(page, many=True)
+
+        self.paginator.page_size = int(request.GET.get('length', 10))  #queryset.count()
+
+        page_number = int(request.GET.get('start', 0)) // self.paginator.page_size + 1
+        self.paginator.page = page_number
+        logger.debug(f'page_number: {page_number}')
+
+        result_page = self.paginator.paginate_queryset(queryset, request)
+        logger.debug(f'result_page count: {len(result_page)}')
+        serializer = serializers.layer_submissions.LayerSubmissionSerializer(result_page, many=True)
         response_data = {
             'draw': int(request.GET.get('draw', 1)),
-            'recordsTotal': paginator.page.paginator.count,
-            'recordsFiltered': paginator.page.paginator.count,
+            'recordsTotal': queryset.count(),
+            # 'recordsFiltered': len(result_page),
+            'recordsFiltered': queryset.count(),
             'data': serializer.data
         }
-
         return Response(response_data)
+
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
 class LayerSubmissionViewSet(
