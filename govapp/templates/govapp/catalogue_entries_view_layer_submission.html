@@ -36,24 +36,25 @@
                 "ajax": {
                     "url": "/api/catalogue/layers/submissions2/?" + params_str,
                     "type": "GET",
-                    "dataSrc": 'results',
+                    "dataSrc": 'data',
                     "data": function (d) {
-                        // d.search = d.search.value;
-                        // d.order = d.order;
-                        // d.start = d.start;
-                        // d.length = d.length;
-                        return {
-                            draw: d.draw,
-                            start: d.start,
-                            length: d.length,
-                            search: d.search.value,
-                            order: d.order.map(function(order) {
-                                return {
-                                    column: d.columns[order.column].data,
-                                    dir: order.dir
-                                };
-                            })
-                        };
+                        d.search = d.search.value;
+                        d.order = d.order;
+                        d.start = d.start;
+                        d.length = d.length;
+                        // return {
+                        //     draw: d.draw,
+                        //     start: d.start,
+                        //     length: d.length,
+                        //     search: d.search.value,
+                        //     order: d.order
+                        //     // order: d.order.map(function(order) {
+                        //     //     return {
+                        //     //         column: d.columns[order.column].data,
+                        //     //         dir: order.dir
+                        //     //     };
+                        //     // })
+                        // };
                     }
                 },
                 "columns": [
