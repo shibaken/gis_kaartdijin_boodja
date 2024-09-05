@@ -513,22 +513,17 @@ class LayerSubmissionViewSet2(
                 else:
                     queryset = queryset.order_by(f'-{column_name}')
         
-        logger.debug(f'queryset count: {queryset.count()}')
-
         # Pagination
         page_size = int(request.GET.get('length', 10))
-        logger.debug(f'page_size: {page_size}')
 
         # Create a Paginator object with the queryset and page size
-        p = Paginator(queryset, page_size)
+        paginator = Paginator(queryset, page_size)
 
         # Calculate the current page number based on the 'start' query parameter
         page_number = int(request.GET.get('start', 0)) // page_size + 1
-        logger.debug(f'page_number: {page_number}')
 
         # Get the current page from the Paginator
-        page = p.get_page(page_number)
-        logger.debug(f'page count: {len(page)}')
+        page = paginator.get_page(page_number)
 
         # Serialize the current page data
         serializer = self.get_serializer(page, many=True)
@@ -540,7 +535,6 @@ class LayerSubmissionViewSet2(
             'recordsFiltered': queryset.count(),
             'data': serializer.data
         }
-
 
         return Response(response_data)
 
