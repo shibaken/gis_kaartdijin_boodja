@@ -10,29 +10,87 @@
         </div>
     </div>
     <div class="card-body collapse show" id="box2-card-body">        
-        Layer Submission here...
+        <table id="layerSubmissionsTable" class="display">
+            <thead>
+                <!-- Headers will be dynamically generated here -->
+            </thead>
+            <tbody>
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
     </div>
 </div>
+
+<!-- datatables -->
+<link href="/static/common/css/datatables.css" rel="stylesheet" />
+<script src="/static/common/js/datatables.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
 
 <script>
     let catalogue_entry_layer_submission = {
         get_layer_submissions: function(){
-            console.log('in get_layer_submissions')
             let params_str = 'catalogue_entry_id={{ catalogue_entry_id }}'
 
-            $.ajax({
-                url: kblayersubmission.var.layersubmission_data_url+"?"+params_str,
-                method: 'GET',
-                dataType: 'json',
-                contentType: 'application/json',
-                success: function (response) {
-                    console.log({response})
+            $('#layerSubmissionsTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "/api/catalogue/layers/submissions2/?"+params_str,
+                    "type": "GET",
+                    "data": function (d) {
+                        d.search = d.search.value;
+                        // d.ordering = d.order[0].column === 0 ? 'id' : d.columns[d.order[0].column].data;
+                        // d.ordering += d.order[0].dir === 'asc' ? '' : '-';
+                    }
                 },
-                error: function (error) {
-                    console.log({error})
-                },
-            });    
+                "columns": [
+                    {
+                        "data": "id",
+                        "title": "Number",
+                        "render": function(data, type, row){
+                            console.log({row})
+                            return 'LM' + data
+                        }
+                    },
+                    {
+                        "data": "name",
+                        "title": "Catalogue Entry",
+                        "render": function(data, type, row){
+                            return 'CE' + row.catalogue_entry + ': ' + data
+                        }
+                    },
+                    {
+                        "data": "permission_type",
+                        "title": "Permission Type",
+                        "render": function(data, type, row){
+                            return row.permission_type_str
+                        }
+                    },
+                    {
+                        "data": "submitted_at",
+                        "title": "Submitted At",
+                        "render": function(data, type, row){
+                            return data
+                        }
+                    },
+                    {
+                        "data": "status",
+                        "title": "Status",
+                        "render": function(data, type, row){
+                            return row.status_name
+                        }
+                    },
+                    {
+                        "data": "id",
+                        "title": "Action",
+                        "render": function(data, type, row){
+                            return 'todo'
+                        }
+                    }
+                ],
+                "order": [[0, 'desc']]  // Default sort
+            });
         }
     }
+
     catalogue_entry_layer_submission.get_layer_submissions()
 </script>

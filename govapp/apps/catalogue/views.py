@@ -16,6 +16,8 @@ from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from datetime import timedelta
 from django.core.cache import cache
 from owslib.wms import WebMapService
@@ -435,8 +437,8 @@ class LayerMetadataViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
-@drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
-class LayerSubmissionViewSet(
+@drf_utils.extend_schema(tags=["Catalogue - Layer Submissions2"])
+class LayerSubmissionViewSet2(
     mixins.ChoicesMixin,
     logs_mixins.ActionsLogMixin,
     logs_mixins.CommunicationsLogMixin,
@@ -450,7 +452,38 @@ class LayerSubmissionViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        # return super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = request.GET.get('length', 10)  # DataTables sends 'length' parameter for pagination
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = self.get_serializer(page, many=True)
+
+        # Prepare the response in the format expected by DataTables
+        response_data = {
+            'draw': int(request.GET.get('draw', 1)),
+            'recordsTotal': paginator.page.paginator.count,
+            'recordsFiltered': paginator.page.paginator.count,
+            'data': serializer.data
+        }
+
+        return Response(response_data)
+
+@drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
+class LayerSubmissionViewSet(
+    mixins.ChoicesMixin,
+    logs_mixins.ActionsLogMixin,
+    logs_mixins.CommunicationsLogMixin,
+    viewsets.ReadOnlyModelViewSet,
+):
+    """Layer Submission View Set."""
+    queryset = models.layer_submissions.LayerSubmission.objects.all()
+    serializer_class = serializers.layer_submissions.LayerSubmissionSerializer
+    filterset_class = filters.LayerSubmissionFilter
+    search_fields = ["description", "catalogue_entry__name"]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     @decorators.action(detail=True, methods=["GET"], url_path="file", permission_classes=[accounts_permissions.IsAuthenticated])
     def download_file(self, request: request.Request, pk: str):
