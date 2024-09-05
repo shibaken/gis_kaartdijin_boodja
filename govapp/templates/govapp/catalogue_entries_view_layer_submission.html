@@ -42,6 +42,19 @@
                         d.order = d.order;
                         d.start = d.start;
                         d.length = d.length;
+                        // return {
+                        //     draw: d.draw,
+                        //     start: d.start,
+                        //     length: d.length,
+                        //     search: d.search.value,
+                        //     order: d.order
+                        //     // order: d.order.map(function(order) {
+                        //     //     return {
+                        //     //         column: d.columns[order.column].data,
+                        //     //         dir: order.dir
+                        //     //     };
+                        //     // })
+                        // };
                     }
                 },
                 "columns": [
@@ -82,7 +95,9 @@
                         }
                     }
                 ],
-                "order": [[0, 'desc']]  // Default sort
+                "order": [[0, 'desc']],  // Default sort
+                "pageLength": 10,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
             });
         }
     }
