@@ -438,24 +438,6 @@ class LayerMetadataViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
-# class DatatablesPageNumberPagination2(DatatablesPageNumberPagination):
-#     page_size_query_param = 'length'
-#     page_query_param = 'start'
-
-#     def get_paginated_response(self, data):
-#         return Response({
-#             'draw': int(self.request.GET.get('draw', 1)),
-#             'recordsTotal': self.page.paginator.count,
-#             'recordsFiltered': self.page.paginator.count,
-#             'data': data
-#         })
-
-#     def paginate_queryset(self, queryset, request, view=None):
-#         self.page_size = self.get_page_size(request)
-#         self.page_number = int(request.GET.get(self.page_query_param, 0)) // self.page_size + 1
-#         return super().paginate_queryset(queryset, request, view)
-
-
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions2"])
 class LayerSubmissionViewSet2(
     mixins.ChoicesMixin,
@@ -470,53 +452,54 @@ class LayerSubmissionViewSet2(
     search_fields = ["id",]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
     pagination_class = DatatablesPageNumberPagination
+    page_size = 10
 
     def list(self, request, *args, **kwargs):
         # return super().list(request, *args, **kwargs)
         queryset = self.filter_queryset(self.get_queryset())
 
-        # Sorting
-        ordering = request.GET.get('order[0][column]')
-        if ordering:
-            column_index = int(ordering)
-            column_name = request.GET.get('columns[{}][data]'.format(column_index))
-            order_dir = request.GET.get('order[0][dir]')
-            if column_name and order_dir:
-                if order_dir == 'asc':
-                    queryset = queryset.order_by(column_name)
-                else:
-                    queryset = queryset.order_by(f'-{column_name}')
-        
-        logger.debug(f'queryset Count: {queryset.count()}')
-
-        # Pagination
-        # paginator = PageNumberPagination()
-        # paginator.page_size = int(request.GET.get('length', 10))  # DataTables sends 'length' parameter for pagination
-        # page_number = int(request.GET.get('start', 0)) // paginator.page_size + 1
-        # paginator.page = page_number
-        # logger.debug(f'page_size: {paginator.page_size}')
-        # logger.debug(f'page_number: {page_number}')
-        # page = paginator.paginate_queryset(queryset, request)
-        # logger.debug(f'page count: {len(page)}')
-        # serializer = self.get_serializer(page, many=True)
-
-        self.paginator.page_size = int(request.GET.get('length', 10))  #queryset.count()
-
-        page_number = int(request.GET.get('start', 0)) // self.paginator.page_size + 1
-        self.paginator.page = page_number
-        logger.debug(f'page_number: {page_number}')
-
+        self.paginator.page_size = queryset.count()
         result_page = self.paginator.paginate_queryset(queryset, request)
-        logger.debug(f'result_page count: {len(result_page)}')
         serializer = serializers.layer_submissions.LayerSubmissionSerializer(result_page, many=True)
-        response_data = {
-            'draw': int(request.GET.get('draw', 1)),
-            'recordsTotal': queryset.count(),
-            # 'recordsFiltered': len(result_page),
-            'recordsFiltered': queryset.count(),
-            'data': serializer.data
-        }
-        return Response(response_data)
+        temp = self.paginator.get_paginated_response(serializer.data)
+        return temp
+
+        # Sorting
+        # ordering = request.GET.get('order[0][column]')
+        # if ordering:
+        #     column_index = int(ordering)
+        #     column_name = request.GET.get('columns[{}][data]'.format(column_index))
+        #     order_dir = request.GET.get('order[0][dir]')
+        #     if column_name and order_dir:
+        #         if order_dir == 'asc':
+        #             queryset = queryset.order_by(column_name)
+        #         else:
+        #             queryset = queryset.order_by(f'-{column_name}')
+        
+        # Pagination
+        # page_size = int(request.GET.get('length', 10))
+        # start = int(request.GET.get('start', 0))
+        # page = start // page_size + 1
+
+        # paginator = self.pagination_class()
+        # paginator.page_size = page_size
+        # paginator.page = page
+
+        # result_page = paginator.paginate_queryset(queryset, request)
+        
+        # if result_page is not None:
+        #     serializer = self.get_serializer(result_page, many=True)
+        #     # temp = paginator.get_paginated_response(serializer.data)
+        #     response_data = {
+        #         'draw': int(request.GET.get('draw', 1)),
+        #         'recordsTotal': queryset.count(),
+        #         'recordsFiltered': queryset.count(),
+        #         'results': serializer.data
+        #     }
+        #     return Response(response_data)
+
+        # serializer = self.get_serializer(queryset, many=True)
+        # return Response(serializer.data)
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
