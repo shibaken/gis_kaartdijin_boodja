@@ -16,7 +16,8 @@ python-dateutil>=2.8.2
 git+https://github.com/jasonrollins/shareplum.git#55d860b
 django-reversion>=5.0.4
 django-reversion-rest-framework>=1.1.2
-django-cron>=0.6.0
+# django-cron>=0.6.0
+git+https://github.com/jorenham/django-cron.git#egg=django-cron
 py7zr>=0.20.2
 rarfile>=4.0
 httpx>=0.23.2

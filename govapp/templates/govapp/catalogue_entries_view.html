@@ -24,10 +24,10 @@
                                     <div class='text-center bg-light p-2 border-bottom fw-bold'>
                                           Logs
                                     </div>
-                                    <div class='p-3 border-bottom'>
+                                    <!-- <div class='p-3 border-bottom'>
                                           <p><b>Communication</b><br>
                                           <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
-                                    </div>
+                                    </div> -->
                                     <div class='p-3'>
                                           <p><b>Actions</b><br>
                                           <a href='#' id="log_actions_show">Show</a></p>
@@ -91,6 +91,9 @@
                                 <li class="nav-item">
                                     <a class="nav-link {% if tab == 'metadata' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/metadata/">Metadata</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if tab == 'layer_submission' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/layer_submission/">Layer Submission</a>
+                                </li>
                           </ul>
                               <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
                               <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id" value="{{ catalogue_entry_id  }}">
@@ -105,6 +108,8 @@
                                     {% include "govapp/catalogue_entries_view_symbology.html" %}
                               {% elif tab == "metadata" %}
                                     {% include "govapp/catalogue_entries_view_metadata.html" %}                                   
+                              {% elif tab == "layer_submission" %}
+                                    {% include "govapp/catalogue_entries_view_layer_submission.html" %}                                   
                               {% endif %}
                   </div>
             </div>

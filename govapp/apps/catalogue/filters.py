@@ -52,14 +52,16 @@ class LayerMetadataFilter(filters.FilterSet):
 
 class LayerSubmissionFilter(filters.FilterSet):
     """Layer Submission Filter."""
+    catalogue_entry_id = filters.NumberFilter(field_name='catalogue_entry__id')
     submitted = filters.IsoDateTimeFromToRangeFilter(field_name="submitted_at")
     order_by = filters.OrderingFilter(
-        fields=(
+        fields=[
             "id",
             ("catalogue_entry__name", "name"),  # Proxy through the Catalogue Entry name to sort by
             "status",
             "submitted_at",
-        ),
+            "catalogue_entry_id",
+        ],
     )
 
     # This hack here allows us to Order by both "name" and
