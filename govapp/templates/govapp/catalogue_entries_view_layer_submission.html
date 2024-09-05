@@ -1,0 +1,106 @@
+<div class="card mt-2">
+    <div class="card-header fw-bold h4" style="padding:30px;">
+        <div class="row">
+            <div class="col-6">
+                Layer Submission 
+            </div>
+            <div class="col-6 text-end">
+                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+            </div>
+        </div>
+    </div>
+    <div class="card-body collapse show" id="box2-card-body">        
+        <table id="layerSubmissionsTable" class="display">
+            <thead>
+                <!-- Headers will be dynamically generated here -->
+            </thead>
+            <tbody>
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- datatables -->
+<link href="/static/common/css/datatables.css" rel="stylesheet" />
+<script src="/static/common/js/datatables.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
+
+<script>
+    let catalogue_entry_layer_submission = {
+        get_layer_submissions: function(){
+            let params_str = 'catalogue_entry_id={{ catalogue_entry_id }}'
+
+            $('#layerSubmissionsTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "/api/catalogue/layers/submissions2/?" + params_str,
+                    "type": "GET",
+                    "dataSrc": 'data',
+                    "data": function (d) {
+                        d.search = d.search.value;
+                        d.order = d.order;
+                        d.start = d.start;
+                        d.length = d.length;
+                        // return {
+                        //     draw: d.draw,
+                        //     start: d.start,
+                        //     length: d.length,
+                        //     search: d.search.value,
+                        //     order: d.order
+                        //     // order: d.order.map(function(order) {
+                        //     //     return {
+                        //     //         column: d.columns[order.column].data,
+                        //     //         dir: order.dir
+                        //     //     };
+                        //     // })
+                        // };
+                    }
+                },
+                "columns": [
+                    {
+                        "data": "id",
+                        "title": "Number",
+                        "render": function(data, type, row){
+                            console.log({row})
+                            return 'LM' + data
+                        }
+                    },
+                    {
+                        "data": "submitted_at",
+                        "title": "Submitted At",
+                        "render": function(data, type, row){
+                            return row.submitted_at_str
+                        }
+                    },
+                    {
+                        "data": "status",
+                        "title": "Status",
+                        "render": function(data, type, row){
+                            if (data === 1){
+                                html = '<span class="badge badge-pill bg-secondary">' + row.status_name + '</span>'
+                            } else if (data === 2){
+                                html = '<span class="badge badge-pill bg-success">' + row.status_name + '</span>'
+                            } else if (data === 3){
+                                html = '<span class="badge badge-pill bg-danger">' + row.status_name + '</span>'
+                            }
+                            return html
+                        }
+                    },
+                    {
+                        "data": "id",
+                        "title": "Action",
+                        "render": function(data, type, row){
+                            return "<a class='btn btn-primary btn-sm' href='/layer/submission/" + row.id + "/details'>View</a>";
+                        }
+                    }
+                ],
+                "order": [[0, 'desc']],  // Default sort
+                "pageLength": 10,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]
+            });
+        }
+    }
+
+    catalogue_entry_layer_submission.get_layer_submissions()
+</script>

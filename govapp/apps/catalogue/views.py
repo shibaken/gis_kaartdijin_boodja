@@ -9,6 +9,7 @@ from django.contrib import auth
 from django.db import connection
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
+from django.core.paginator import Paginator
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -16,6 +17,9 @@ from rest_framework import response
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
+# from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework.response import Response
 from datetime import timedelta
 from django.core.cache import cache
 from owslib.wms import WebMapService
@@ -433,6 +437,106 @@ class LayerMetadataViewSet(
     filterset_class = filters.LayerMetadataFilter
     search_fields = ["catalogue_entry__name"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+
+
+class DatatablesPageNumberPagination(PageNumberPagination):
+    page_size_query_param = 'length'
+    page_query_param = 'start'
+
+    def get_paginated_response(self, data):
+        return Response({
+            'draw': int(self.request.GET.get('draw', 1)),
+            'recordsTotal': self.page.paginator.count,
+            'recordsFiltered': self.page.paginator.count,
+            'data': data
+        })
+    
+    def _paginate_queryset(self, queryset, request, view=None):
+        from django.core.paginator import InvalidPage
+        from rest_framework.exceptions import NotFound
+
+        self.request = request
+        page_size = self.get_page_size(request)
+        if not page_size:
+            return None
+
+        paginator = self.django_paginator_class(queryset, page_size)
+        page_number = self.get_page_number(request, paginator)
+
+        try:
+            self.page = paginator.page(page_number)
+        except InvalidPage as exc:
+            msg = self.invalid_page_message.format(
+                page_number=page_number, message=str(exc)
+            )
+            raise NotFound(msg)
+
+        if paginator.num_pages > 1 and self.template is not None:
+            # The browsable API should display pagination controls.
+            self.display_page_controls = True
+
+        return list(self.page)
+
+    def paginate_queryset(self, queryset, request, view=None):
+        self.page_size = self.get_page_size(request)
+        self.page_number = int(request.GET.get(self.page_query_param, 0)) // self.page_size + 1
+        return self._paginate_queryset(queryset, request, view)
+
+@drf_utils.extend_schema(tags=["Catalogue - Layer Submissions2"])
+class LayerSubmissionViewSet2(
+    mixins.ChoicesMixin,
+    logs_mixins.ActionsLogMixin,
+    logs_mixins.CommunicationsLogMixin,
+    viewsets.ReadOnlyModelViewSet,
+):
+    """Layer Submission View Set."""
+    queryset = models.layer_submissions.LayerSubmission.objects.all()
+    serializer_class = serializers.layer_submissions.LayerSubmissionSerializer
+    filterset_class = filters.LayerSubmissionFilter
+    search_fields = ["id",]
+    permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
+    pagination_class = DatatablesPageNumberPagination
+
+    def list(self, request, *args, **kwargs):
+        # return super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Sorting
+        ordering = request.GET.get('order[0][column]')
+        if ordering:
+            column_index = int(ordering)
+            column_name = request.GET.get('columns[{}][data]'.format(column_index))
+            order_dir = request.GET.get('order[0][dir]')
+            if column_name and order_dir:
+                if order_dir == 'asc':
+                    queryset = queryset.order_by(column_name)
+                else:
+                    queryset = queryset.order_by(f'-{column_name}')
+        
+        # Pagination
+        page_size = int(request.GET.get('length', 10))
+
+        # Create a Paginator object with the queryset and page size
+        paginator = Paginator(queryset, page_size)
+
+        # Calculate the current page number based on the 'start' query parameter
+        page_number = int(request.GET.get('start', 0)) // page_size + 1
+
+        # Get the current page from the Paginator
+        page = paginator.get_page(page_number)
+
+        # Serialize the current page data
+        serializer = self.get_serializer(page, many=True)
+
+        # Prepare the response data for DataTables
+        response_data = {
+            'draw': int(request.GET.get('draw', 1)),
+            'recordsTotal': queryset.count(),
+            'recordsFiltered': queryset.count(),
+            'data': serializer.data
+        }
+
+        return Response(response_data)
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions"])
