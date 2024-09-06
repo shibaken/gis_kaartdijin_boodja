@@ -439,51 +439,8 @@ class LayerMetadataViewSet(
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
 
-class DatatablesPageNumberPagination(PageNumberPagination):
-    page_size_query_param = 'length'
-    page_query_param = 'start'
-
-    def get_paginated_response(self, data):
-        return Response({
-            'draw': int(self.request.GET.get('draw', 1)),
-            'recordsTotal': self.page.paginator.count,
-            'recordsFiltered': self.page.paginator.count,
-            'data': data
-        })
-    
-    def _paginate_queryset(self, queryset, request, view=None):
-        from django.core.paginator import InvalidPage
-        from rest_framework.exceptions import NotFound
-
-        self.request = request
-        page_size = self.get_page_size(request)
-        if not page_size:
-            return None
-
-        paginator = self.django_paginator_class(queryset, page_size)
-        page_number = self.get_page_number(request, paginator)
-
-        try:
-            self.page = paginator.page(page_number)
-        except InvalidPage as exc:
-            msg = self.invalid_page_message.format(
-                page_number=page_number, message=str(exc)
-            )
-            raise NotFound(msg)
-
-        if paginator.num_pages > 1 and self.template is not None:
-            # The browsable API should display pagination controls.
-            self.display_page_controls = True
-
-        return list(self.page)
-
-    def paginate_queryset(self, queryset, request, view=None):
-        self.page_size = self.get_page_size(request)
-        self.page_number = int(request.GET.get(self.page_query_param, 0)) // self.page_size + 1
-        return self._paginate_queryset(queryset, request, view)
-
 @drf_utils.extend_schema(tags=["Catalogue - Layer Submissions2"])
-class LayerSubmissionViewSet2(
+class LayerSubmissionDatatableViewSet(
     mixins.ChoicesMixin,
     logs_mixins.ActionsLogMixin,
     logs_mixins.CommunicationsLogMixin,
@@ -495,11 +452,21 @@ class LayerSubmissionViewSet2(
     filterset_class = filters.LayerSubmissionFilter
     search_fields = ["id",]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
-    pagination_class = DatatablesPageNumberPagination
 
     def list(self, request, *args, **kwargs):
-        # return super().list(request, *args, **kwargs)
-        queryset = self.filter_queryset(self.get_queryset())
+        # Retrieve all the layer submissions
+        recordsTotal = self.get_queryset()
+
+        catalogue_entry_id = request.GET.get('catalogue_entry_id', False)
+        if catalogue_entry_id:
+            # Filter by the catalogue entry
+            recordsTotal = recordsTotal.filter(catalogue_entry_id=catalogue_entry_id)
+
+        # Store the total number to return to the datatable in the frontend
+        recordsTotalCount = recordsTotal.count()
+
+        # Filter the queryset
+        queryset = self.filter_queryset(recordsTotal)
 
         # Sorting
         ordering = request.GET.get('order[0][column]')
@@ -531,7 +498,7 @@ class LayerSubmissionViewSet2(
         # Prepare the response data for DataTables
         response_data = {
             'draw': int(request.GET.get('draw', 1)),
-            'recordsTotal': queryset.count(),
+            'recordsTotal': recordsTotalCount,
             'recordsFiltered': queryset.count(),
             'data': serializer.data
         }
