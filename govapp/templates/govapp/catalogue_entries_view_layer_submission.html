@@ -10,7 +10,7 @@
         </div>
     </div>
     <div class="card-body collapse show" id="box2-card-body">        
-        <table id="layerSubmissionsTable" class="display">
+        <table id="layerSubmissionsTable" class="table table-striped table-bordered table-hover dataTable" style="width:100%">
             <thead>
                 <!-- Headers will be dynamically generated here -->
             </thead>
@@ -42,19 +42,6 @@
                         d.order = d.order;
                         d.start = d.start;
                         d.length = d.length;
-                        // return {
-                        //     draw: d.draw,
-                        //     start: d.start,
-                        //     length: d.length,
-                        //     search: d.search.value,
-                        //     order: d.order
-                        //     // order: d.order.map(function(order) {
-                        //     //     return {
-                        //     //         column: d.columns[order.column].data,
-                        //     //         dir: order.dir
-                        //     //     };
-                        //     // })
-                        // };
                     }
                 },
                 "columns": [
