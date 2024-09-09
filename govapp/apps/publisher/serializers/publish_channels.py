@@ -92,7 +92,7 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
 
 class LayerHealthCheckSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.publish_channels.LayerHealthCheck
+        model = models.publish_channels.GeoServerLayerHealthCheck
         fields = [
             'id',
             'geoserver_channel',

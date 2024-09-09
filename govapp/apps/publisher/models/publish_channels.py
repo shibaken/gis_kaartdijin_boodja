@@ -404,11 +404,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
                 try:
                     response_data = geoserver_obj.get_layer_details(layer_name)  # Return value can be the layer details or None
                     if response_data:
-                        LayerHealthCheck.objects.update_or_create(
+                        GeoServerLayerHealthCheck.objects.update_or_create(
                             geoserver_channel=self,
                             layer_name=layer_name,
                             defaults={
-                                'status': LayerHealthCheck.HEALTHY,
+                                'status': GeoServerLayerHealthCheck.HEALTHY,
                                 'error_message': None,
                                 'last_check_time': timezone.now()
                             }
@@ -416,21 +416,21 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
                     else:
                         raise Exception('response data is something wrong...')
                 except Exception as e:
-                    LayerHealthCheck.objects.update_or_create(
+                    GeoServerLayerHealthCheck.objects.update_or_create(
                         geoserver_channel=self,
                         layer_name=layer_name,
                         defaults={
-                            'status': LayerHealthCheck.UNHEALTHY,
+                            'status': GeoServerLayerHealthCheck.UNHEALTHY,
                             'error_message': str(e),
                             'last_check_time': timezone.now()
                         }
                     )
         except Exception as e:
-            LayerHealthCheck.objects.update_or_create(
+            GeoServerLayerHealthCheck.objects.update_or_create(
                 geoserver_channel=self,
                 layer_name='all_layers',
                 defaults={
-                    'status': LayerHealthCheck.UNHEALTHY,
+                    'status': GeoServerLayerHealthCheck.UNHEALTHY,
                     'error_message': str(e),
                     'last_check_time': timezone.now()
                 }
@@ -683,7 +683,7 @@ class FTPPublishChannel(mixins.RevisionedMixin):
         session.quit()
 
 
-class LayerHealthCheck(mixins.RevisionedMixin):
+class GeoServerLayerHealthCheck(mixins.RevisionedMixin):
     HEALTHY = 'healthy'
     UNHEALTHY = 'unlealthy'
     UNKNOWN = 'unknown'
