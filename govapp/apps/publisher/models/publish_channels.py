@@ -13,6 +13,7 @@ from django import conf
 from django.db import models
 from django.core import exceptions
 from django.utils import timezone
+import httpx
 import reversion
 from django.template import Template, Context
 from datetime import datetime
@@ -388,6 +389,53 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.publish_entry.catalogue_entry.name}"
 
+    def perform_health_check(self):
+        if not self.geoserver_pool or not self.geoserver_pool.enabled:
+            return
+
+        try:
+            geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
+            
+            # Retrive layer names from geoserver
+            layers = geoserver_obj.get_layers()
+            layer_names = [layer['name'].split(':')[1] for layer in layers]
+
+            for layer_name in layer_names:
+                try:
+                    response_data = geoserver_obj.get_layer_details(layer_name)  # Return value can be the layer details or None
+                    if response_data:
+                        LayerHealthCheck.objects.update_or_create(
+                            geoserver_channel=self,
+                            layer_name=layer_name,
+                            defaults={
+                                'status': LayerHealthCheck.HEALTHY,
+                                'error_message': None,
+                                'last_check_time': timezone.now()
+                            }
+                        )
+                    else:
+                        raise Exception('response data is something wrong...')
+                except Exception as e:
+                    LayerHealthCheck.objects.update_or_create(
+                        geoserver_channel=self,
+                        layer_name=layer_name,
+                        defaults={
+                            'status': LayerHealthCheck.UNHEALTHY,
+                            'error_message': str(e),
+                            'last_check_time': timezone.now()
+                        }
+                    )
+        except Exception as e:
+            LayerHealthCheck.objects.update_or_create(
+                geoserver_channel=self,
+                layer_name='all_layers',
+                defaults={
+                    'status': LayerHealthCheck.UNHEALTHY,
+                    'error_message': str(e),
+                    'last_check_time': timezone.now()
+                }
+            )
+
     @property
     def name(self) -> str:
         """Proxies the Publish Entry's name to this model.
@@ -588,8 +636,6 @@ class FTPPublishChannel(mixins.RevisionedMixin):
         self.published_at = publish_time
         self.save()
 
-
-
     def publish_ftp(self) -> None:
         """Publishes the Catalogue Entry to FTP. """
         # Log
@@ -636,4 +682,24 @@ class FTPPublishChannel(mixins.RevisionedMixin):
         file.close()  
         session.quit()
 
-        
+
+class LayerHealthCheck(mixins.RevisionedMixin):
+    HEALTHY = 'healthy'
+    UNHEALTHY = 'unlealthy'
+    UNKNOWN = 'unknown'
+
+    HEALTH_CHOICES = [
+        (HEALTHY, 'Healthy'),
+        (UNHEALTHY, 'Unhealthy'),
+        (UNKNOWN, 'Unknown'),
+    ]
+
+    geoserver_publish_channel = models.ForeignKey(
+        GeoServerPublishChannel,
+        on_delete=models.CASCADE,
+        related_name='health_checks'
+    )
+    layer_name = models.CharField(max_length=255)
+    health_status = models.CharField(max_length=20, choices=HEALTH_CHOICES, default=UNKNOWN)
+    last_check_time = models.DateTimeField()
+    error_message = models.TextField(blank=True, null=True)
