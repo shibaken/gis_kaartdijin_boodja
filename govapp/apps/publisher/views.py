@@ -31,6 +31,7 @@ from govapp.apps.accounts.serializers import UserSerializer
 from govapp.apps.accounts.utils import get_file_list
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole
 from govapp.apps.publisher.serializers.geoserver_group import GeoServerGroupSerializer, GeoServerRoleSerializer
+# from govapp.apps.publisher.serializers.publish_channels import GeoServerLayerHealthCheckSerializer
 from govapp.common import mixins
 from govapp.common import utils
 from govapp.apps.accounts import permissions as accounts_permissions
@@ -1171,3 +1172,22 @@ class GeoServerGroupViewSet(
                 
         except Exception as e:
             return Response({"error": f"An error occurred while updating the group: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LayerHealthCheckViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.publish_channels.GeoServerLayerHealthCheck.objects.all()
+    serializer_class = serializers.publish_channels.GeoServerLayerHealthCheckSerializer
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        total = models.publish_channels.GeoServerLayerHealthCheck.objects.count()
+        healthy = models.publish_channels.GeoServerLayerHealthCheck.objects.filter(status='healthy').count()
+        unhealthy = models.publish_channels.GeoServerLayerHealthCheck.objects.filter(status='unhealthy').count()
+        unknown = models.publish_channels.GeoServerLayerHealthCheck.objects.filter(status='unknown').count()
+
+        return Response({
+            'total': total,
+            'healthy': healthy,
+            'unhealthy': unhealthy,
+            'unknown': unknown
+        })
