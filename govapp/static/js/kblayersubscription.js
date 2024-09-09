@@ -212,7 +212,7 @@ var kblayersubscription = {
         });
     },
     show_new_subsctiption_modal: function(){
-        common_entity_modal.init("New Layer Subscription", "submit");
+        common_entity_modal.init("New Subscription", "submit");
 
         fields = {};
         fields.type = {id:common_entity_modal.add_field(label="Type", type="select", value=1, option_map=kblayersubscription.var.subscription_type_map)};    //publish workspace
