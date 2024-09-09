@@ -90,6 +90,18 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
         return data
         
 
+class LayerHealthCheckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.publish_channels.LayerHealthCheck
+        fields = [
+            'id',
+            'geoserver_channel',
+            'layer_name',
+            'status',
+            'last_check_time',
+            'error_message'
+        ]
+
 
 class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
     """GeoServer Publish Channel Model Create Serializer."""

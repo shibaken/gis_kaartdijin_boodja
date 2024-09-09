@@ -389,7 +389,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Generate String and Return
         return f"{self.publish_entry.catalogue_entry.name}"
 
-    def perform_health_check(self):
+    def perform_geoserver_layer_health_check(self):
         if not self.geoserver_pool or not self.geoserver_pool.enabled:
             return
 
