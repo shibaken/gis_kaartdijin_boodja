@@ -101,6 +101,10 @@ class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
     workspace_link.short_description = 'Workspace'
 
 
+class GeoServerHealthCheckAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'health_status',)
+
+
 class CDDPPublishChannelAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'publish_entry__description',)
     list_display = ('id', 'publish_entry_link', 'format', 'mode', 'frequency', 'path', 'xml_path', 'published_at',)
@@ -331,3 +335,4 @@ admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
+admin.site.register(models.publish_channels.GeoServerLayerHealthCheck, GeoServerHealthCheckAdmin)
