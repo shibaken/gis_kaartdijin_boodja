@@ -192,7 +192,11 @@ var kbpublish = {
             common_pagination.var.current_page=0;
             kbpublish.get_publish();
         });
-        $( "#publish-order-by" ).change(function(){
+        $("#publish-order-by").change(function(){
+            common_pagination.var.current_page=0;
+            kbpublish.get_publish();
+        });
+        $("#publish-ordering-direction").change(function(){
             common_pagination.var.current_page=0;
             kbpublish.get_publish();
         });
@@ -989,17 +993,22 @@ var kbpublish = {
 
     },
     get_publish: function(params_str) {
+        order_by = $('#publish-order-by').val()
+        ordering_direction = $('#publish-ordering-direction').val()
+        if (ordering_direction === 'desc'){
+            order_by = '-' + order_by
+        }
         params = {
-            catalogue_entry__name__icontains:        $('#publish-name').val(),
-            status:                 $('#publish-status').val(),
+            catalogue_entry__name__icontains: $('#publish-name').val(),
+            status: $('#publish-status').val(),
             description__icontains: $('#publish-description').val(),
             catalogue_entry__custodian: +$('#publish-custodian').val(),
-            assigned_to:            +$('#publish-assignedto').val(),
-            updated_after:          utils.convert_date_format($('#publish-lastupdatedfrom').val(), kbpublish.var.publish_date_format, hh="00", mm="00", ss="00"),
-            updated_before:         utils.convert_date_format($('#publish-lastupdatedto').val(), kbpublish.var.publish_date_format, hh="23", mm="59", ss="59"),
-            id:                     $('#publish-number').val().replace("PE", ""),
-            limit:                  $('#publish-limit').val(),
-            order_by:               $('#publish-order-by').val()
+            assigned_to: +$('#publish-assignedto').val(),
+            updated_after: utils.convert_date_format($('#publish-lastupdatedfrom').val(), kbpublish.var.publish_date_format, hh="00", mm="00", ss="00"),
+            updated_before: utils.convert_date_format($('#publish-lastupdatedto').val(), kbpublish.var.publish_date_format, hh="23", mm="59", ss="59"),
+            id: $('#publish-number').val().replace("PE", ""),
+            limit: $('#publish-limit').val(),
+            order_by: order_by
         }
 
         if (!params_str){

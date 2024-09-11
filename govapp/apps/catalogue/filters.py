@@ -112,12 +112,26 @@ class LayerSubmissionFilter(filters.FilterSet):
         model = models.layer_submissions.LayerSubmission
         fields = {"status": ["exact"], "catalogue_entry__name":["icontains", "contains"]}
 
+    def filter_queryset(self, queryset):
+        return super().filter_queryset(queryset)
+
 
 class LayerSubscriptionFilter(filters.FilterSet):
     """Layer Subscription Filter."""
     updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
     order_by = filters.OrderingFilter(
-        fields=("id", "name", "description", "workspace", "type", "url", "enabled", "updated_at",)
+        fields=(
+            "id",
+            "status",
+            "name",
+            "description",
+            "workspace",
+            "type",
+            "url",
+            "enabled",
+            "updated_at",
+            "assigned_to",
+        )
     )
 
     class Meta:
