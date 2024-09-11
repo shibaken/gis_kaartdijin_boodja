@@ -112,6 +112,9 @@ class LayerSubmissionFilter(filters.FilterSet):
         model = models.layer_submissions.LayerSubmission
         fields = {"status": ["exact"], "catalogue_entry__name":["icontains", "contains"]}
 
+    def filter_queryset(self, queryset):
+        return super().filter_queryset(queryset)
+
 
 class LayerSubscriptionFilter(filters.FilterSet):
     """Layer Subscription Filter."""

@@ -30,6 +30,11 @@ var kblayersubmission = {
             kblayersubmission.get_layer_submissions();
         });
 
+        $("#layer-submission-ordering-direction").change(function() {
+            common_pagination.var.current_page=0;
+            kblayersubmission.get_layer_submissions();
+        });
+
         $( "#layer-submission-status" ).change(function() {
             kblayersubmission.get_layer_submissions();
         });
@@ -70,11 +75,17 @@ var kblayersubmission = {
         });
     },
     get_layer_submissions: function(params_str) {
+        ordering_direction = $('#layer-submission-ordering-direction').val()
+        order_by = $('#layer-submission-order-by').val()
+        if (ordering_direction === "desc"){
+            order_by = '-' + order_by
+        }
         params = {
             status: $('#layer-submission-status').val(),
             limit: $('#layer-submission-limit').val(),
-            order_by: $('#layer-submission-order-by').val(),
-            ordering_direction: $('#layer-submission-ordering-direction').val(),
+            // order_by: $('#layer-submission-order-by').val(),
+            // ordering_direction: $('#layer-submission-ordering-direction').val(),
+            order_by: order_by,
             submitted_after: utils.convert_date_format($('#layer-submission-submitted-from').val(), kblayersubmission.var.layersubmission_date_format, hh="00", mm="00", ss="00"),
             submitted_before: utils.convert_date_format($('#layer-submission-submitted-to').val(), kblayersubmission.var.layersubmission_date_format,hh="23", mm="59", ss="59"),
             catalogue_entry__name__icontains:  $('#layer-submission-name').val(),
