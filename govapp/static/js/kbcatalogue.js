@@ -97,11 +97,15 @@ var kbcatalogue = {
             kbcatalogue.get_catalogue();
         });
 
-        $( "#catalogue-limit" ).change(function() {
+        $("#catalogue-limit").change(function() {
             common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
         });
-        $( "#catalogue-order-by" ).change(function() {
+        $("#catalogue-order-by").change(function() {
+            common_pagination.var.current_page=0;
+            kbcatalogue.get_catalogue();
+        });
+        $("#catalogue-ordering-direction").change(function() {
             common_pagination.var.current_page=0;
             kbcatalogue.get_catalogue();
         });
@@ -465,21 +469,24 @@ var kbcatalogue = {
     get_catalogue: function(params_str) {
         if (!params_str){
             params = {
-                name__icontains:        $('#catalogue-name').val(),
-                status:                 $('#catalogue-status').val(),
+                name__icontains: $('#catalogue-name').val(),
+                status: $('#catalogue-status').val(),
                 description__icontains: $('#catalogue-description').val(),
-                custodian:              +$('#catalogue-custodian').val(),
-                assigned_to:            +$('#catalogue-assignedto').val(),
-                updated_after:          utils.convert_date_format($('#catalogue-lastupdatedfrom').val(), kbcatalogue.var.catalogue_date_format, hh="00", mm="00", ss="00"),
-                updated_before:         utils.convert_date_format($('#catalogue-lastupdatedto').val(), kbcatalogue.var.catalogue_date_format, hh="23", mm="59", ss="59"),
-                id:                     $('#catalogue-number').val().replace("PE", ""),
-                limit:                  $('#catalogue-limit').val(),
-                order_by:               $('#catalogue-order-by').val(),
-                type_in:                   "1,5"
+                custodian: +$('#catalogue-custodian').val(),
+                assigned_to: +$('#catalogue-assignedto').val(),
+                updated_after: utils.convert_date_format($('#catalogue-lastupdatedfrom').val(), kbcatalogue.var.catalogue_date_format, hh="00", mm="00", ss="00"),
+                updated_before: utils.convert_date_format($('#catalogue-lastupdatedto').val(), kbcatalogue.var.catalogue_date_format, hh="23", mm="59", ss="59"),
+                id: $('#catalogue-number').val().replace("PE", ""),
+                limit: $('#catalogue-limit').val(),
+                order_by: $('#catalogue-order-by').val(),
+                ordering_direction: $('#catalogue-ordering-direction').val(),
+                type_in: "1,5"
             }
 
             params_str = utils.make_query_params(params);
         }
+
+        console.log({params_str})
 
         $.ajax({
             url: kbcatalogue.var.catalogue_data_url+"?"+params_str,
