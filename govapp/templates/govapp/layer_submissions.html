@@ -55,57 +55,43 @@
                                                 </div>
                                                 <div class='col-3 p-4'>
                                                 <button class="btn btn-primary btn-sm" aria-current="page" id='layer-submission-filter-btn'>Filter</button>
-                                                &nbsp;
                                           </div>
                                           </div>
                                     </div>
                               </div>
                         </div>
 
-                        <!-- <div class='row'>
-                              <div class='col-12 text-end'>
-                                    <button class="btn btn-secondary btn-sm" aria-current="page" href="#">Excel</button>    
-                                    <button class="btn btn-secondary btn-sm" aria-current="page" href="#">CSV</button>
-                              </div>
-                        </div> -->
-
-                        <div class='col-12 pt-2 pb-2 '>
-                              <div class='row'>
-                                    <div class='col-6'>
-                                          <div class="row">
-                                                <div class="col-sm-12 col-md-6">
-                                                      <div class="dataTables_length" id="bookings-table_length">
-                                                            <label>Show 
-                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="layer-submission-limit">
-                                                                        <option value="5">5</option>
-                                                                        <option value="10">10</option>
-                                                                        <option value="25" selected>25</option>
-                                                                        <option value="50">50</option>
-                                                                        <option value="100">100</option>
-                                                                  </select> entries
-                                                            </label>
-                                                      </div>
-                                                </div>
-                                          </div>
+                        <div class='row mb-2'>
+                              <div class="col-2">
+                                    <label>Show</label>
+                                    <div class="d-flex align-items-center">
+                                          <select aria-controls="bookings-table" class="form-select form-select-sm me-2" id="layer-submission-limit">
+                                          <option value="5">5</option>
+                                          <option value="10">10</option>
+                                          <option value="25" selected>25</option>
+                                          <option value="50">50</option>
+                                          <option value="100">100</option>
+                                          </select>
+                                          <span>entries</span>
                                     </div>
-                                    <div class='col-6 text-end'>
-                                          <div class="row">
-                                                <div class="col-sm-12 col-md-12 text-end">
-                                                      <div class="dataTables_length" id="bookings-table_length">
-                                                            <label>Order By 
-                                                                  <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="layer-submission-order-by">
-                                                                        <option value="id">ID</option>
-                                                                        <option value="name">Name</option>
-                                                                        <option value="submitted_at">Submitted date</option>                                                                        
-                                                                        <option value="status">Status</option>
-                                                                  </select> 
-                                                            </label>
-                                                      </div>
-                                                </div>
-                                          </div>
-                                    </div>                                    
+                                </div>
+                              <div class='col-2 text-end offset-6'>
+                                    <label>Ordering Direction</label>
+                                    <select aria-controls="catalogue-ordering-direction" class="form-select form-select-sm" id="layer-submission-ordering-direction">
+                                          <option value="asc">Ascending</option>
+                                          <option value="desc">Descending</option>
+                                    </select> 
                               </div>
-                        </div>     
+                              <div class='col-2 text-end'>
+                                    <label>Order By</label>
+                                    <select name="bookings-table_length" aria-controls="bookings-table" class="form-select form-select-sm" id="layer-submission-order-by">
+                                          <option value="id">ID</option>
+                                          <option value="name">Name</option>
+                                          <option value="submitted_at">Submitted date</option>
+                                          <option value="status">Status</option>
+                                    </select> 
+                              </div>
+                        </div>
                         <div id='layersubmission-table'>
                               <table id="example" class="table" style="width:100%">
                                     <thead class='table-dark'>

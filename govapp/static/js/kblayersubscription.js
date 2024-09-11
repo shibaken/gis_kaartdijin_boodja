@@ -55,6 +55,10 @@ var kblayersubscription = {
             common_pagination.var.current_page=0;
             kblayersubscription.get_layer_subscription();
         });
+        $("#subscription-ordering-direction").change(function() {
+            common_pagination.var.current_page=0;
+            kblayersubscription.get_layer_subscription();
+        });
         $( "#subscription-new-btn" ).click(function() {
             kblayersubscription.show_new_subsctiption_modal();
         });
@@ -97,20 +101,24 @@ var kblayersubscription = {
         kblayersubscription.get_workspace(kblayersubscription.get_layer_subscription);
     },
     get_layer_subscription: function(param_str){
+        order_by = $('#subscription-order-by').val()
+        ordering_direction = $('#subscription-ordering-direction').val()
+        if (ordering_direction === 'desc'){
+            order_by = '-' + order_by
+        }
         if(!param_str){
             params = {
-                limit:      $('#subscription-limit').val(),
-                order_by:   $('#subscription-order-by').val(),
-                
-                name__icontains:  $('#subscription-name').val(),
-                workspace:  $('#subscription-workspace').val(),
-                enabled:    $('#subscription-enabled').val(),
-                updated_after:  utils.convert_date_format($('#subscription-updated-from').val(), kblayersubscription.var.layersubscription_date_format, hh="00", mm="00", ss="00"),
+                limit: $('#subscription-limit').val(),
+                order_by: order_by,
+                name__icontains: $('#subscription-name').val(),
+                workspace: $('#subscription-workspace').val(),
+                enabled: $('#subscription-enabled').val(),
+                updated_after: utils.convert_date_format($('#subscription-updated-from').val(), kblayersubscription.var.layersubscription_date_format, hh="00", mm="00", ss="00"),
                 updated_before: utils.convert_date_format($('#subscription-updated-to').val(), kblayersubscription.var.layersubscription_date_format,hh="23", mm="59", ss="59"),
-                type:       $('#subscription-type').val(),
-                description__icontains:  $('#subscription-description').val(),
-                id:         $('#subscription-number').val(),
-                assigned_to:            +$('#subscription-assignedto').val(),
+                type: $('#subscription-type').val(),
+                description__icontains: $('#subscription-description').val(),
+                id: $('#subscription-number').val(),
+                assigned_to: +$('#subscription-assignedto').val(),
             }
             
             param_str = utils.make_query_params(params);
@@ -212,7 +220,7 @@ var kblayersubscription = {
         });
     },
     show_new_subsctiption_modal: function(){
-        common_entity_modal.init("New Layer Subscription", "submit");
+        common_entity_modal.init("New Subscription", "submit");
 
         fields = {};
         fields.type = {id:common_entity_modal.add_field(label="Type", type="select", value=1, option_map=kblayersubscription.var.subscription_type_map)};    //publish workspace

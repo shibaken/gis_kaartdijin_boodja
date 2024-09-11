@@ -1,8 +1,8 @@
 """Kaartdijin Boodja Catalogue Django Application Filters."""
 
-
 # Third-Party
 from django_filters import rest_framework as filters
+from django.db.models import F
 
 # Local
 from govapp.apps.catalogue import models
@@ -11,19 +11,51 @@ from govapp.apps.catalogue import models
 class CatalogueEntryFilter(filters.FilterSet):
     """Catalogue Entry Filter."""
     updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
-    order_by = filters.OrderingFilter(fields=("id", "name", "status", "updated_at", "custodian", "assigned_to"))
+    order_by = filters.OrderingFilter(
+        fields=(
+            "id",
+            "name",
+            "status",
+            "updated_at",
+            "custodian",
+            "assigned_to"
+        )
+    )
     type_in = filters.CharFilter(method='filter_type_in')
+    ordering_direction = filters.CharFilter(method='filter_ordering_direction')
 
     class Meta:
         """Catalogue Entry Filter Metadata."""
         model = models.catalogue_entries.CatalogueEntry
-        fields = {"id": ["in", "exact"], "assigned_to": ["exact"], "custodian": ["exact"], 
-                  "status": ["in", "exact"], "name": ["icontains", "contains"], 
-                  "description": ["icontains", "contains"], "type": ["exact"]}
+        fields = {
+            "id": ["in", "exact"],
+            "assigned_to": ["exact"],
+            "custodian": ["exact"], 
+            "status": ["in", "exact"],
+            "name": ["icontains", "contains"], 
+            "description": ["icontains", "contains"],
+            "type": ["exact"]
+        }
 
     def filter_type_in(self, queryset, name, value):
         types = value.split(',')
         return queryset.filter(type__in=types)
+
+    def filter_ordering_direction(self, queryset, name, value):
+        if value not in ['asc', 'desc']:
+            return queryset
+
+        order_by = self.request.query_params.get('order_by')
+        if not order_by:
+            return queryset
+
+        if value == 'desc':
+            order_by = F(order_by).desc(nulls_last=True)
+        else:
+            order_by = F(order_by).asc(nulls_last=True)
+
+        return queryset.order_by(order_by)
+
 
 class CustodianFilter(filters.FilterSet):
     """Custodian Filter."""
@@ -80,12 +112,26 @@ class LayerSubmissionFilter(filters.FilterSet):
         model = models.layer_submissions.LayerSubmission
         fields = {"status": ["exact"], "catalogue_entry__name":["icontains", "contains"]}
 
+    def filter_queryset(self, queryset):
+        return super().filter_queryset(queryset)
+
 
 class LayerSubscriptionFilter(filters.FilterSet):
     """Layer Subscription Filter."""
     updated = filters.IsoDateTimeFromToRangeFilter(field_name="updated_at")
     order_by = filters.OrderingFilter(
-        fields=("id", "name", "description", "workspace", "type", "url", "enabled", "updated_at",)
+        fields=(
+            "id",
+            "status",
+            "name",
+            "description",
+            "workspace",
+            "type",
+            "url",
+            "enabled",
+            "updated_at",
+            "assigned_to",
+        )
     )
 
     class Meta:
