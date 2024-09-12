@@ -85,6 +85,9 @@ urlpatterns = [
     # Usergroups
     urls.path("geoserver-groups/", views.GeoServerGroupsView.as_view()),
     urls.re_path("geoserver-group/(?P<pk>\d+)/", views.GeoServerGroupView.as_view()),
+    
+    # Geoserver Layer Healthcheck
+    urls.path("geoserver-layer-healthcheck/", views.GeoServerLayerHealthcheckView.as_view()),
 
     urls.path("oldcatalogue/", views.OldCatalogueVue.as_view()),
 

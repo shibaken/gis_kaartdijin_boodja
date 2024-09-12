@@ -208,6 +208,16 @@ class ManagementCommands(viewsets.ViewSet):
             status_code = getattr(e, 'status_code', status.HTTP_500_INTERNAL_SERVER_ERROR)
             return response.Response({'detail': 'Internal server error', 'error': str(e)}, status=status_code)
 
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=False, methods=["POST"])
+    def perform_geoserver_layer_healthcheck(self, request: request.Request) -> response.Response:
+        try:
+            management.call_command("runcrons", "govapp.apps.publisher.cron.GeoServerLayerHealthcheckCronJob", "--force")
+        except Exception as exc:
+            log.error(f"Unable to perform scan: {exc}")
+
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
     
 # Router
 router = routers.DefaultRouter()

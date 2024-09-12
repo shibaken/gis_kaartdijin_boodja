@@ -1280,7 +1280,8 @@ class WebhookNotificationViewSet(
     filterset_class = filters.WebhookNotificationFilter
     search_fields = ["name", "url"]
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
-    
+
+
 @drf_utils.extend_schema(tags=["Catalogue - Permissions"])
 class CataloguePermissionViewSet(
     mixins.MultipleSerializersMixin,

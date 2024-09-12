@@ -101,6 +101,24 @@ class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
     workspace_link.short_description = 'Workspace'
 
 
+class GeoServerHealthCheckAdmin(reversion.admin.VersionAdmin):
+    list_display = ('id', 'coloured_health_status', 'last_check_time', 'error_message',)
+
+    class Media:
+        css = {'all': ('common/css/admin_custom.css',)}
+
+    def coloured_health_status(self, obj):
+        if obj.health_status == models.publish_channels.GeoServerLayerHealthcheck.HEALTHY:
+            return format_html('<span class="badge badge-pill bg-success">' + obj.get_health_status_display() + '</span>')
+        elif obj.health_status == models.publish_channels.GeoServerLayerHealthcheck.UNHEALTHY:
+            return format_html('<span class="badge badge-pill bg-danger">' + obj.get_health_status_display() + '</span>')
+        elif obj.health_status == models.publish_channels.GeoServerLayerHealthcheck.UNKNOWN:
+            return format_html('<span class="badge badge-pill bg-secondary">' + obj.get_health_status_display() + '</span>')
+        else:
+            return '---'
+    coloured_health_status.short_description = 'Health Status'
+
+
 class CDDPPublishChannelAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'publish_entry__description',)
     list_display = ('id', 'publish_entry_link', 'format', 'mode', 'frequency', 'path', 'xml_path', 'published_at',)
@@ -331,3 +349,4 @@ admin.site.register(models.geoserver_pools.GeoServerPool, GeoServerPoolAdmin)
 admin.site.register(models.geoserver_queues.GeoServerQueue, GeoServerQueueAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerRole, GeoServerRoleAdmin)
 admin.site.register(models.geoserver_roles_groups.GeoServerGroup, GeoServerGroupAdmin)
+admin.site.register(models.publish_channels.GeoServerLayerHealthcheck, GeoServerHealthCheckAdmin)
