@@ -395,42 +395,38 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         try:
             geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
-            
-            # Retrive layer names from geoserver
-            layers = geoserver_obj.get_layers()
-            layer_names = [layer['name'].split(':')[1] for layer in layers]
 
-            for layer_name in layer_names:
-                try:
-                    response_data = geoserver_obj.get_layer_details(layer_name)  # Return value can be the layer details or None
-                    if response_data:
-                        GeoServerLayerHealthCheck.objects.update_or_create(
-                            geoserver_channel=self,
-                            layer_name=layer_name,
-                            defaults={
-                                'status': GeoServerLayerHealthCheck.HEALTHY,
-                                'error_message': None,
-                                'last_check_time': timezone.now()
-                            }
-                        )
-                    else:
-                        raise Exception('response data is something wrong...')
-                except Exception as e:
+            try:
+                layer_name = self.name  # self.name is retrieved from the catalogue_entry.name, which is used as a layer name.
+                response_data = geoserver_obj.get_layer_details(layer_name)  # Return value can be the layer details or None
+                if response_data:
                     GeoServerLayerHealthCheck.objects.update_or_create(
-                        geoserver_channel=self,
+                        geoserver_publish_channel=self,
                         layer_name=layer_name,
                         defaults={
-                            'status': GeoServerLayerHealthCheck.UNHEALTHY,
-                            'error_message': str(e),
+                            'health_status': GeoServerLayerHealthCheck.HEALTHY,
+                            'error_message': None,
                             'last_check_time': timezone.now()
                         }
                     )
+                else:
+                    raise Exception('response data is something wrong...')
+            except Exception as e:
+                GeoServerLayerHealthCheck.objects.update_or_create(
+                    geoserver_publish_channel=self,
+                    layer_name=layer_name,
+                    defaults={
+                        'health_status': GeoServerLayerHealthCheck.UNHEALTHY,
+                        'error_message': str(e),
+                        'last_check_time': timezone.now()
+                    }
+                )
         except Exception as e:
             GeoServerLayerHealthCheck.objects.update_or_create(
-                geoserver_channel=self,
+                geoserver_publish_channel=self,
                 layer_name='all_layers',
                 defaults={
-                    'status': GeoServerLayerHealthCheck.UNHEALTHY,
+                    'health_status': GeoServerLayerHealthCheck.UNHEALTHY,
                     'error_message': str(e),
                     'last_check_time': timezone.now()
                 }
@@ -699,7 +695,7 @@ class GeoServerLayerHealthCheck(mixins.RevisionedMixin):
         on_delete=models.CASCADE,
         related_name='health_checks'
     )
-    layer_name = models.CharField(max_length=255)
+    layer_name = models.CharField(max_length=255)  # layer_name could be retrieved from the geoserver_publish_channel
     health_status = models.CharField(max_length=20, choices=HEALTH_CHOICES, default=UNKNOWN)
     last_check_time = models.DateTimeField()
     error_message = models.TextField(blank=True, null=True)

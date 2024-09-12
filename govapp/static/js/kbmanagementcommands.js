@@ -6,6 +6,7 @@ var kbmanagementcommands = {
         "geoserver_queue_cron_job" :"/api/management/commands/excute_geoserver_queue/",
         "geoserver_queue_sync_job" : "/api/management/commands/excute_geoserver_sync/",
         "run_randomize_password": "/api/management/commands/randomize_password/",
+        "geoserver_layer_healthcheck": "/api/management/commands/perform_geoserver_layer_healthcheck/",
     },
     run_scanner: function() {
         $('#scanner-job-response-success').html('');
@@ -122,6 +123,32 @@ var kbmanagementcommands = {
             },
         });
     },
+    run_geoserver_layer_healthcheck_job: function(){
+        let res_success = $('#geoserver-layer-healthcheck-job-response-success').html('');
+        let res_error = $('#geoserver-layer-healthcheck-job-response-error').html('');
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        let run_btn = $('#run-geoserver-layer-healthcheck').attr('disabled','disabled');
+        let loader = $('#run-geoserver-layer-healthcheck-loader').show();
+        $.ajax({
+            url: kbmanagementcommands.var.geoserver_layer_healthcheck,
+            type: 'POST',
+            data: JSON.stringify({}),
+            dataType: 'json',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                res_success.html("Completed");
+                run_btn.removeAttr('disabled');
+                loader.hide();
+            },
+            error: function (error) {
+                text = error?.responseJSON?.detail ?? '' 
+                res_error.html("Error running job. " + text);
+                run_btn.removeAttr('disabled');
+                loader.hide();
+            },
+        });
+    },
     run_geoserver_sync_cron_job: function(items_to_sync) {
         $('#geoserver-sync-' + items_to_sync + '-job-response-success').html('');
         $('#geoserver-sync-' + items_to_sync + '-job-response-error').html('');
@@ -175,6 +202,9 @@ var kbmanagementcommands = {
         });
         $( "#run-geoserver-sync-users" ).click(function() {
             kbmanagementcommands.run_geoserver_sync_cron_job('users');
+        });
+        $( "#run-geoserver-layer-healthcheck" ).click(function() {
+            kbmanagementcommands.run_geoserver_layer_healthcheck_job();
         });
         $( "#run-randomize-password" ).click(function() {
             kbmanagementcommands.run_randomize_password();
