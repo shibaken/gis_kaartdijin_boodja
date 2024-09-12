@@ -172,7 +172,6 @@ class GeoServerPool(mixins.RevisionedMixin):
                 log.error(f'Workspace: [{workspace_name}] does not exist in the GeoServer: [{self}].')
             
             return response
-    
 
     ### Permission
     def synchronize_rules(self, new_rules):
@@ -233,7 +232,6 @@ class GeoServerPool(mixins.RevisionedMixin):
         response.raise_for_status()
         log.info(f'Successfully deleted ACL rule: key=[{key}] from the geoserver: [{self}].')
         return {}
-
 
     ### User
     @handle_http_exceptions(log)
