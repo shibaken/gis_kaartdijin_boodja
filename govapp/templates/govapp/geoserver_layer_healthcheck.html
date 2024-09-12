@@ -32,11 +32,8 @@
     <script src="/static/common/js/datatables.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
 
     <script>
-        let UserGroupsApp = function(){
-            let groupToRemove = null;
-            let defaultNumOfUsersDisplay = 3;
-
-            function constructGroupsTable(){
+        let GeoServerLayerHealthcheckApp = function(){
+            function constructGeoServerLayerHealthcheckTable(){
                 $('#geoServerGroupTable').DataTable({
                     "processing": true,
                     "serverSide": true,
@@ -44,6 +41,7 @@
                         "url": "/api/publish/geoserver_layer_healthcheck/",
                         "type": "GET",
                         "data": function(d){
+                            // Add custom parameters here like filtering.
                         },
                     },
                     "columnDefs": [
@@ -111,7 +109,7 @@
             }
             // Initialization function
             function init() {
-                constructGroupsTable()
+                constructGeoServerLayerHealthcheckTable()
                 setupEventHandlers();
             }
 
@@ -120,7 +118,7 @@
         }
 
         $(document).ready(function() {
-            UserGroupsApp()();
+            GeoServerLayerHealthcheckApp()();
         });
     </script>
 {% else %}
