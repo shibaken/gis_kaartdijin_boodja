@@ -681,7 +681,7 @@ class FTPPublishChannel(mixins.RevisionedMixin):
 
 class GeoServerLayerHealthcheck(mixins.RevisionedMixin):
     HEALTHY = 'healthy'
-    UNHEALTHY = 'unlealthy'
+    UNHEALTHY = 'unhealthy'
     UNKNOWN = 'unknown'
 
     HEALTH_CHOICES = [

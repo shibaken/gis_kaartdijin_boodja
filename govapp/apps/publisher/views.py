@@ -12,8 +12,6 @@ from django.contrib import auth
 from django import http
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
 from rest_framework import request
@@ -24,6 +22,8 @@ from rest_framework.authentication import BasicAuthentication, SessionAuthentica
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import filters as rest_filters
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework_datatables.renderers import DatatablesRenderer
 
 # Local
 from govapp import settings
@@ -761,8 +761,6 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # To not perform the csrf check previously happening
     
 
-# class CDDPContentsViewSet(viewsets.ViewSet):
-# @method_decorator(csrf_exempt, name='dispatch')
 class CDDPContentsViewSet(
     viewsets.mixins.ListModelMixin,
     viewsets.GenericViewSet
@@ -921,8 +919,10 @@ class GeoServerGroupViewSet(
     ):
     queryset = GeoServerGroup.objects.all()
     serializer_class = GeoServerGroupSerializer
-    pagination_class = CustomPageNumberPagination
+    # pagination_class = CustomPageNumberPagination
     permission_classes = [accounts_permissions.CanAccessOptionMenu,]
+    pagination_class = DatatablesPageNumberPagination
+    renderer_classes = [DatatablesRenderer,]
     
     # For searching at the backend
     filter_backends = [rest_filters.SearchFilter,]
@@ -1173,27 +1173,9 @@ class GeoServerGroupViewSet(
             return Response({"error": f"An error occurred while updating the group: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-
-
 class GeoServerLayerHealthcheckViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.publish_channels.GeoServerLayerHealthcheck.objects.all()
     serializer_class = serializers.publish_channels.GeoServerLayerHealthcheckSerializer
     pagination_class = DatatablesPageNumberPagination
-
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    # @action(detail=False, methods=['get'])
-    # def summary(self, request):
-    #     total = models.publish_channels.GeoServerLayerHealthcheck.objects.count()
-    #     healthy = models.publish_channels.GeoServerLayerHealthcheck.objects.filter(status='healthy').count()
-    #     unhealthy = models.publish_channels.GeoServerLayerHealthcheck.objects.filter(status='unhealthy').count()
-    #     unknown = models.publish_channels.GeoServerLayerHealthcheck.objects.filter(status='unknown').count()
-
-    #     return Response({
-    #         'total': total,
-    #         'healthy': healthy,
-    #         'unhealthy': unhealthy,
-    #         'unknown': unknown
-    #     })
+    renderer_classes = [DatatablesRenderer,]  # DatatablesRenderer is required to make pagination work correctly.
+    filter_backends = [DatatablesFilterBackend,]

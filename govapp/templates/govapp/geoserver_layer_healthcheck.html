@@ -44,18 +44,12 @@
                         "url": "/api/publish/geoserver_layer_healthcheck/",
                         "type": "GET",
                         "data": function(d){
-                            d.page = (d.start / d.length) + 1;
-                            d.page_size = d.length;
-                            d.search = d.search.value;
                         },
-                        "dataSrc": function (json) {
-                            return json.data;
-                        }
                     },
                     "columnDefs": [
                         {
-                            targets: [2],
-                            className: 'text-center'
+                            // targets: [2],
+                            // className: 'text-center'
                         },
                     ],
                     "columns": [
@@ -65,16 +59,38 @@
                         },
                         {
                             "data": "id",
-                            "title": "Geoserver"
+                            "title": "Geoserver",
+                            "render": function(row, type, full){
+                                return `<a href="${full.geoserver_pool_url}" style="text-decoration: none;" target="_blank">${full.geoserver_pool_name}</a>`
+                            },
+                            "name": "geoserver_publish_channel__geoserver_pool__name"
                         },
                         { 
                             "data": "layer_name",
-                            "title": "Layer Name"
+                            "title": "Layer Name",
+                            "render": function(row, type, full){
+                                return `<a href="/publish/${full.publish_entry_id}" style="text-decoration: none;" target="_blank">${row}</a>`
+                            }
                         },
                         { 
                             "data": "health_status",
-                            "title": "Health Status"
+                            "title": "Health Status",
+                            "render": function(row, type, full){
+                                let badge_class = ''
+                                if (row === 'healthy'){
+                                    badge_class = 'bg-success'
+                                } else if (row === 'unhealthy'){
+                                    badge_class = 'bg-danger'
+                                } else if (row === 'unknown'){
+                                    badge_class = 'bg-secondary'
+                                }
+                                return '<span class="badge badge-pill ' + badge_class + '">' + full.health_status_str + '</span>'
+                            }
                         },
+                        {
+                            "data": "error_message",
+                            "title": "Error Message"
+                        }
                     ],
                     "paging": true,
                     "pageLength": 10,
