@@ -31,7 +31,6 @@ from govapp.apps.accounts.serializers import UserSerializer
 from govapp.apps.accounts.utils import get_file_list
 from govapp.apps.publisher.models.geoserver_roles_groups import GeoServerGroup, GeoServerGroupUser, GeoServerRole
 from govapp.apps.publisher.serializers.geoserver_group import GeoServerGroupSerializer, GeoServerRoleSerializer
-# from govapp.apps.publisher.serializers.publish_channels import GeoServerLayerHealthCheckSerializer
 from govapp.common import mixins
 from govapp.common import utils
 from govapp.apps.accounts import permissions as accounts_permissions
@@ -1174,20 +1173,27 @@ class GeoServerGroupViewSet(
             return Response({"error": f"An error occurred while updating the group: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class LayerHealthCheckViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.publish_channels.GeoServerLayerHealthCheck.objects.all()
-    serializer_class = serializers.publish_channels.GeoServerLayerHealthCheckSerializer
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-    @action(detail=False, methods=['get'])
-    def summary(self, request):
-        total = models.publish_channels.GeoServerLayerHealthCheck.objects.count()
-        healthy = models.publish_channels.GeoServerLayerHealthCheck.objects.filter(status='healthy').count()
-        unhealthy = models.publish_channels.GeoServerLayerHealthCheck.objects.filter(status='unhealthy').count()
-        unknown = models.publish_channels.GeoServerLayerHealthCheck.objects.filter(status='unknown').count()
 
-        return Response({
-            'total': total,
-            'healthy': healthy,
-            'unhealthy': unhealthy,
-            'unknown': unknown
-        })
+class GeoServerLayerHealthcheckViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.publish_channels.GeoServerLayerHealthcheck.objects.all()
+    serializer_class = serializers.publish_channels.GeoServerLayerHealthcheckSerializer
+    pagination_class = DatatablesPageNumberPagination
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    # @action(detail=False, methods=['get'])
+    # def summary(self, request):
+    #     total = models.publish_channels.GeoServerLayerHealthcheck.objects.count()
+    #     healthy = models.publish_channels.GeoServerLayerHealthcheck.objects.filter(status='healthy').count()
+    #     unhealthy = models.publish_channels.GeoServerLayerHealthcheck.objects.filter(status='unhealthy').count()
+    #     unknown = models.publish_channels.GeoServerLayerHealthcheck.objects.filter(status='unknown').count()
+
+    #     return Response({
+    #         'total': total,
+    #         'healthy': healthy,
+    #         'unhealthy': unhealthy,
+    #         'unknown': unknown
+    #     })
