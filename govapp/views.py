@@ -561,6 +561,10 @@ class GeoServerGroupsView(base.TemplateView):
     template_name = "govapp/usergroups.html"
 
 
+class GeoServerLayerHealthcheckView(base.TemplateView):
+    template_name = "govapp/geoserver_layer_healthcheck.html"
+
+
 class GeoServerGroupView(base.TemplateView):
     template_name = "govapp/usergroup.html"
 

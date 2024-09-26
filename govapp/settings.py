@@ -299,12 +299,14 @@ CUSTOM_GROUPS = [
 # https://django-cron.readthedocs.io/en/latest/installation.html
 # https://django-cron.readthedocs.io/en/latest/configuration.html
 #CRON_SCANNER_CLASS = "govapp.apps.catalogue.cron.ScannerCronJob"
-CRON_SCANNER_PERIOD_MINS = 3  # Run every 5 minutes
+CRON_SCANNER_PERIOD_MINS = 3  # min
+GEOSERVER_LAYER_HEALTH_CHECK_PERIOD_MINS = 5  # min
 CRON_CLASSES = [
     "govapp.apps.catalogue.cron.PostgresScannerCronJob",
     "govapp.apps.catalogue.cron.SharepointScannerCronJob",
     "govapp.apps.catalogue.cron.DirectoryScannerCronJob",
     "govapp.apps.publisher.cron.PublishGeoServerQueueCronJob",
+    "govapp.apps.publisher.cron.GeoServerLayerHealthcheckCronJob",
     'appmonitor_client.cron.CronJobAppMonitorClient'
     #CRON_SCANNER_CLASS,
 ]

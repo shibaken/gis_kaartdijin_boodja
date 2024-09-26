@@ -90,6 +90,58 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
         return data
         
 
+class GeoServerLayerHealthcheckSerializer(serializers.ModelSerializer):
+    health_status_str = serializers.ReadOnlyField(source='get_health_status_display')
+    geoserver_pool_name = serializers.SerializerMethodField()
+    geoserver_pool_url = serializers.SerializerMethodField()
+    publish_entry_id = serializers.SerializerMethodField()
+    last_check_time_str = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.publish_channels.GeoServerLayerHealthcheck
+        fields = [
+            'id',
+            'geoserver_publish_channel',
+            'layer_name',
+            'health_status',
+            'health_status_str',
+            'last_check_time',
+            'error_message',
+            'geoserver_pool_name',
+            'geoserver_pool_url',
+            'publish_entry_id',
+            'last_check_time_str',
+        ]
+        datatables_always_serialize = [
+            'health_status_str',
+            'geoserver_pool_name',
+            'geoserver_pool_url',
+            'publish_entry_id',
+            'last_check_time_str',
+        ]
+
+    def get_last_check_time_str(self, obj):
+        temp = obj.last_check_time
+        return temp.strftime("%d/%m/%Y %I:%M%p")
+
+    def get_publish_entry_id(self, obj):
+        if obj.geoserver_publish_channel and obj.geoserver_publish_channel.publish_entry:
+            return obj.geoserver_publish_channel.publish_entry.id
+        else:
+            return ''
+
+    def get_geoserver_pool_name(self, obj):
+        if obj.geoserver_publish_channel and obj.geoserver_publish_channel.geoserver_pool:
+            return obj.geoserver_publish_channel.geoserver_pool.name
+        else:
+            return ''
+
+    def get_geoserver_pool_url(self, obj):
+        if obj.geoserver_publish_channel and obj.geoserver_publish_channel.geoserver_pool:
+            return obj.geoserver_publish_channel.geoserver_pool.url
+        else:
+            return ''
+
 
 class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
     """GeoServer Publish Channel Model Create Serializer."""

@@ -21,6 +21,7 @@ router.register("workspaces", views.WorkspaceViewSet)
 router.register("geoserverweb", views.GeoServerQueueViewSet)
 router.register("cddp-contents", views.CDDPContentsViewSet, basename='cddp-contents')
 router.register("geoservergroup", views.GeoServerGroupViewSet)
+router.register("geoserver_layer_healthcheck", views.GeoServerLayerHealthcheckViewSet, basename='geoserver-layer-healthcheck')
 
 
 # Catalogue URL Patterns
