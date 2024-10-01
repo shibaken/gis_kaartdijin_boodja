@@ -307,6 +307,7 @@ CRON_CLASSES = [
     "govapp.apps.catalogue.cron.DirectoryScannerCronJob",
     "govapp.apps.publisher.cron.PublishGeoServerQueueCronJob",
     "govapp.apps.publisher.cron.GeoServerLayerHealthcheckCronJob",
+    'appmonitor_client.cron.CronJobAppMonitorClient'
     #CRON_SCANNER_CLASS,
 ]
 
