@@ -186,7 +186,7 @@ class Scanner:
             log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].')
         except Exception as e:
             log.error(f"ERROR Running POSTGIS to Shapefile conversation for the CatalogueEntry: [{catalogue_entry_obj}]. error: [{e}]")
-            raise
+            # raise
 
         if custom_query_freq:
             custom_query_freq.last_job_run = now_dt
