@@ -14,6 +14,7 @@
             <div class='row'>
                   <div class='col-3'>Name</div>
                   <div class='col-5 p-1'>
+                        {% comment %}
                         {% if catalogue_entry_obj.type == 1 %}
                               {% if has_edit_access %}
                                     <input type="text"  class="form-control" id="catalogue-entry-name" value="{{ catalogue_entry_obj.name }}" >
@@ -28,6 +29,9 @@
                                     {{ catalogue_entry_obj.name }}
                               {% endif %}
                         {% endif %} 
+                        {% endcomment %} 
+                        
+                        {{ catalogue_entry_obj.name }}
                   </div>
             </div>
             <div class="row">

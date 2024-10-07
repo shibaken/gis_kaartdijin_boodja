@@ -46,8 +46,8 @@
                     },
                     "columnDefs": [
                         {
-                            // targets: [2],
-                            // className: 'text-center'
+                            targets: [3],
+                            className: 'text-center'
                         },
                     ],
                     "columns": [
@@ -83,6 +83,13 @@
                                     badge_class = 'bg-secondary'
                                 }
                                 return '<span class="badge badge-pill ' + badge_class + '">' + full.health_status_str + '</span>'
+                            }
+                        },
+                        {
+                            "data": "last_check_time",
+                            "title": "Datetime Checked",
+                            "render": function(row, type, full){
+                                return full.last_check_time_str
                             }
                         },
                         {

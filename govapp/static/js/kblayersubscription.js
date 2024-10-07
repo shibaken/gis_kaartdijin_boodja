@@ -415,6 +415,8 @@ var kblayersubscription = {
         }
     },
     show_action_log: function(){
+        console.log('in kblayersubscription.js')
+
         common_entity_modal.init("Action log", "info");
         common_entity_modal.init_talbe();
         let thead = common_entity_modal.get_thead();

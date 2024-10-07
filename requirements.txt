@@ -25,13 +25,14 @@ lxml>=4.9.2
 owslib==0.29.2
 numpy==2.0.1
 git+https://github.com/dbca-wa/appmonitor_client.git#egg=appmonitor_client
-cryptography==42.0.7
+cryptography>=42.0.7
 pillow==10.3.0
 pyjwt==2.8.0
-urllib3==2.1.0
+urllib3>=2.1.0
 wheel==0.42.0
 oauthlib==3.2.2
 sentry-sdk==1.44
 requests>=2.32.3
 anyio>=4.4.0
 GDAL==3.8.4
+setuptools==72.0.0

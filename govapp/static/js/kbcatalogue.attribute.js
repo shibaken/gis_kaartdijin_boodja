@@ -12,6 +12,7 @@ var kbcatalogue_attribute = {
         $( "#catalogue-attribute-order" ).on('input',function(){
             $(this).val($(this).val().replace(/\D/g, ""));
         });
+        $("#log_actions_show" ).click(handle_action_log.show_action_log);
 
         var has_edit_access = $('#has_edit_access').val();
         if (has_edit_access == 'True') {

@@ -228,6 +228,7 @@ var common_entity_modal = {
         return $('#modal-table-tbody');
     },
     get_limit: function(){
+        console.log('in get_limit')
         return $('#modal-table-limit');
     },
     get_search: function(){
@@ -323,3 +324,4 @@ var common_entity_modal = {
         return common_entity_modal.var.field_map[id].label.text();
     },
 }
+

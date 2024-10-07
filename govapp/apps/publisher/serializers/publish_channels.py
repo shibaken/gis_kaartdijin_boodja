@@ -95,6 +95,7 @@ class GeoServerLayerHealthcheckSerializer(serializers.ModelSerializer):
     geoserver_pool_name = serializers.SerializerMethodField()
     geoserver_pool_url = serializers.SerializerMethodField()
     publish_entry_id = serializers.SerializerMethodField()
+    last_check_time_str = serializers.SerializerMethodField()
 
     class Meta:
         model = models.publish_channels.GeoServerLayerHealthcheck
@@ -109,13 +110,19 @@ class GeoServerLayerHealthcheckSerializer(serializers.ModelSerializer):
             'geoserver_pool_name',
             'geoserver_pool_url',
             'publish_entry_id',
+            'last_check_time_str',
         ]
         datatables_always_serialize = [
             'health_status_str',
             'geoserver_pool_name',
             'geoserver_pool_url',
             'publish_entry_id',
+            'last_check_time_str',
         ]
+
+    def get_last_check_time_str(self, obj):
+        temp = obj.last_check_time
+        return temp.strftime("%d/%m/%Y %I:%M%p")
 
     def get_publish_entry_id(self, obj):
         if obj.geoserver_publish_channel and obj.geoserver_publish_channel.publish_entry:
