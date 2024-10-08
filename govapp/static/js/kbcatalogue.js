@@ -153,16 +153,16 @@ var kbcatalogue = {
         })
         $('#modal_upload_catalogue').on('hidden.bs.modal', function (e) {
             kbcatalogue.modalClosed()
-          });
+        });
     },
 
     init_catalogue_item: function() { 
-        $( "#catalogue-entry-symbology-btn-save" ).click(function() {
+        $("#catalogue-entry-symbology-btn-save").click(function() {
             kbcatalogue.save_symbology('save');
         });
-        $( "#ccatalogue-entry-symbology-btn-save-exit" ).click(function() {
+        $("#catalogue-entry-symbology-btn-save-exit").click(function() {
             kbcatalogue.save_symbology('save-and-exit');
-        });           
+        });
 
         $( "#catalogue-lock" ).click(function() {
             console.log("Locking");
@@ -284,15 +284,16 @@ var kbcatalogue = {
     },
 
     save_symbology: function(save_status) {        
-        var catalogue_id = $('#catalogue_entry_id').val();
-        var cataloguesymbologydefinition = $('#catalogue-entry-symbology-definition').val();    
-        var post_data = {"sld": cataloguesymbologydefinition};
-        var layer_symbology_id = $('#catalogue-entry-symbology-definition-id').val();
-        var csrf_token = $("#csrfmiddlewaretoken").val();
-        var pagetab = $('#pagetab').val();
+        let catalogue_id = $('#catalogue_entry_id').val();
+        let cataloguesymbologydefinition = $('#catalogue-entry-symbology-definition').val();
+        let post_data = {"sld": cataloguesymbologydefinition};
+        let layer_symbology_id = $('#catalogue-entry-symbology-definition-id').val();
+        let csrf_token = $("#csrfmiddlewaretoken").val();
+        let pagetab = $('#pagetab').val();
+        let url = kbcatalogue.var.catalogue_layer_symbology_url + layer_symbology_id + "/"
 
         $.ajax({
-            url: kbcatalogue.var.catalogue_layer_symbology_url+layer_symbology_id+"/",
+            url: url,
             type: 'PUT',
             headers: {'X-CSRFToken' : csrf_token},
             data: post_data,
@@ -301,11 +302,12 @@ var kbcatalogue = {
                 if (save_status == 'save-and-exit') {
                     window.location = '/catalogue/entries/';
                 } else {
-                    window.location = "/catalogue/entries/"+catalogue_id+"/"+pagetab+"/"; 
+                    window.location = "/catalogue/entries/" + catalogue_id + "/" + pagetab + "/"; 
                 }
             },
             error: function (error) {
                 common_entity_modal.show_alert("ERROR Saving."); 
+                console.log({error})
             },
         });
     },

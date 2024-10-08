@@ -75,6 +75,7 @@ class CatalogueEntryViewSet(
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     def update(self, request, *args, **kwargs):
+        logger.info(f'Updating CatalogueEntry with the data: [{request.data}]...')
         return super().update(request, *args, **kwargs)
 
     @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
