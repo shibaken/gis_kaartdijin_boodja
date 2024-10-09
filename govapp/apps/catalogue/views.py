@@ -968,7 +968,6 @@ class LayerSubscriptionViewSet(
                 res = WebMapService(url=subscription_obj.url, 
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
-                # return [key.replace(':', '_') for key in res.contents.keys()]
                 # logger.debug(f'res.contents.keys(): {res.contents.keys()}')
                 # result = res.contents.keys()  
                 result = []
@@ -986,9 +985,14 @@ class LayerSubscriptionViewSet(
                 res = WebFeatureService(url=subscription_obj.url, 
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
-                # return [key.replace(':', '_') for key in res.contents.keys()]
-                logger.debug(f'res.contents: {res.contents}')
-                return res.contents.keys()
+                result = []
+                for layer in res.contents:
+                    result.append({
+                        "name": layer,
+                        "title": res.contents[layer].title,
+                    })
+                logger.debug(f'result: {result}')
+                return result
             mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
 
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
