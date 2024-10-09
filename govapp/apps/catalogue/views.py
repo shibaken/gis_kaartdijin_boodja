@@ -959,6 +959,8 @@ class LayerSubscriptionViewSet(
                     cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
                 except Exception as e:
                     print(e)
+            else:
+                logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
             return val
         
         if subscription_obj.type == LayerSubscriptionType.WMS:
@@ -967,16 +969,28 @@ class LayerSubscriptionViewSet(
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
                 # return [key.replace(':', '_') for key in res.contents.keys()]
-                return res.contents.keys()
+                # logger.debug(f'res.contents.keys(): {res.contents.keys()}')
+                # result = res.contents.keys()  
+                result = []
+                for layer in res.contents:
+                    result.append({
+                        "name": layer,
+                        "title": res.contents[layer].title,
+                    })
+                logger.debug(f'result: {result}')
+                return result
             mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
+
         elif subscription_obj.type == LayerSubscriptionType.WFS:
             def get_wfs():
                 res = WebFeatureService(url=subscription_obj.url, 
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
                 # return [key.replace(':', '_') for key in res.contents.keys()]
+                logger.debug(f'res.contents: {res.contents}')
                 return res.contents.keys()
             mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
+
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
             def get_post_gis():
                 conn = psycopg2.connect(
