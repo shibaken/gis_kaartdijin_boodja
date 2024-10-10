@@ -585,7 +585,7 @@ var kbcatalogue = {
                         tr_elem.append($('<td>').text(catalogue_entry_permission.first_name))
                         tr_elem.append($('<td>').text(catalogue_entry_permission.last_name))
                         tr_elem.append($('<td>').text(catalogue_entry_permission.email))
-                        tr_elem.append($('<td class="text-center">').append(catalogue_entry_permission.active ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
+                        tr_elem.append($('<td class="text-center">').append(catalogue_entry_permission.active ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'))
                         tr_elem.append($('<td>').text(catalogue_entry_permission.access_permission_label))
                         tr_elem.append(permissioned ? $(`<td class='text-center'><button class='btn btn-danger btn-sm manage-editors-delete' data-json='${button_json}'>Delete</button></td>`) : $('<td>'))
                         $('#manage-editors-tbody').append(tr_elem);

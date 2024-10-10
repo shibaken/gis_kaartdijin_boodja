@@ -156,7 +156,7 @@ var kblayersubscription = {
                     row.append($('<td>').append($('<span>').addClass(kblayersubscription.var.status_map[+layer_subscription.status].class).text(layer_subscription.status_str)))
                     row.append($('<td>').text(layer_subscription.type_str))
                     row.append($('<td>').text(layer_subscription.workspace_str))
-                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
+                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'))
                     row.append($('<td>').text(layer_subscription.updated_at))
                     row.append($('<td>').text(layer_subscription.assigned_to_name))
                     
@@ -868,7 +868,7 @@ var kblayersubscription = {
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
                     let td = $('<td>').html(typeLabels);
                     row.append(td);
-                    row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
+                    row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'))
 
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
