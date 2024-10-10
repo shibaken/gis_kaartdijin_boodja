@@ -527,6 +527,7 @@ class LayerSubscriptionsView(base.TemplateView):
         if utils.is_administrator(request.user) is True and request.user == subscription_obj.assigned_to:
              if subscription_obj.status in (LayerSubscriptionStatus.DRAFT, LayerSubscriptionStatus.NEW_DRAFT, LayerSubscriptionStatus.PENDING):
                 has_edit_access = True
+        is_assigned = True if subscription_obj.assigned_to == request.user else False
         
         # Construct Context
         context: dict[str, Any] = {}
@@ -538,6 +539,7 @@ class LayerSubscriptionsView(base.TemplateView):
         context['type'] = catalogue_utils.find_enum_by_value(LayerSubscriptionType, subscription_obj.type).name.replace('_', ' ')
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
         context['enabled_js'] = "true" if subscription_obj.enabled else "false"
+        context['is_assigned'] = is_assigned
         
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        

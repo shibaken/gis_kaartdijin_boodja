@@ -14,7 +14,8 @@ var kbcatalogue_detail = {
         $("#catalogue-detail-btn-add-notification" ).click(kbcatalogue_detail.show_add_email_notification_modal);
         $("#catalogue-detail-notification-order-by" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
         $("#catalogue-detail-notification-limit" ).change(()=>table.refresh(kbcatalogue_detail.get_email_notification));
-        $("#log_actions_show" ).click(kbcatalogue_detail.show_action_log);
+        // $("#log_actions_show" ).click(kbcatalogue_detail.show_action_log);
+        $("#log_actions_show" ).click(handle_action_log.show_action_log);
         $("#log_communication_show" ).click(kbcatalogue_detail.show_communication_log);
         $("#log_communication_add" ).click(kbcatalogue_detail.add_communication_log);
 
@@ -228,54 +229,56 @@ var kbcatalogue_detail = {
             error: error_callback
         });
     },
-    show_action_log: function(){
-        common_entity_modal.init("Action log", "info");
-        common_entity_modal.init_talbe();
-        let thead = common_entity_modal.get_thead();
-        table.set_thead(thead, {Who:3, What:5, When:4});
-        common_entity_modal.get_limit().change(()=>kbcatalogue_detail.get_action_log());
-        common_entity_modal.get_search().keyup((event)=>{
-            if (event.which === 13 || event.keyCode === 13){
-                event.preventDefault();
-                kbcatalogue_detail.get_action_log()
-            }
-        });
-        common_entity_modal.show();
+    // show_action_log: function(){
+    //     console.log('in kbcatalogue.detail.js')
 
-        kbcatalogue_detail.get_action_log();
-    },
-    get_action_log: function(params_str){
-        if(!params_str){
-            params = {
-                limit:  common_entity_modal.get_limit().val(),
-                search: common_entity_modal.get_search().val(),
-            }
+    //     common_entity_modal.init("Action log", "info");
+    //     common_entity_modal.init_talbe();
+    //     let thead = common_entity_modal.get_thead();
+    //     table.set_thead(thead, {Who:3, What:5, When:4});
+    //     common_entity_modal.get_limit().change(()=>kbcatalogue_detail.get_action_log());
+    //     common_entity_modal.get_search().keyup((event)=>{
+    //         if (event.which === 13 || event.keyCode === 13){
+    //             event.preventDefault();
+    //             kbcatalogue_detail.get_action_log()
+    //         }
+    //     });
+    //     common_entity_modal.show();
 
-            params_str = utils.make_query_params(params);
-        }
+    //     kbcatalogue_detail.get_action_log();
+    // },
+    // get_action_log: function(params_str){
+    //     if(!params_str){
+    //         params = {
+    //             limit:  common_entity_modal.get_limit().val(),
+    //             search: common_entity_modal.get_search().val(),
+    //         }
+
+    //         params_str = utils.make_query_params(params);
+    //     }
     
-        var catalogue_entry_id = $('#catalogue_entry_id').val();
-        $.ajax({
-            url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/logs/actions/?"+params_str,
-            method: 'GET',
-            dataType: 'json',
-            contentType: 'application/json',
-            success: function (response) {
-                if(!response || !response.results){
-                    table.message_tbody(common_entity_modal.get_tbody(), "No results found");
-                    return;
-                }
-                for(let i in response.results){
-                    response.results[i]['when'] = utils.convert_datetime_format(response.results[i].when, kbcatalogue_detail.var.catalogue_table_date_format); 
-                }
-                table.set_tbody(common_entity_modal.get_tbody(), response.results, [{username:"text"}, {what:'text'}, {when:'text'}]);
-                common_pagination.init(response.count, params, kbcatalogue_detail.get_action_log, common_entity_modal.get_page_navi());
-            },
-            error: function (error){
-                common_entity_modal.show_error_modal(error);
-            }
-        });
-    },
+    //     var catalogue_entry_id = $('#catalogue_entry_id').val();
+    //     $.ajax({
+    //         url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/logs/actions/?"+params_str,
+    //         method: 'GET',
+    //         dataType: 'json',
+    //         contentType: 'application/json',
+    //         success: function (response) {
+    //             if(!response || !response.results){
+    //                 table.message_tbody(common_entity_modal.get_tbody(), "No results found");
+    //                 return;
+    //             }
+    //             for(let i in response.results){
+    //                 response.results[i]['when'] = utils.convert_datetime_format(response.results[i].when, kbcatalogue_detail.var.catalogue_table_date_format); 
+    //             }
+    //             table.set_tbody(common_entity_modal.get_tbody(), response.results, [{username:"text"}, {what:'text'}, {when:'text'}]);
+    //             common_pagination.init(response.count, params, kbcatalogue_detail.get_action_log, common_entity_modal.get_page_navi());
+    //         },
+    //         error: function (error){
+    //             common_entity_modal.show_error_modal(error);
+    //         }
+    //     });
+    // },
     show_communication_log: function(){
         common_entity_modal.init("Communication log", "info");
         common_entity_modal.init_talbe();

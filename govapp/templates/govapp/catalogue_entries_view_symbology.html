@@ -1,3 +1,5 @@
+{% include "govapp/common_entity_modal.html" %}
+
 <input type='hidden' value='{{ layer_symbology.id }}' name='catalogue-entry-symbology-definition-id' id='catalogue-entry-symbology-definition-id'>
 
 <div class="card mt-2">
@@ -9,7 +11,7 @@
           <div class="col-6 text-end">
                 <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
           </div>
-          </div>         
+          </div>
     </div>
     <div class="card-body collapse show" id="box2-card-body">
           <div class='row'>
@@ -24,18 +26,10 @@
           </div>
     </div>
 </div>
-<BR>
-    <div class='col-12 pt-2'>
-        <div class='row'>
-              <div class='col-6'>
-                    &nbsp;
-              </div>
-              <div class='col-6 text-end'>
-                    {% if has_edit_access is True %}
-                          <button class="btn btn-primary" id='catalogue-entry-symbology-btn-save' aria-current="page" >Save</button>  
-                          <button class="btn btn-primary" id='catalogue-entry-symbology-btn-save-exit'  aria-current="page" >Save and exit</button>  
-                    {% endif %}
-              </div>
-    
-        </div>
-      </div>
+
+<div class='col-12 pt-2 text-end'>
+      {% if has_edit_access is True %}
+            <button class="btn btn-primary" id='catalogue-entry-symbology-btn-save' aria-current="page">Save</button>  
+            <button class="btn btn-primary" id='catalogue-entry-symbology-btn-save-exit' aria-current="page">Save and exit</button>  
+      {% endif %}
+</div>

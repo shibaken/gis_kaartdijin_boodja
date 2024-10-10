@@ -75,6 +75,7 @@ class CatalogueEntryViewSet(
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
     def update(self, request, *args, **kwargs):
+        logger.info(f'Updating CatalogueEntry with the data: [{request.data}]...')
         return super().update(request, *args, **kwargs)
 
     @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
@@ -112,7 +113,7 @@ class CatalogueEntryViewSet(
             with open(save_path, 'wb+') as destination:
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
-            logger.info(f"File: [{uploaded_file.name}] has been successfully saved.")
+            logger.info(f"File: [{uploaded_file.name}] has been successfully saved at [{save_path}].")
             return JsonResponse({'message': 'File(s) uploaded successfully.'})
         else:
             logger.info(f"No file(s) were uploaded.")
@@ -911,23 +912,25 @@ class LayerSubscriptionViewSet(
         """
         # Retrieve Layer Subscription
         # Help `mypy` by casting the resulting object to a Layer Subscription
-        subscription = self.get_object()
-        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        layer_subscription = self.get_object()
+        layer_subscription = cast(models.layer_subscriptions.LayerSubscription, layer_subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
         mappings = list(models.catalogue_entries.CatalogueEntry.objects
-                             .filter(layer_subscription=subscription)
+                             .filter(layer_subscription=layer_subscription)
                              .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
         if not mappings:
             mappings = {}
         else:
-            mappings = {mapping['mapping_name']:{
-                            'name':mapping['name'],
-                            'description':mapping['description'],
-                            'catalogue_entry_id':mapping['id']}
-                        for mapping in mappings}
-            
+            mappings = {
+                mapping['mapping_name']:{
+                    'name':mapping['name'],
+                    'description':mapping['description'],
+                    'catalogue_entry_id':mapping['id']
+                } for mapping in mappings}
+
         # Return Response
+        logger.debug(f'mappings: {mappings}')
         return response.Response({'results':mappings}, content_type='application/json', status=status.HTTP_200_OK)
     
     @drf_utils.extend_schema(
@@ -952,12 +955,14 @@ class LayerSubscriptionViewSet(
 
         def cache_or_callback(key, callback):
             val = cache.get(key)
-            if not val:
+            if settings.DEBUG or not val:
                 try:
                     val = callback()
                     cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
                 except Exception as e:
                     print(e)
+            else:
+                logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
             return val
         
         if subscription_obj.type == LayerSubscriptionType.WMS:
@@ -965,17 +970,31 @@ class LayerSubscriptionViewSet(
                 res = WebMapService(url=subscription_obj.url, 
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
-                # return [key.replace(':', '_') for key in res.contents.keys()]
-                return res.contents.keys()
+                # logger.debug(f'res.contents.keys(): {res.contents.keys()}')
+                # result = res.contents.keys()  
+                result = []
+                for layer in res.contents:
+                    result.append({
+                        "name": layer,
+                        "title": res.contents[layer].title,
+                    })
+                return result
             mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
+
         elif subscription_obj.type == LayerSubscriptionType.WFS:
             def get_wfs():
                 res = WebFeatureService(url=subscription_obj.url, 
                                     username=subscription_obj.username, 
                                     password=subscription_obj.userpassword)
-                # return [key.replace(':', '_') for key in res.contents.keys()]
-                return res.contents.keys()
+                result = []
+                for layer in res.contents:
+                    result.append({
+                        "name": layer,
+                        "title": res.contents[layer].title,
+                    })
+                return result
             mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
+
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
             def get_post_gis():
                 conn = psycopg2.connect(
@@ -996,6 +1015,7 @@ class LayerSubscriptionViewSet(
             mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
         
         # Return Response
+        logger.debug(f'mapping_names: {mapping_names}')
         return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
         
     @transaction.atomic()
