@@ -71,5 +71,7 @@ def publish_entry_publish_failure(entry: "publish_entries.PublishEntry") -> None
     emails.PublishEntryPublishFailEmail().send_to(
         *utils.all_administrators(),  # All administrators
         *editors_list,  # All editors
+        *entry.email_notifications(manager="on_publish").all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
         context={"name": entry.name},
     )

@@ -113,7 +113,7 @@ class CatalogueEntryViewSet(
             with open(save_path, 'wb+') as destination:
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
-            logger.info(f"File: [{uploaded_file.name}] has been successfully saved.")
+            logger.info(f"File: [{uploaded_file.name}] has been successfully saved at [{save_path}].")
             return JsonResponse({'message': 'File(s) uploaded successfully.'})
         else:
             logger.info(f"No file(s) were uploaded.")
