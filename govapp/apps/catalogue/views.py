@@ -912,23 +912,25 @@ class LayerSubscriptionViewSet(
         """
         # Retrieve Layer Subscription
         # Help `mypy` by casting the resulting object to a Layer Subscription
-        subscription = self.get_object()
-        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+        layer_subscription = self.get_object()
+        layer_subscription = cast(models.layer_subscriptions.LayerSubscription, layer_subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
         mappings = list(models.catalogue_entries.CatalogueEntry.objects
-                             .filter(layer_subscription=subscription)
+                             .filter(layer_subscription=layer_subscription)
                              .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
         if not mappings:
             mappings = {}
         else:
-            mappings = {mapping['mapping_name']:{
-                            'name':mapping['name'],
-                            'description':mapping['description'],
-                            'catalogue_entry_id':mapping['id']}
-                        for mapping in mappings}
-            
+            mappings = {
+                mapping['mapping_name']:{
+                    'name':mapping['name'],
+                    'description':mapping['description'],
+                    'catalogue_entry_id':mapping['id']
+                } for mapping in mappings}
+
         # Return Response
+        logger.debug(f'mappings: {mappings}')
         return response.Response({'results':mappings}, content_type='application/json', status=status.HTTP_200_OK)
     
     @drf_utils.extend_schema(
@@ -953,7 +955,7 @@ class LayerSubscriptionViewSet(
 
         def cache_or_callback(key, callback):
             val = cache.get(key)
-            if not val:
+            if settings.DEBUG or not val:
                 try:
                     val = callback()
                     cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
@@ -976,7 +978,6 @@ class LayerSubscriptionViewSet(
                         "name": layer,
                         "title": res.contents[layer].title,
                     })
-                logger.debug(f'result: {result}')
                 return result
             mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
 
@@ -991,7 +992,6 @@ class LayerSubscriptionViewSet(
                         "name": layer,
                         "title": res.contents[layer].title,
                     })
-                logger.debug(f'result: {result}')
                 return result
             mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
 
@@ -1015,6 +1015,7 @@ class LayerSubscriptionViewSet(
             mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
         
         # Return Response
+        logger.debug(f'mapping_names: {mapping_names}')
         return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
         
     @transaction.atomic()
