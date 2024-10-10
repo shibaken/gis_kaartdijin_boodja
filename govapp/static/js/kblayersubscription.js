@@ -156,7 +156,7 @@ var kblayersubscription = {
                     row.append($('<td>').append($('<span>').addClass(kblayersubscription.var.status_map[+layer_subscription.status].class).text(layer_subscription.status_str)))
                     row.append($('<td>').text(layer_subscription.type_str))
                     row.append($('<td>').text(layer_subscription.workspace_str))
-                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
+                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'))
                     row.append($('<td>').text(layer_subscription.updated_at))
                     row.append($('<td>').text(layer_subscription.assigned_to_name))
                     
@@ -336,6 +336,7 @@ var kblayersubscription = {
 
     // *** View page *** //
     init_subscription_item: function(){
+        console.log('in init_subscription_item')
         $( "#subscription-lock" ).click(() => kblayersubscription.change_subscription_status('lock'));
         $( "#subscription-unlock" ).click(() => kblayersubscription.change_subscription_status('unlock'));
         $( "#subsctiption-assigned-to-btn" ).click(() =>kblayersubscription.set_assigned_to());
@@ -624,9 +625,11 @@ var kblayersubscription = {
         });
     },
     get_mappings: function(type){
+        console.log('in get_mappings')
         kblayersubscription.get_mapping_source(type, () => kblayersubscription.get_mapping_info(type));
     },
     get_mapping_source: function(type, success_callback){
+        console.log('in get_mapping_source')
         let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/source";
         let method = 'GET';
 
@@ -639,6 +642,7 @@ var kblayersubscription = {
             tbody = $("#subscription-dbtable-table-tbody");
             title = "Table";
         }
+        console.log('url in get_mapping_source: ' + url)
 
         // call GET API
         $.ajax({
@@ -652,6 +656,7 @@ var kblayersubscription = {
                     table.message_tbody(tbody, "No results found");
                     return;
                 }
+                console.log({response})
                 kblayersubscription.var.mapping_names = response.results;
                 success_callback();
             },
@@ -663,6 +668,7 @@ var kblayersubscription = {
         });
     },
     get_mapping_info: function(type){
+        console.log('in get_mapping_info')
         let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
         let method = 'GET';
 
@@ -676,6 +682,7 @@ var kblayersubscription = {
             title = "Table";
         }
 
+        console.log('url in get_mapping_info: ' + url)
         // call GET API
         $.ajax({
             url: url,
@@ -688,7 +695,10 @@ var kblayersubscription = {
                     table.message_tbody(tbody, "No results found");
                     return;
                 }
+                console.log({response})
                 kblayersubscription.var.mapped_names = response.results;
+                
+                // Construct buttons
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
                     buttons={Add:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
@@ -696,26 +706,25 @@ var kblayersubscription = {
                             Edit:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
                                     is_valid:(mapping)=>mapping.name in response.results}};
                     // table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
-                    table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:7, "Action":1});
+                    table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:4, "Title": 3, "Action":1});
                 } else {
                     // table.set_thead(thead, {[title+"s"]:6, "Catalogue Name":6});
-                    table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:8});
+                    table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:5, "Title": 3});
                 }
+
+                // Construct rows
                 let rows = []
+                console.log(kblayersubscription.var.mapping_names)
                 for(let i in kblayersubscription.var.mapping_names){
                     let mapping = {};
-                    mapping.name = kblayersubscription.var.mapping_names[i];
+                    mapping.name = kblayersubscription.var.mapping_names[i].name;
+                    mapping.title = kblayersubscription.var.mapping_names[i].title;
                     mapping.catalogue = mapping.name in response.results ? response.results[mapping.name].name : "";
-                    if($('#has_edit_access').val() == "True"){
-                        rows.push(mapping);
-                    } else if($('#has_edit_access').val() == "False" && mapping.name in response.results){
+                    if(($('#has_edit_access').val() == "True") || ($('#has_edit_access').val() == "False" && mapping.name in response.results)){
                         rows.push(mapping);
                     }
                 }
-                // table.set_tbody(tbody, rows, [{name:"text"}, {catalogue:"text"}], buttons);
-                console.log({tbody})
-                console.log({rows})
-                table.set_tbody(tbody, rows, [{catalogue:"text"}, {name:"text"}], buttons);
+                table.set_tbody(tbody, rows, [{catalogue: "text"}, {name: "text"}, {title: "text"}], buttons);
                 if(rows.length == 0){
                     table.message_tbody(tbody, "No results found");
                 }
@@ -797,6 +806,7 @@ var kblayersubscription = {
         });
     },
     retrieve_communication_types: function(){
+        console.log('in retrieve_communication_types')
         $.ajax({
             url: kblayersubscription.var.log_communication_type_url,
             type: 'GET',
@@ -820,6 +830,7 @@ var kblayersubscription = {
         });
     },
     get_custom_query_info: function(){
+        console.log('in get_custom_query_info')
         let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/query/";
         let method = 'GET';
 
@@ -857,7 +868,7 @@ var kblayersubscription = {
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
                     let td = $('<td>').html(typeLabels);
                     row.append(td);
-                    row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<img src="/static/admin/img/icon-yes.svg" alt="True">' : '<img src="/static/admin/img/icon-no.svg" alt="False">'))
+                    row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'))
 
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')

@@ -34,19 +34,17 @@
                                     <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
                                           Workflow
                                     </div>
-                                    <div class='col-12 p-3 border-bottom'>
-                                          <p>
-                                                <b>Status</b>
-                                                <br>
+                                    <div class='p-3 border-bottom'>
+                                          <div class="mb-3">
+                                                <strong>Status</strong><br>
                                                 {{ status }}
-                                                <br>
-                                                <br>
-                                                <b>Currently assigned to</b>
-                                                
-                                                <div class='text-end'>                                          
+                                          </div>
+                                          <div>
+                                                <strong>Currently assigned to</strong>
+                                                <div class='text-end'>
                                                       <select class='form-control' id="subsctiption-assigned-to">
                                                             <option value=''>-- Select One --</option>
-                                                            {% for su in system_users %}                                          
+                                                            {% for su in system_users %}
                                                                   {% if subscription_obj.assigned_to.id == su.id %}
                                                                         <option value='{{ su.id }}' selected>{{ su.first_name }} {{ su.last_name }}</option>
                                                                   {% else %}
@@ -56,9 +54,10 @@
                                                       </select>
                                                       <button class='btn btn-primary btn-sm mt-1' id='subsctiption-assigned-to-btn' href=''>Assign</button>
                                                 </div>
-                                          </p>
-
+                                          </div>
                                     </div>
+
+                                    {% comment %}
                                     <div class='col-12 p-3'>
                                           <p>
                                                 <b>Actions</b><br>
@@ -73,6 +72,18 @@
                                                 {% endif %}
                                           </p>
                                     </div>
+                                    {% endcomment %}
+
+                                    {% if is_assigned %}
+                                    <div class='p-3'>
+                                          <strong>Actions</strong><br>
+                                          {% if subscription_obj.is_locked %}
+                                                <button class='btn btn-primary btn-sm px-4' id='subscription-unlock'>Unlock</button>
+                                          {% else %}
+                                                <button class='btn btn-primary btn-sm px-4' id='subscription-lock'>Lock</button>
+                                          {% endif %}
+                                    </div>
+                                    {% endif %}
                               </div>
                         </div>
 
@@ -328,7 +339,7 @@
                                                 <div class="col-6 text-end">
                                                       <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box3-card-body" onclick=""></i>
                                                 </div>
-                                          </div>         
+                                          </div>
                                     </div>
                                     <div class="card-body collapse show" id="box3-card-body">
                                           <div class='row'>
@@ -342,17 +353,16 @@
                                                                               <td colspan="7" class='text-center'>
                                                                                     <div class="progress">
                                                                                           <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                                    </div>           
+                                                                                    </div>
                                                                               </td> 
                                                                         </tr>
                                                                   </tbody>
                                                             </table>
                                                       </div>
-                                                </div>                        
+                                                </div>
                                           </div>
                                     </div>
                               </div>
-                              <BR>
                         {% endif %}
 
                         {% if subscription_obj.type is 3 %}
