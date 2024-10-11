@@ -135,7 +135,8 @@ var kbcatalogue_detail = {
                 }
 
                 table.set_tbody($('#catalogue-detail-notification-tbody'), response.results, 
-                                columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
+                                // columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
+                                columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'boolean'}], 
                                 buttons=buttons);
                 common_pagination.init(response.count, params, kbcatalogue_detail.get_email_notification, $('#notification-paging-navi'));
             },
@@ -148,6 +149,7 @@ var kbcatalogue_detail = {
 
     //-- for Email Notification modal --//
     show_add_email_notification_modal: function(){
+        console.log('in show_add_email_notification_modal')
         common_entity_modal.init("Add New Email Notification", "submit");
         let name_id = common_entity_modal.add_field(label="Name", type="text");
         let type_id = common_entity_modal.add_field(label="Type", type="select", value=null, option_map=kbcatalogue_detail.var.catalogue_email_notification_type);
@@ -160,6 +162,7 @@ var kbcatalogue_detail = {
     },
 
     show_update_email_notification_modal: function(prev){
+        console.log('in show_update_email_notification_modal')
         common_entity_modal.init("Update Email Notification", "submit");
         let name_id = common_entity_modal.add_field(label="Name", type="text", value=prev.name);
         let type_id = common_entity_modal.add_field(label="Type", type="select", value=prev.type, option_map=kbcatalogue_detail.var.catalogue_email_notification_type);
@@ -208,6 +211,7 @@ var kbcatalogue_detail = {
     },
 
     show_delete_email_notification_modal: function(target){
+        console.log('in show_delete_email_notification_modal')
         common_entity_modal.init("Delte Email Notification", "delete");
         common_entity_modal.add_field(label="Name", type="text", value=target.name);
         common_entity_modal.add_field(label="Type", type="select", value=target.type, option_map=kbcatalogue_detail.var.catalogue_email_notification_type);
