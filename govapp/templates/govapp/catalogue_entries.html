@@ -5,15 +5,13 @@
 {% if request.user.is_authenticated is True %}
       {% include "govapp/catalogue_entries_modal_upload_catalogue.html" %}
       
-      <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+      <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}"/>
 
       <div class="container" id="dashboard-table-container">
- 
             {% include "govapp/catalogue_nav.html" %}
-
-                  <div class="card" >
-                        <div class="card-header fw-bold h4" style="padding:30px;">
-                              <div class="row">
+            <div class="card" >
+                  <div class="card-header fw-bold h4" style="padding:30px;">
+                        <div class="row">
                               <div class="col-6">
                                     Catalogue Entries
                               </div>
@@ -126,7 +124,7 @@
                                           </select>
                                           <span>entries</span>
                                     </div>
-                                </div>
+                              </div>
                               <div class='col-2 text-end offset-6'>
                                     <label>Ordering Direction</label>
                                     <select aria-controls="catalogue-ordering-direction" class="form-select form-select-sm" id="catalogue-ordering-direction" >
@@ -175,6 +173,9 @@
                   </div>
             </div>
       </div>
+
+      <input type="hidden" id="ce_types_to_display" value="{{ ce_types_to_display }}"/>
+
       <style>
       .public-icon, .restricted-icon{
             width: 16px;
@@ -184,6 +185,7 @@
             margin-right: .5em;
       }
       </style>
+
       <script>
             kbcatalogue.init_dashboard();
       </script>

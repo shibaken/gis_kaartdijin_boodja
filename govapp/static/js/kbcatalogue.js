@@ -298,7 +298,6 @@ var kbcatalogue = {
             headers: {'X-CSRFToken' : csrf_token},
             data: post_data,
             success: function (response) {
-                console.log({response})
                 if (save_status == 'save-and-exit') {
                     window.location = '/catalogue/entries/';
                 } else {
@@ -307,7 +306,6 @@ var kbcatalogue = {
             },
             error: function (error) {
                 common_entity_modal.show_alert("ERROR Saving."); 
-                console.log({error})
             },
         });
     },
@@ -482,16 +480,15 @@ var kbcatalogue = {
                 limit: $('#catalogue-limit').val(),
                 order_by: $('#catalogue-order-by').val(),
                 ordering_direction: $('#catalogue-ordering-direction').val(),
-                type_in: "1,5"
+                type_in: $('#ce_types_to_display').val()
             }
-
             params_str = utils.make_query_params(params);
         }
 
         console.log({params_str})
 
         $.ajax({
-            url: kbcatalogue.var.catalogue_data_url+"?"+params_str,
+            url: kbcatalogue.var.catalogue_data_url + "?" + params_str,
             method: 'GET',
             dataType: 'json',
             contentType: 'application/json',

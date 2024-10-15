@@ -371,6 +371,14 @@ SENTRY_TRANSACTION_SAMPLE_RATE = decouple.config("SENTRY_TRANSACTION_SAMPLE_RATE
 
 WEBHOOK_ENABLED = decouple.config("WEBHOOK_ENABLED", default=False)
 
+# Catalogue entry type to be displayed on the catalogue entry list page
+CATALOGUE_ENTRY_TYPE_TO_DISPLAY = decouple.config("CATALOGUE_ENTRY_TYPE_TO_DISPLAY", default='1,2,3,4,5')
+                                                                                                            # SPATIAL_FILE = 1
+                                                                                                            # SUBSCRIPTION_WFS = 2
+                                                                                                            # SUBSCRIPTION_WMS = 3
+                                                                                                            # SUBSCRIPTION_POSTGIS = 4
+                                                                                                            # SUBSCRIPTION_QUERY = 5
+
 if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
     import sentry_sdk
 
