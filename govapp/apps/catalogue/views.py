@@ -846,17 +846,19 @@ class LayerSubscriptionViewSet(
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_POSTGIS
             
         # Create Catalogue Entry
-        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
-            name=data['name'],
-            description=data['description'] if 'description' in data else None,
-            mapping_name=data['mapping_name'],
-            type=catalogue_type,
-            layer_subscription=subscription
-        )
-        logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
-        
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
+                name=data['name'],
+                description=data['description'] if 'description' in data else None,
+                mapping_name=data['mapping_name'],
+                type=catalogue_type,
+                layer_subscription=subscription
+            )
+            logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        except ValueError as e:
+            logger.info(f'CatalogueEntry with the name: [{data['name']}] already exists.')
+            return response.Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer,
