@@ -594,7 +594,7 @@ var kblayersubscription = {
             const key = optional_fields[i];
             const id = "subscription-"+key.replaceAll('_', '-');
             const val = $('#'+id).val();
-            if(val){
+            if(val !== undefined && val !== null){
                 update_subscription_data[key] = val;
             }
         }

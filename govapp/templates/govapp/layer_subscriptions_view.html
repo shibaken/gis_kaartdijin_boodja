@@ -231,7 +231,9 @@
                                                             <input type="text" id="subscription-userpassword" class="form-control"></input>
                                                       {% endif %}
                                                 {% else %}
+                                                      {% if subscription_obj.userpassword %}
                                                             Hidden
+                                                      {% endif %}
                                                 {% endif %}
                                           </div>
                                           <div class='col-4'> &nbsp; </div>
