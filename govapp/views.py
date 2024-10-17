@@ -214,6 +214,10 @@ class PublishView(base.TemplateView):
         if is_administrator is True and  publish_entry_obj.status == 2 and request.user == publish_entry_obj.assigned_to:
             has_edit_access = True
 
+        show_lock_unlock_btn = False
+        if is_administrator is True and request.user == publish_entry_obj.assigned_to:
+            show_lock_unlock_btn = True
+
         context['catalogue_entry_list'] = catalogue_entry_list
         context['publish_entry_obj'] = publish_entry_obj
 
@@ -229,6 +233,7 @@ class PublishView(base.TemplateView):
         context['system_users'] = system_users_list
         context['publish_id'] = self.kwargs['pk']
         context['has_edit_access'] = has_edit_access
+        context['show_lock_unlock_btn'] = show_lock_unlock_btn
         context['publish_workspaces'] = publish_workspaces
         context['publish_workspace_list'] = publish_workspace_list
         context['geoserver_pools'] = geoserver_pools
