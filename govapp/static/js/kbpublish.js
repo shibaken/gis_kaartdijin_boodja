@@ -162,10 +162,27 @@ var kbpublish = {
             $('#new-publish-entry-catalogue-entry').val('');
             $('#new-publish-entry-description').val('');
             $('#new-publish-entry-modal').modal('show');
+            $('#new-publish-entry-modal-error').val('').hide();
+            $('#new-publish-entry-modal-success').val('').hide();
         }),
         $('#new-publish-entry-modal-submit-btn').click(function(){
-            const catalogue_entry = utils.validate_empty_input('Catalogue Entry', $('#new-publish-entry-catalogue-entry').val());
-            const description = utils.validate_empty_input('Description', $('#new-publish-entry-description').val());
+            let error_msg_elem = $('#new-publish-entry-modal-error');
+            let success_msg_elem = $('#new-publish-entry-modal-success');
+
+            const catalogue_entry = $('#new-publish-entry-catalogue-entry').val()
+            const description = $('#new-publish-entry-description').val()
+
+            let error_msg = '';
+            if (!catalogue_entry) {
+                error_msg += 'Please choose a catalogue entry.<br>';
+            }
+            if (!description) {
+                error_msg += 'Please enter a description.<br>';
+            }
+            if (error_msg) {
+                error_msg_elem.html(error_msg).show();
+                return false;
+            }
             
             var publish_data = {
                 catalogue_entry: catalogue_entry,
