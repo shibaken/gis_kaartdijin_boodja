@@ -66,9 +66,6 @@ RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/
 RUN chmod 755 /tmp/default_script_installer.sh
 RUN /tmp/default_script_installer.sh
 
-# Required for larger files to bypass proxy limits
-RUN echo "kbadmin-uat.dbca.wa.gov.au az-aks-oim03.lan.fyi" >> /etc/hosts
-
 COPY startup.sh /
 RUN chmod 755 /startup.sh
 
