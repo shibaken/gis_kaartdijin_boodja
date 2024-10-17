@@ -68,7 +68,8 @@
                                                 <button class='btn btn-primary btn-sm mt-1' id='publish-assigned-to-btn' href=''>Assign</button>
                                           </div>
                                     </div>
-                                    {% if has_edit_access %}
+
+                                    {% if show_lock_unlock_btn %}
                                     <div class='p-3'>
                                           <div><b>Actions</b></div>
                                           {% if publish_entry_obj.status == 1 %}
