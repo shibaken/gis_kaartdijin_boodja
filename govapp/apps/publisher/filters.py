@@ -49,7 +49,7 @@ class PublishEntryFilter(filters.FilterSet):
             "updated_at",
             "published_at",
             "assigned_to",
-            ("catalogue_entry__custodian", "custodian"),
+            ("catalogue_entry__custodian__name", "custodian"),
         )
     )
 
