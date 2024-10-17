@@ -235,13 +235,21 @@ LOGGING = {
             'propagate': True
         },
         # Log SQL
-        'django.db.backends': {
-            'level': 'DEBUG',
-            'handlers': ['file_for_sql'],
-            'propagate': False,
-        },
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['file_for_sql'],
+        #     'propagate': False,
+        # },
     }
 }
+ENABLE_SQL_LOGGING = decouple.config("ENABLE_SQL_LOGGING", default=False, cast=bool)
+if ENABLE_SQL_LOGGING:
+    LOGGING['loggers']['django.db.backends'] = {
+        'level': 'DEBUG',
+        'handlers': ['file_for_sql'],
+        'propagate': False,
+    }
+
 
 # Sharepoint Settings
 # Sharepoint Input settings are for the Catalogue (Input)
