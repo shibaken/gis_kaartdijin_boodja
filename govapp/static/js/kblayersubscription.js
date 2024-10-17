@@ -656,7 +656,7 @@ var kblayersubscription = {
                     table.message_tbody(tbody, "No results found");
                     return;
                 }
-                console.log({response})
+
                 kblayersubscription.var.mapping_names = response.results;
                 success_callback();
             },
@@ -668,7 +668,6 @@ var kblayersubscription = {
         });
     },
     get_mapping_info: function(type){
-        console.log('in get_mapping_info')
         let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
         let method = 'GET';
 
@@ -682,7 +681,6 @@ var kblayersubscription = {
             title = "Table";
         }
 
-        console.log('url in get_mapping_info: ' + url)
         // call GET API
         $.ajax({
             url: url,
@@ -695,16 +693,20 @@ var kblayersubscription = {
                     table.message_tbody(tbody, "No results found");
                     return;
                 }
-                console.log({response})
-                kblayersubscription.var.mapped_names = response.results;
-                
+
                 // Construct buttons
                 let buttons = null;
                 if($('#has_edit_access').val() == "True"){
-                    buttons={Add:{callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
-                                    is_valid:(mapping)=>!(mapping.name in response.results)},
-                            Edit:{callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
-                                    is_valid:(mapping)=>mapping.name in response.results}};
+                    buttons={
+                        Add:{
+                            callback:(mapping)=>kblayersubscription.show_add_mapping_modal(title, mapping, type), 
+                            is_valid:(mapping)=>!(mapping.name in response.results)  // !(mapping.name in response.results) means the layer has not been added yet as a catalogue entry --> Display 'ADD' button
+                        },
+                        Edit:{
+                            callback:(mapping)=>kblayersubscription.show_edit_mapping_modal(title, mapping, response.results[mapping.name], type), 
+                            is_valid:(mapping)=>mapping.name in response.results  // (mapping.name in response.results) means the layer has been already added as a catalogue entry --> Display 'EDIT' button
+                        }
+                    };
                     // table.set_thead(thead, {[title+"s"]:5, "Catalogue Name":6, "Action":1});
                     table.set_thead(thead, {"Catalogue Entry":4, [title+"s"]:4, "Title": 3, "Action":1});
                 } else {
@@ -714,7 +716,6 @@ var kblayersubscription = {
 
                 // Construct rows
                 let rows = []
-                console.log(kblayersubscription.var.mapping_names)
                 for(let i in kblayersubscription.var.mapping_names){
                     let mapping = {};
                     mapping.name = kblayersubscription.var.mapping_names[i].name;
@@ -728,11 +729,11 @@ var kblayersubscription = {
                 if(rows.length == 0){
                     table.message_tbody(tbody, "No results found");
                 }
+                $('#layerSubscriptionLayersTable').DataTable();
             },
             error: (error)=> {
                 table.message_tbody(tbody, "No results found");
                 common_entity_modal.show_alert("An error occured while getting mappings.");
-                // console.error(error);
             },
         });
     },
