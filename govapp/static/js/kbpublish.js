@@ -2012,7 +2012,7 @@ var kbpublish = {
                 }
 
                 table.set_tbody($('#publish-notification-tbody'), response.results, 
-                                columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'switch'}], 
+                                columns=[{id:'text'}, {name:'text'}, {type_str:'text'}, {email:'text'}, {active:'boolean'}], 
                                 buttons=buttons);
                 common_pagination.init(response.count, params, kbpublish.get_email_notification, $('#notification-paging-navi'));
             },

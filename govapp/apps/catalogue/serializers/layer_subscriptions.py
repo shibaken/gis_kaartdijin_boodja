@@ -81,8 +81,8 @@ class LayerSubscriptionUpdateSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     workspace = serializers.IntegerField(required=False)
-    username = serializers.CharField(required=False)
-    userpassword = serializers.CharField(required=False)
+    username = serializers.CharField(required=False, allow_blank=True)
+    userpassword = serializers.CharField(required=False, allow_blank=True)
     
     class Meta:
         """Layer Subscription Model Serializer Metadata."""

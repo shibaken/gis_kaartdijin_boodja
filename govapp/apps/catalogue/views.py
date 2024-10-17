@@ -714,38 +714,6 @@ class LayerSubscriptionViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-    # @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
-    # @decorators.action(detail=True, methods=["POST"])
-    # def decline(self, request: request.Request, pk: str) -> response.Response:
-    #     """Declines the Layer Subscription.
-
-    #     Args:
-    #         request (request.Request): API request.
-    #         pk (str): Primary key of the Layer Subscription.
-
-    #     Returns:
-    #         response.Response: Empty response confirming success.
-    #     """
-    #     # Retrieve Layer Subscription
-    #     # Help `mypy` by casting the resulting object to a Layer Subscription
-    #     catalogue_entry = self.get_object()
-    #     catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
-
-    #     # Decline
-    #     success = catalogue_entry.decline()
-
-    #     # Check Success
-    #     if success:
-    #         # Add Action Log Entry
-    #         logs_utils.add_to_actions_log(
-    #             user=request.user,
-    #             model=catalogue_entry,
-    #             action="Catalogue entry was declined"
-    #         )
-
-    #     # Return Response
-    #     return response.Response(status=status.HTTP_204_NO_CONTENT)
-
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"], url_path=r"assign/(?P<user_pk>\d+)")
     def assign(self, request: request.Request, pk: str, user_pk: str) -> response.Response:
@@ -846,17 +814,19 @@ class LayerSubscriptionViewSet(
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_POSTGIS
             
         # Create Catalogue Entry
-        catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
-            name=data['name'],
-            description=data['description'] if 'description' in data else None,
-            mapping_name=data['mapping_name'],
-            type=catalogue_type,
-            layer_subscription=subscription
-        )
-        logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
-        
-        # Return Response
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
+                name=data['name'],
+                description=data['description'] if 'description' in data else None,
+                mapping_name=data['mapping_name'],
+                type=catalogue_type,
+                layer_subscription=subscription
+            )
+            logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        except ValueError as e:
+            logger.info(f'CatalogueEntry with the name: [{data['name']}] already exists.')
+            return response.Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer,
@@ -919,6 +889,7 @@ class LayerSubscriptionViewSet(
         mappings = list(models.catalogue_entries.CatalogueEntry.objects
                              .filter(layer_subscription=layer_subscription)
                              .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
+        
         if not mappings:
             mappings = {}
         else:
@@ -927,7 +898,8 @@ class LayerSubscriptionViewSet(
                     'name':mapping['name'],
                     'description':mapping['description'],
                     'catalogue_entry_id':mapping['id']
-                } for mapping in mappings}
+                } for mapping in mappings
+            }
 
         # Return Response
         logger.debug(f'mappings: {mappings}')
@@ -953,14 +925,15 @@ class LayerSubscriptionViewSet(
         subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
         LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
 
-        def cache_or_callback(key, callback):
+        def retrieve_data(key, fetch_data):
             val = cache.get(key)
             if settings.DEBUG or not val:
                 try:
-                    val = callback()
+                    val = fetch_data()
                     cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
+                    logger.info(f'Value has been set to the Cache key: [{key}].')
                 except Exception as e:
-                    print(e)
+                    logger.error(f"Error when fetching data: {e}")
             else:
                 logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
             return val
@@ -979,7 +952,7 @@ class LayerSubscriptionViewSet(
                         "title": res.contents[layer].title,
                     })
                 return result
-            mapping_names = cache_or_callback(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
+            mapping_names = retrieve_data(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
 
         elif subscription_obj.type == LayerSubscriptionType.WFS:
             def get_wfs():
@@ -993,7 +966,7 @@ class LayerSubscriptionViewSet(
                         "title": res.contents[layer].title,
                     })
                 return result
-            mapping_names = cache_or_callback(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
+            mapping_names = retrieve_data(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
 
         elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
             def get_post_gis():
@@ -1012,7 +985,7 @@ class LayerSubscriptionViewSet(
                 with conn.cursor() as cursor:
                     cursor.execute(query, [subscription_obj.schema])
                     return [e[0] for e in cursor.fetchall()]
-            mapping_names = cache_or_callback(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
+            mapping_names = retrieve_data(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
         
         # Return Response
         logger.debug(f'mapping_names: {mapping_names}')

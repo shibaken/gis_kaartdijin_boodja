@@ -276,10 +276,13 @@ class CatalogueEntriesPage(base.TemplateView):
             else:
                 if ce.id not in pe_list:
                     catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+
+        ce_types_to_display = settings.CATALOGUE_ENTRY_TYPE_TO_DISPLAY       
                 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
         context['tab'] = 'catalogue_entries'
+        context['ce_types_to_display'] = ce_types_to_display
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
