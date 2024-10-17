@@ -74,7 +74,7 @@ USER oim
 #ENV POETRY_VERSION=1.3.2
 RUN virtualenv /app/venv
 ENV PATH=/app/venv/bin:$PATH
-git config --global --add safe.directory /app
+RUN git config --global --add safe.directory /app
 # RUN curl -sSL https://install.python-poetry.org | python -
 #RUN ln -s /root/.local/bin/poetry /usr/bin/poetry
 #RUN poetry config virtualenvs.create false
