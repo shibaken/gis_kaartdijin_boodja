@@ -21,15 +21,10 @@
                               <button class='btn btn-primary btn-sm' id='publish-manage-editors-btn' style="display:none">Manage Editors</button>
                         </div>
                   </div>
-                  <div class='row'>
-                        <div class='col-12'>
-                              &nbsp;
-                        </div>
-                  </div>
 
                   <div class='row'>
                         <div class='col-3'>
-                              <div class='col-12 border'>
+                              <div class='border mb-3'>
                                     <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
                                           Logs
                                     </div>
@@ -37,45 +32,45 @@
                                           <p><b>Communication</b><br>
                                           <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
                                     </div> -->
-                                    <div class='col-12 p-3'>
+                                    <div class='p-3'>
                                           <p><b>Actions</b><br>
                                           <a href='#' id="log_actions_show">Show</a></p>
                                     </div>
                               </div>
-                              <br>
-                              <div class='col-12 border'>
-                                    <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
+                              <div class='border'>
+                                    <div class='text-center bg-light p-2 border-bottom fw-bold'>
                                           Workflow
                                     </div>
-                                    <div class='col-12 p-3 border-bottom'>
-                                          <p>
-                                                <b>Status</b>
-                                                <br>
-                                                {% if publish_entry_obj.status == 1 %}
-                                                      Locked
-                                                {% else %}
-                                                      Unlocked
-                                                {% endif %}
-                                                <br>
-                                                <br>
-                                                <b>Currently assigned to</b>
-                                                
-                                                <div class='text-end'>                                          
-                                                      <select class='form-control' id="publish-assigned-to">
-                                                            <option value=''>-- Select One --</option>
-                                                            {% for su in system_users %}                                          
-                                                                  {% if publish_entry_obj.assigned_to.id == su.id %}
-                                                                        <option value='{{ su.id }}' selected>{{ su.first_name }} {{ su.last_name }}</option>
-                                                                  {% else %}
-                                                                        <option value='{{ su.id }}'>{{ su.first_name }} {{ su.last_name }}</option>
-                                                                  {% endif %}
-                                                            {% endfor %}
-                                                      </select>
-                                                      <button class='btn btn-primary btn-sm mt-1' id='publish-assigned-to-btn' href=''>Assign</button>
-                                                </div>
-                                          </p>
+                                    <div class='p-3 border-bottom'>
+                                          <div>
+                                                <strong>Status</strong>
+                                          </div>
+                                          {% if publish_entry_obj.status == 1 %}
+                                                Locked
+                                          {% else %}
+                                                Unlocked
+                                          {% endif %}
+                                          <div>
+                                                <strong>Currently assigned to</strong>
+                                          </div>
+                                          
+                                          <div class='text-end'>
+                                                <select class='form-control' id="publish-assigned-to">
+                                                      <option value=''>-- Select One --</option>
+                                                      {% for su in system_users %}
+                                                            {% if publish_entry_obj.assigned_to.id == su.id %}
+                                                                  <option value='{{ su.id }}' selected>{{ su.first_name }} {{ su.last_name }}</option>
+                                                            {% else %}
+                                                                  <option value='{{ su.id }}'>{{ su.first_name }} {{ su.last_name }}</option>
+                                                            {% endif %}
+                                                      {% endfor %}
+                                                </select>
+                                                <button class='btn btn-primary btn-sm mt-1' id='publish-assigned-to-btn' href=''>Assign</button>
+                                          </div>
                                     </div>
-                                    <div class='col-12 p-3'>
+
+                                    {% if show_lock_unlock_btn %}
+                                    <div class='p-3'>
                                           <div><b>Actions</b></div>
                                           {% if publish_entry_obj.status == 1 %}
                                                 <div class="mb-2"><button class='btn btn-primary btn-sm w-50' id='publish-unlock'>Unlock</button></div>
@@ -106,6 +101,7 @@
                                                 <div class="mb-2"><button class='btn btn-primary btn-sm w-50' id='publish-lock'>Lock</button></div>
                                           {% endif %}
                                     </div>
+                                    {% endif %}
                               </div>
                         </div>
                         <div class='col-9'>

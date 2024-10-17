@@ -9,6 +9,7 @@ from datetime import datetime
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import request
 
 
@@ -92,6 +93,19 @@ CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP = [
 ]
 
 
+class CatalogueEntryManager(models.Manager):
+    def create(self, *args, **kwargs):
+        name = kwargs.get('name')
+        if name:
+            catalogue_entries = self.filter(name=name)
+            if catalogue_entries:
+                raise ValueError("CatalogueEntry with this name already exists.")
+            else:
+                return super().create(*args, **kwargs)
+        else:
+            raise ValueError("Name must be provided.")
+
+
 @reversion.register(
     follow=(
         "attributes",
@@ -138,6 +152,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
     )
     permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.PUBLIC)
     force_run_postgres_scanner = models.BooleanField(default=False)
+    objects = CatalogueEntryManager()
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.

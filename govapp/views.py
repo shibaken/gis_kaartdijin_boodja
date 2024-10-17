@@ -214,6 +214,10 @@ class PublishView(base.TemplateView):
         if is_administrator is True and  publish_entry_obj.status == 2 and request.user == publish_entry_obj.assigned_to:
             has_edit_access = True
 
+        show_lock_unlock_btn = False
+        if is_administrator is True and request.user == publish_entry_obj.assigned_to:
+            show_lock_unlock_btn = True
+
         context['catalogue_entry_list'] = catalogue_entry_list
         context['publish_entry_obj'] = publish_entry_obj
 
@@ -229,6 +233,7 @@ class PublishView(base.TemplateView):
         context['system_users'] = system_users_list
         context['publish_id'] = self.kwargs['pk']
         context['has_edit_access'] = has_edit_access
+        context['show_lock_unlock_btn'] = show_lock_unlock_btn
         context['publish_workspaces'] = publish_workspaces
         context['publish_workspace_list'] = publish_workspace_list
         context['geoserver_pools'] = geoserver_pools
@@ -276,10 +281,13 @@ class CatalogueEntriesPage(base.TemplateView):
             else:
                 if ce.id not in pe_list:
                     catalogue_entry_list.append({'id': ce.id, 'name': ce.name})
+
+        ce_types_to_display = settings.CATALOGUE_ENTRY_TYPE_TO_DISPLAY       
                 
         # END - To be improved later todo a reverse table join    
         context['catalogue_entry_list'] = catalogue_entry_list
         context['tab'] = 'catalogue_entries'
+        context['ce_types_to_display'] = ce_types_to_display
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
