@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import pathlib
+import requests
 
 # Third-Party
 from django import conf
@@ -121,12 +122,22 @@ class GeoServer:
         # Check Response
         response.raise_for_status()
 
+    def _stream_file(self, filepath: pathlib.Path, chunk_size: int = 1024 * 1024):
+        """ A generator function to read files in chunks. """
+        with open(filepath, 'rb') as f:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
+
     @handle_http_exceptions(log)
     def upload_tif(
         self,
         workspace: str,
         layer: str,
         filepath: pathlib.Path,
+        chunk_size: Optional[int] = 1024 * 1024  # 1MB chunks by default
     ) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
@@ -140,25 +151,35 @@ class GeoServer:
 
         # Construct URL
         url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/file.geotiff"
+        
+        headers = {
+            'Content-Type': 'image/tiff',
+            'Transfer-Encoding': 'chunked'
+        }
+        
+        params = {
+            'filename': filepath.name,
+            'update': 'overwrite',
+            'configure': 'all'
+        }
 
-        # Perform Request
-        response = httpx.put(
-            url=url,
-            content=filepath.read_bytes(),
-            params={
-                "filename": filepath.name,
-                "update": "overwrite",
-                "configure": "all"
-                },
-            auth=(self.username, self.password),
-            timeout=3000.0
-        )
+        with requests.Session() as session:
+            # Perform streaming upload
+            response = session.put(
+                url=url,
+                data=self._stream_file(filepath, chunk_size),
+                params=params,
+                headers=headers,
+                auth=(self.username, self.password),
+                timeout=3000.0,
+                stream=True
+            )
 
-        # Log
-        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+            # Log
+            log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
 
-        # Check Response
-        response.raise_for_status()
+            # Check Response
+            response.raise_for_status()
 
     @handle_http_exceptions(log)
     def create_layer_from_coveragestore(self, workspace: str, layer: str) -> None:
