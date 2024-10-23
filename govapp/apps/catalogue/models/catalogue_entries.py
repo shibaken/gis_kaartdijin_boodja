@@ -120,7 +120,7 @@ class CatalogueEntryManager(models.Manager):
 )
 class CatalogueEntry(mixins.RevisionedMixin):
     """Model for a Catalogue Entry."""
-    name = models.TextField()  # !!! This name is used as a layer name !!!
+    name = models.TextField(unique=True)  # !!! This name is used as a layer name !!!
     description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPATIAL_FILE)
