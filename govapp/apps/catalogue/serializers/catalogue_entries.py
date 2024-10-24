@@ -90,6 +90,12 @@ class CatalogueEntryCreateSubscriptionMappingSerializer(serializers.ModelSeriali
             raise serializers.ValidationError("'description' field is required.")
         return data
 
+    def validate_name(self, value):
+        if models.catalogue_entries.CatalogueEntry.objects.filter(name=value).exists():
+            raise serializers.ValidationError("This Catalogue Entry Name is already taken.")
+        return value
+
+
 class CatalogueEntryUpdateSubscriptionMappingSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
@@ -97,16 +103,23 @@ class CatalogueEntryUpdateSubscriptionMappingSerializer(serializers.ModelSeriali
     
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
-        model = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.model
-        fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields
-        
+        model = models.catalogue_entries.CatalogueEntry
+        fields = ("name", "description", "mapping_name")
+
+    def validate_name(self, value):
+        instance = self.instance
+        if models.catalogue_entries.CatalogueEntry.objects.filter(name=value).exclude(id=instance.id).exists():
+            raise serializers.ValidationError("This Catalogue Entry Name is already taken.")
+        return value
+
+
 class CatalogueEntryGetSubscriptionMappingSerializer(serializers.ModelSerializer):
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
-        model = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.model
-        fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields
-        read_only_fields = CatalogueEntryCreateSubscriptionMappingSerializer.Meta.fields
-        
+        model = models.catalogue_entries.CatalogueEntry
+        fields = ("name", "description", "mapping_name")
+        read_only_fields = ("name", "description", "mapping_name")
+
 
 class CatalogueEntryCreateSubscriptionQuerySerializer(serializers.ModelSerializer):
     class Meta:
@@ -121,19 +134,35 @@ class CatalogueEntryCreateSubscriptionQuerySerializer(serializers.ModelSerialize
             raise serializers.ValidationError("'sql_query' field is required.")
         return data
 
+    def validate_name(self, value):
+        if models.catalogue_entries.CatalogueEntry.objects.filter(name=value).exists():
+            raise serializers.ValidationError("This Catalogue Entry Name is already taken.")
+        return value
+
+
 class CatalogueEntryUpdateSubscriptionQuerySerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
     sql_query = serializers.CharField(required=False)
+
+    def validate(self, data):
+        return data
+
+    def validate_name(self, value):
+        instance = self.instance
+        if models.catalogue_entries.CatalogueEntry.objects.filter(name=value).exclude(id=instance.id).exists():
+            raise serializers.ValidationError("This Catalogue Entry Name is already taken.")
+        return value
     
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
-        model = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.model
-        fields = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.fields
-        
+        model = models.catalogue_entries.CatalogueEntry
+        fields = ("name", "description", "sql_query")
+
+
 class CatalogueEntryGetSubscriptionQuerySerializer(serializers.ModelSerializer):
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
-        model = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.model
-        fields = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.fields
-        read_only_fields = CatalogueEntryCreateSubscriptionQuerySerializer.Meta.fields
+        model = models.catalogue_entries.CatalogueEntry
+        fields = ("name", "description", "sql_query")
+        read_only_fields = ("name", "description", "sql_query")
