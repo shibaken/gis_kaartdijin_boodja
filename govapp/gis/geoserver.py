@@ -154,7 +154,8 @@ class GeoServer:
         
         headers = {
             'Content-Type': 'image/tiff',
-            'Transfer-Encoding': 'chunked'
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive'
         }
         
         params = {
@@ -163,23 +164,28 @@ class GeoServer:
             'configure': 'all'
         }
 
+        file_size = filepath.stat().st_size
+        log.info(f"File size: {file_size / (1024*1024):.2f} MB")
+
         with requests.Session() as session:
             # Perform streaming upload
-            response = session.put(
-                url=url,
-                data=self._stream_file(filepath, chunk_size),
-                params=params,
-                headers=headers,
-                auth=(self.username, self.password),
-                timeout=3000.0,
-                stream=True
-            )
+            try:
+                response = session.put(
+                    url=url,
+                    data=self._stream_file(filepath, chunk_size),
+                    params=params,
+                    headers=headers,
+                    auth=(self.username, self.password),
+                    timeout=3000.0,
+                    stream=True
+                )
 
-            # Log
-            log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+                log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+                response.raise_for_status()
 
-            # Check Response
-            response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                log.error(f'Upload failed: [{str(e)}]')
+                raise
 
     @handle_http_exceptions(log)
     def create_layer_from_coveragestore(self, workspace: str, layer: str) -> None:
