@@ -804,7 +804,7 @@ class LayerSubscriptionViewSet(
          # Validation Check
         serializer = serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.data
+        data = serializer.validated_data
         
         # Set Type
         catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WFS
@@ -824,7 +824,13 @@ class LayerSubscriptionViewSet(
                 type=catalogue_type,
                 layer_subscription=subscription
             )
-            logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+            msg = f'New CatalogueEntry: [{catalogue_entry}] has been created.'
+            logger.info(msg)
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=catalogue_entry,
+                action=msg
+            )
             return response.Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as e:
             logger.info(f'CatalogueEntry with the name: [{data['name']}] already exists.')
@@ -859,14 +865,15 @@ class LayerSubscriptionViewSet(
         # data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer, request.data)
         serializer = serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer(catalogue_entry, data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.data
-        
-        # Update Catalogue Entry
-        catalogue_entry.name = data['name']
-        catalogue_entry.description = data['description']
-        catalogue_entry.mapping_name = data['mapping_name']
-        
-        catalogue_entry.save()
+        catalogue_entry = serializer.save()
+
+        msg = f'CatalogueEntry: [{catalogue_entry}] has been updated.'
+        logger.info(msg)
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=catalogue_entry,
+            action=msg
+        )
         
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -1035,7 +1042,13 @@ class LayerSubscriptionViewSet(
             type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
             layer_subscription=subscription
         )
-        logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+        msg = f'New CatalogueEntry: [{catalogue_entry}] has been created.'
+        logger.info(msg)
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=catalogue_entry,
+            action=msg
+        )
         
         # Create Custom Query Frequency
         for option in frequency_options:
@@ -1117,6 +1130,13 @@ class LayerSubscriptionViewSet(
         catalogue_entry.sql_query = data['sql_query'] if 'sql_query' in data else catalogue_entry.sql_query
         catalogue_entry.force_run_postgres_scanner = True if request.data.get('force_run_postgres_scanner', False) else False
         catalogue_entry.save()
+        msg = f'CatalogueEntry: [{catalogue_entry}] has been updated.'
+        logger.info(msg)
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=catalogue_entry,
+            action=msg
+        )
         
         # Validation check
         data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionQuerySerializer, request.data)
@@ -1213,6 +1233,13 @@ class LayerSubscriptionViewSet(
         """
         # Retrieve Catalogue Entry with Layer Submission Id
         models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id).delete()
+        msg = f'CatalogueEntry (id: {catalogue_id}) has been deleted.'
+        logger.info(msg)
+        # logs_utils.add_to_actions_log(
+        #     user=request.user,
+        #     model=catalogue_entry,
+        #     action=msg
+        # )
             
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
