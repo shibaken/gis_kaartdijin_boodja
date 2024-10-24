@@ -802,7 +802,9 @@ class LayerSubscriptionViewSet(
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
          # Validation Check
-        data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer, request.data)
+        serializer = serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.data
         
         # Set Type
         catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WFS
@@ -854,7 +856,10 @@ class LayerSubscriptionViewSet(
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(id=catalogue_id)
         
         # Validation check
-        data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer, request.data)
+        # data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer, request.data)
+        serializer = serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer(catalogue_entry, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.data
         
         # Update Catalogue Entry
         catalogue_entry.name = data['name']

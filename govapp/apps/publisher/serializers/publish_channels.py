@@ -11,6 +11,10 @@ from govapp.apps.publisher import models
 
 class CDDPPublishChannelSerializer(serializers.ModelSerializer):
     """CDDP Publish Channel Model Serializer."""
+    def validate_xml_path(self, value):
+        if value is None:
+            return ""
+        return value
 
     class Meta:
         """CDDP Publish Channel Model Serializer Metadata."""
@@ -35,7 +39,11 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
 
 
 class CDDPPublishChannelCreateSerializer(serializers.ModelSerializer):
-    """CDDP Publish Channel Model Create Serializer."""
+    def validate_xml_path(self, value):
+        if value is None:
+            return ""
+        return value
+
     class Meta:
         """CDDP Publish Channel Model Create Serializer Metadata."""
         model = CDDPPublishChannelSerializer.Meta.model
