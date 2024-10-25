@@ -43,7 +43,7 @@ UserModel = auth.get_user_model()
 
 
 class CatalogueEntryPermissionType(models.IntegerChoices):
-    PUBLIC = 1, 'Public'
+    NOT_RESTRICTED = 1, 'Not restricted'
     RESTRICTED = 2, 'Restricted'
 
     @staticmethod
@@ -150,7 +150,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
         related_name="assigned",
         on_delete=models.SET_NULL,
     )
-    permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.PUBLIC)
+    permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.NOT_RESTRICTED)
     force_run_postgres_scanner = models.BooleanField(default=False)
     # objects = CatalogueEntryManager()
 

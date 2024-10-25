@@ -384,7 +384,7 @@ class CatalogueEntriesView(base.TemplateView):
         context['user_access_permission'] = user_access_permission
         context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission  # READ, READ_WRITE
         context['CatalogueEntryType'] = catalogue_entries_models.CatalogueEntryType  # SPATIAL_FILE, SUBSCRIPTION_WFS, ...
-        context['CatalogueEntryPermissionType'] = catalogue_entries_models.CatalogueEntryPermissionType  # PUBLIC, RESTRICTED
+        context['CatalogueEntryPermissionType'] = catalogue_entries_models.CatalogueEntryPermissionType  # NOT_RESTRICTED, RESTRICTED
         context['CatalogueEntryStatus'] = catalogue_entries_models.CatalogueEntryStatus  # NEW_DRAFT, LOCKED, ...
 
         # Render Template and Return
@@ -442,7 +442,7 @@ class LayerSubmissionView(base.TemplateView):
 
         # Calculate accessibility to download link
         accessible_to_download = False
-        if layer_submission.permission_type == catalogue_entries_models.CatalogueEntryPermissionType.PUBLIC:
+        if layer_submission.permission_type == catalogue_entries_models.CatalogueEntryPermissionType.NOT_RESTRICTED:
             accessible_to_download = True
         elif layer_submission.permission_type == catalogue_entries_models.CatalogueEntryPermissionType.RESTRICTED:
             if is_administrator or user_access_permission in ['read', 'read_write']:

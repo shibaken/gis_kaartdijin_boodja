@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 class PublishGeoServerQueueCronJob(django_cron.CronJobBase):
     """Cron Job for publishing Geoserver queue."""
-    schedule = django_cron.Schedule(run_every_mins=conf.settings.CRON_SCANNER_PERIOD_MINS)
+    schedule = django_cron.Schedule(run_every_mins=conf.settings.PUBLISH_GEOSERVER_QUEUE_PERIOD_MINS)
     code = "govapp.publisher.geoserver_queue"
 
     def do(self) -> None:
