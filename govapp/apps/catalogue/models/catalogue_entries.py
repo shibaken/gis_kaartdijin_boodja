@@ -43,7 +43,7 @@ UserModel = auth.get_user_model()
 
 
 class CatalogueEntryPermissionType(models.IntegerChoices):
-    PUBLIC = 1, 'Public'
+    NOT_RESTRICTED = 1, 'Not restricted'
     RESTRICTED = 2, 'Restricted'
 
     @staticmethod
@@ -93,17 +93,17 @@ CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP = [
 ]
 
 
-class CatalogueEntryManager(models.Manager):
-    def create(self, *args, **kwargs):
-        name = kwargs.get('name')
-        if name:
-            catalogue_entries = self.filter(name=name)
-            if catalogue_entries:
-                raise ValueError("CatalogueEntry with this name already exists.")
-            else:
-                return super().create(*args, **kwargs)
-        else:
-            raise ValueError("Name must be provided.")
+# class CatalogueEntryManager(models.Manager):
+#     def create(self, *args, **kwargs):
+#         name = kwargs.get('name')
+#         if name:
+#             catalogue_entries = self.filter(name=name)
+#             if catalogue_entries:
+#                 raise ValueError("CatalogueEntry with this name already exists.")
+#             else:
+#                 return super().create(*args, **kwargs)
+#         else:
+#             raise ValueError("Name must be provided.")
 
 
 @reversion.register(
@@ -120,7 +120,7 @@ class CatalogueEntryManager(models.Manager):
 )
 class CatalogueEntry(mixins.RevisionedMixin):
     """Model for a Catalogue Entry."""
-    name = models.TextField()  # !!! This name is used as a layer name !!!
+    name = models.TextField(unique=True)  # !!! This name is used as a layer name !!!
     description = models.TextField(blank=True)
     status = models.IntegerField(choices=CatalogueEntryStatus.choices, default=CatalogueEntryStatus.NEW_DRAFT)
     type = models.IntegerField(choices=CatalogueEntryType.choices, default=CatalogueEntryType.SPATIAL_FILE)
@@ -150,9 +150,9 @@ class CatalogueEntry(mixins.RevisionedMixin):
         related_name="assigned",
         on_delete=models.SET_NULL,
     )
-    permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.PUBLIC)
+    permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.NOT_RESTRICTED)
     force_run_postgres_scanner = models.BooleanField(default=False)
-    objects = CatalogueEntryManager()
+    # objects = CatalogueEntryManager()
 
     # Type Hints for Reverse Relations
     # These aren't exactly right, but are useful for catching simple mistakes.

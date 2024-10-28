@@ -307,7 +307,11 @@ CUSTOM_GROUPS = [
 # https://django-cron.readthedocs.io/en/latest/installation.html
 # https://django-cron.readthedocs.io/en/latest/configuration.html
 #CRON_SCANNER_CLASS = "govapp.apps.catalogue.cron.ScannerCronJob"
-CRON_SCANNER_PERIOD_MINS = 3  # min
+POSTGRES_SCANNER_PERIOD_MINS = decouple.config('POSTGRES_SCANNER_PERIOD_MINS', default=3)
+SHAREPOINT_SCANNER_PERIOD_MINS = decouple.config('SHAREPOINT_SCANNER_PERIOD_MINS', default=3)
+DIRECTORY_SCANNER_PERIOD_MINS = decouple.config('DIRECTORY_SCANNER_PERIOD_MINS', default=2)
+PUBLISH_GEOSERVER_QUEUE_PERIOD_MINS = decouple.config('PUBLISH_GEOSERVER_QUEUE_PERIOD_MINS', default=2)
+
 GEOSERVER_LAYER_HEALTH_CHECK_PERIOD_MINS = 5  # min
 CRON_CLASSES = [
     "govapp.apps.catalogue.cron.PostgresScannerCronJob",

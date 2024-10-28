@@ -29,8 +29,8 @@
             <div class='row'>
                   <div class='col-3'>Permission type</div>
                   <div class='col-9 p-1'>
-                  {% if layer_submission_obj.catalogue_entry.permission_type == CatalogueEntryPermissionType.PUBLIC.value %}
-                        {% include 'govapp/public_icon.svg' %}Public
+                  {% if layer_submission_obj.catalogue_entry.permission_type == CatalogueEntryPermissionType.NOT_RESTRICTED.value %}
+                        {% include 'govapp/public_icon.svg' %}Not restricted
                   {% elif layer_submission_obj.catalogue_entry.permission_type == CatalogueEntryPermissionType.RESTRICTED.value %}
                         {% include 'govapp/restricted_icon.svg' %}Restricted
                   {% else %}

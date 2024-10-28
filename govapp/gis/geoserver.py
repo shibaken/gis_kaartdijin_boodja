@@ -87,12 +87,30 @@ class GeoServer:
             
         return response
 
+    def _stream_file(self, filepath: pathlib.Path, chunk_size: int = 1024 * 1024):
+        """Generator function to stream file in chunks.
+
+        Args:
+            filepath (pathlib.Path): Path to the file to stream.
+            chunk_size (int): Size of chunks to read.
+
+        Yields:
+            Generator[bytes, None, None]: File chunks as bytes.
+        """
+        with open(filepath, 'rb') as f:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
+
     @handle_http_exceptions(log)
     def upload_geopackage(
         self,
         workspace: str,
         layer: str,
         filepath: pathlib.Path,
+        chunk_size: Optional[int] = 1024 * 1024  # 1MB chunks by default
     ) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
@@ -100,36 +118,51 @@ class GeoServer:
             workspace (str): Workspace to upload files to.
             layer (str): Name of the layer to upload GeoPackage for.
             filepath (pathlib.Path): Path to the Geopackage file to upload.
+            chunk_size (Optional[int]): Size of chunks for streaming upload (default: 1MB)
         """
-        # Log
-        log.info(f"Uploading Geopackage '{filepath}' to GeoServer")
+        log.info(f"Uploading Geopackage '{filepath}' to GeoServer...")
 
         # Construct URL
         url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{layer}/file.gpkg"
 
-        # Perform Request
-        response = httpx.put(
-            url=url,
-            content=filepath.read_bytes(),
-            params={"filename": filepath.name, "update": "overwrite"},
-            auth=(self.username, self.password),
-            timeout=120.0
-        )
+        # Set appropriate headers for streaming upload
+        headers = {
+            'Content-Type': 'application/x-gpkg',  # GeoPackage mime type
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive'
+        }
+        
+        # Set query parameters
+        params = {
+            'filename': filepath.name,
+            'update': 'overwrite',
+            'configure': 'all'
+        }
 
-        # Log
-        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+        # Log file size for monitoring
+        file_size = filepath.stat().st_size
+        log.info(f"File size: {file_size / (1024*1024):.2f} MB")
 
-        # Check Response
-        response.raise_for_status()
+        with requests.Session() as session:
+            # Perform streaming upload
+            try:
+                response = session.put(
+                    url=url,
+                    data=self._stream_file(filepath, chunk_size),
+                    params=params,
+                    headers=headers,
+                    auth=(self.username, self.password),
+                    timeout=3000.0,  # 50 minutes timeout
+                    stream=True
+                )
 
-    def _stream_file(self, filepath: pathlib.Path, chunk_size: int = 1024 * 1024):
-        """ A generator function to read files in chunks. """
-        with open(filepath, 'rb') as f:
-            while True:
-                chunk = f.read(chunk_size)
-                if not chunk:
-                    break
-                yield chunk
+                log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+                response.raise_for_status()
+
+            except requests.exceptions.RequestException as e:
+                log.error(f'Upload failed: [{str(e)}]')
+                raise
+
 
     @handle_http_exceptions(log)
     def upload_tif(
@@ -154,7 +187,8 @@ class GeoServer:
         
         headers = {
             'Content-Type': 'image/tiff',
-            'Transfer-Encoding': 'chunked'
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive'
         }
         
         params = {
@@ -163,23 +197,28 @@ class GeoServer:
             'configure': 'all'
         }
 
+        file_size = filepath.stat().st_size
+        log.info(f"File size: {file_size / (1024*1024):.2f} MB")
+
         with requests.Session() as session:
             # Perform streaming upload
-            response = session.put(
-                url=url,
-                data=self._stream_file(filepath, chunk_size),
-                params=params,
-                headers=headers,
-                auth=(self.username, self.password),
-                timeout=3000.0,
-                stream=True
-            )
+            try:
+                response = session.put(
+                    url=url,
+                    data=self._stream_file(filepath, chunk_size),
+                    params=params,
+                    headers=headers,
+                    auth=(self.username, self.password),
+                    timeout=3000.0,
+                    stream=True
+                )
 
-            # Log
-            log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+                log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+                response.raise_for_status()
 
-            # Check Response
-            response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                log.error(f'Upload failed: [{str(e)}]')
+                raise
 
     @handle_http_exceptions(log)
     def create_layer_from_coveragestore(self, workspace: str, layer: str) -> None:

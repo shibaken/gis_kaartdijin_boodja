@@ -138,16 +138,10 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
 
     def publish_azure(self) -> None:
         """Publishes the Catalogue Entry to Azure if applicable."""
-        # Log
-        log.info(f"Publishing '{self}' to Azure")
-        print (self.publish_entry.catalogue_entry.active_layer.file)
+        log.info(f"Publishing CDDPPublishChannel obj: [{self}] to Azure...")
        
-        # Retrieve the Layer File from Storage
-        # filepath = sharepoint.sharepoint_input().get_from_url(
-        #     url=self.publish_entry.catalogue_entry.active_layer.file,
-        # )
-        
-        filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file)        
+        filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file)
+        log.info(f'active_layer filepath: [{filepath}]')
 
         # Select Conversion Function
         match self.format:
@@ -202,11 +196,11 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.
             xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + os.path.sep + self.name + ".xml")
-            log.debug(f'xml_file: {xml_file}')
             if os.path.isfile(xml_file):
                 xml_output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY)
                 if self.xml_path:
                     xml_output_path = xml_output_path.joinpath(self.xml_path)
+                log.info(f'Copy xml_file: [{xml_file}] to xml_output_path: [{xml_output_path}].')
                 shutil.copy(xml_file, xml_output_path)
                        
 
