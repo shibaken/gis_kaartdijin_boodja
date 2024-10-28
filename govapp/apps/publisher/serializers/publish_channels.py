@@ -155,8 +155,8 @@ class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
     """GeoServer Publish Channel Model Create Serializer."""
     class Meta:
         """GeoServer Publish Channel Model Create Serializer Metadata."""
-        model = GeoServerPublishChannelSerializer.Meta.model
-        fields = GeoServerPublishChannelSerializer.Meta.fields
+        model = models.publish_channels.GeoServerPublishChannel
+        fields = "__all__"
         # No read only fields on this serializer
         # This allows the `create` action to specify a Publish Entry
         read_only_fields = (
