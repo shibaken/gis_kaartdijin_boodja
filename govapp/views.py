@@ -225,7 +225,8 @@ class PublishView(base.TemplateView):
         context['publishable_to_cddp'] = publish_entry_obj.publishable_to_cddp
         context['publishable_to_ftp'] = publish_entry_obj.publishable_to_ftp
 
-        context['num_of_geoserver_publish_channels'] = publish_entry_obj.num_of_geoserver_publish_channels
+        context['num_of_geoserver_publish_channels_active'] = publish_entry_obj.num_of_geoserver_publish_channels_active
+        context['num_of_geoserver_publish_channels_inactive'] = publish_entry_obj.num_of_geoserver_publish_channels_inactive
         context['num_of_ftp_publish_channels'] = publish_entry_obj.num_of_ftp_publish_channels
         context['num_of_cddp_publish_channels'] = publish_entry_obj.num_of_cddp_publish_channels
 

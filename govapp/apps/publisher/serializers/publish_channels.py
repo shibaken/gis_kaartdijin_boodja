@@ -91,7 +91,12 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
         return None
 
     def get_geoserver_pool_url_ui(self, obj):
-        return f'{obj.geoserver_pool.url_ui}' if obj.geoserver_pool and obj.geoserver_pool.url_ui else ''
+        if obj.geoserver_pool:
+            if obj.geoserver_pool.url_ui:
+                return f'{obj.geoserver_pool.url_ui}'
+            else:
+                return f'{obj.geoserver_pool.url}'
+        return ''
         
     def validate(self, data):
         _validate_bbox(data)

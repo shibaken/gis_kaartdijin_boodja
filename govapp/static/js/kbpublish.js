@@ -1091,10 +1091,10 @@ var kbpublish = {
                                     html += '<div class="" style="position: relative;">'
                                     if (response.results[i].publishable_to_geoserver){
                                         let disabled = ''
-                                        if (response.results[i].num_of_geoserver_publish_channels <= 0){
+                                        if (response.results[i].num_of_geoserver_publish_channels_active <= 0 && response.results[i].num_of_geoserver_publish_channels_inactive <= 0){
                                             disabled = ' disabled'
                                         }
-                                        html += "<button class='btn btn-primary btn-sm w-100 publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish Geoserver (" + response.results[i].num_of_geoserver_publish_channels + ")</button>";
+                                        html += "<button class='btn btn-primary btn-sm w-100 publish-to-geoserver-btn' id='publish-to-geoserver-btn-"+response.results[i].id+"' data-json='"+button_json+"'" + disabled + ">Publish Geoserver (<img src='/static/admin/img/icon-yes.svg' alt='True'>" + response.results[i].num_of_geoserver_publish_channels_active + ", <img src='/static/admin/img/icon-no.svg' alt='False'>" + response.results[i].num_of_geoserver_publish_channels_inactive + ")</button>";
                                     }
                                     html += '</div>'
 
@@ -1371,17 +1371,17 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                 var html = '';
-                
                 if (response != null) {
                     if (response.length > 0) {
                         var responsejson = response;
                         for (let i = 0; i < responsejson.length; i++) {
                             let geoserver_publish_channel = responsejson[i];
                             let button_json = '{"id": "' + geoserver_publish_channel.id + '", "geoserver_pool_name": "' + geoserver_publish_channel.geoserver_pool_name + '"}'
+                            let yes_no_icon = geoserver_publish_channel.active ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'
 
                             html+= "<tr>";
                             html+= " <td>" + geoserver_publish_channel.id + "</td>";
-                            html+= " <td><a href='" + geoserver_publish_channel.geoserver_pool_url_ui + "'>" + geoserver_publish_channel.geoserver_pool_name + "</a></td>";
+                            html += `<td><a href="${geoserver_publish_channel.geoserver_pool_url_ui}" style="text-decoration: none;">${geoserver_publish_channel.geoserver_pool_name}</a></td>`;
                             html+= " <td>" + kbpublish.var.publish_geoserver_format[geoserver_publish_channel.mode] + "</td>";
                             html+= " <td>" + kbpublish.var.publish_geoserver_frequency[geoserver_publish_channel.frequency] + "</td>";
                             html+= " <td>" + geoserver_publish_channel.workspace_name + "</td>"; 
@@ -1393,6 +1393,7 @@ var kbpublish = {
                                 html+= geoserver_publish_channel.published_at;
                             }
                             html+= "</td>";
+                            html+= "<td>" + yes_no_icon + "</td>";
                             html+= " <td class='text-end'>";
                             if (kbpublish.var.has_edit_access == true) {
                                 html+= "<button class='btn btn-primary btn-sm publish-geoserver-update' data-json='" + button_json + "'>Update</button> ";
