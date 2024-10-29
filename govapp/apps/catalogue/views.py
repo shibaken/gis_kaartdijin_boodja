@@ -996,7 +996,14 @@ class LayerSubscriptionViewSet(
                         """
                 with conn.cursor() as cursor:
                     cursor.execute(query, [subscription_obj.schema])
-                    return [e[0] for e in cursor.fetchall()]
+                    # return [e[0] for e in cursor.fetchall()]
+                    result = []
+                    for e in cursor.fetchall():
+                        result.append({
+                            "name": e[0],
+                            "title": '---',
+                        })
+                    return result
             mapping_names = retrieve_data(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
         
         # Return Response
