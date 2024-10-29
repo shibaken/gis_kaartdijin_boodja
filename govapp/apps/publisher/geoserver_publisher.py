@@ -44,7 +44,13 @@ def publish(geoserver_publish_channel: GeoServerPublishChannel , symbology_only:
                 _publish(geoserver_publish_channel)
         else:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
-            geoserver_obj.delete_layer(geoserver_publish_channel.publish_entry.catalogue_entry.name)
+
+            # Check if the layer to be deleted exists in the geoserver
+            layers = geoserver_obj.get_layers()
+            layer_names = [layer['name'].split(':')[1] for layer in layers]
+            if geoserver_publish_channel.publish_entry.catalogue_entry.name in layer_names:
+                # Layer exists --> Delete the layer from the geoserver
+                geoserver_obj.delete_layer(geoserver_publish_channel.publish_entry.catalogue_entry.name)
 
     except Exception as exc:
         # Log

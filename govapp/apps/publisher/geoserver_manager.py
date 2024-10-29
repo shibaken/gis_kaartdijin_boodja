@@ -189,6 +189,7 @@ class GeoServerSyncExcutor:
             # Retrive layer names from DB for this geoserver
             name_list = GeoServerPublishChannel.objects.filter(
                 geoserver_pool=geoserver_info,
+                active=True,  # We want to delete the layers with an "active" value of False from GeoServer.
                 publish_entry__catalogue_entry__name__in=[layer_name for layer_name in layer_names]
             ).values_list('publish_entry__catalogue_entry__name', flat=True)
             synced_layer_names_set = set(name_list)
