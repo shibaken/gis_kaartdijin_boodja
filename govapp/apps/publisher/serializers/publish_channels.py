@@ -91,7 +91,12 @@ class GeoServerPublishChannelSerializer(serializers.ModelSerializer):
         return None
 
     def get_geoserver_pool_url_ui(self, obj):
-        return f'{obj.geoserver_pool.url_ui}' if obj.geoserver_pool and obj.geoserver_pool.url_ui else ''
+        if obj.geoserver_pool:
+            if obj.geoserver_pool.url_ui:
+                return f'{obj.geoserver_pool.url_ui}'
+            else:
+                return f'{obj.geoserver_pool.url}'
+        return ''
         
     def validate(self, data):
         _validate_bbox(data)
@@ -155,8 +160,8 @@ class GeoServerPublishChannelCreateSerializer(serializers.ModelSerializer):
     """GeoServer Publish Channel Model Create Serializer."""
     class Meta:
         """GeoServer Publish Channel Model Create Serializer Metadata."""
-        model = GeoServerPublishChannelSerializer.Meta.model
-        fields = GeoServerPublishChannelSerializer.Meta.fields
+        model = models.publish_channels.GeoServerPublishChannel
+        fields = "__all__"
         # No read only fields on this serializer
         # This allows the `create` action to specify a Publish Entry
         read_only_fields = (

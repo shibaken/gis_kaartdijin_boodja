@@ -630,39 +630,11 @@ class GeoServerPublishChannelViewSet(
     search_fields = ["publish_entry__catalogue_entry__name", "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
 
+    def create(self, request, *args, **kwargs):
+        return super(GeoServerPublishChannelViewSet, self).create(request, *args, **kwargs)
 
-    # @decorators.action(detail=True, methods=["POST"], url_path=r"list")
-    # def geoserver_list(self, request: request.Request, pk: str) -> response.Response:
-    #     """Publishes to the GeoServer Channel.
-
-    #     Args:
-    #         request (request.Request): API request.
-    #         pk (str): Primary key of the Publish Entry.
-
-    #     Returns:
-    #         response.Response: Empty response confirming success.
-    #     """
-    #     # Retrieve Publish Entry
-    #     # Help `mypy` by casting the resulting object to a Publish Entry
-    #     publish_entry = self.get_object()
-    #     publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
-
-    #     # Retrieve `symbology_only` Query Parameter
-    #     symbology_only = self.request.query_params.get("symbology_only")
-    #     symbology_only = utils.string_to_boolean(symbology_only)  # type: ignore[assignment]
-
-    #     # Publish!
-    #     publish_entry.publish_geoserver(symbology_only)
-
-    #     # Add Action Log Entry
-    #     logs_utils.add_to_actions_log(
-    #         user=request.user,
-    #         model=publish_entry,
-    #         action="Publish entry was manually re-published to the GeoServer channel"
-    #     )
-
-    #     # Return Response
-    #     return response.Response(status=status.HTTP_204_NO_CONTENT)
+    def update(self, request, *args, **kwargs):
+        return super(GeoServerPublishChannelViewSet, self).update(request, *args, **kwargs)
 
 
 @drf_utils.extend_schema(tags=["Publisher - Notifications (Email)"])
