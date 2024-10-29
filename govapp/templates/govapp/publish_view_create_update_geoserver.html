@@ -62,11 +62,11 @@
                               </div>
                               <div class='col-9'>
                                    <select type="text" class="form-control" id="new-publish-workspace" >
-                                   <option value="">Select One</option>   
-                                   {% for pw in publish_workspaces %}                                        
+                                   <option value="">Select One</option>
+                                   {% for pw in publish_workspaces %}
                                         <option value="{{ pw.id }}">{{ pw.name }}</option>
-                                   {% endfor %}                                                                      
-                                   </select>                                            
+                                   {% endfor %}
+                                   </select>
                               </div>
                          </div>
                          <div class='row align-items-center mb-3'>
@@ -75,10 +75,20 @@
                               </div>
                               <div class='col-9'>
                                    <select type="text" class="form-control" id="new-publish-store-type" >
-                                   {% for id, label in store_types.items %}                                        
+                                   {% for id, label in store_types.items %}
                                         <option value="{{ id }}">{{ label }}</option>
-                                   {% endfor %}                                                                      
-                                   </select>                                            
+                                   {% endfor %}
+                                   </select>
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-3 text-end'>
+                                   <label for="" class="form-label mb-0">Active</label>
+                              </div>
+                              <div class='col-9'>
+                                   <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="new-publish-active" checked>
+                                   </div>
                               </div>
                          </div>
                     </form>

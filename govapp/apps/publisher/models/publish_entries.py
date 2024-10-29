@@ -107,8 +107,12 @@ class PublishEntry(mixins.RevisionedMixin):
         return self.catalogue_entry.name
 
     @property
-    def num_of_geoserver_publish_channels(self):
+    def num_of_geoserver_publish_channels_active(self):
         return self.geoserver_channels.filter(active=True).count() if hasattr(self, 'geoserver_channels') else 0
+
+    @property
+    def num_of_geoserver_publish_channels_inactive(self):
+        return self.geoserver_channels.filter(active=False).count() if hasattr(self, 'geoserver_channels') else 0
 
     @property
     def num_of_cddp_publish_channels(self):

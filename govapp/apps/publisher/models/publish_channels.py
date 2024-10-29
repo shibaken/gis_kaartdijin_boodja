@@ -438,7 +438,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Retrieve and Return
         return self.publish_entry.name
 
-    def publish(self, symbology_only: bool = False, geoserver: gis.geoserver.GeoServer = None) -> None:
+    def publish(self, symbology_only: bool = False) -> None:
     # def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
@@ -448,11 +448,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self.geoserver_pool}'")
 
+        geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
         # if not geoserver:
         #     geoserver = gis.geoserver.geoserver()
 
         # Publish Symbology
-        self.publish_geoserver_symbology(geoserver=geoserver)
+        self.publish_geoserver_symbology(geoserver=geoserver_obj)
         # self.publish_geoserver_symbology()
 
         # Check Symbology Only Flag
@@ -467,12 +468,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         match self.mode:
             case GeoServerPublishChannelMode.WMS:
                 # Publish to GeoServer (WMS Only)
-                self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver)
+                self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver_obj)
                 # self.publish_geoserver_layer(wms=True, wfs=False)
 
             case GeoServerPublishChannelMode.WMS_AND_WFS:
                 # Publish to GeoServer (WMS and WFS)
-                self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver)
+                self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver_obj)
                 # self.publish_geoserver_layer(wms=True, wfs=True)
 
         # Update Published At

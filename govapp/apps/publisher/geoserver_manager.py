@@ -39,36 +39,35 @@ class GeoServerQueueExcutor:
         self.publishing_log = ""
 
     def excute(self) -> None:
-        target_items = self._retrieve_target_items()
-        log.info(f"Start publishing for {target_items.count()} geoserver queue items.")
+        geoserver_queues = self._retrieve_target_items()
+        log.info(f"Start publishing for {geoserver_queues.count()} geoserver queue items.")
 
-        for queue_item in target_items:
-            self._init_excuting(queue_item=queue_item)
+        for geoserver_queue in geoserver_queues:
+            self._init_excuting(queue_item=geoserver_queue)
         
-            for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
+            for geoserver_publish_channel in geoserver_queue.publish_entry.geoserver_channels.all():
                 geoserver_pool = geoserver_publish_channel.geoserver_pool
 
                 if not geoserver_pool:
                     # No geoserver_pool configured
                     self.result_status = GeoServerQueueStatus.FAILED
                     self.result_success = False
-                    self._add_publishing_log(f"[{queue_item.publish_entry.name}] Publishing failed.  No geoserver_pool configured.")
+                    self._add_publishing_log(f"[{geoserver_queue.publish_entry.name}] Publishing failed.  No geoserver_pool configured.")
                     continue
 
                 if not geoserver_pool.enabled:
                     # No geoserver_pool configured
                     self.result_status = GeoServerQueueStatus.FAILED
                     self.result_success = False
-                    self._add_publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_pool.url}] Publishing failed.  Geoserver_pool is not enabled.")
+                    self._add_publishing_log(f"[{geoserver_queue.publish_entry.name} - {geoserver_pool.url}] Publishing failed.  Geoserver_pool is not enabled.")
                     continue
 
                 # Make sure all the workspace exist in the geoserver
                 workspaces_in_kb = Workspace.objects.all()
                 for workspace in workspaces_in_kb:
-                    # geoserver_obj.create_workspace_if_not_exists(workspace.name)
                     geoserver_pool.create_workspace_if_not_exists(workspace.name)
-                self._publish_to_a_geoserver(publish_entry=queue_item.publish_entry, geoserver_info=geoserver_publish_channel)
-            self._update_result(queue_item=queue_item)
+                self._publish_to_a_geoserver(geoserver_publish_channel)
+            self._update_result(queue_item=geoserver_queue)
 
     def _retrieve_target_items(self):
         """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """
@@ -90,20 +89,18 @@ class GeoServerQueueExcutor:
         self.publishing_log += log_msg
         return log_msg
     
-    def _publish_to_a_geoserver(self, publish_entry: "PublishEntry", geoserver_info: GeoServerPublishChannel):
-        geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.geoserver_pool.url, geoserver_info.geoserver_pool.username, geoserver_info.geoserver_pool.password)
-        
+    def _publish_to_a_geoserver(self, geoserver_publish_channel: GeoServerPublishChannel):
         # Publish here
-        res, exc = geoserver_publisher.publish(publish_entry, geoserver_obj, geoserver_info)
+        res, exc = geoserver_publisher.publish(geoserver_publish_channel)
         
         if res:
-            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.geoserver_pool.url}] Publishing succeed.")
+            self._add_publishing_log(f"[{geoserver_publish_channel.publish_entry.name} - {geoserver_publish_channel.geoserver_pool.url}] Publishing succeed.")
             
         else :
             self.result_status = GeoServerQueueStatus.FAILED
             self.result_success = False
-            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.geoserver_pool.url}] Publishing failed.")
-            self._add_publishing_log(f"[{publish_entry.name} - {geoserver_info.geoserver_pool.url}] {exc}")
+            self._add_publishing_log(f"[{geoserver_publish_channel.publish_entry.name} - {geoserver_publish_channel.geoserver_pool.url}] Publishing failed.")
+            self._add_publishing_log(f"[{geoserver_publish_channel.publish_entry.name} - {geoserver_publish_channel.geoserver_pool.url}] {exc}")
             
     def _update_result(self, queue_item: geoserver_queues.GeoServerQueue):
         queue_item.status = self.result_status
@@ -192,6 +189,7 @@ class GeoServerSyncExcutor:
             # Retrive layer names from DB for this geoserver
             name_list = GeoServerPublishChannel.objects.filter(
                 geoserver_pool=geoserver_info,
+                active=True,  # We want to delete the layers with an "active" value of False from GeoServer.
                 publish_entry__catalogue_entry__name__in=[layer_name for layer_name in layer_names]
             ).values_list('publish_entry__catalogue_entry__name', flat=True)
             synced_layer_names_set = set(name_list)
@@ -204,5 +202,5 @@ class GeoServerSyncExcutor:
             log.info(f'Layers to be deleted: [{purge_list}] from the geoserver: [{geoserver_info.url}]')
             
             # Call a remove layer api
-            for purge in purge_list:
-                geoserver_obj.delete_layer(purge)
+            for layer_name in purge_list:
+                geoserver_obj.delete_layer(layer_name)

@@ -767,21 +767,25 @@ class GeoServer:
 
     @handle_http_exceptions(log)
     def delete_layer(self, layer_name) -> None:
-        # Construct URL
-        url = f"{self.service_url}/rest/layers/{layer_name}"
-        response = httpx.delete(
-                    url=url,
-                    auth=(self.username, self.password),
-                    headers=self.headers_json,
-                    timeout=120.0
-                )
-        
-        # Check Response
-        response.raise_for_status()
-        if response.status_code == 200:
-            log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
-        else:
-            log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
+        try:
+            # Construct URL
+            url = f"{self.service_url}/rest/layers/{layer_name}"
+            response = httpx.delete(
+                        url=url,
+                        auth=(self.username, self.password),
+                        headers=self.headers_json,
+                        timeout=120.0
+                    )
+            
+            # Check Response
+            response.raise_for_status()
+            if response.status_code == 200:
+                log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
+            else:
+                log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
+        except Exception as e:
+            log.error(f'Failed to delete layer: [{layer_name}].  {str(e)}')
+            raise
 
 
 def geoserver() -> GeoServer:

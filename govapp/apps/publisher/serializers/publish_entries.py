@@ -21,7 +21,8 @@ class PublishEntrySerializer(serializers.ModelSerializer):
     publishable_to_geoserver = serializers.SerializerMethodField()
     publishable_to_cddp = serializers.SerializerMethodField()
     num_of_ftp_publish_channels = serializers.SerializerMethodField()
-    num_of_geoserver_publish_channels = serializers.SerializerMethodField()
+    num_of_geoserver_publish_channels_active = serializers.SerializerMethodField()
+    num_of_geoserver_publish_channels_inactive = serializers.SerializerMethodField()
     num_of_cddp_publish_channels = serializers.SerializerMethodField()
 
     class Meta:
@@ -48,7 +49,8 @@ class PublishEntrySerializer(serializers.ModelSerializer):
             "publishable_to_geoserver",
             "publishable_to_cddp",
             "num_of_ftp_publish_channels",
-            "num_of_geoserver_publish_channels",
+            "num_of_geoserver_publish_channels_active",
+            "num_of_geoserver_publish_channels_inactive",
             "num_of_cddp_publish_channels",
         )
 
@@ -67,8 +69,11 @@ class PublishEntrySerializer(serializers.ModelSerializer):
     def get_num_of_ftp_publish_channels(self, obj):
         return obj.num_of_ftp_publish_channels
 
-    def get_num_of_geoserver_publish_channels(self, obj):
-        return obj.num_of_geoserver_publish_channels
+    def get_num_of_geoserver_publish_channels_active(self, obj):
+        return obj.num_of_geoserver_publish_channels_active
+
+    def get_num_of_geoserver_publish_channels_inactive(self, obj):
+        return obj.num_of_geoserver_publish_channels_inactive
         
     def get_num_of_cddp_publish_channels(self, obj):
         return obj.num_of_cddp_publish_channels
