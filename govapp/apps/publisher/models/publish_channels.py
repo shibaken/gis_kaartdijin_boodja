@@ -342,7 +342,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     llb_miny = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
     llb_maxy = models.CharField(null=True, blank=True, max_length=500)  # will become required, if overried_box is True
     llb_crs = models.CharField(null=True, blank=True, max_length=500)   # will become required, if overried_box is True
-    active = models.BooleanField(null=True, blank=True, default=True)
+    active = models.BooleanField(null=True, blank=True, default=True)  # When active=False, the layer on the geoserver will be deleted
     geoserver_pool = models.ForeignKey(  # We want to select the destination geoserver_pools rather than sending the layers to all the geoserver_pools.
         GeoServerPool,
         null=True, 

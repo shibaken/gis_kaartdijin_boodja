@@ -390,6 +390,7 @@ CATALOGUE_ENTRY_TYPE_TO_DISPLAY = decouple.config("CATALOGUE_ENTRY_TYPE_TO_DISPL
                                                                                                             # SUBSCRIPTION_WMS = 3
                                                                                                             # SUBSCRIPTION_POSTGIS = 4
                                                                                                             # SUBSCRIPTION_QUERY = 5
+CDDP_USER_PATH = decouple.config("CDDP_USER_PATH", "V:/GIS1-Corporate/Data/")
 
 if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
     import sentry_sdk
