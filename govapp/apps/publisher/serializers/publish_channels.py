@@ -22,7 +22,6 @@ class CDDPPublishChannelSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            #"description",
             "published_at",
             "format",
             "mode",
