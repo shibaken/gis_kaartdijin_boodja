@@ -801,11 +801,6 @@ class LayerSubscriptionViewSet(
         subscription = self.get_object()
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
-         # Validation Check
-        serializer = serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-        
         # Set Type
         catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WFS
         if subscription.type == models.layer_subscriptions.LayerSubscriptionType.WFS:
@@ -814,16 +809,17 @@ class LayerSubscriptionViewSet(
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WMS
         elif subscription.type == models.layer_subscriptions.LayerSubscriptionType.POST_GIS:
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_POSTGIS
-            
-        # Create Catalogue Entry
+
         try:
-            catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
-                name=data['name'],
-                description=data['description'] if 'description' in data else None,
-                mapping_name=data['mapping_name'],
-                type=catalogue_type,
-                layer_subscription=subscription
-            )
+            data = request.data.copy()
+            data['type'] = catalogue_type
+            data['layer_subscription'] = subscription.id
+
+            # Create Catalogue Entry
+            serializer = serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            catalogue_entry = serializer.save()
+
             msg = f'New CatalogueEntry: [{catalogue_entry}] has been created.'
             logger.info(msg)
             logs_utils.add_to_actions_log(
@@ -1127,16 +1123,21 @@ class LayerSubscriptionViewSet(
         subscription = self.get_object()
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
-         # Validation check
-        data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer, request.data)
+        # # Validation check
+        # data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer, request.data)
         
-        # Update Catalogue Entry
+        # # Update Catalogue Entry
+        # catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id)
+        # catalogue_entry.name = data['name'] if 'name' in data else catalogue_entry.name
+        # catalogue_entry.description = data['description'] if 'description' in data else catalogue_entry.description
+        # catalogue_entry.sql_query = data['sql_query'] if 'sql_query' in data else catalogue_entry.sql_query
+        # catalogue_entry.force_run_postgres_scanner = True if request.data.get('force_run_postgres_scanner', False) else False
+        # catalogue_entry.save()
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id)
-        catalogue_entry.name = data['name'] if 'name' in data else catalogue_entry.name
-        catalogue_entry.description = data['description'] if 'description' in data else catalogue_entry.description
-        catalogue_entry.sql_query = data['sql_query'] if 'sql_query' in data else catalogue_entry.sql_query
-        catalogue_entry.force_run_postgres_scanner = True if request.data.get('force_run_postgres_scanner', False) else False
-        catalogue_entry.save()
+        serializer = serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer(catalogue_entry, request.data)
+        serializer.is_valid(raise_exception=True)
+        catalogue_entry = serializer.save()
+
         msg = f'CatalogueEntry: [{catalogue_entry}] has been updated.'
         logger.info(msg)
         logs_utils.add_to_actions_log(
@@ -1145,8 +1146,6 @@ class LayerSubscriptionViewSet(
             action=msg
         )
         
-        # Validation check
-        data = validate_request(serializers.catalogue_entries.CatalogueEntryCreateSubscriptionQuerySerializer, request.data)
         if 'frequency_type' not in request.data:
             raise ValidationError("frequency_type is required")
         frequency_type = request.data['frequency_type']

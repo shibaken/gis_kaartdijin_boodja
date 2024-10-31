@@ -409,15 +409,13 @@
                                                 <div class="col-6 text-end">
                                                       <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box5-card-body" onclick=""></i>
                                                 </div>
-                                          </div>         
+                                          </div>
                                     </div>
                                     <div class="card-body collapse show" id="box5-card-body">
-                                          <div class='row p-1'>
-                                                <div class='col-12 text-end'>
-                                                      {% if has_edit_access is True %}
-                                                            <button class="btn btn-primary btn-sm" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
-                                                      {% endif %}
-                                                </div>
+                                          <div class='mb-1 text-end'>
+                                                {% if has_edit_access is True %}
+                                                      <button class="btn btn-primary btn-sm" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
+                                                {% endif %}
                                           </div>
                                           <div id='subscription-dbtable-custom-table'>
                                                 <table id="example" class="table" style="width:100%">
