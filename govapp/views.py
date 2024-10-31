@@ -357,16 +357,33 @@ class CatalogueEntriesView(base.TemplateView):
                     has_edit_access = True
         
         layer_symbology = catalogue_entry_obj.symbology if hasattr(catalogue_entry_obj, 'symbology') else ''
+        
+        # Symbology tab
         if catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_QUERY:
             display_symbology_definition_tab = True
         elif catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SPATIAL_FILE and not catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff',]:
             display_symbology_definition_tab = True
 
+        # Attribute table tab
+        display_attribute_table_tab = True
+        if catalogue_entry_obj.type in [catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_WMS, catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_WFS,]:
+            display_attribute_table_tab = False
+        elif catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff',]:
+            display_attribute_table_tab = False
+
+        # Metadata tab
+        display_metadata_tab = True
+        if catalogue_entry_obj.type in [catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_WMS, catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_WFS,]:
+            display_metadata_tab = False
+
+        # Layer Submission tab
+        display_layer_submission_tab = True
+        if catalogue_entry_obj.type in [catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_WMS, catalogue_entries_models.CatalogueEntryType.SUBSCRIPTION_WFS,]:
+            display_layer_submission_tab = False
+
         catalogue_layer_metadata_obj = catalogue_layer_metadata_models.LayerMetadata.objects.filter(catalogue_entry=catalogue_id)
         if catalogue_layer_metadata_obj.count() > 0:
             catalogue_layer_metadata = catalogue_layer_metadata_obj[0]
-
-        display_attributes_tab = False if catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff',] else True
 
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
@@ -374,14 +391,16 @@ class CatalogueEntriesView(base.TemplateView):
         context['read_write_users'] = read_write_users
         context['catalogue_entry_id'] = self.kwargs['pk']
         context['tab'] = self.kwargs['tab']
+        context['display_attribute_table_tab'] = display_attribute_table_tab
         context['display_symbology_definition_tab'] = display_symbology_definition_tab
+        context['display_metadata_tab'] = display_metadata_tab
+        context['display_layer_submission_tab'] = display_layer_submission_tab
         context['layer_symbology'] = layer_symbology
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['is_administrator'] = is_administrator
         context['is_assigned'] = is_assigned
         context['has_read_write_access'] = has_read_write_access
         context['has_edit_access'] = has_edit_access
-        context['display_attributes_tab'] = display_attributes_tab
         context['user_access_permission'] = user_access_permission
         context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission  # READ, READ_WRITE
         context['CatalogueEntryType'] = catalogue_entries_models.CatalogueEntryType  # SPATIAL_FILE, SUBSCRIPTION_WFS, ...

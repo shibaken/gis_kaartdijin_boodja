@@ -1453,6 +1453,7 @@ var kbpublish = {
         });
     },
     show_new_update_cddp_modal: function(cddp_publish_channel_obj){
+        // $('#publish-cddp-user-path').text(cddp_publish_channel_obj.cddp_user_path)
         if (cddp_publish_channel_obj){
             // Set modal title
             $('#new_update_cddp_modal_title').text('Update CDDP Publish Entry');
@@ -1711,65 +1712,66 @@ var kbpublish = {
             contentType: 'application/json',
             success: function (response) {
                 var html = '';
-                
-                if (response != null) {
-                    if (response.length > 0) {
-                        var responsejson = response;
-                        for (let i = 0; i < responsejson.length; i++) {
-                            
-                            button_json = '{"id": "'+responsejson[i].id+'"}'
 
-                            html+= "<tr>";
-                            html+= " <td>"+responsejson[i].id+"</td>";                        
-                            html+= " <td>"+kbpublish.var.publish_cddp_format[responsejson[i].format]+"</td>";                        
-                            html+= " <td>"+kbpublish.var.publish_cddp_mode[responsejson[i].mode]+"</td>";     
-                            html+= " <td>"+kbpublish.var.publish_cddp_frequency[responsejson[i].frequency]+"</td>";                                                    
-                            html+= " <td>"+responsejson[i].path+"</td>"; 
-                            html+= " <td>";
-                            if (responsejson[i].published_at == null) {
-                                html+= "Not Published";   
-                            } else {
-                                html+= responsejson[i].published_at;
-                            }
-                            html+= "</td>";
-                            html+= " <td class='text-end'>";
-                            if (kbpublish.var.has_edit_access == true) {
-                                html+= "<button class='btn btn-primary btn-sm publish-cddp-update' data-json='"+button_json+"' >Update</button> ";
-                                html+= "<button class='btn btn-danger btn-sm publish-cddp-delete' data-json='"+button_json+"' >Delete</button>";
-                            }
-                            html+= "</td>";
-                            html+= "<tr>";                                      
-                            $('#publish-cddp-tbody').html(html);
-                            $( ".publish-cddp-delete" ).click(function() {
-                                // Copy data-json to the 'Delete' button on the modal
-                                let btndata_json = $(this).attr('data-json');
-                                $('#confirmDeleteBtn').attr('data-json', btndata_json);
-                                // Display the item to be deleted
-                                var btndata = JSON.parse(btndata_json);
-                                kbpublish.open_confirmation_modal('ID: ' + btndata.id)
-                            });
-                            $('#confirmDeleteBtn').click(function() {
-                                // Retrieve the data-json data form the 'Delete' button on the modal
-                                var btndata_json = $(this).attr('data-json');
-                                var btndata = JSON.parse(btndata_json);
-                                kbpublish.delete_publish_cddp(btndata.id);
-                                // Remove the data-json attribute
-                                kbpublish.close_confirmation_modal()
-                            });
-                            $(".publish-cddp-update").click(function() {
-                                let data = $(this).data('json')
-                                let selected_id = parseInt(data.id)
-                                let cddp_publish_channel_obj = null
-                                for(let response of responsejson){
-                                    if (response.id == selected_id){
-                                        cddp_publish_channel_obj = response
-                                    }
+                if (response != null) {
+                    $('#publish-cddp-user-path').text(response.cddp_user_path)
+                    if (response.cddp_publish_entries_list != null) {
+                        if (response.cddp_publish_entries_list.length > 0) {
+                            var responsejson = response.cddp_publish_entries_list;
+                            for (let i = 0; i < responsejson.length; i++) {
+                                button_json = '{"id": "'+responsejson[i].id+'"}'
+                                html += "<tr>";
+                                html += "<td>" + responsejson[i].id +"</td>";
+                                html += "<td>" + kbpublish.var.publish_cddp_format[responsejson[i].format] + "</td>";
+                                html += "<td>" + kbpublish.var.publish_cddp_mode[responsejson[i].mode] + "</td>";
+                                html += "<td>" + kbpublish.var.publish_cddp_frequency[responsejson[i].frequency] + "</td>";
+                                html += "<td>" + responsejson[i].cddp_user_path + responsejson[i].path + "</td>"; 
+                                html += "<td>";
+                                if (responsejson[i].published_at == null) {
+                                    html+= "Not Published";   
+                                } else {
+                                    html+= responsejson[i].published_at;
                                 }
-                                kbpublish.show_new_update_cddp_modal(cddp_publish_channel_obj);
-                            });
+                                html+= "</td>";
+                                html+= " <td class='text-end'>";
+                                if (kbpublish.var.has_edit_access == true) {
+                                    html+= "<button class='btn btn-primary btn-sm publish-cddp-update' data-json='"+button_json+"' >Update</button> ";
+                                    html+= "<button class='btn btn-danger btn-sm publish-cddp-delete' data-json='"+button_json+"' >Delete</button>";
+                                }
+                                html+= "</td>";
+                                html+= "<tr>";
+                                $('#publish-cddp-tbody').html(html);
+                                $(".publish-cddp-delete").click(function() {
+                                    // Copy data-json to the 'Delete' button on the modal
+                                    let btndata_json = $(this).attr('data-json');
+                                    $('#confirmDeleteBtn').attr('data-json', btndata_json);
+                                    // Display the item to be deleted
+                                    var btndata = JSON.parse(btndata_json);
+                                    kbpublish.open_confirmation_modal('ID: ' + btndata.id)
+                                });
+                                $('#confirmDeleteBtn').click(function() {
+                                    // Retrieve the data-json data form the 'Delete' button on the modal
+                                    var btndata_json = $(this).attr('data-json');
+                                    var btndata = JSON.parse(btndata_json);
+                                    kbpublish.delete_publish_cddp(btndata.id);
+                                    // Remove the data-json attribute
+                                    kbpublish.close_confirmation_modal()
+                                });
+                                $(".publish-cddp-update").click(function() {
+                                    let data = $(this).data('json')
+                                    let selected_id = parseInt(data.id)
+                                    let cddp_publish_channel_obj = null
+                                    for(let response of responsejson){
+                                        if (response.id == selected_id){
+                                            cddp_publish_channel_obj = response
+                                        }
+                                    }
+                                    kbpublish.show_new_update_cddp_modal(cddp_publish_channel_obj);
+                                });
+                            }
+                        } else {
+                            $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                         }
-                    } else {
-                        $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                     }
                 } else {
                       $('#publish-cddp-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
@@ -2062,8 +2064,6 @@ var kbpublish = {
         });
     },
     show_action_log: function(){
-        console.log('in kbpublish.js')
-
         common_entity_modal.init("Action log", "info");
         common_entity_modal.init_talbe();
         let thead = common_entity_modal.get_thead();

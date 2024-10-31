@@ -48,7 +48,7 @@ class LayerSubscription(mixins.RevisionedMixin):
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
     name = models.TextField()
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True)  # We don't want to use this field as this will be managed via the catalogue entry after creation.
     enabled = models.BooleanField(default=True)
     url = models.URLField(null=True) # for WMS or WFS
     username = models.CharField(null=True, max_length=100)

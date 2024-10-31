@@ -284,26 +284,40 @@ class PublishEntryViewSet(
         # Help `mypy` by casting the resulting object to a Publish Entry
         publish_entry = self.get_object()
         publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
-        cddp_publish_channel = models.publish_channels.CDDPPublishChannel.objects.filter(publish_entry=publish_entry)
+        cddp_publish_channels = models.publish_channels.CDDPPublishChannel.objects.filter(publish_entry=publish_entry)
         cddp_list = []
-        for cpc in cddp_publish_channel:
+
+        cddp_data = {
+            'cddp_user_path': settings.CDDP_USER_PATH,
+            'cddp_publish_entries_list': []
+        }
+
+        for cddp_publish_channel in cddp_publish_channels:
             published_at = None
             
-            if cpc.published_at:
-                 published_at = cpc.published_at.astimezone().strftime('%d %b %Y %H:%M %p')                 
-            cddp_list.append({
-                "id": cpc.id, 
-                "name":cpc.name, 
-                "format": cpc.format, 
-                "path": cpc.path, 
-                "mode": cpc.mode, 
-                "frequency": cpc.frequency, 
+            if cddp_publish_channel.published_at:
+                published_at = cddp_publish_channel.published_at.astimezone().strftime('%d %b %Y %H:%M %p')
+            
+            if os.path.isabs(cddp_publish_channel.path):
+                cddp_publish_channel.path = os.path.relpath(cddp_publish_channel.path, start="/")
+            # combined_path = os.path.join(settings.CDDP_USER_PATH, cddp_publish_channel.path)
+                 
+            # cddp_list.append({
+            cddp_data['cddp_publish_entries_list'].append({
+                "id": cddp_publish_channel.id, 
+                "name":cddp_publish_channel.name, 
+                "format": cddp_publish_channel.format, 
+                "path": cddp_publish_channel.path,
+                "cddp_user_path": settings.CDDP_USER_PATH,
+                "mode": cddp_publish_channel.mode, 
+                "frequency": cddp_publish_channel.frequency, 
                 "published_at": published_at,
-                "xml_path":cpc.xml_path
-                })
+                "xml_path":cddp_publish_channel.xml_path
+            })
 
         # Return Response
-        return response.Response(cddp_list, status=status.HTTP_200_OK)
+        # return response.Response(cddp_list, status=status.HTTP_200_OK)
+        return response.Response(cddp_data, status=status.HTTP_200_OK)
 
     @decorators.action(detail=True, methods=["GET"], url_path=r"ftp")
     def ftp_list(self, request: request.Request, pk: str) -> response.Response:

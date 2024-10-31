@@ -149,7 +149,7 @@
                                                             {% else %}
                                                                   <option value="{{ ce.id }}">{{ ce.name }}</option>
                                                             {% endif %}
-                                                      {% endfor %}                                                            
+                                                      {% endfor %}
                                                 </select>
                                                 {% else %}
                                                       {{ publish_entry_obj.catalogue_entry.name }}
@@ -266,51 +266,40 @@
                               <div class="card mb-3" >
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
-                                          <div class="col-6">
-                                                CDDP Publish
-                                          </div>
-                                          <div class="col-6 text-end">
-                                                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
-                                          </div>
-                                          </div>         
-                                    </div>
-                                    <div class="card-body collapse show" id="box4-card-body">
-            
-                                          <div class='col-12 p-1'>
-                                                <div class='row'>
-                                                      <div class='col-6'> 
-                                                            &nbsp;
-                                                      </div>
-                                                      <div class='col-6 text-end'> 
-                                                            {% if has_edit_access is True %}
-                                                                  <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-cddp-btn'>Create New CDDP Publish</button>   
-                                                            {% endif %}
-                                                      </div>
+                                                <div class="col-6">
+                                                      CDDP Publish
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
                                                 </div>
                                           </div>
-                                          <div class='col-12'>
-                                                
-                                                <div id='publish-table'>
-                                                      <table id="example" class="table" style="width:100%">
-                                                            <thead class='table-dark'>
-                                                            <tr>
-                                                                  <th>ID</th>                                                             
-                                                                  <th>Spatial<br/>Format</th>
-                                                                  <th>Spatial<br/>Mode</th>
-                                                                  <th>Frequency<br/>Type</th>
-                                                                  <th>Path</th>
-                                                                  <th>Publish<br/>Date/time</th>                                      
-                                                                  <th>Action</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody id='publish-cddp-tbody'>
-                                                            </tbody>
-                                                      </table>                                  
-                                                </div>      
-                                          </div>
-                  
                                     </div>
-                  
+                                    <div class="card-body collapse show" id="box4-card-body">
+                                          <div class="row">
+                                                <div class='col-12 text-end mb-1'> 
+                                                      {% if has_edit_access is True %}
+                                                            <button class="btn btn-primary btn-sm" aria-current="page" id='publish-new-cddp-btn'>Create New CDDP Publish</button>   
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          <div id='publish-table'>
+                                                <table id="example" class="table" style="width:100%">
+                                                      <thead class='table-dark'>
+                                                      <tr>
+                                                            <th>ID</th>
+                                                            <th>Spatial<br/>Format</th>
+                                                            <th>Spatial<br/>Mode</th>
+                                                            <th>Frequency<br/>Type</th>
+                                                            <th>Path</th>
+                                                            <th>Publish<br/>Date/time</th>
+                                                            <th>Action</th>
+                                                      </tr>
+                                                      </thead>
+                                                      <tbody id='publish-cddp-tbody'>
+                                                      </tbody>
+                                                </table>
+                                          </div>
+                                    </div>
                               </div>
                         {% endif %}
 
@@ -468,7 +457,7 @@
                                     <div class='col-6 text-end'>
                                           {% if has_edit_access is True %}
                                                 <button class="btn btn-primary" id='publish-btn-save' aria-current="page" >Save</button>  
-                                                <button class="btn btn-primary" id='publish-btn-save-exit'  aria-current="page" >Save and exit</button>  
+                                                <!-- <button class="btn btn-primary" id='publish-btn-save-exit'  aria-current="page" >Save and exit</button>   -->
                                           {% endif %}
                                     </div>
                               </div>
