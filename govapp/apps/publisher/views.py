@@ -286,6 +286,12 @@ class PublishEntryViewSet(
         publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
         cddp_publish_channels = models.publish_channels.CDDPPublishChannel.objects.filter(publish_entry=publish_entry)
         cddp_list = []
+
+        cddp_data = {
+            'cddp_user_path': settings.CDDP_USER_PATH,
+            'cddp_publish_entries_list': []
+        }
+
         for cddp_publish_channel in cddp_publish_channels:
             published_at = None
             
@@ -294,13 +300,15 @@ class PublishEntryViewSet(
             
             if os.path.isabs(cddp_publish_channel.path):
                 cddp_publish_channel.path = os.path.relpath(cddp_publish_channel.path, start="/")
-            combined_path = os.path.join(settings.CDDP_USER_PATH, cddp_publish_channel.path)
+            # combined_path = os.path.join(settings.CDDP_USER_PATH, cddp_publish_channel.path)
                  
-            cddp_list.append({
+            # cddp_list.append({
+            cddp_data['cddp_publish_entries_list'].append({
                 "id": cddp_publish_channel.id, 
                 "name":cddp_publish_channel.name, 
                 "format": cddp_publish_channel.format, 
-                "path": combined_path,
+                "path": cddp_publish_channel.path,
+                "cddp_user_path": settings.CDDP_USER_PATH,
                 "mode": cddp_publish_channel.mode, 
                 "frequency": cddp_publish_channel.frequency, 
                 "published_at": published_at,
@@ -308,7 +316,8 @@ class PublishEntryViewSet(
             })
 
         # Return Response
-        return response.Response(cddp_list, status=status.HTTP_200_OK)
+        # return response.Response(cddp_list, status=status.HTTP_200_OK)
+        return response.Response(cddp_data, status=status.HTTP_200_OK)
 
     @decorators.action(detail=True, methods=["GET"], url_path=r"ftp")
     def ftp_list(self, request: request.Request, pk: str) -> response.Response:

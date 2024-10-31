@@ -30,16 +30,13 @@ var handle_action_log = {
         }
     
         var catalogue_entry_id = $('#catalogue_entry_id').val();
-        console.log({catalogue_entry_id})
-        console.log({params_str})
+
         $.ajax({
             url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/logs/actions/?"+params_str,
             method: 'GET',
             dataType: 'json',
             contentType: 'application/json',
             success: function (response) {
-                console.log('in success')
-
                 if(!response || !response.results){
                     table.message_tbody(common_entity_modal.get_tbody(), "No results found");
                     return;
@@ -48,16 +45,11 @@ var handle_action_log = {
                     response.results[i]['when'] = utils.convert_datetime_format(response.results[i].when, kbcatalogue_detail.var.catalogue_table_date_format); 
                     console.log(kbcatalogue_detail.var.catalogue_table_date_format)
                 }
-                console.log(common_entity_modal.get_tbody())
-                console.log(response.results)
-                console.log({table})
                 table.set_tbody(common_entity_modal.get_tbody(), response.results, [{username:"text"}, {what:'text'}, {when:'text'}]);
                 // common_pagination.init(response.count, params, kbcatalogue_detail.get_action_log, common_entity_modal.get_page_navi());
                 common_pagination.init(response.count, params, handle_action_log.get_action_log, common_entity_modal.get_page_navi());
             },
             error: function (error){
-                console.log('in error')
-
                 common_entity_modal.show_error_modal(error);
             }
         });
