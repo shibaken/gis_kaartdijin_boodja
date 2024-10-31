@@ -122,14 +122,14 @@ class CatalogueEntryGetSubscriptionMappingSerializer(serializers.ModelSerializer
 
 
 class CatalogueEntryCreateSubscriptionQuerySerializer(serializers.ModelSerializer):
+    description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
         model = models.catalogue_entries.CatalogueEntry
         fields = ("name", "description", "sql_query")
     
     def validate(self, data):
-        if 'description' not in data or not data['description']:
-            raise serializers.ValidationError("'description' field is required.")
         if 'sql_query' not in data or not data['sql_query']:
             raise serializers.ValidationError("'sql_query' field is required.")
         return data
@@ -142,7 +142,7 @@ class CatalogueEntryCreateSubscriptionQuerySerializer(serializers.ModelSerialize
 
 class CatalogueEntryUpdateSubscriptionQuerySerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
-    description = serializers.CharField(required=False)
+    description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     sql_query = serializers.CharField(required=False)
 
     def validate(self, data):

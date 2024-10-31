@@ -854,10 +854,10 @@ var kblayersubscription = {
             success: (response) => {
                 thead.empty();
                 let tr = $('<tr>');
-                tr.append($('<th>').attr('class', 'col-3').text("Catalogue Entry"))
-                tr.append($('<th>').attr('class', 'col-4').text("Description"))
+                tr.append($('<th>').attr('class', 'col-6').text("Catalogue Entry"))
+                // tr.append($('<th>').attr('class', 'col-4').text("Description"))
                 tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
-                tr.append($('<th>').attr('class', 'col-1').text("Force Run"))
+                tr.append($('<th>').attr('class', 'col-2').text("Force Run"))
                 tr.append($('<th>').attr('class', 'col-2 text-end').text("Action"))
                 thead.append(tr);
 
@@ -870,7 +870,7 @@ var kblayersubscription = {
                 for(let catalogue_entry of response.results){
                     let row = $('<tr>');
                     row.append($('<td>').append($('<a href="/catalogue/entries/' + catalogue_entry.id + '/details/" style="text-decoration: none;">').text(`CE${catalogue_entry.id}: ${catalogue_entry.name}`)))
-                    row.append($('<td>').text(catalogue_entry.description))
+                    // row.append($('<td>').text(catalogue_entry.description))
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
                     let td = $('<td>').html(typeLabels);
                     row.append(td);
@@ -921,7 +921,7 @@ var kblayersubscription = {
 
         common_entity_modal.init("Add Custom Table Layer", type="submit");
         const name_id = common_entity_modal.add_field("Catalogue Entry Name", "text", prev ? prev.name : null);
-        const description_id = common_entity_modal.add_field("Description", "text", prev ? prev.description : null);
+        // const description_id = common_entity_modal.add_field("Description", "text", prev ? prev.description : null);
         const sql_query_id = common_entity_modal.add_field("SQL Query", "text_area", prev ? prev.sql_query : null);
         
         // Frequency
@@ -958,7 +958,8 @@ var kblayersubscription = {
             div.append(kblayersubscription.create_freq_option(div, frequency_type, null, freq_option_ids, div.children().length));
         });
 
-        const ids = {name_id:name_id, description_id:description_id, sql_query_id:sql_query_id, frequency_id:frequency_id, freq_option_ids:freq_option_ids};
+        // const ids = {name_id:name_id, description_id:description_id, sql_query_id:sql_query_id, frequency_id:frequency_id, freq_option_ids:freq_option_ids};
+        const ids = {name_id:name_id, sql_query_id:sql_query_id, frequency_id:frequency_id, freq_option_ids:freq_option_ids};
         common_entity_modal.add_callbacks(
             submit_callback=(success_callback, error_callback)=> 
                 kblayersubscription.write_custom_query(success_callback, error_callback, ids, prev),
@@ -1069,12 +1070,12 @@ var kblayersubscription = {
     write_custom_query: function(success_callback, error_callback, ids, prev){
         var custom_query_data = {
             name : utils.validate_empty_input(common_entity_modal.get_label(ids.name_id), $('#'+ids.name_id).val()),
-            description : utils.validate_empty_input(common_entity_modal.get_label(ids.description_id), $('#'+ids.description_id).val()),
+            // description : utils.validate_empty_input(common_entity_modal.get_label(ids.description_id), $('#'+ids.description_id).val()),
+            description: '',
             sql_query : utils.validate_empty_input(common_entity_modal.get_label(ids.sql_query_id), $('#'+ids.sql_query_id).val()),
             frequency_type : utils.validate_empty_input(common_entity_modal.get_label(ids.frequency_id), +$('#'+ids.frequency_id).val()),
             force_run_postgres_scanner: $('#common-entity-modal-force-run-postgres-scanner').prop('checked')
         };
-        console.log({custom_query_data})
         if(ids.freq_option_ids == null || ids.freq_option_ids.length == 0){
             throw new Error("At least one frequency option is required");
         }
