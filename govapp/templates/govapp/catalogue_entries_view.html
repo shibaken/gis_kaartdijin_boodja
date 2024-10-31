@@ -74,27 +74,31 @@
                               </div>
                         </div>
                         <div class='col-9'>
-                            <ul class="nav nav-tabs">
-                                <li class="nav-item">
-                                  <a class="nav-link {% if tab == 'details' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/details/">Details</a>
-                                </li>
-                                <li class="nav-item">
-                                    {% if display_attributes_tab %}
+                              <ul class="nav nav-tabs">
+                                    <li class="nav-item">
+                                          <a class="nav-link {% if tab == 'details' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/details/">Details</a>
+                                    </li>
+                                    {% if display_attribute_table_tab %}
+                                    <li class="nav-item">
                                           <a class="nav-link {% if tab == 'attribute' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/attribute/">Attribute Table</a>
+                                    </li>
                                     {% endif %}
-                                </li>
-                                {% if display_symbology_definition_tab %}
-                                <li class="nav-item">
-                                      <a class="nav-link {% if tab == 'symbology' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/symbology/">Symbology</a>
-                                </li>
-                                {% endif %}
-                                <li class="nav-item">
-                                    <a class="nav-link {% if tab == 'metadata' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/metadata/">Metadata</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if tab == 'layer_submission' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/layer_submission/">Layer Submission</a>
-                                </li>
-                          </ul>
+                                    {% if display_symbology_definition_tab %}
+                                    <li class="nav-item">
+                                          <a class="nav-link {% if tab == 'symbology' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/symbology/">Symbology</a>
+                                    </li>
+                                    {% endif %}
+                                    {% if display_metadata_tab %}
+                                    <li class="nav-item">
+                                          <a class="nav-link {% if tab == 'metadata' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/metadata/">Metadata</a>
+                                    </li>
+                                    {% endif %}
+                                    {% if display_layer_submission_tab %}
+                                    <li class="nav-item">
+                                          <a class="nav-link {% if tab == 'layer_submission' %}active{% endif %}" aria-current="page" href="/catalogue/entries/{{ catalogue_entry_id  }}/layer_submission/">Layer Submission</a>
+                                    </li>
+                                    {% endif %}
+                              </ul>
                               <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
                               <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id" value="{{ catalogue_entry_id  }}">
                               <input type="hidden" id="has_edit_access" name="has_edit_access" value="{{ has_edit_access  }}">
