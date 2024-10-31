@@ -41,6 +41,7 @@ class LayerSubscriptionStatus(models.IntegerChoices):
     DECLINED = 3
     DRAFT = 4
     PENDING = 5
+
     
 @reversion.register()
 class LayerSubscription(mixins.RevisionedMixin):
@@ -302,3 +303,15 @@ class LayerSubscription(mixins.RevisionedMixin):
 
         # Failed
         return False
+
+
+@reversion.register()
+class LayerSubscriptionData(mixins.RevisionedMixin):
+    layer_subscription = models.ForeignKey(LayerSubscription, null=True, blank=True, on_delete=models.SET_NULL)
+    metadata_json = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Layer Subscription Data"
+        verbose_name_plural = "Layer Subscription Data"
