@@ -485,8 +485,6 @@ var kbcatalogue = {
             params_str = utils.make_query_params(params);
         }
 
-        console.log({params_str})
-
         $.ajax({
             url: kbcatalogue.var.catalogue_data_url + "?" + params_str,
             method: 'GET',
