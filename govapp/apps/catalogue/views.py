@@ -801,11 +801,6 @@ class LayerSubscriptionViewSet(
         subscription = self.get_object()
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
-         # Validation Check
-        serializer = serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-        
         # Set Type
         catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WFS
         if subscription.type == models.layer_subscriptions.LayerSubscriptionType.WFS:
@@ -814,16 +809,17 @@ class LayerSubscriptionViewSet(
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_WMS
         elif subscription.type == models.layer_subscriptions.LayerSubscriptionType.POST_GIS:
             catalogue_type = models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_POSTGIS
-            
-        # Create Catalogue Entry
+
         try:
-            catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.create(
-                name=data['name'],
-                description=data['description'] if 'description' in data else None,
-                mapping_name=data['mapping_name'],
-                type=catalogue_type,
-                layer_subscription=subscription
-            )
+            data = request.data.copy()
+            data['type'] = catalogue_type
+            data['layer_subscription'] = subscription.id
+
+            # Create Catalogue Entry
+            serializer = serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            catalogue_entry = serializer.save()
+
             msg = f'New CatalogueEntry: [{catalogue_entry}] has been created.'
             logger.info(msg)
             logs_utils.add_to_actions_log(

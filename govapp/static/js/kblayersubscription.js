@@ -746,7 +746,7 @@ var kblayersubscription = {
         common_entity_modal.init("New Catalogue Subscription " + title);
         let fields = {}
         fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text");
-        fields['description'] = common_entity_modal.add_field(label="Description", type="text");
+        // fields['description'] = common_entity_modal.add_field(label="Description", type="text");
         fields['mapping_name'] = common_entity_modal.add_field(label= title + " Name", type="text", mapping.name, null, true);
         common_entity_modal.add_callbacks(
             submit_callback=(success_callback, error_callback) => kblayersubscription.create_mapping(success_callback, error_callback, fields), 
@@ -758,7 +758,7 @@ var kblayersubscription = {
         common_entity_modal.init("Update Catalogue Subscription " + title);
         let fields = {}
         fields['name'] = common_entity_modal.add_field(label="Catalogue Entry Name", type="text", catalogue.name);
-        fields['description'] = common_entity_modal.add_field(label="Description", type="text", catalogue.description);
+        // fields['description'] = common_entity_modal.add_field(label="Description", type="text", catalogue.description);
         fields['mapping_name'] = common_entity_modal.add_field(label=title + " Name", type="text", mapping.name, null, true);
         common_entity_modal.add_callbacks(
             submit_callback=(success_callback, error_callback) => kblayersubscription.update_mapping(success_callback, error_callback, fields, catalogue_id), 
