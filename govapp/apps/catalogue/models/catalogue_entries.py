@@ -93,19 +93,6 @@ CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP = [
 ]
 
 
-# class CatalogueEntryManager(models.Manager):
-#     def create(self, *args, **kwargs):
-#         name = kwargs.get('name')
-#         if name:
-#             catalogue_entries = self.filter(name=name)
-#             if catalogue_entries:
-#                 raise ValueError("CatalogueEntry with this name already exists.")
-#             else:
-#                 return super().create(*args, **kwargs)
-#         else:
-#             raise ValueError("Name must be provided.")
-
-
 @reversion.register(
     follow=(
         "attributes",
