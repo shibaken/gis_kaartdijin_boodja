@@ -180,7 +180,7 @@ class PublishView(base.TemplateView):
         publish_entry_obj = publish_entries_models.PublishEntry.objects.get(id=self.kwargs['pk'])
         publish_workspaces = publish_workspaces_models.Workspace.objects.all()
         publish_workspace_list = [{'id': ws.id, 'name': ws.name} for ws in publish_workspaces]
-        geoserver_pools = GeoServerPool.objects.filter(enabled=True)
+        geoserver_pools = GeoServerPool.objects.filter()
         store_types = dict(StoreType.choices)
 
         ### START - To be improved later todo a reverse table join      
@@ -206,9 +206,13 @@ class PublishView(base.TemplateView):
         for su in system_users_obj:
             system_users_list.append({'first_name': su.first_name, 'last_name': su.last_name, 'id': su.id, 'email': su.email})
 
-        geoserver_pool_list = {}
+        geoserver_pool_list = [] 
         for gsp in geoserver_pools:
-            geoserver_pool_list[gsp.id] = gsp.name
+            geoserver_pool_list.append({
+                'id': gsp.id,
+                'name': gsp.name,
+                'active': gsp.enabled
+            })
                 
         is_administrator = utils.is_administrator(request.user)
         if is_administrator is True and  publish_entry_obj.status == 2 and request.user == publish_entry_obj.assigned_to:
