@@ -656,7 +656,6 @@ var kblayersubscription = {
                     table.message_tbody(tbody, "No results found");
                     return;
                 }
-                console.log({response})
 
                 kblayersubscription.var.mapping_names = response.results;
                 success_callback();
@@ -694,7 +693,6 @@ var kblayersubscription = {
                     table.message_tbody(tbody, "No results found");
                     return;
                 }
-                console.log({response})
 
                 // Construct buttons
                 let buttons = null;
@@ -719,14 +717,12 @@ var kblayersubscription = {
                 // Construct rows
                 let rows = []
                 for(let i in kblayersubscription.var.mapping_names){
-                    console.log('A')
                     console.log(kblayersubscription.var.mapping_names[i])
                     let mapping = {};
                     mapping.name = kblayersubscription.var.mapping_names[i].name;
                     mapping.title = kblayersubscription.var.mapping_names[i].title;
                     mapping.catalogue = mapping.name in response.results ? response.results[mapping.name].name : "";
                     if(($('#has_edit_access').val() == "True") || ($('#has_edit_access').val() == "False" && mapping.name in response.results)){
-                        console.log('B')
                         rows.push(mapping);
                     }
                 }
