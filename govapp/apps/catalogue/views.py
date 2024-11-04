@@ -946,64 +946,22 @@ class LayerSubscriptionViewSet(
                 logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
             return val
         
-        if subscription_obj.type == LayerSubscriptionType.WMS:
-            def get_wms():
-                res = WebMapService(url=subscription_obj.url, 
-                                    username=subscription_obj.username, 
-                                    password=subscription_obj.userpassword)
-                # logger.debug(f'res.contents.keys(): {res.contents.keys()}')
-                # result = res.contents.keys()  
-                result = []
-                for layer in res.contents:
-                    result.append({
-                        "name": layer,
-                        "title": res.contents[layer].title,
-                    })
-                return result
-            mapping_names = retrieve_data(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
-
-        elif subscription_obj.type == LayerSubscriptionType.WFS:
-            def get_wfs():
-                res = WebFeatureService(url=subscription_obj.url, 
-                                    username=subscription_obj.username, 
-                                    password=subscription_obj.userpassword)
-                result = []
-                for layer in res.contents:
-                    result.append({
-                        "name": layer,
-                        "title": res.contents[layer].title,
-                    })
-                return result
-            mapping_names = retrieve_data(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
-
-        elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-            def get_post_gis():
-                conn = psycopg2.connect(
-                    host=subscription_obj.host,
-                    database=subscription_obj.database,
-                    user=subscription_obj.username,
-                    password=subscription_obj.userpassword,
-                    port=subscription_obj.port
-                )
-                query = """
-                            SELECT table_name 
-                            FROM information_schema.tables 
-                            WHERE table_schema = %s;
-                        """
-                with conn.cursor() as cursor:
-                    cursor.execute(query, [subscription_obj.schema])
-                    # return [e[0] for e in cursor.fetchall()]
-                    result = []
-                    for e in cursor.fetchall():
-                        result.append({
-                            "name": e[0],
-                            "title": '---',
-                        })
-                    return result
-            mapping_names = retrieve_data(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
+        # if subscription_obj.type == LayerSubscriptionType.WMS:
+        #     mapping_names = retrieve_data(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
+        # elif subscription_obj.type == LayerSubscriptionType.WFS:
+        #     mapping_names = retrieve_data(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
+        # elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
+        #     mapping_names = retrieve_data(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
         
-        # Return Response
-        logger.debug(f'mapping_names: {mapping_names}')
+
+        # Store data
+        serializer = serializers.layer_subscriptions.LayerSubscriptionDataSerializer(data={
+            'layer_subscription': subscription_obj.id,
+            'metadata_json': mapping_names,
+        })
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
         return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
         
     @transaction.atomic()

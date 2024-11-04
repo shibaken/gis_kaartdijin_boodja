@@ -12,12 +12,14 @@ import reversion
 from typing import Union, Optional
 
 # Local
+from govapp.apps.catalogue import utils as catalogue_utils
 from govapp.common import mixins
 from govapp.apps.catalogue.models import catalogue_entries
 from govapp.apps.catalogue import notifications as notifications_utils
 from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.publisher.models import workspaces
 from govapp.apps.publisher.models import publish_entries
+from govapp.apps.catalogue import serializers
 
 # Shortcuts
 UserModel = auth.get_user_model()
@@ -315,3 +317,35 @@ class LayerSubscriptionData(mixins.RevisionedMixin):
     class Meta:
         verbose_name = "Layer Subscription Data"
         verbose_name_plural = "Layer Subscription Data"
+
+    @classmethod
+    def get_latest_by_layer_subscription(cls, layer_subscription):  # latest_data = LayerSubscriptionData.get_latest_by_layer_subscription(layer_subscription_instance)
+        return cls.objects.filter(layer_subscription=layer_subscription).order_by('-updated_at').first()
+    
+    @classmethod
+    def retrieve_latest_data(cls, subscription_obj, force_to_query):
+        if force_to_query:
+            # Perform query to WMS, WFS, PostGIS
+            if subscription_obj.type == LayerSubscriptionType.WMS:
+                mapping_names = catalogue_utils.get_wms(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
+            elif subscription_obj.type == LayerSubscriptionType.WFS:
+                mapping_names = catalogue_utils.get_wfs(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
+            elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
+                mapping_names = catalogue_utils.get_post_gis(subscription_obj.host, subscription_obj.database, subscription_obj.username, subscription_obj.userpassword, subscription_obj.port, subscription_obj.schema)
+
+            # Store the data
+            layer_subscription_data = LayerSubscriptionData.objects.create(
+                layer_subscription=subscription_obj,
+                metadata_json=mapping_names,
+            )
+
+            return mapping_names
+        else:
+            # TODO
+            # Retrieve the latest record from LayerSubscriptionData
+            # if latest_data:
+            #     return latest_data
+            # else:
+            #     Perform query to WMS, WFS, Post_gis
+            #     Save the data
+            pass
