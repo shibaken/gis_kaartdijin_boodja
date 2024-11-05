@@ -896,18 +896,23 @@ class LayerSubscriptionViewSet(
         # Retrieve Catalogue Entry with Layer Submission Id
         mappings = list(models.catalogue_entries.CatalogueEntry.objects
                              .filter(layer_subscription=layer_subscription)
-                             .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
-        
-        if not mappings:
-            mappings = {}
-        else:
-            mappings = {
-                mapping['mapping_name']:{
-                    'name':mapping['name'],
-                    'description':mapping['description'],
-                    'catalogue_entry_id':mapping['id']
-                } for mapping in mappings
-            }
+                             .values('id', 'mapping_name', 'name', 'description'))
+        mappings = [{
+            'mapping_name': mapping['mapping_name'],
+            'name': mapping['name'],
+            'description': mapping['description'],
+            'id': mapping['id']
+        } for mapping in mappings]
+        # if not mappings:
+        #     mappings = [] 
+        # else:
+        #     mappings = {
+        #         mapping['mapping_name']:{
+        #             'name':mapping['name'],
+        #             'description':mapping['description'],
+        #             'catalogue_entry_id':mapping['id']
+        #         } for mapping in mappings
+        #     }
 
         # Return Response
         logger.debug(f'mappings: {mappings}')
@@ -931,38 +936,26 @@ class LayerSubscriptionViewSet(
         # Help `mypy` by casting the resulting object to a Layer Subscription
         subscription = self.get_object()
         subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
-        LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
+        # LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
 
-        def retrieve_data(key, fetch_data):
-            val = cache.get(key)
-            if settings.DEBUG or not val:
-                try:
-                    val = fetch_data()
-                    cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
-                    logger.info(f'Value has been set to the Cache key: [{key}].')
-                except Exception as e:
-                    logger.error(f"Error when fetching data: {e}")
-            else:
-                logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
-            return val
-        
-        # if subscription_obj.type == LayerSubscriptionType.WMS:
-        #     mapping_names = retrieve_data(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
-        # elif subscription_obj.type == LayerSubscriptionType.WFS:
-        #     mapping_names = retrieve_data(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
-        # elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-        #     mapping_names = retrieve_data(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
-        
-
-        # Store data
-        serializer = serializers.layer_subscriptions.LayerSubscriptionDataSerializer(data={
-            'layer_subscription': subscription_obj.id,
-            'metadata_json': mapping_names,
-        })
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
+        # def retrieve_data(key, fetch_data):
+        #     val = cache.get(key)
+        #     if settings.DEBUG or not val:
+        #         try:
+        #             val = fetch_data()
+        #             cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
+        #             logger.info(f'Value has been set to the Cache key: [{key}].')
+        #         except Exception as e:
+        #             logger.error(f"Error when fetching data: {e}")
+        #     else:
+        #         logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
+        #     return val
+        mapping_names = models.layer_subscriptions.LayerSubscriptionData.retrieve_latest_data(subscription_obj)
+        return response.Response(
+            {'results':mapping_names},
+            content_type='application/json',
+            status=status.HTTP_200_OK
+        )
         
     @transaction.atomic()
     @drf_utils.extend_schema(

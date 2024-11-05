@@ -21,7 +21,6 @@ from govapp.apps.catalogue import notifications as notifications_utils
 from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.publisher.models import workspaces
 from govapp.apps.publisher.models import publish_entries
-from govapp.apps.catalogue import serializers
 
 # Shortcuts
 UserModel = auth.get_user_model()
@@ -50,7 +49,7 @@ class LayerSubscription(mixins.RevisionedMixin):
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
     name = models.TextField()
-    description = models.TextField(blank=True)  # We don't want to use this field as this will be managed via the catalogue entry after creation.
+    description = models.TextField(blank=True)
     enabled = models.BooleanField(default=True)
     url = models.URLField(null=True) # for WMS or WFS
     username = models.CharField(null=True, max_length=100)
@@ -319,10 +318,14 @@ class LayerSubscriptionData(mixins.RevisionedMixin):
 
     @classmethod
     def get_latest_by_layer_subscription(cls, layer_subscription):  # latest_data = LayerSubscriptionData.get_latest_by_layer_subscription(layer_subscription_instance)
-        return cls.objects.filter(layer_subscription=layer_subscription).order_by('-updated_at').first()
+        layer_subscription_data = cls.objects.filter(layer_subscription=layer_subscription).order_by('-updated_at').first()
+        if layer_subscription_data:
+            return layer_subscription_data.metadata_json
+        else:
+            return None
     
     @classmethod
-    def retrieve_latest_data(cls, subscription_obj, force_to_query):
+    def retrieve_latest_data(cls, subscription_obj, force_to_query=False):
         if force_to_query:
             # Perform query to WMS, WFS, PostGIS
             metadata_json = cls._retrieve_data_by_query(subscription_obj)
@@ -352,7 +355,7 @@ class LayerSubscriptionData(mixins.RevisionedMixin):
                 raise ValidationError(msg)
 
             # Store the data
-            layer_subscription_data = LayerSubscriptionData.objects.create(
+            layer_subscription_data = cls.objects.create(
                     layer_subscription=subscription_obj,
                     metadata_json=metadata_json,
                 )

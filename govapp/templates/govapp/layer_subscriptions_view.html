@@ -6,6 +6,7 @@
             {% include "govapp/publish_view_create_update_geoserver.html" %}
             {% include "govapp/publish_view_new_cddp.html" %}
             {% include "govapp/common_entity_modal.html" %}
+            {% include "govapp/subscription_add_layers_modal.html" %}
 
             <div class="container" id="dashboard-table-container">
                   <div class='col-6'>
@@ -344,7 +345,10 @@
                                           </div>
                                     </div>
                                     <div class="card-body collapse show" id="box3-card-body">
-                                          <div id='subscription-layer-table'>
+                                          <div class="text-end">
+                                                <button class='btn btn-primary btn-sm' id='subscription-add-layers-btn'>Add Layers</button>
+                                          </div>
+                                          <!-- <div id='subscription-layer-table'>
                                                 <table id="layerSubscriptionLayersTable" class="table" style="width:100%">
                                                       <thead class='table-dark' id='subscription-layer-table-thead'>
                                                       </thead>
@@ -358,7 +362,21 @@
                                                             </tr>
                                                       </tbody>
                                                 </table>
-                                          </div>
+                                          </div> -->
+                                          <table id="catalogue-entries-table" class="table">
+                                                <thead class="table-dark">
+                                                      <tr>
+                                                            <th>ID</th>
+                                                            <th>Name</th>
+                                                            <th>Mapping Name</th>
+                                                            <th>Description</th>
+                                                            <th>Action</th>
+                                                      </tr>
+                                                </thead>
+                                                <tbody>
+                                                      <!-- Data will be inserted here -->
+                                                </tbody>
+                                          </table>
                                     </div>
                               </div>
                               {% endif %}
