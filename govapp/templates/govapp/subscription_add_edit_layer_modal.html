@@ -1,0 +1,41 @@
+<div class="modal fade" id="SubscriptionAddLayerModal" tabindex="-1" aria-labelledby="SubscriptionAddLayersModal" aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
+     <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+               <div class="modal-header">
+                    <h5 class="modal-title" id="subscription_add_edit_modal_title"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body container">
+                    <div class="alert alert-danger" role="alert" id='add-layers-error' style='display:none'></div>
+                    <div class="alert alert-success" role="alert" id='add-layers-success' style='display:none'></div>
+                    <div class='row d-flex align-items-center px-3 mb-2'>
+                         <div class='col-2 text-end'><label for="layer_name_to_be_added" class="form-label">Layer</label></div>
+                         <div class='col-8'><input type="text" class="form-control" id="layer_name_to_be_added"></input></div>
+                    </div>
+                    <div class='row d-flex align-items-center px-3 mb-2'>
+                         <div class='col-2 text-end'><label for="catalogue_entry_name_to_be_added" class="form-label">Catalogue Entry Name</label></div>
+                         <div class='col-8'><input type="text" class="form-control" id="catalogue_entry_name_to_be_added"></input></div>
+                         <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id" value="">
+                    </div>
+
+                    <div id='subscription-layer-table' class="mt-5">
+                         <table id="source-layers-table" class="table">
+                              <thead class="table-dark">
+                                   <tr>
+                                        <th>Name</th>
+                                        <th>Title</th>
+                                        <th>Action</th>
+                                   </tr>
+                              </thead>
+                              <tbody>
+                                   <!-- Data will be inserted here -->
+                              </tbody>
+                         </table>
+                    </div>
+                    <div class='text-end mt-3'>
+                         <button type="button" class="btn btn-primary btn-sm" id='add_edit_layer_btn'></button>
+                    </div>
+               </div>
+          </div>
+     </div>
+</div>
