@@ -332,6 +332,7 @@
                                     </div>
                               </div>
 
+                              <!-- if WMS or WFS -->
                               {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
                               <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">
@@ -381,6 +382,7 @@
                               </div>
                               {% endif %}
 
+                              <!-- if PostGIS -->
                               {% if subscription_obj.type is 3 %}
                               <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">
@@ -394,7 +396,10 @@
                                           </div>
                                     </div>
                                     <div class="card-body collapse show" id="box4-card-body">
-                                          <div id='subscription-dbtable-table'>
+                                          <div class="text-end">
+                                                <button class='btn btn-primary btn-sm' id='subscription-add-layer-btn'>Add Layer</button>
+                                          </div>
+                                          <!-- <div id='subscription-dbtable-table'>
                                                 <table id="layerSubscriptionLayersTable" class="table" style="width:100%">
                                                       <thead class='table-dark' id='subscription-dbtable-table-thead'>
                                                       </thead>
@@ -408,11 +413,26 @@
                                                             </tr>
                                                       </tbody>
                                                 </table>
-                                          </div>
+                                          </div> -->
+                                          <table id="catalogue-entries-table" class="table">
+                                                <thead class="table-dark">
+                                                      <tr>
+                                                            <th>ID</th>
+                                                            <th>Name</th>
+                                                            <th>Mapping Name</th>
+                                                            <th>Description</th>
+                                                            <th>Action</th>
+                                                      </tr>
+                                                </thead>
+                                                <tbody>
+                                                      <!-- Data will be inserted here -->
+                                                </tbody>
+                                          </table>
                                     </div>
                               </div>
                               {% endif %}
 
+                              <!-- if PostGIS -->
                               {% if subscription_obj.type is 3 %}
                               <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">

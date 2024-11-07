@@ -643,6 +643,8 @@ var kblayersubscription = {
                 kblayersubscription.get_mapping_source(type),
                 kblayersubscription.get_mapping_info(type)
             ]);
+            console.log({source_layers})
+            console.log({catalogue_entries})
             kblayersubscription.construct_catalogue_entries_table(source_layers, catalogue_entries);
             kblayersubscription.construct_source_layers_table(source_layers, catalogue_entries);
         } catch (error){
@@ -709,7 +711,7 @@ var kblayersubscription = {
                 tableBody.append(row);
             }
         });
-    
+
         // Step 3: Initialize DataTable
         $('#source-layers-table').DataTable();
 
