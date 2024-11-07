@@ -32,6 +32,8 @@ var kblayersubscription = {
         subscription_save_url: '/api/catalogue/layers/subscriptions/',
         log_communication_type_url:"/api/logs/communications/type/",
         communication_type: null,
+    
+        source_layers: []
     },
     init_dashboard: function() { 
 
@@ -646,25 +648,34 @@ var kblayersubscription = {
     get_mappings: async function(type){
         try{
             const [source_layers, catalogue_entries] = await Promise.all([
-                kblayersubscription.get_mapping_source(type),
-                kblayersubscription.get_mapping_info(type)
+                kblayersubscription.get_mapping_source(),
+                kblayersubscription.get_mapping_info()
             ]);
             console.log('in get_mappings()')
             console.log({source_layers})
             console.log({catalogue_entries})
-            kblayersubscription.construct_catalogue_entries_table(source_layers, catalogue_entries);  // This table is displayed on the page.
-            kblayersubscription.construct_source_layers_table(source_layers, catalogue_entries);  // This is displayed in the add/edit modal
+
+            kblayersubscription.var.source_layers = source_layers
+
+            kblayersubscription.construct_catalogue_entries_table(catalogue_entries);  // This table is displayed on the page.
+            kblayersubscription.construct_source_layers_table(catalogue_entries);  // This is displayed in the add/edit modal
         } catch (error){
             console.error('Error', error)
         }
     },
-    construct_catalogue_entries_table: function(source_layers, catalogue_entries){
+    construct_catalogue_entries_table: function(catalogue_entries){
         /* Construct Layers or Table Layers table */
-        const tableBody = $('#catalogue-entries-table tbody');
-        tableBody.empty(); // Clear existing rows
-    
+        const table = $('#catalogue-entries-table');
+        if ($.fn.DataTable.isDataTable(table)) {
+            table.DataTable().destroy();
+        }
+
+        // Step 2: Clear and update table body
+        const tableBody = table.find('tbody');
+        tableBody.empty();
+
         // Step 1: Convert source_layers names to a Set for fast lookup
-        const sourceLayerNames = new Set(source_layers.map(layer => layer.name));
+        const sourceLayerNames = new Set(kblayersubscription.var.source_layers.map(layer => layer.name));
     
         // Step 2: Iterate over catalogue_entries and append rows to the table
         catalogue_entries.forEach(entry => {
@@ -694,8 +705,8 @@ var kblayersubscription = {
             const catalogueEntryId = $(this).data('catalogue-entry-id');
 
             // Step 6: Update the values
-            $('#subscription_add_edit_modal_title').text('Update Layer')
-            $('#add_edit_layer_btn').text('Update Layer')
+            $('#subscription_add_edit_modal_title').text('Update Catalogue Entry')
+            $('#add_edit_layer_btn').text('Update Catalogue Entry')
             $('#layer_name_to_be_added').val(layerName);  // Somehow doesn't work !!!
             $('#catalogue_entry_name_to_be_added').val(catalogueEntryName);
             $('#catalogue_entry_id').val(catalogueEntryId);
@@ -703,7 +714,7 @@ var kblayersubscription = {
             $('#SubscriptionAddLayerModal').modal('show');
         });
     },
-    construct_source_layers_table: function(source_layers, catalogue_entries){
+    construct_source_layers_table: function(catalogue_entries){
         /* Construct the table in a add/edit catalogue entry modal */
         const tableBody = $('#source-layers-table tbody');
         tableBody.empty(); // Clear existing rows
@@ -712,7 +723,7 @@ var kblayersubscription = {
         const catalogueMappingNames = new Set(catalogue_entries.map(entry => entry.mapping_name));
 
         // Step 2: Iterate over catalogue_entries and append rows to the table
-        source_layers.forEach(layer => {
+        kblayersubscription.var.source_layers.forEach(layer => {
             if (!catalogueMappingNames.has(layer.name)) {
                 const row = `<tr>
                     <td>${layer.name}</td>
@@ -735,20 +746,20 @@ var kblayersubscription = {
             $('#layer_name_to_be_added').val(layerName);
         });
     },
-    get_mapping_source: function(type){
+    get_mapping_source: function(){
         return new Promise((resolve, reject) => {
             let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/source";
             let method = 'GET';
 
-            let thead = $("#subscription-layer-table-thead");
-            let tbody = $("#subscription-layer-table-tbody");
-            let title = "Native Layer";
+            // let thead = $("#subscription-layer-table-thead");
+            // let tbody = $("#subscription-layer-table-tbody");
+            // let title = "Native Layer";
 
-            if(type == 'table'){
-                thead = $("#subscription-dbtable-table-thead");
-                tbody = $("#subscription-dbtable-table-tbody");
-                title = "Table";
-            }
+            // if(type == 'table'){
+            //     thead = $("#subscription-dbtable-table-thead");
+            //     tbody = $("#subscription-dbtable-table-tbody");
+            //     title = "Table";
+            // }
 
             // call GET API
             $.ajax({
@@ -778,20 +789,20 @@ var kblayersubscription = {
             });
         })
     },
-    get_mapping_info: function(type){
+    get_mapping_info: function(){
         return new Promise((resolve, reject) => {
             let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/";
             let method = 'GET';
 
-            let thead = $("#subscription-layer-table-thead");
-            let tbody = $("#subscription-layer-table-tbody");
-            let title = "Native Layer";
+            // let thead = $("#subscription-layer-table-thead");
+            // let tbody = $("#subscription-layer-table-tbody");
+            // let title = "Native Layer";
 
-            if(type == 'table'){
-                thead = $("#subscription-dbtable-table-thead");
-                tbody = $("#subscription-dbtable-table-tbody");
-                title = "Table";
-            }
+            // if(type == 'table'){
+            //     thead = $("#subscription-dbtable-table-thead");
+            //     tbody = $("#subscription-dbtable-table-tbody");
+            //     title = "Table";
+            // }
 
             // call GET API
             $.ajax({
@@ -910,9 +921,11 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             data:  JSON.stringify(mapping_data),
-            success: function(response) {
+            success: async function(response) {
                 console.log('Success:', response);
+                const catalogue_entries = await kblayersubscription.get_mapping_info();
                 $('#SubscriptionAddLayerModal').modal('hide');
+                kblayersubscription.construct_catalogue_entries_table(catalogue_entries)
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
