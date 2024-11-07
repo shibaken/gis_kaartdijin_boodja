@@ -9,13 +9,13 @@
                     <div class="alert alert-danger" role="alert" id='add-layers-error' style='display:none'></div>
                     <div class="alert alert-success" role="alert" id='add-layers-success' style='display:none'></div>
                     <div class='row d-flex align-items-center px-3 mb-2'>
-                         <div class='col-2 text-end'><label for="layer_name_to_be_added" class="form-label">Layer</label></div>
-                         <div class='col-8'><input type="text" class="form-control" id="layer_name_to_be_added"></input></div>
-                    </div>
-                    <div class='row d-flex align-items-center px-3 mb-2'>
                          <div class='col-2 text-end'><label for="catalogue_entry_name_to_be_added" class="form-label">Catalogue Entry Name</label></div>
                          <div class='col-8'><input type="text" class="form-control" id="catalogue_entry_name_to_be_added"></input></div>
                          <input type="hidden" id="catalogue_entry_id" name="catalogue_entry_id" value="">
+                    </div>
+                    <div class='row d-flex align-items-center px-3 mb-2'>
+                         <div class='col-2 text-end'><label for="layer_name_to_be_added" class="form-label">Native Layer Name</label></div>
+                         <div class='col-8'><input type="text" class="form-control" id="layer_name_to_be_added" readonly></input></div>
                     </div>
 
                     <div id='subscription-layer-table' class="mt-5">
@@ -33,7 +33,7 @@
                          </table>
                     </div>
                     <div class='text-end mt-3'>
-                         <button type="button" class="btn btn-primary btn-sm" id='add_edit_layer_btn'></button>
+                         <button type="button" class="btn btn-primary" id='add_edit_layer_btn'></button>
                     </div>
                </div>
           </div>

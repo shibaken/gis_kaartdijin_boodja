@@ -27,6 +27,7 @@ from owslib.wfs import WebFeatureService
 import psycopg2
 import json
 import os
+from django.db.models import Q
 
 # Local
 from govapp import settings
@@ -894,15 +895,28 @@ class LayerSubscriptionViewSet(
         layer_subscription = cast(models.layer_subscriptions.LayerSubscription, layer_subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
-        mappings = list(models.catalogue_entries.CatalogueEntry.objects
-                             .filter(layer_subscription=layer_subscription)
-                             .values('id', 'mapping_name', 'name', 'description'))
-        mappings = [{
-            'mapping_name': mapping['mapping_name'],
-            'name': mapping['name'],
-            'description': mapping['description'],
-            'id': mapping['id']
-        } for mapping in mappings]
+        # mappings = list(models.catalogue_entries.CatalogueEntry.objects
+        #                      .filter(layer_subscription=layer_subscription)
+        #                      .values('id', 'mapping_name', 'name', 'description', 'is_custom_query'))
+        # mappings = [{
+        #     'mapping_name': mapping['mapping_name'],
+        #     'name': mapping['name'],
+        #     'description': mapping['description'],
+        #     'id': mapping['id']
+        # } for mapping in mappings]
+
+        entries = models.catalogue_entries.CatalogueEntry.objects.filter(layer_subscription=layer_subscription)
+        mappings = [
+            {
+                'id': entry.id,
+                'mapping_name': entry.mapping_name,
+                'name': entry.name,
+                'description': entry.description,
+                'is_custom_query': entry.is_custom_query
+            }
+            for entry in entries
+        ]
+
         # if not mappings:
         #     mappings = [] 
         # else:
@@ -1138,7 +1152,9 @@ class LayerSubscriptionViewSet(
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
-        catalogue_entries = subscription.catalogue_entries.filter(sql_query__isnull=False).prefetch_related('custom_query_frequencies').all()
+        catalogue_entries = subscription.catalogue_entries.exclude(
+            Q(sql_query__isnull=True)  # When the sql_query is Null, this catalogue_entry is not the object for the custon query.
+        ).prefetch_related('custom_query_frequencies').all()
         results = []
         for catalogue_entry in catalogue_entries:
             frequencies = []

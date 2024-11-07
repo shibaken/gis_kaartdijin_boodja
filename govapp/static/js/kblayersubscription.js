@@ -346,11 +346,11 @@ var kblayersubscription = {
 
         // Display Modal
         $("#subscription-add-layer-btn").click(() => {
-            $('#subscription_add_edit_modal_title').text('Create Layer')
+            $('#subscription_add_edit_modal_title').text('Create Catalogue Entry')
             $('#layer_name_to_be_added').val('')
             $('#catalogue_entry_name_to_be_added').val('')
             $('#catalogue_entry_id').val('')
-            $('#add_edit_layer_btn').text('Create Layer')
+            $('#add_edit_layer_btn').text('Create Catalogue Entry')
             $('#add-layers-error').text('').hide()
             $('#SubscriptionAddLayerModal').modal('show');
         })
@@ -368,11 +368,18 @@ var kblayersubscription = {
         $( "#subscription-btn-save-exit" ).click(function() {
             kblayersubscription.save_subscription('save-and-exit');
         });
+
         if([1,2].includes(+$('#subscription-type-num').val())){
+            // WMS, WFS
+            console.log('This is WMS/WFS.')
             kblayersubscription.get_mappings('layer');
         }else{
+            // PostGIS
+            console.log('This is PostGIS.')
             kblayersubscription.get_mappings('table');
+            kblayersubscription.get_custom_query_info();
         }
+
         if($('#subscription_enabled').val() == 'True'){
             $('#subscription-enabled').prop('checked', true);
         }
@@ -381,7 +388,6 @@ var kblayersubscription = {
         });
 
         kblayersubscription.retrieve_communication_types();
-        kblayersubscription.get_custom_query_info();
     },
     change_subscription_status: function(status){
         var status_url = "lock";
@@ -643,15 +649,17 @@ var kblayersubscription = {
                 kblayersubscription.get_mapping_source(type),
                 kblayersubscription.get_mapping_info(type)
             ]);
+            console.log('in get_mappings()')
             console.log({source_layers})
             console.log({catalogue_entries})
-            kblayersubscription.construct_catalogue_entries_table(source_layers, catalogue_entries);
-            kblayersubscription.construct_source_layers_table(source_layers, catalogue_entries);
+            kblayersubscription.construct_catalogue_entries_table(source_layers, catalogue_entries);  // This table is displayed on the page.
+            kblayersubscription.construct_source_layers_table(source_layers, catalogue_entries);  // This is displayed in the add/edit modal
         } catch (error){
             console.error('Error', error)
         }
     },
     construct_catalogue_entries_table: function(source_layers, catalogue_entries){
+        /* Construct Layers or Table Layers table */
         const tableBody = $('#catalogue-entries-table tbody');
         tableBody.empty(); // Clear existing rows
     
@@ -660,17 +668,19 @@ var kblayersubscription = {
     
         // Step 2: Iterate over catalogue_entries and append rows to the table
         catalogue_entries.forEach(entry => {
-            const isMappingNameInSourceLayers = sourceLayerNames.has(entry.mapping_name);
-            const custom_style = isMappingNameInSourceLayers ? '' : 'background-color: lightsalmon;';
-    
-            const row = `<tr>
-                <td>CE${entry.id}</td>
-                <td>${entry.name}</td>
-                <td style="${custom_style}">${entry.mapping_name}</td>
-                <td>${entry.description}</td>
-                <td><button class='btn btn-primary btn-sm select-existing-layer-btn' data-catalogue-entry-id="${entry.id}" data-mapping-name="${entry.mapping_name}" data-catalogue-entry-name="${entry.name}">Edit</button></td>
-            </tr>`;
-            tableBody.append(row);
+            if (!entry.is_custom_query){
+                const isMappingNameInSourceLayers = sourceLayerNames.has(entry.mapping_name);
+                const custom_style = isMappingNameInSourceLayers ? '' : 'background-color: lightsalmon;';
+        
+                const row = `<tr>
+                    <td>CE${entry.id}</td>
+                    <td>${entry.name}</td>
+                    <td style="${custom_style}">${entry.mapping_name}</td>
+                    <td>${entry.description}</td>
+                    <td><button class='btn btn-primary btn-sm select-existing-layer-btn' data-catalogue-entry-id="${entry.id}" data-mapping-name="${entry.mapping_name}" data-catalogue-entry-name="${entry.name}">Edit</button></td>
+                </tr>`;
+                tableBody.append(row);
+            }
         });
     
         // Step 3: Initialize DataTable
@@ -694,6 +704,7 @@ var kblayersubscription = {
         });
     },
     construct_source_layers_table: function(source_layers, catalogue_entries){
+        /* Construct the table in a add/edit catalogue entry modal */
         const tableBody = $('#source-layers-table tbody');
         tableBody.empty(); // Clear existing rows
     
@@ -823,7 +834,7 @@ var kblayersubscription = {
                     //     let mapping = {};
                     //     mapping.name = kblayersubscription.var.mapping_names[i].name;
                     //     mapping.title = kblayersubscription.var.mapping_names[i].title;
-                    //     // mapping.catalogue = mapping.name in response.results ? response.results[mapping.name].name : "";
+                    //     // mapping.catalogue = mapping.name in response.results ? response.results[mapping.name].name : "";  # Display catalogue entry name if this table is selected as a layer.
                     //     // if(($('#has_edit_access').val() == "True") || ($('#has_edit_access').val() == "False" && mapping.name in response.results)){
                     //     //     rows.push(mapping);
                     //     // }
@@ -955,7 +966,7 @@ var kblayersubscription = {
         });
     },
     get_custom_query_info: function(){
-        console.log('in get_custom_query_info')
+        console.log('in get_custom_query_info()')
         let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/query/";
         let method = 'GET';
 
