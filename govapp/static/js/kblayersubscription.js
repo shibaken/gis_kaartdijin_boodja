@@ -684,10 +684,9 @@ var kblayersubscription = {
                 const custom_style = isMappingNameInSourceLayers ? '' : 'background-color: lightsalmon;';
         
                 const row = `<tr>
-                    <td>CE${entry.id}</td>
+                    <td><a href="/catalogue/entries/${entry.id}/details/" style="text-decoration: none;">CE${entry.id}</a></td>
                     <td>${entry.name}</td>
                     <td style="${custom_style}">${entry.mapping_name}</td>
-                    <td>${entry.description}</td>
                     <td><button class='btn btn-primary btn-sm select-existing-layer-btn' data-catalogue-entry-id="${entry.id}" data-mapping-name="${entry.mapping_name}" data-catalogue-entry-name="${entry.name}">Edit</button></td>
                 </tr>`;
                 tableBody.append(row);
