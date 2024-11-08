@@ -20,10 +20,6 @@
                                     <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
                                           Logs
                                     </div>
-                                    <!-- <div class='col-12 p-3 border-bottom'>
-                                          <p><b>Communication</b><br>
-                                          <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
-                                    </div> -->
                                     <div class='col-12 p-3'>
                                           <p><b>Actions</b><br>
                                           <a href='#' id="log_actions_show">Show</a></p>
@@ -60,11 +56,20 @@
 
                                     {% if is_assigned %}
                                     <div class='p-3'>
-                                          <strong>Actions</strong><br>
+                                          <div><strong>Actions</strong></div>
                                           {% if subscription_obj.is_locked %}
                                                 <button class='btn btn-primary btn-sm px-4' id='subscription-unlock'>Unlock</button>
                                           {% else %}
                                                 <button class='btn btn-primary btn-sm px-4' id='subscription-lock'>Lock</button>
+                                                <div class="mt-2">
+                                                      {% if subscription_obj.type is 1 %}
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_wms_source_list_btn'>Update WMS Data</button>
+                                                      {% elif subscription_obj.type is 2 %}
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_wfs_source_list_btn'>Update WFS Data</button>
+                                                      {% elif subscription_obj.type is 3 %}
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_postgis_source_list_btn'>Update Postgis Data</button>
+                                                      {% endif %}
+                                                </div>
                                           {% endif %}
                                     </div>
                                     {% endif %}
@@ -320,12 +325,15 @@
                                     </div>
                               </div>
 
-                              <!-- if WMS or WFS -->
                               <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
                                                 <div class="col-6">
+                                                      {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
                                                       Layers
+                                                      {% elif subscription_obj.type is 3 %}
+                                                      Table Layers
+                                                      {% endif %}
                                                 </div>
                                                 <div class="col-6 text-end">
                                                       <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box3-card-body" onclick=""></i>

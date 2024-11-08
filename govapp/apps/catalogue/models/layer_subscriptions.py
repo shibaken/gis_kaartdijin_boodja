@@ -334,6 +334,7 @@ class LayerSubscriptionData(mixins.RevisionedMixin):
             # Retrieve the latest record from LayerSubscriptionData
             metadata_json = cls.get_latest_by_layer_subscription(subscription_obj)
             if metadata_json:
+                logger.info(f'Metadata_json has been retrieved from the Database for the layer subscription: [{subscription_obj}].')
                 return metadata_json
             else:
                 # Perform query to WMS, WFS, Post_gis
@@ -345,10 +346,13 @@ class LayerSubscriptionData(mixins.RevisionedMixin):
         try:
             if subscription_obj.type == LayerSubscriptionType.WMS:
                 metadata_json = catalogue_utils.get_wms(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
+                logger.info(f'Metadata_json has been retrieved from the WMS for the layer subscription: [{subscription_obj}].')
             elif subscription_obj.type == LayerSubscriptionType.WFS:
                 metadata_json = catalogue_utils.get_wfs(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
+                logger.info(f'Metadata_json has been retrieved from the WFS for the layer subscription: [{subscription_obj}].')
             elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
                 metadata_json = catalogue_utils.get_post_gis(subscription_obj.host, subscription_obj.database, subscription_obj.username, subscription_obj.userpassword, subscription_obj.port, subscription_obj.schema)
+                logger.info(f'Metadata_json has been retrieved from the PostGIS for the layer subscription: [{subscription_obj}].')
             else:
                 msg = f'Something wrong with the type of the layer subscription: [{subscription_obj}].'
                 logger.error(msg)

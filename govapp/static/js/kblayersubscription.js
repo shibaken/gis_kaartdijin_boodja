@@ -368,21 +368,30 @@ var kblayersubscription = {
         $('#catalogue_entry_name_to_be_added').on('input', kblayersubscription.checkCatalogueEntryInputs);
         $('#layer_name_to_be_added').on('input', kblayersubscription.checkCatalogueEntryInputs);
 
-        $( "#subscription-btn-save" ).click(function() {
+        $("#subscription-btn-save").click(function() {
             kblayersubscription.save_subscription('save');
         });
-        $( "#subscription-btn-save-exit" ).click(function() {
+        $("#subscription-btn-save-exit").click(function() {
             kblayersubscription.save_subscription('save-and-exit');
         });
+        $('#update_wms_source_list_btn').click(async ()=>{
+            kblayersubscription.get_mappings(true)
+        })
+        $('#update_wfs_source_list_btn').click(async ()=>{
+            kblayersubscription.get_mappings(true)
+        })
+        $('#update_postgis_source_list_btn').click(async ()=>{
+            kblayersubscription.get_mappings(true)
+        })
 
         if([1,2].includes(+$('#subscription-type-num').val())){
             // WMS, WFS
             console.log('This is WMS/WFS.')
-            kblayersubscription.get_mappings('layer');
+            kblayersubscription.get_mappings();
         }else{
             // PostGIS
             console.log('This is PostGIS.')
-            kblayersubscription.get_mappings('table');
+            kblayersubscription.get_mappings();
             kblayersubscription.get_custom_query_info();
         }
 
@@ -661,10 +670,10 @@ var kblayersubscription = {
             }
         });
     },
-    get_mappings: async function(type){
+    get_mappings: async function(force_to_query=false){
         try{
             const [source_layers, catalogue_entries] = await Promise.all([
-                kblayersubscription.get_mapping_source(),
+                kblayersubscription.get_mapping_source(force_to_query),
                 kblayersubscription.get_mapping_info()
             ]);
             console.log('in get_mappings()')
@@ -672,7 +681,6 @@ var kblayersubscription = {
             console.log({catalogue_entries})
 
             kblayersubscription.var.source_layers = source_layers
-
             kblayersubscription.construct_catalogue_entries_table(catalogue_entries);  // This table is displayed on the page.
             kblayersubscription.construct_source_layers_table(catalogue_entries);  // This is displayed in the add/edit modal
         } catch (error){
@@ -680,6 +688,8 @@ var kblayersubscription = {
         }
     },
     construct_catalogue_entries_table: function(catalogue_entries){
+        console.log('in construct_catalogue_entries_table()')
+
         const table = $('#catalogue-entries-table');
     
         if ($.fn.DataTable.isDataTable(table)) {
@@ -693,7 +703,6 @@ var kblayersubscription = {
                 { 
                     data: 'id',
                     render: (data, type, row) => {
-                        console.log({type})
                         return type === 'display' ? `<a href="/catalogue/entries/${data}/details/" style="text-decoration: none;">CE${data}</a>` : data;
                     },
                     type: 'num'
@@ -749,6 +758,8 @@ var kblayersubscription = {
         });
     },
     construct_source_layers_table: function(catalogue_entries){
+        console.log('in construct_source_layers_table()')
+        
         /* Construct the table in a add/edit catalogue entry modal */
         const tableBody = $('#source-layers-table tbody');
         tableBody.empty(); // Clear existing rows
@@ -780,7 +791,7 @@ var kblayersubscription = {
             $('#layer_name_to_be_added').val(layerName);
         });
     },
-    get_mapping_source: function(){
+    get_mapping_source: function(force_to_query=false){
         return new Promise((resolve, reject) => {
             let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/mapping/source";
             let method = 'GET';
@@ -792,6 +803,7 @@ var kblayersubscription = {
                 dataType: 'json',
                 contentType: 'application/json',
                 headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+                data: { force_to_query: force_to_query },
                 success: (response) => {
                     if(!response || !response.results){
                         resolve([]);

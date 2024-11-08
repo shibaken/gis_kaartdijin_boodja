@@ -950,21 +950,17 @@ class LayerSubscriptionViewSet(
         # Help `mypy` by casting the resulting object to a Layer Subscription
         subscription = self.get_object()
         subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
-        # LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
 
-        # def retrieve_data(key, fetch_data):
-        #     val = cache.get(key)
-        #     if settings.DEBUG or not val:
-        #         try:
-        #             val = fetch_data()
-        #             cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
-        #             logger.info(f'Value has been set to the Cache key: [{key}].')
-        #         except Exception as e:
-        #             logger.error(f"Error when fetching data: {e}")
-        #     else:
-        #         logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
-        #     return val
-        mapping_names = models.layer_subscriptions.LayerSubscriptionData.retrieve_latest_data(subscription_obj)
+        force_to_query = request.GET.get('force_to_query', '').strip().lower()
+        if force_to_query in ['true', 't', '1', 'yes', 'y']:
+            force_to_query = True
+        elif force_to_query in ['false', 'f', '0', 'no', 'n']:
+            force_to_query = False
+        else:
+            # This is default value
+            force_to_query = False
+
+        mapping_names = models.layer_subscriptions.LayerSubscriptionData.retrieve_latest_data(subscription_obj, force_to_query)
         return response.Response(
             {'results':mapping_names},
             content_type='application/json',
