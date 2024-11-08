@@ -58,23 +58,6 @@
                                           </div>
                                     </div>
 
-                                    {% comment %}
-                                    <div class='col-12 p-3'>
-                                          <p>
-                                                <b>Actions</b><br>
-                                                {% if subscription_obj.is_locked %}                                          
-                                                      {% if is_system_user is True %}
-                                                            <button class='btn btn-primary btn-sm' id='subscription-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
-                                                      {% endif %}
-                                                {% else %}                                          
-                                                      {% if has_edit_access is True %}
-                                                            <button class='btn btn-primary btn-sm' id='subscription-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
-                                                      {% endif %}
-                                                {% endif %}
-                                          </p>
-                                    </div>
-                                    {% endcomment %}
-
                                     {% if is_assigned %}
                                     <div class='p-3'>
                                           <strong>Actions</strong><br>
@@ -110,15 +93,15 @@
                                     </div>
                                     <div class="card-body collapse show" id="box1-card-body">
                                           <div class='row'>
-                                                <div class='col-3 d-flex align-items-center'> Type </div> 
+                                                <div class='col-3 d-flex align-items-center'>Type</div> 
                                                 <div class='col-5 p-1'> {{ type }} </div> 
-                                                <div class='col-4'> &nbsp; </div>
-                                                
-                                                <div class='col-3 d-flex align-items-center'> Workspace </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Workspace</div>
                                                 {% if has_edit_access is True %}
                                                       <div class='col-5 p-1'>
                                                             <select class='form-control' id="subscription-workspace">
-                                                                  {% for workspace in workspaces %}                                          
+                                                                  {% for workspace in workspaces %}
                                                                         {% if subscription_obj.workspace.id == workspace.id %}
                                                                               <option value='{{ workspace.id }}' selected>{{ workspace.name }}</option>
                                                                         {% else %}
@@ -126,13 +109,13 @@
                                                                         {% endif %}
                                                                   {% endfor %}
                                                             </select>
-                                                      </div>       
+                                                      </div>
                                                 {% else %}
                                                       <div class='col-5 p-1'> {{ subscription_obj.workspace.name }} </div>    
                                                 {% endif %}
-                                                <div class='col-4'> &nbsp; </div>
-                                                
-                                                <div class='col-3 d-flex align-items-center'> Name </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Name</div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-name" class="form-control" value="{{ subscription_obj.name }}"></input>
@@ -140,9 +123,9 @@
                                                             {{ subscription_obj.name }}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
-                                                
-                                                <div class='col-3 d-flex align-items-center'> Enabled </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Enabled</div>
                                                 <div class='col-5 p-1' >
                                                 {% if has_edit_access is True %}
                                                       <div class='form-check form-switch'>
@@ -152,60 +135,62 @@
                                                       {{ subscription_obj.enabled }}  
                                                 {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div> 
+                                          </div>
+                                          {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Url</div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-url" class="form-control" value="{{ subscription_obj.url }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.url }}
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          {% elif subscription_obj.type is 3 %}
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Host</div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-host" class="form-control" value="{{ subscription_obj.host }}"></input>
+                                                      {% else %}
+                                                            Hidden
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Port</div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="number" id="subscription-port" class="form-control" value="{{ subscription_obj.port }}"></input>
+                                                      {% else %}
+                                                            Hidden
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Database</div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-database" class="form-control" value="{{ subscription_obj.database }}"></input>
+                                                      {% else %}
+                                                            Hidden
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Schema</div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-schema" class="form-control" value="{{ subscription_obj.schema }}"></input>
+                                                      {% else %}
+                                                            Hidden
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          {% endif %}
 
-                                                {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
-                                                      <div class='col-3 d-flex align-items-center'> Url </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-url" class="form-control" value="{{ subscription_obj.url }}"></input>
-                                                            {% else %}
-                                                                  {{ subscription_obj.url }}
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>    
-                                                {% elif subscription_obj.type is 3 %}
-                                                      <div class='col-3 d-flex align-items-center'> Host </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-host" class="form-control" value="{{ subscription_obj.host }}"></input>
-                                                            {% else %}
-                                                                  Hidden
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-                                                            
-                                                      <div class='col-3 d-flex align-items-center'> Port </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="number" id="subscription-port" class="form-control" value="{{ subscription_obj.port }}"></input>
-                                                            {% else %}
-                                                                  Hidden
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-
-                                                      <div class='col-3 d-flex align-items-center'> Database </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-database" class="form-control" value="{{ subscription_obj.database }}"></input>
-                                                            {% else %}
-                                                                  Hidden
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-
-                                                      <div class='col-3 d-flex align-items-center'> Schema </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-schema" class="form-control" value="{{ subscription_obj.schema }}"></input>
-                                                            {% else %}
-                                                                  Hidden
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-                                                {% endif %}
-
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> User Name </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -222,8 +207,8 @@
                                                             {% endif %}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
-
+                                          </div>
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> User Password </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -240,8 +225,8 @@
                                                             {% endif %}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
-
+                                          </div>
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> Connection Timeout(ms) </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -250,59 +235,62 @@
                                                             {{ subscription_obj.connection_timeout }}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
+                                          </div>
 
-                                                {% if subscription_obj.type is 1 or subscription_obj.type is 3 %}
-                                                      <div class='col-3 d-flex align-items-center'> Max Concurrent Connections </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-max-connections" class="form-control" value="{{ subscription_obj.max_connections }}"></input>
-                                                            {% else %}
-                                                                  {{ subscription_obj.max_connections }}
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-                                                {% endif %}
+                                          {% if subscription_obj.type is 1 or subscription_obj.type is 3 %}
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> Max Concurrent Connections </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-max-connections" class="form-control" value="{{ subscription_obj.max_connections }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.max_connections }}
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          {% endif %}
 
-                                                {% if subscription_obj.type is 1 %}
-                                                      <div class='col-3 d-flex align-items-center'> Read Timeout(ms) </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-read-timeout" class="form-control" value="{{ subscription_obj.read_timeout }}"></input>
-                                                            {% else %}
-                                                                  {{ subscription_obj.read_timeout }}
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-                                                {% endif %}
-                                                
-                                                {% if subscription_obj.type is 3 %}
-                                                      <div class='col-3 d-flex align-items-center'> Min Concurrent Connections </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-min-connections" class="form-control" value="{{ subscription_obj.min_connections }}"></input>
-                                                            {% else %}
-                                                                  {{ subscription_obj.min_connections }}
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-                                                {% endif %}
-                                                
-                                                {% if subscription_obj.type is 3 %}
-                                                      <div class='col-3 d-flex align-items-center'> Fetch Size </div>
-                                                      <div class='col-5 p-1'>
-                                                            {% if has_edit_access is True %}
-                                                                  <input type="text" id="subscription-fetch-size" class="form-control" value="{{ subscription_obj.fetch_size }}"></input>
-                                                            {% else %}
-                                                                  {{ subscription_obj.fetch_size }}
-                                                            {% endif %}
-                                                      </div>
-                                                      <div class='col-4'> &nbsp; </div>
-                                                {% endif %}
-
+                                          {% if subscription_obj.type is 1 %}
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> Read Timeout(ms) </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-read-timeout" class="form-control" value="{{ subscription_obj.read_timeout }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.read_timeout }}
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          {% endif %}
+                                          
+                                          {% if subscription_obj.type is 3 %}
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> Min Concurrent Connections </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-min-connections" class="form-control" value="{{ subscription_obj.min_connections }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.min_connections }}
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          {% endif %}
+                                          
+                                          {% if subscription_obj.type is 3 %}
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> Fetch Size </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-fetch-size" class="form-control" value="{{ subscription_obj.fetch_size }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.fetch_size }}
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                          {% endif %}
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> Last Updated Date Time </div>
                                                 <div class='col-5 p-1'> {{ subscription_obj.updated_at }} </div>
-                                                <div class='col-4'> &nbsp; </div>
                                           </div>
                                     </div>
                               </div>
