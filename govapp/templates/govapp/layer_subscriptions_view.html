@@ -333,7 +333,6 @@
                               </div>
 
                               <!-- if WMS or WFS -->
-                              {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
                               <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
@@ -349,38 +348,20 @@
                                           <div class="text-end">
                                                 <button class='btn btn-primary btn-sm' id='subscription-add-layer-btn'>Add Layer</button>
                                           </div>
-                                          <!-- <div id='subscription-layer-table'>
-                                                <table id="layerSubscriptionLayersTable" class="table" style="width:100%">
-                                                      <thead class='table-dark' id='subscription-layer-table-thead'>
-                                                      </thead>
-                                                      <tbody id='subscription-layer-table-tbody'>
-                                                            <tr>
-                                                                  <td colspan="7" class='text-center'>
-                                                                        <div class="progress">
-                                                                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                        </div>
-                                                                  </td> 
-                                                            </tr>
-                                                      </tbody>
-                                                </table>
-                                          </div> -->
                                           <table id="catalogue-entries-table" class="table">
                                                 <thead class="table-dark">
                                                       <tr>
                                                             <th>ID</th>
                                                             <th>Catalogue Entry</th>
                                                             <th>Mapping Name</th>
-                                                            <!-- <th>Description</th> -->
                                                             <th>Action</th>
                                                       </tr>
                                                 </thead>
                                                 <tbody>
-                                                      <!-- Data will be inserted here -->
                                                 </tbody>
                                           </table>
                                     </div>
                               </div>
-                              {% endif %}
 
                               <!-- if PostGIS -->
                               {% if subscription_obj.type is 3 %}
@@ -388,57 +369,7 @@
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
                                                 <div class="col-6">
-                                                      TABLE LAYERS
-                                                </div>
-                                                <div class="col-6 text-end">
-                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
-                                                </div>
-                                          </div>
-                                    </div>
-                                    <div class="card-body collapse show" id="box4-card-body">
-                                          <div class="text-end">
-                                                <button class='btn btn-primary btn-sm' id='subscription-add-layer-btn'>Add Layer</button>
-                                          </div>
-                                          <!-- <div id='subscription-dbtable-table'>
-                                                <table id="layerSubscriptionLayersTable" class="table" style="width:100%">
-                                                      <thead class='table-dark' id='subscription-dbtable-table-thead'>
-                                                      </thead>
-                                                      <tbody id='subscription-dbtable-table-tbody'>
-                                                            <tr> 
-                                                                  <td colspan="7" class='text-center'>
-                                                                        <div class="progress">
-                                                                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                        </div>
-                                                                  </td> 
-                                                            </tr>
-                                                      </tbody>
-                                                </table>
-                                          </div> -->
-                                          <table id="catalogue-entries-table" class="table">
-                                                <thead class="table-dark">
-                                                      <tr>
-                                                            <th>ID</th>
-                                                            <th>Name</th>
-                                                            <th>Mapping Name</th>
-                                                            <th>Description</th>
-                                                            <th>Action</th>
-                                                      </tr>
-                                                </thead>
-                                                <tbody>
-                                                      <!-- Data will be inserted here -->
-                                                </tbody>
-                                          </table>
-                                    </div>
-                              </div>
-                              {% endif %}
-
-                              <!-- if PostGIS -->
-                              {% if subscription_obj.type is 3 %}
-                              <div class="card mb-3">
-                                    <div class="card-header fw-bold h4" style="padding:30px;">
-                                          <div class="row">
-                                                <div class="col-6">
-                                                      TABLE LAYERS (CUSTOM QUERY)
+                                                      Table Layers (Custom Query)
                                                 </div>
                                                 <div class="col-6 text-end">
                                                       <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box5-card-body" onclick=""></i>
@@ -451,21 +382,19 @@
                                                       <button class="btn btn-primary btn-sm" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
                                                 {% endif %}
                                           </div>
-                                          <div id='subscription-dbtable-custom-table'>
-                                                <table id="example" class="table" style="width:100%">
-                                                      <thead class='table-dark' id='subscription-custom-query-table-thead'>
-                                                      </thead>
-                                                      <tbody id='subscription-custom-query-table-tbody'>
-                                                            <tr>
-                                                                  <td colspan="7" class='text-center'>
-                                                                        <div class="progress">
-                                                                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                        </div>
-                                                                  </td> 
-                                                            </tr>
-                                                      </tbody>
-                                                </table>
-                                          </div>
+                                          <table id="subscription-custom-query-table" class="table" style="width:100%">
+                                                <thead class='table-dark' id='subscription-custom-query-table-thead'>
+                                                </thead>
+                                                <tbody id='subscription-custom-query-table-tbody'>
+                                                      <tr>
+                                                            <td colspan="7" class='text-center'>
+                                                                  <div class="progress">
+                                                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                                                                  </div>
+                                                            </td> 
+                                                      </tr>
+                                                </tbody>
+                                          </table>
                                     </div>
                               </div>
                               {% endif %}
