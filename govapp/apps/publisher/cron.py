@@ -37,3 +37,25 @@ class GeoServerLayerHealthcheckCronJob(django_cron.CronJobBase):
 
         # Run Management Command
         management.call_command("geoserver_layer_health_check")
+
+
+class GeoServerSyncLayersCronJob(django_cron.CronJobBase):  # layers
+    schedule = django_cron.Schedule(run_every_mins=conf.settings.GEOSERVER_SYNC_LAYERS_PERIOD_MINS)
+    code = 'geoserver.publisher.geoserver_sync_layers_cron_job'
+
+    def do(self):
+        log.info("Sync geoserver layers cron job triggered, running...")
+
+        # Run Management Command
+        management.call_command("geoserver_sync_layers")
+
+
+class GeoServerSyncRulesCronJob(django_cron.CronJobBase):  # rules
+    schedule = django_cron.Schedule(run_every_mins=conf.settings.GEOSERVER_SYNC_RULES_PERIOD_MINS)
+    code = 'geoserver.publisher.geoserver_sync_rules_cron_job'
+
+    def do(self):
+        log.info("Sync geoserver rules cron job triggered, running...")
+
+        # Run Management Command
+        management.call_command("geoserver_sync_rules")

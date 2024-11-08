@@ -307,21 +307,26 @@ CUSTOM_GROUPS = [
 # https://django-cron.readthedocs.io/en/latest/installation.html
 # https://django-cron.readthedocs.io/en/latest/configuration.html
 #CRON_SCANNER_CLASS = "govapp.apps.catalogue.cron.ScannerCronJob"
-POSTGRES_SCANNER_PERIOD_MINS = decouple.config('POSTGRES_SCANNER_PERIOD_MINS', default=3)
-SHAREPOINT_SCANNER_PERIOD_MINS = decouple.config('SHAREPOINT_SCANNER_PERIOD_MINS', default=3)
+POSTGRES_SCANNER_PERIOD_MINS = decouple.config('POSTGRES_SCANNER_PERIOD_MINS', default=2)
+SHAREPOINT_SCANNER_PERIOD_MINS = decouple.config('SHAREPOINT_SCANNER_PERIOD_MINS', default=2)
 DIRECTORY_SCANNER_PERIOD_MINS = decouple.config('DIRECTORY_SCANNER_PERIOD_MINS', default=2)
 PUBLISH_GEOSERVER_QUEUE_PERIOD_MINS = decouple.config('PUBLISH_GEOSERVER_QUEUE_PERIOD_MINS', default=2)
-
-GEOSERVER_LAYER_HEALTH_CHECK_PERIOD_MINS = 5  # min
+GEOSERVER_LAYER_HEALTH_CHECK_PERIOD_MINS = decouple.config('GEOSERVER_LAYER_HEALTH_CHECK_PERIOD_MINS', default=2)
+GEOSERVER_SYNC_LAYERS_PERIOD_MINS = decouple.config('GEOSERVER_SYNC_LAYERS_PERIOD_MINS', default=2)
+GEOSERVER_SYNC_RULES_PERIOD_MINS = decouple.config('GEOSERVER_SYNC_RULES_PERIOD_MINS', default=2)
+GEOSERVER_SYNC_USERS_PERIOD_MINS = decouple.config('GEOSERVER_SYNC_USERS_PERIOD_MINS', default=2)
 CRON_CLASSES = [
     "govapp.apps.catalogue.cron.PostgresScannerCronJob",
     "govapp.apps.catalogue.cron.SharepointScannerCronJob",
     "govapp.apps.catalogue.cron.DirectoryScannerCronJob",
     "govapp.apps.publisher.cron.PublishGeoServerQueueCronJob",
     "govapp.apps.publisher.cron.GeoServerLayerHealthcheckCronJob",
+    "govapp.apps.publisher.cron.GeoServerSyncLayersCronJob", # layers
+    "govapp.apps.publisher.cron.GeoServerSyncRulesCronJob", # rules
+    "govapp.apps.accounts.cron.GeoServerSyncUsersCronJob", # users
     'appmonitor_client.cron.CronJobAppMonitorClient'
-    #CRON_SCANNER_CLASS,
 ]
+MANAGEMENT_COMMANDS_PAGE_ENABLED = decouple.config('MANAGEMENT_COMMANDS_PAGE_ENABLED', default=False)
 
 # GeoServer Settings
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
@@ -391,6 +396,7 @@ CATALOGUE_ENTRY_TYPE_TO_DISPLAY = decouple.config("CATALOGUE_ENTRY_TYPE_TO_DISPL
                                                                                                             # SUBSCRIPTION_POSTGIS = 4
                                                                                                             # SUBSCRIPTION_QUERY = 5
 CDDP_USER_PATH = decouple.config("CDDP_USER_PATH", "V:/GIS1-Corporate/Data/")
+
 
 if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
     import sentry_sdk
