@@ -66,17 +66,20 @@ def attributes_hash(attributes: Optional[Iterable[Any]]) -> str:
     # Return
     return hash.hexdigest()
 
+
 def find_enum_by_value(enum, value):
         for name, member in enum.__members__.items():
             if member.value == value:
                 return member
         raise ValueError('No enum member found with value: {}'.format(value))
 
+
 def validate_request(serializer_class, data):
     serializer = serializer_class(data=data)
     if not serializer.is_valid():
         raise ValidationError(serializer.errors)
     return serializer.validated_data
+
 
 def view_error_handler(view_func):
     @wraps(view_func)
@@ -87,6 +90,7 @@ def view_error_handler(view_func):
             return response.Response({'error_msg':e}, content_type='application/json', 
                                     status=status.HTTP_400_BAD_REQUEST)
     return _wrapped_view
+
 
 def validation_error_hander(serializer_class):
     def decorator(view_func):
@@ -103,7 +107,8 @@ def get_first_part_of_filename(filepath: pathlib.Path) -> str:
     parts = filename.split('.')
     first_part = parts[0]
     return first_part
-    
+
+
 def retrieve_additional_data(dataset):
     metadata_dict = {}
 
@@ -141,3 +146,57 @@ def retrieve_additional_data(dataset):
     metadata_dict['Origin'] = (origin_x, origin_y)
 
     return metadata_dict
+
+
+from owslib.wms import WebMapService
+from owslib.wfs import WebFeatureService
+import psycopg2
+
+def get_wms(url, username, userpassword):
+    res = WebMapService(url=url, 
+                        username=username, 
+                        password=userpassword)
+    result = []
+    for layer in res.contents:
+        result.append({
+            "name": layer,
+            "title": res.contents[layer].title,
+        })
+    return result
+
+
+def get_wfs(url, username, userpassword):
+    res = WebFeatureService(url=url, 
+                        username=username, 
+                        password=userpassword)
+    result = []
+    for layer in res.contents:
+        result.append({
+            "name": layer,
+            "title": res.contents[layer].title,
+        })
+    return result
+
+
+def get_post_gis(host, database, username, userpassword, port, schema):
+    conn = psycopg2.connect(
+        host=host,
+        database=database,
+        user=username,
+        password=userpassword,
+        port=port
+    )
+    query = """
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = %s;
+            """
+    with conn.cursor() as cursor:
+        cursor.execute(query, [schema])
+        result = []
+        for e in cursor.fetchall():
+            result.append({
+                "name": e[0],
+                "title": '---',
+            })
+        return result
