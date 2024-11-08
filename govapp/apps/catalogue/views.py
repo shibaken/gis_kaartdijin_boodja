@@ -27,6 +27,7 @@ from owslib.wfs import WebFeatureService
 import psycopg2
 import json
 import os
+from django.db.models import Q
 
 # Local
 from govapp import settings
@@ -894,20 +895,38 @@ class LayerSubscriptionViewSet(
         layer_subscription = cast(models.layer_subscriptions.LayerSubscription, layer_subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
-        mappings = list(models.catalogue_entries.CatalogueEntry.objects
-                             .filter(layer_subscription=layer_subscription)
-                             .values('id', 'mapping_name', 'layer_subscription', 'name', 'description'))
-        
-        if not mappings:
-            mappings = {}
-        else:
-            mappings = {
-                mapping['mapping_name']:{
-                    'name':mapping['name'],
-                    'description':mapping['description'],
-                    'catalogue_entry_id':mapping['id']
-                } for mapping in mappings
+        # mappings = list(models.catalogue_entries.CatalogueEntry.objects
+        #                      .filter(layer_subscription=layer_subscription)
+        #                      .values('id', 'mapping_name', 'name', 'description', 'is_custom_query'))
+        # mappings = [{
+        #     'mapping_name': mapping['mapping_name'],
+        #     'name': mapping['name'],
+        #     'description': mapping['description'],
+        #     'id': mapping['id']
+        # } for mapping in mappings]
+
+        entries = models.catalogue_entries.CatalogueEntry.objects.filter(layer_subscription=layer_subscription)
+        mappings = [
+            {
+                'id': entry.id,
+                'mapping_name': entry.mapping_name,
+                'name': entry.name,
+                'description': entry.description,
+                'is_custom_query': entry.is_custom_query
             }
+            for entry in entries
+        ]
+
+        # if not mappings:
+        #     mappings = [] 
+        # else:
+        #     mappings = {
+        #         mapping['mapping_name']:{
+        #             'name':mapping['name'],
+        #             'description':mapping['description'],
+        #             'catalogue_entry_id':mapping['id']
+        #         } for mapping in mappings
+        #     }
 
         # Return Response
         logger.debug(f'mappings: {mappings}')
@@ -931,80 +950,22 @@ class LayerSubscriptionViewSet(
         # Help `mypy` by casting the resulting object to a Layer Subscription
         subscription = self.get_object()
         subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
-        LayerSubscriptionType = models.layer_subscriptions.LayerSubscriptionType
 
-        def retrieve_data(key, fetch_data):
-            val = cache.get(key)
-            if settings.DEBUG or not val:
-                try:
-                    val = fetch_data()
-                    cache.set(key, val, conf.settings.SUBSCRIPTION_CACHE_TTL)
-                    logger.info(f'Value has been set to the Cache key: [{key}].')
-                except Exception as e:
-                    logger.error(f"Error when fetching data: {e}")
-            else:
-                logger.info(f'The value of the key: [{key}] is stored in the cache.  Return it from the cache.')
-            return val
-        
-        if subscription_obj.type == LayerSubscriptionType.WMS:
-            def get_wms():
-                res = WebMapService(url=subscription_obj.url, 
-                                    username=subscription_obj.username, 
-                                    password=subscription_obj.userpassword)
-                # logger.debug(f'res.contents.keys(): {res.contents.keys()}')
-                # result = res.contents.keys()  
-                result = []
-                for layer in res.contents:
-                    result.append({
-                        "name": layer,
-                        "title": res.contents[layer].title,
-                    })
-                return result
-            mapping_names = retrieve_data(conf.settings.WMS_CACHE_KEY + str(subscription_obj.id), get_wms)
+        force_to_query = request.GET.get('force_to_query', '').strip().lower()
+        if force_to_query in ['true', 't', '1', 'yes', 'y']:
+            force_to_query = True
+        elif force_to_query in ['false', 'f', '0', 'no', 'n']:
+            force_to_query = False
+        else:
+            # This is default value
+            force_to_query = False
 
-        elif subscription_obj.type == LayerSubscriptionType.WFS:
-            def get_wfs():
-                res = WebFeatureService(url=subscription_obj.url, 
-                                    username=subscription_obj.username, 
-                                    password=subscription_obj.userpassword)
-                result = []
-                for layer in res.contents:
-                    result.append({
-                        "name": layer,
-                        "title": res.contents[layer].title,
-                    })
-                return result
-            mapping_names = retrieve_data(conf.settings.WFS_CACHE_KEY + str(subscription_obj.id), get_wfs)
-
-        elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-            def get_post_gis():
-                conn = psycopg2.connect(
-                    host=subscription_obj.host,
-                    database=subscription_obj.database,
-                    user=subscription_obj.username,
-                    password=subscription_obj.userpassword,
-                    port=subscription_obj.port
-                )
-                query = """
-                            SELECT table_name 
-                            FROM information_schema.tables 
-                            WHERE table_schema = %s;
-                        """
-                with conn.cursor() as cursor:
-                    cursor.execute(query, [subscription_obj.schema])
-                    # return [e[0] for e in cursor.fetchall()]
-                    result = []
-                    for e in cursor.fetchall():
-                        result.append({
-                            "name": e[0],
-                            "title": '---',
-                        })
-                    return result
-            mapping_names = retrieve_data(conf.settings.POST_GIS_CACHE_KEY + str(subscription_obj.id), get_post_gis)
-        
-        # Return Response
-        logger.debug(f'mapping_names: {mapping_names}')
-        return response.Response({'results':mapping_names}, content_type='application/json', status=status.HTTP_200_OK)
+        mapping_names = models.layer_subscriptions.LayerSubscriptionData.retrieve_latest_data(subscription_obj, force_to_query)
+        return response.Response(
+            {'results':mapping_names},
+            content_type='application/json',
+            status=status.HTTP_200_OK
+        )
         
     @transaction.atomic()
     @drf_utils.extend_schema(
@@ -1187,7 +1148,9 @@ class LayerSubscriptionViewSet(
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
         # Retrieve Catalogue Entry with Layer Submission Id
-        catalogue_entries = subscription.catalogue_entries.filter(sql_query__isnull=False).prefetch_related('custom_query_frequencies').all()
+        catalogue_entries = subscription.catalogue_entries.exclude(
+            Q(sql_query__isnull=True)  # When the sql_query is Null, this catalogue_entry is not the object for the custon query.
+        ).prefetch_related('custom_query_frequencies').all()
         results = []
         for catalogue_entry in catalogue_entries:
             frequencies = []
