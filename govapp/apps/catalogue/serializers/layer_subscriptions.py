@@ -102,3 +102,10 @@ class LayerSubscriptionUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"A member value '{key}' must not be included in the request when type is '{type_name}'.")
             
         return data
+
+
+class LayerSubscriptionDataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.layer_subscriptions.LayerSubscriptionData
+        fields = '__all__'

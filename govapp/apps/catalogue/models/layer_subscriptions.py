@@ -7,11 +7,14 @@ from django.contrib import auth
 from django.contrib.auth import models as auth_models
 from django.core.cache import cache
 from django import conf
+from rest_framework.exceptions import ValidationError
 import reversion
+import logging
 
 from typing import Union, Optional
 
 # Local
+from govapp.apps.catalogue import utils as catalogue_utils
 from govapp.common import mixins
 from govapp.apps.catalogue.models import catalogue_entries
 from govapp.apps.catalogue import notifications as notifications_utils
@@ -22,10 +25,7 @@ from govapp.apps.publisher.models import publish_entries
 # Shortcuts
 UserModel = auth.get_user_model()
 
-# class LayerSubscriptionStatus(models.IntegerChoices):
-#     """Enumeration for a Layer Subscription Status."""
-#     ACTIVE = 1
-#     DISABLED = 2
+logger = logging.getLogger(__name__)
     
 
 class LayerSubscriptionType(models.IntegerChoices):
@@ -41,6 +41,7 @@ class LayerSubscriptionStatus(models.IntegerChoices):
     DECLINED = 3
     DRAFT = 4
     PENDING = 5
+
     
 @reversion.register()
 class LayerSubscription(mixins.RevisionedMixin):
@@ -48,7 +49,7 @@ class LayerSubscription(mixins.RevisionedMixin):
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
     name = models.TextField()
-    description = models.TextField(blank=True)  # We don't want to use this field as this will be managed via the catalogue entry after creation.
+    description = models.TextField(blank=True)
     enabled = models.BooleanField(default=True)
     url = models.URLField(null=True) # for WMS or WFS
     username = models.CharField(null=True, max_length=100)
@@ -302,3 +303,68 @@ class LayerSubscription(mixins.RevisionedMixin):
 
         # Failed
         return False
+
+
+@reversion.register()
+class LayerSubscriptionData(mixins.RevisionedMixin):
+    layer_subscription = models.ForeignKey(LayerSubscription, null=True, blank=True, on_delete=models.SET_NULL)
+    metadata_json = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Layer Subscription Data"
+        verbose_name_plural = "Layer Subscription Data"
+
+    @classmethod
+    def get_latest_by_layer_subscription(cls, layer_subscription):  # latest_data = LayerSubscriptionData.get_latest_by_layer_subscription(layer_subscription_instance)
+        layer_subscription_data = cls.objects.filter(layer_subscription=layer_subscription).order_by('-updated_at').first()
+        if layer_subscription_data:
+            return layer_subscription_data.metadata_json
+        else:
+            return None
+    
+    @classmethod
+    def retrieve_latest_data(cls, subscription_obj, force_to_query=False):
+        if force_to_query:
+            # Perform query to WMS, WFS, PostGIS
+            metadata_json = cls._retrieve_data_by_query(subscription_obj)
+            return metadata_json
+        else:
+            # Retrieve the latest record from LayerSubscriptionData
+            metadata_json = cls.get_latest_by_layer_subscription(subscription_obj)
+            if metadata_json:
+                logger.info(f'Metadata_json has been retrieved from the Database for the layer subscription: [{subscription_obj}].')
+                return metadata_json
+            else:
+                # Perform query to WMS, WFS, Post_gis
+                metadata_json = cls._retrieve_data_by_query(subscription_obj)
+                return metadata_json
+
+    @classmethod
+    def _retrieve_data_by_query(cls, subscription_obj):
+        try:
+            if subscription_obj.type == LayerSubscriptionType.WMS:
+                metadata_json = catalogue_utils.get_wms(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
+                logger.info(f'Metadata_json has been retrieved from the WMS for the layer subscription: [{subscription_obj}].')
+            elif subscription_obj.type == LayerSubscriptionType.WFS:
+                metadata_json = catalogue_utils.get_wfs(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
+                logger.info(f'Metadata_json has been retrieved from the WFS for the layer subscription: [{subscription_obj}].')
+            elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
+                metadata_json = catalogue_utils.get_post_gis(subscription_obj.host, subscription_obj.database, subscription_obj.username, subscription_obj.userpassword, subscription_obj.port, subscription_obj.schema)
+                logger.info(f'Metadata_json has been retrieved from the PostGIS for the layer subscription: [{subscription_obj}].')
+            else:
+                msg = f'Something wrong with the type of the layer subscription: [{subscription_obj}].'
+                logger.error(msg)
+                raise ValidationError(msg)
+
+            # Store the data
+            layer_subscription_data = cls.objects.create(
+                    layer_subscription=subscription_obj,
+                    metadata_json=metadata_json,
+                )
+            logger.info(f'LayerSubscriptionData: [{layer_subscription_data}] has been created.')
+
+            return metadata_json
+        except Exception as e:
+            logger.error(f"Unable to perform query to WMS/WFS/PostGIS for the layer subscription: [{subscription_obj}]: [{e}]")

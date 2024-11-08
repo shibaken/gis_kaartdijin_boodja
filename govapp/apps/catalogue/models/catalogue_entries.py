@@ -160,6 +160,10 @@ class CatalogueEntry(mixins.RevisionedMixin):
             models.UniqueConstraint(fields=['mapping_name', 'layer_subscription'], name='unique_mapping_subscription')
         ]
 
+    @property
+    def is_custom_query(self):
+        return self.type == CatalogueEntryType.SUBSCRIPTION_QUERY
+
     def __str__(self) -> str:
         """Provides a string representation of the object.
 

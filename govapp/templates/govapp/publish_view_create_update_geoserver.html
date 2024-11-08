@@ -25,12 +25,16 @@
                                    <label for="" class="form-label mb-0">GeoServer Pool</label>
                               </div>
                               <div class='col-9'>
-                                   <select type="text" class="form-control" id="new-publish-geoserver-pool" >
-                                        <option value="">Select One</option>   
-                                        {% for gsp in geoserver_pools %}                                        
-                                             <option value="{{ gsp.id }}">{{ gsp.name }}</option>
-                                        {% endfor %}                                                                      
-                                   </select>                                            
+                                   <select type="text" class="form-control" id="new-publish-geoserver-pool">
+                                        <option value="">Select One</option>
+                                        {% for gsp in geoserver_pools %}
+                                             {% if gsp.enabled %}
+                                                  <option value="{{ gsp.id }}" data-enabled="{{ gsp.enabled }}">{{ gsp.name }}</option>
+                                             {% else %}
+                                                  <option value="{{ gsp.id }}" data-enabled="{{ gsp.enabled }}" style="color: #dc3545;">{{ gsp.name }} (Disabled)</option>
+                                             {% endif %}
+                                        {% endfor %}
+                                   </select>
                               </div>
                          </div>
                          <div class='row align-items-center mb-3'>
@@ -38,11 +42,11 @@
                                    <label for="" class="form-label mb-0">Spatial Format</label>
                               </div>
                               <div class='col-9'>
-                                   <select type="text" class="form-control" id="new-publish-spatial-format" >                                        
-                                   <option value="" selected="">Select One</option>                                           
-                                   <option value="1">Wms</option>                                           
-                                   <option value="2">Wms And Wfs</option>                            
-                                   </select>                  
+                                   <select type="text" class="form-control" id="new-publish-spatial-format" >
+                                   <option value="" selected="">Select One</option>
+                                   <option value="1">Wms</option>
+                                   <option value="2">Wms And Wfs</option>
+                                   </select>
                               </div>
                          </div>
                          <div class='row align-items-center mb-3'>

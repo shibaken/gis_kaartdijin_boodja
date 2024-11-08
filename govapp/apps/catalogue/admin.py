@@ -30,7 +30,6 @@ class CatalogueEntryAdmin(reversion.admin.VersionAdmin):
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     # filter_horizontal = ["editors"]
     search_fields = ('id', 'name', 'assigned_to__email', 'custodian__name', 'layer_subscription__name', 'mapping_name',)
-    # list_display = ('id', 'name', 'status', 'type', 'permission_type', 'layer_subscription_link','custodian_link', 'assigned_to_link', 'created_at', 'updated_at')
     list_display = ('id', 'name', 'get_status', 'type', 'permission_type', 'mapping_name', 'layer_subscription_link','custodian_link', 'assigned_to_link', 'get_active_layer', 'get_force_run_postgres_scanner', 'created_at', 'updated_at')
     list_filter = ('status', 'type', 'assigned_to', 'custodian', 'permission_type')
     list_display_links = ('id', 'name',)
@@ -135,6 +134,18 @@ class LayerSubmissionAdmin(reversion.admin.VersionAdmin):
         else:
             return '---'
     coloured_status.short_description = 'Status'
+
+
+class LayerSubscriptionDataAdmin(reversion.admin.VersionAdmin):
+    search_fields = ('id', 'metadata_json', 'layer_subscription',)
+    list_display = ('id', 'layer_subscription_link', 'metadata_json', 'updated_at', 'created_at')
+
+    class Media:
+        css = {'all': ('common/css/admin_custom.css',)}
+
+    def layer_subscription_link(self, obj):
+        return format_html(f'<a href="/admin/catalogue/layersubscription/{obj.layer_subscription.id}/change">{obj.layer_subscription}</a>') if obj.layer_subscription else '-'
+    layer_subscription_link.short_description = 'Layer Subscription'
 
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
@@ -243,6 +254,7 @@ admin.site.register(models.layer_attribute_types.LayerAttributeType, LayerAttrib
 admin.site.register(models.layer_metadata.LayerMetadata, LayerMetadataAdmin)
 admin.site.register(models.layer_submissions.LayerSubmission, LayerSubmissionAdmin)
 admin.site.register(models.layer_subscriptions.LayerSubscription, LayerSubscriptionAdmin)
+admin.site.register(models.layer_subscriptions.LayerSubscriptionData, LayerSubscriptionDataAdmin)
 admin.site.register(models.layer_symbology.LayerSymbology, LayerSymbologyAdmin)
 admin.site.register(models.notifications.EmailNotification, EmailNotificationAdmin)
 admin.site.register(models.notifications.WebhookNotification, WebhookNotificationAdmin)

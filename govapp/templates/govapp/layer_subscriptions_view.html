@@ -6,6 +6,7 @@
             {% include "govapp/publish_view_create_update_geoserver.html" %}
             {% include "govapp/publish_view_new_cddp.html" %}
             {% include "govapp/common_entity_modal.html" %}
+            {% include "govapp/subscription_add_edit_layer_modal.html" %}
 
             <div class="container" id="dashboard-table-container">
                   <div class='col-6'>
@@ -19,10 +20,6 @@
                                     <div class='col-12 text-center bg-light p-2 border-bottom fw-bold'>
                                           Logs
                                     </div>
-                                    <!-- <div class='col-12 p-3 border-bottom'>
-                                          <p><b>Communication</b><br>
-                                          <a href='#' id="log_communication_show">Show</a> | <a href='#' id="log_communication_add">Add Entry</a></p>
-                                    </div> -->
                                     <div class='col-12 p-3'>
                                           <p><b>Actions</b><br>
                                           <a href='#' id="log_actions_show">Show</a></p>
@@ -57,30 +54,22 @@
                                           </div>
                                     </div>
 
-                                    {% comment %}
-                                    <div class='col-12 p-3'>
-                                          <p>
-                                                <b>Actions</b><br>
-                                                {% if subscription_obj.is_locked %}                                          
-                                                      {% if is_system_user is True %}
-                                                            <button class='btn btn-primary btn-sm' id='subscription-unlock' >&nbsp;&nbsp;&nbsp;&nbsp;Unlock&nbsp;&nbsp;&nbsp;&nbsp;</button>
-                                                      {% endif %}
-                                                {% else %}                                          
-                                                      {% if has_edit_access is True %}
-                                                            <button class='btn btn-primary btn-sm' id='subscription-lock'>&nbsp;&nbsp;&nbsp;&nbsp;Lock&nbsp;&nbsp;&nbsp;&nbsp;</button>
-                                                      {% endif %}
-                                                {% endif %}
-                                          </p>
-                                    </div>
-                                    {% endcomment %}
-
                                     {% if is_assigned %}
                                     <div class='p-3'>
-                                          <strong>Actions</strong><br>
+                                          <div><strong>Actions</strong></div>
                                           {% if subscription_obj.is_locked %}
                                                 <button class='btn btn-primary btn-sm px-4' id='subscription-unlock'>Unlock</button>
                                           {% else %}
                                                 <button class='btn btn-primary btn-sm px-4' id='subscription-lock'>Lock</button>
+                                                <div class="mt-2">
+                                                      {% if subscription_obj.type is 1 %}
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_wms_source_list_btn'>Update WMS Data</button>
+                                                      {% elif subscription_obj.type is 2 %}
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_wfs_source_list_btn'>Update WFS Data</button>
+                                                      {% elif subscription_obj.type is 3 %}
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_postgis_source_list_btn'>Update Postgis Data</button>
+                                                      {% endif %}
+                                                </div>
                                           {% endif %}
                                     </div>
                                     {% endif %}
@@ -88,7 +77,6 @@
                         </div>
 
                         <div class='col-9'>
-
                               <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
                               <input type="hidden" id="subscription_id" name="subscription_id" value="{{ subscription_obj.id  }}">
                               <input type="hidden" id="subscription_enabled" name="subscription_enabled" value="{{ subscription_obj.enabled  }}">
@@ -97,65 +85,65 @@
                               <input type="hidden" id="subscription-type-num" name="subscription-type-num" value="{{ subscription_obj.type }}">
                               <input type="hidden" id="subscription-type" name="subscription-type" value="{{ type }}">
                               
-                              <div class="card" >
-                              <div class="card-header fw-bold h4" style="padding:30px;">
-                                    <div class="row">
-                                    <div class="col-6">
-                                          Details
+                              <div class="card mb-3">
+                                    <div class="card-header fw-bold h4" style="padding:30px;">
+                                          <div class="row">
+                                                <div class="col-6">
+                                                      Details
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                                                </div>
+                                          </div>
                                     </div>
-                                    <div class="col-6 text-end">
-                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
-                                    </div>
-                                    </div>         
-                              </div>
-                              <div class="card-body collapse show" id="box1-card-body">
-                                    <div class='row'>
-                                          <div class='col-3 d-flex align-items-center'> Type </div> 
-                                          <div class='col-5 p-1'> {{ type }} </div> 
-                                          <div class='col-4'> &nbsp; </div>
-                                          
-                                          <div class='col-3 d-flex align-items-center'> Workspace </div>
-                                          {% if has_edit_access is True %}
-                                                <div class='col-5 p-1'>
-                                                      <select class='form-control' id="subscription-workspace">
-                                                            {% for workspace in workspaces %}                                          
-                                                                  {% if subscription_obj.workspace.id == workspace.id %}
-                                                                        <option value='{{ workspace.id }}' selected>{{ workspace.name }}</option>
-                                                                  {% else %}
-                                                                        <option value='{{ workspace.id }}'>{{ workspace.name }}</option>
-                                                                  {% endif %}
-                                                            {% endfor %}
-                                                      </select>
-                                                </div>       
-                                          {% else %}
-                                                <div class='col-5 p-1'> {{ subscription_obj.workspace.name }} </div>    
-                                          {% endif %}
-                                          <div class='col-4'> &nbsp; </div>
-                                          
-                                          <div class='col-3 d-flex align-items-center'> Name </div>
-                                          <div class='col-5 p-1'>
+                                    <div class="card-body collapse show" id="box1-card-body">
+                                          <div class='row'>
+                                                <div class='col-3 d-flex align-items-center'>Type</div> 
+                                                <div class='col-5 p-1'> {{ type }} </div> 
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Workspace</div>
                                                 {% if has_edit_access is True %}
-                                                      <input type="text" id="subscription-name" class="form-control" value="{{ subscription_obj.name }}"></input>
+                                                      <div class='col-5 p-1'>
+                                                            <select class='form-control' id="subscription-workspace">
+                                                                  {% for workspace in workspaces %}
+                                                                        {% if subscription_obj.workspace.id == workspace.id %}
+                                                                              <option value='{{ workspace.id }}' selected>{{ workspace.name }}</option>
+                                                                        {% else %}
+                                                                              <option value='{{ workspace.id }}'>{{ workspace.name }}</option>
+                                                                        {% endif %}
+                                                                  {% endfor %}
+                                                            </select>
+                                                      </div>
                                                 {% else %}
-                                                      {{ subscription_obj.name }}
+                                                      <div class='col-5 p-1'> {{ subscription_obj.workspace.name }} </div>    
                                                 {% endif %}
                                           </div>
-                                          <div class='col-4'> &nbsp; </div>
-                                          
-                                          <div class='col-3 d-flex align-items-center'> Enabled </div>
-                                          <div class='col-5 p-1' >
-                                          {% if has_edit_access is True %}
-                                                <div class='form-check form-switch'>
-                                                      <input type='checkbox' class='form-check-input' id='subscription-enabled' value='{{ enabled_js }}' role='switch'>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Name</div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-name" class="form-control" value="{{ subscription_obj.name }}"></input>
+                                                      {% else %}
+                                                            {{ subscription_obj.name }}
+                                                      {% endif %}
                                                 </div>
-                                          {% else %}
-                                                {{ subscription_obj.enabled }}  
-                                          {% endif %}
                                           </div>
-                                          <div class='col-4'> &nbsp; </div> 
-
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Enabled</div>
+                                                <div class='col-5 p-1' >
+                                                {% if has_edit_access is True %}
+                                                      <div class='form-check form-switch'>
+                                                            <input type='checkbox' class='form-check-input' id='subscription-enabled' value='{{ enabled_js }}' role='switch'>
+                                                      </div>
+                                                {% else %}
+                                                      {{ subscription_obj.enabled }}  
+                                                {% endif %}
+                                                </div>
+                                          </div>
                                           {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
-                                                <div class='col-3 d-flex align-items-center'> Url </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Url</div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-url" class="form-control" value="{{ subscription_obj.url }}"></input>
@@ -163,19 +151,20 @@
                                                             {{ subscription_obj.url }}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>    
+                                          </div>
                                           {% elif subscription_obj.type is 3 %}
-                                                <div class='col-3 d-flex align-items-center'> Host </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Host</div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-host" class="form-control" value="{{ subscription_obj.host }}"></input>
                                                       {% else %}
-                                                             Hidden
+                                                            Hidden
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
-                                                      
-                                                <div class='col-3 d-flex align-items-center'> Port </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Port</div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
                                                             <input type="number" id="subscription-port" class="form-control" value="{{ subscription_obj.port }}"></input>
@@ -183,9 +172,9 @@
                                                             Hidden
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
-
-                                                <div class='col-3 d-flex align-items-center'> Database </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Database</div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-database" class="form-control" value="{{ subscription_obj.database }}"></input>
@@ -193,9 +182,9 @@
                                                             Hidden
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
-
-                                                <div class='col-3 d-flex align-items-center'> Schema </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>Schema</div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
                                                             <input type="text" id="subscription-schema" class="form-control" value="{{ subscription_obj.schema }}"></input>
@@ -203,56 +192,58 @@
                                                             Hidden
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
+                                          </div>
                                           {% endif %}
 
-                                          <div class='col-3 d-flex align-items-center'> User Name </div>
-                                          <div class='col-5 p-1'>
-                                                {% if has_edit_access is True %}
-                                                      {% if subscription_obj.username %}
-                                                            <input type="text" id="subscription-username" class="form-control" value="{{ subscription_obj.username }}"></input>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> User Name </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            {% if subscription_obj.username %}
+                                                                  <input type="text" id="subscription-username" class="form-control" value="{{ subscription_obj.username }}"></input>
+                                                            {% else %}
+                                                                  <input type="text" id="subscription-username" class="form-control"></input>
+                                                            {% endif %}
                                                       {% else %}
-                                                            <input type="text" id="subscription-username" class="form-control"></input>
+                                                            {% if subscription_obj.username %}
+                                                                  Hidden
+                                                            {% else %}
+                                                                  Blank
+                                                            {% endif %}
                                                       {% endif %}
-                                                {% else %}
-                                                      {% if subscription_obj.username %}
-                                                            Hidden
-                                                      {% else %}
-                                                            Blank
-                                                      {% endif %}
-                                                {% endif %}
+                                                </div>
                                           </div>
-                                          <div class='col-4'> &nbsp; </div>
-
-                                          <div class='col-3 d-flex align-items-center'> User Password </div>
-                                          <div class='col-5 p-1'>
-                                                {% if has_edit_access is True %}
-                                                      {% if subscription_obj.userpassword %}
-                                                            <input type="text" id="subscription-userpassword" class="form-control" value="{{ subscription_obj.userpassword }}"></input>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> User Password </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            {% if subscription_obj.userpassword %}
+                                                                  <input type="text" id="subscription-userpassword" class="form-control" value="{{ subscription_obj.userpassword }}"></input>
+                                                            {% else %}
+                                                                  <input type="text" id="subscription-userpassword" class="form-control"></input>
+                                                            {% endif %}
                                                       {% else %}
-                                                            <input type="text" id="subscription-userpassword" class="form-control"></input>
+                                                            {% if subscription_obj.userpassword %}
+                                                                  Hidden
+                                                            {% else %}
+                                                                  Blank
+                                                            {% endif %}
                                                       {% endif %}
-                                                {% else %}
-                                                      {% if subscription_obj.userpassword %}
-                                                            Hidden
+                                                </div>
+                                          </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> Connection Timeout(ms) </div>
+                                                <div class='col-5 p-1'>
+                                                      {% if has_edit_access is True %}
+                                                            <input type="text" id="subscription-connection-timeout" class="form-control" value="{{ subscription_obj.connection_timeout }}"></input>
                                                       {% else %}
-                                                            Blank
+                                                            {{ subscription_obj.connection_timeout }}
                                                       {% endif %}
-                                                {% endif %}
+                                                </div>
                                           </div>
-                                          <div class='col-4'> &nbsp; </div>
-
-                                          <div class='col-3 d-flex align-items-center'> Connection Timeout(ms) </div>
-                                          <div class='col-5 p-1'>
-                                                {% if has_edit_access is True %}
-                                                      <input type="text" id="subscription-connection-timeout" class="form-control" value="{{ subscription_obj.connection_timeout }}"></input>
-                                                {% else %}
-                                                      {{ subscription_obj.connection_timeout }}
-                                                {% endif %}
-                                          </div>
-                                          <div class='col-4'> &nbsp; </div>
 
                                           {% if subscription_obj.type is 1 or subscription_obj.type is 3 %}
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> Max Concurrent Connections </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -261,10 +252,11 @@
                                                             {{ subscription_obj.max_connections }}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
+                                          </div>
                                           {% endif %}
 
                                           {% if subscription_obj.type is 1 %}
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> Read Timeout(ms) </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -273,10 +265,11 @@
                                                             {{ subscription_obj.read_timeout }}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
+                                          </div>
                                           {% endif %}
                                           
                                           {% if subscription_obj.type is 3 %}
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> Min Concurrent Connections </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -285,10 +278,11 @@
                                                             {{ subscription_obj.min_connections }}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
+                                          </div>
                                           {% endif %}
                                           
                                           {% if subscription_obj.type is 3 %}
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> Fetch Size </div>
                                                 <div class='col-5 p-1'>
                                                       {% if has_edit_access is True %}
@@ -297,50 +291,49 @@
                                                             {{ subscription_obj.fetch_size }}
                                                       {% endif %}
                                                 </div>
-                                                <div class='col-4'> &nbsp; </div>
+                                          </div>
                                           {% endif %}
-
-                                          <div class='col-3 d-flex align-items-center'> Last Updated Date Time </div>
-                                          <div class='col-5 p-1'> {{ subscription_obj.updated_at }} </div>
-                                          <div class='col-4'> &nbsp; </div>
+                                          <div class="row">
+                                                <div class='col-3 d-flex align-items-center'> Last Updated Date Time </div>
+                                                <div class='col-5 p-1'> {{ subscription_obj.updated_at }} </div>
+                                          </div>
                                     </div>
                               </div>
 
-                        </div>
-                        <BR>
-
-                        <div class="card" >
-                              <div class="card-header fw-bold h4" style="padding:30px;">
-                                    <div class="row">
-                                          <div class="col-6">
-                                                Description
-                                          </div>
-                                          <div class="col-6 text-end">
-                                                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
-                                          </div>
-                                    </div>         
-                              </div>
-                              <div class="card-body collapse show" id="box2-card-body">
-                                    <div class='row'>
-                                          <div class='col-12'>
-                                                {% if has_edit_access is True %}     
-                                                      <textarea class="form-control"id="subscription-description" rows="3">{{ subscription_obj.description }}</textarea>                                    
-                                                      &nbsp;
-                                                {% else %}
-                                                      {{ subscription_obj.description }}
-                                                {% endif %}
-                                          </div>                        
-                                    </div>
-                              </div>
-                        </div>
-                        <BR>
-
-                        {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
-                              <div class="card" >
+                              <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
                                                 <div class="col-6">
+                                                      Description
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box2-card-body" onclick=""></i>
+                                                </div>
+                                          </div>         
+                                    </div>
+                                    <div class="card-body collapse show" id="box2-card-body">
+                                          <div class='row'>
+                                                <div class='col-12'>
+                                                      {% if has_edit_access is True %}     
+                                                            <textarea class="form-control"id="subscription-description" rows="3">{{ subscription_obj.description }}</textarea>                                    
+                                                            &nbsp;
+                                                      {% else %}
+                                                            {{ subscription_obj.description }}
+                                                      {% endif %}
+                                                </div>
+                                          </div>
+                                    </div>
+                              </div>
+
+                              <div class="card mb-3">
+                                    <div class="card-header fw-bold h4" style="padding:30px;">
+                                          <div class="row">
+                                                <div class="col-6">
+                                                      {% if subscription_obj.type is 1 or subscription_obj.type is 2 %}
                                                       Layers
+                                                      {% elif subscription_obj.type is 3 %}
+                                                      Table Layers
+                                                      {% endif %}
                                                 </div>
                                                 <div class="col-6 text-end">
                                                       <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box3-card-body" onclick=""></i>
@@ -348,63 +341,31 @@
                                           </div>
                                     </div>
                                     <div class="card-body collapse show" id="box3-card-body">
-                                          <div id='subscription-layer-table'>
-                                                <table id="layerSubscriptionLayersTable" class="table" style="width:100%">
-                                                      <thead class='table-dark' id='subscription-layer-table-thead'>
-                                                      </thead>
-                                                      <tbody id='subscription-layer-table-tbody'>
-                                                            <tr>
-                                                                  <td colspan="7" class='text-center'>
-                                                                        <div class="progress">
-                                                                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                        </div>
-                                                                  </td> 
-                                                            </tr>
-                                                      </tbody>
-                                                </table>
+                                          <div class="text-end">
+                                                <button class='btn btn-primary btn-sm' id='subscription-add-layer-btn'>Add Layer</button>
                                           </div>
+                                          <table id="catalogue-entries-table" class="table">
+                                                <thead class="table-dark">
+                                                      <tr>
+                                                            <th>ID</th>
+                                                            <th>Catalogue Entry</th>
+                                                            <th>Mapping Name</th>
+                                                            <th>Action</th>
+                                                      </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                          </table>
                                     </div>
                               </div>
-                        {% endif %}
 
-                        {% if subscription_obj.type is 3 %}
-                              <div class="card" >
+                              <!-- if PostGIS -->
+                              {% if subscription_obj.type is 3 %}
+                              <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">
                                           <div class="row">
                                                 <div class="col-6">
-                                                      TABLE LAYERS
-                                                </div>
-                                                <div class="col-6 text-end">
-                                                      <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box4-card-body" onclick=""></i>
-                                                </div>
-                                          </div>
-                                    </div>
-                                    <div class="card-body collapse show" id="box4-card-body">
-                                          <div id='subscription-dbtable-table'>
-                                                <table id="example" class="table" style="width:100%">
-                                                      <thead class='table-dark' id='subscription-dbtable-table-thead'>
-                                                      </thead>
-                                                      <tbody id='subscription-dbtable-table-tbody'>
-                                                            <tr> 
-                                                                  <td colspan="7" class='text-center'>
-                                                                        <div class="progress">
-                                                                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                        </div>
-                                                                  </td> 
-                                                            </tr>
-                                                      </tbody>
-                                                </table>
-                                          </div>
-                                    </div>
-                              </div>
-                              <BR>
-                        {% endif %}
-                        {% if subscription_obj.type is 3 %}
-                              <div class="card" >
-                                    <div class="card-header fw-bold h4" style="padding:30px;">
-                                          <div class="row">
-                                                <div class="col-6">
-                                                      TABLE LAYERS (CUSTOM QUERY)
+                                                      Table Layers (Custom Query)
                                                 </div>
                                                 <div class="col-6 text-end">
                                                       <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box5-card-body" onclick=""></i>
@@ -417,36 +378,28 @@
                                                       <button class="btn btn-primary btn-sm" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
                                                 {% endif %}
                                           </div>
-                                          <div id='subscription-dbtable-custom-table'>
-                                                <table id="example" class="table" style="width:100%">
-                                                      <thead class='table-dark' id='subscription-custom-query-table-thead'>
-                                                      </thead>
-                                                      <tbody id='subscription-custom-query-table-tbody'>
-                                                            <tr>
-                                                                  <td colspan="7" class='text-center'>
-                                                                        <div class="progress">
-                                                                              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                                                        </div>
-                                                                  </td> 
-                                                            </tr>
-                                                      </tbody>
-                                                </table>
-                                          </div>
+                                          <table id="subscription-custom-query-table" class="table" style="width:100%">
+                                                <thead class='table-dark' id='subscription-custom-query-table-thead'>
+                                                </thead>
+                                                <tbody id='subscription-custom-query-table-tbody'>
+                                                      <tr>
+                                                            <td colspan="7" class='text-center'>
+                                                                  <div class="progress">
+                                                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                                                                  </div>
+                                                            </td> 
+                                                      </tr>
+                                                </tbody>
+                                          </table>
                                     </div>
                               </div>
-                              <BR>
-                        {% endif %}
-                        <div class='col-12 pt-2'>
-                              <div class='row'>
-                                    <div class='col-6'>
-                                          &nbsp;
-                                    </div>
-                                    <div class='col-6 text-end'>
-                                          {% if has_edit_access is True %}
-                                                <button class="btn btn-primary" id='subscription-btn-save' aria-current="page" >Save</button>  
-                                                <!-- <button class="btn btn-primary" id='subscription-btn-save-exit'  aria-current="page" >Save and exit</button>   -->
-                                          {% endif %}
-                                    </div>
+                              {% endif %}
+
+                              <div class='text-end'>
+                                    {% if has_edit_access is True %}
+                                          <button class="btn btn-primary" id='subscription-btn-save' aria-current="page" >Save</button>  
+                                          <!-- <button class="btn btn-primary" id='subscription-btn-save-exit'  aria-current="page" >Save and exit</button>   -->
+                                    {% endif %}
                               </div>
                         </div>
                   </div>
