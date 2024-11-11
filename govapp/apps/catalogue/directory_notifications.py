@@ -62,8 +62,8 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
     emails.CatalogueEntryUpdateSuccessEmail().send_to(
         *utils.all_administrators(),  # All administrators
         *editors_list,  # All editors
-        *entry.email_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-        *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="on_new_data").filter(active=True).all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="both").filter(active=True).all(),  # type: ignore[operator]
         context={"name": entry.name},
     )
 
@@ -109,8 +109,8 @@ def catalogue_entry_update_failure(entry: "catalogue_entries.CatalogueEntry") ->
     emails.CatalogueEntryUpdateFailEmail().send_to(
         *utils.all_administrators(),  # All administrators
         *editors_list,  # All editors
-        *entry.email_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-        *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="on_new_data").filter(active=True).all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="both").filter(active=True).all(),  # type: ignore[operator]
         context={"name": entry.name},
     )
 
@@ -131,7 +131,7 @@ def catalogue_entry_lock(entry: "catalogue_entries.CatalogueEntry") -> None:
     emails.CatalogueEntryLockedEmail().send_to(
         *utils.all_administrators(),  # All administrators
         *editors_list,  # All editors
-        *entry.email_notifications(manager="on_lock").all(),  # type: ignore[operator]
-        *entry.email_notifications(manager="both").all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="on_lock").filter(active=True).all(),  # type: ignore[operator]
+        *entry.email_notifications(manager="both").filter(active=True).all(),  # type: ignore[operator]
         context={"name": entry.name},
     )
