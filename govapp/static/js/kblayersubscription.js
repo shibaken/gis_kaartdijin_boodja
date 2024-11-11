@@ -687,11 +687,22 @@ var kblayersubscription = {
             console.error('Error', error)
         }
     },
+    isLocked: function(value) {
+        if (typeof value === 'boolean') {
+            return value;
+        }
+        if (typeof value === 'string') {
+            return value.toLowerCase() !== 'false';
+        }
+        return true;
+    },
     construct_catalogue_entries_table: function(catalogue_entries){
         console.log('in construct_catalogue_entries_table()')
 
-        const table = $('#catalogue-entries-table');
-        let is_locked = $('#subscription_obj_islocked')
+        const table = $('#catalogue-entries-table')
+        let is_locked = $('#subscription_obj_is_locked').val()
+
+        console.log({is_locked})
     
         if ($.fn.DataTable.isDataTable(table)) {
             table.DataTable().destroy();
@@ -720,7 +731,7 @@ var kblayersubscription = {
             }
         ];
 
-        if(!is_locked){
+        if(!kblayersubscription.isLocked(is_locked)){
             // When the page is not locked, we want to show the buttons
             columns.push({
                 data: null,
