@@ -84,6 +84,7 @@
                               <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
                               <input type="hidden" id="subscription-type-num" name="subscription-type-num" value="{{ subscription_obj.type }}">
                               <input type="hidden" id="subscription-type" name="subscription-type" value="{{ type }}">
+                              <input type="hidden" id="subscription_obj_is_locked" name="subscription_obj_is_locked" value="{{ subscription_obj.is_locked }}">
                               
                               <div class="card mb-3">
                                     <div class="card-header fw-bold h4" style="padding:30px;">
@@ -341,16 +342,20 @@
                                           </div>
                                     </div>
                                     <div class="card-body collapse show" id="box3-card-body">
+                                          {% if not subscription_obj.is_locked %}
                                           <div class="text-end">
                                                 <button class='btn btn-primary btn-sm' id='subscription-add-layer-btn'>Add Layer</button>
                                           </div>
+                                          {% endif %}
                                           <table id="catalogue-entries-table" class="table">
                                                 <thead class="table-dark">
                                                       <tr>
                                                             <th>ID</th>
                                                             <th>Catalogue Entry</th>
                                                             <th>Mapping Name</th>
+                                                            {% if not subscription_obj.is_locked %}
                                                             <th>Action</th>
+                                                            {% endif %}
                                                       </tr>
                                                 </thead>
                                                 <tbody>
