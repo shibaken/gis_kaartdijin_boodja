@@ -51,4 +51,5 @@ def variables(request: http.HttpRequest) -> dict[str, Any]:
         "is_django_admin": is_django_admin, # request.user.groups.filter(name="Django Admin").exists(),
         "is_admin": is_admin, # request.user.groups.filter(name="Administrators").exists(),
         'is_catalogue_admin': is_catalogue_admin,
+        'MANAGEMENT_COMMANDS_PAGE_ENABLED': conf.settings.MANAGEMENT_COMMANDS_PAGE_ENABLED
     }
