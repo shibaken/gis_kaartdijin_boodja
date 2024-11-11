@@ -805,7 +805,7 @@ var kblayersubscription = {
             const layerName = $(this).data('name');
 
             // Step 6: Update the value of the element with id="layer_name_to_be_added"
-            $('#layer_name_to_be_added').val(layerName);
+            $('#layer_name_to_be_added').val(layerName).trigger('input');
         });
     },
     get_mapping_source: function(force_to_query=false){
