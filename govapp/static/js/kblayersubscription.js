@@ -687,52 +687,69 @@ var kblayersubscription = {
             console.error('Error', error)
         }
     },
+    isLocked: function(value) {
+        if (typeof value === 'boolean') {
+            return value;
+        }
+        if (typeof value === 'string') {
+            return value.toLowerCase() !== 'false';
+        }
+        return true;
+    },
     construct_catalogue_entries_table: function(catalogue_entries){
         console.log('in construct_catalogue_entries_table()')
 
-        const table = $('#catalogue-entries-table');
+        const table = $('#catalogue-entries-table')
+        let is_locked = $('#subscription_obj_is_locked').val()
+
+        console.log({is_locked})
     
         if ($.fn.DataTable.isDataTable(table)) {
             table.DataTable().destroy();
+        }
+        let columns = [
+            { 
+                data: 'id',
+                render: (data, type, row) => {
+                    return type === 'display' ? `<a href="/catalogue/entries/${data}/details/" style="text-decoration: none;">CE${data}</a>` : data;
+                },
+                type: 'num'
+            },
+            { 
+                data: 'name'
+            },
+            { 
+                data: 'mapping_name',
+                render: (data, type, row) => {
+                    if (type === 'display') {
+                        const sourceLayerNames = new Set(kblayersubscription.var.source_layers.map(layer => layer.name));
+                        const isMappingNameInSourceLayers = sourceLayerNames.has(data);
+                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}">${data}</span>`;
+                    }
+                    return data;
+                }
+            }
+        ];
+
+        if(!kblayersubscription.isLocked(is_locked)){
+            // When the page is not locked, we want to show the buttons
+            columns.push({
+                data: null,
+                className: "col-2 text-end",
+                render: (data) => {
+                    return `<button class='btn btn-primary btn-sm select-existing-layer-btn' 
+                        data-catalogue-entry-id="${data.id}" 
+                        data-mapping-name="${data.mapping_name}" 
+                        data-catalogue-entry-name="${data.name}">Edit</button>`;
+                },
+                orderable: false
+            })
         }
     
         table.DataTable({
             destroy: true,
             data: catalogue_entries.filter(entry => !entry.is_custom_query),
-            columns: [
-                { 
-                    data: 'id',
-                    render: (data, type, row) => {
-                        return type === 'display' ? `<a href="/catalogue/entries/${data}/details/" style="text-decoration: none;">CE${data}</a>` : data;
-                    },
-                    type: 'num'
-                },
-                { 
-                    data: 'name'
-                },
-                { 
-                    data: 'mapping_name',
-                    render: (data, type, row) => {
-                        if (type === 'display') {
-                            const sourceLayerNames = new Set(kblayersubscription.var.source_layers.map(layer => layer.name));
-                            const isMappingNameInSourceLayers = sourceLayerNames.has(data);
-                            return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}">${data}</span>`;
-                        }
-                        return data;
-                    }
-                },
-                {
-                    data: null,
-                    className: "col-2 text-end",
-                    render: (data) => {
-                        return `<button class='btn btn-primary btn-sm select-existing-layer-btn' 
-                            data-catalogue-entry-id="${data.id}" 
-                            data-mapping-name="${data.mapping_name}" 
-                            data-catalogue-entry-name="${data.name}">Edit</button>`;
-                    },
-                    orderable: false
-                }
-            ],
+            columns: columns,
             order: [[0, 'asc']],
             responsive: true,
             deferRender: true,
