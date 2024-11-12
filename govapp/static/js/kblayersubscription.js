@@ -77,9 +77,9 @@ var kblayersubscription = {
                 quietMillis: 100,
                 data: function (params, page) {
                     return {
-                        q: params.term,                        
+                        q: params.term,
                     };
-                },          
+                },
                   processResults: function (data) {
                     // Transforms the top-level key of the response object from 'items' to 'results'
                     var results = [];
@@ -92,7 +92,7 @@ var kblayersubscription = {
                     return {
                         results: results
                     };
-                  }                  
+                  }
             },
         });
 
@@ -380,11 +380,9 @@ var kblayersubscription = {
 
         if([1,2].includes(+$('#subscription-type-num').val())){
             // WMS, WFS
-            console.log('This is WMS/WFS.')
             kblayersubscription.get_mappings();
         }else{
             // PostGIS
-            console.log('This is PostGIS.')
             kblayersubscription.get_mappings();
             kblayersubscription.get_custom_query_info();
         }
@@ -464,11 +462,8 @@ var kblayersubscription = {
                     common_entity_modal.show_alert("ERROR Setting assigned person.");
                 },
             });
-    
-            
         } else {
             common_entity_modal.show_alert("Please select an assigned to person first.");
-
         }
     },
     show_action_log: function(){
@@ -701,6 +696,14 @@ var kblayersubscription = {
         }
         return true;
     },
+    getTitleByMappingName: (mappingName) => {
+        for (let layer of kblayersubscription.var.source_layers) {
+            if (layer.name === mappingName) {
+                return layer.title;
+            }
+        }
+        return '';
+    },
     construct_catalogue_entries_table: function(catalogue_entries){
         const table = $('#catalogue-entries-table')
         let is_locked = $('#subscription_obj_is_locked').val()
@@ -732,12 +735,23 @@ var kblayersubscription = {
                     if (type === 'display') {
                         const sourceLayerNames = new Set(kblayersubscription.var.source_layers.map(layer => layer.name));
                         const isMappingNameInSourceLayers = sourceLayerNames.has(data);
-                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}" title="The mapping name does not match any layer name on the server.">${data}</span>`;
+                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}" title="This mapping name does not match any layer name on the server.">${data}</span>`;
                     }
                     return data;
                 }
             }
         ];
+        if([1, 2].includes(+$('#subscription-type-num').val())){
+            // When WMS/WFS, display the Title column in the table
+            columns.push({
+                title: 'Title',
+                data: null,
+                // className: "col-2 text-end",
+                render: (data, type, row) => {
+                    return kblayersubscription.getTitleByMappingName(row.mapping_name)
+                },
+            })
+        }
 
         if(!kblayersubscription.isLocked(is_locked)){
             // When the page is not locked, we want to show the buttons
