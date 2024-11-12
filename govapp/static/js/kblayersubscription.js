@@ -702,23 +702,28 @@ var kblayersubscription = {
         const table = $('#catalogue-entries-table')
         let is_locked = $('#subscription_obj_is_locked').val()
 
-        console.log({is_locked})
-    
         if ($.fn.DataTable.isDataTable(table)) {
             table.DataTable().destroy();
         }
+
+        table.empty();
+
         let columns = [
             { 
+                title: 'ID',
                 data: 'id',
+                className: 'text-start',
                 render: (data, type, row) => {
                     return type === 'display' ? `<a href="/catalogue/entries/${data}/details/" style="text-decoration: none;">CE${data}</a>` : data;
                 },
                 type: 'num'
             },
             { 
+                title: 'Catalogue Entry',
                 data: 'name'
             },
             { 
+                title: 'Mapping Name',
                 data: 'mapping_name',
                 render: (data, type, row) => {
                     if (type === 'display') {
@@ -734,6 +739,7 @@ var kblayersubscription = {
         if(!kblayersubscription.isLocked(is_locked)){
             // When the page is not locked, we want to show the buttons
             columns.push({
+                title: 'Action',
                 data: null,
                 className: "col-2 text-end",
                 render: (data) => {
@@ -753,6 +759,9 @@ var kblayersubscription = {
             order: [[0, 'asc']],
             responsive: true,
             deferRender: true,
+            headerCallback: function(thead) {
+                $(thead).addClass('table-dark');
+            }
         });
 
         // Step 4: Add event listener for Select buttons
