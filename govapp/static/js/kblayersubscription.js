@@ -374,15 +374,9 @@ var kblayersubscription = {
         $("#subscription-btn-save-exit").click(function() {
             kblayersubscription.save_subscription('save-and-exit');
         });
-        $('#update_wms_source_list_btn').click(async ()=>{
-            kblayersubscription.get_mappings(true)
-        })
-        $('#update_wfs_source_list_btn').click(async ()=>{
-            kblayersubscription.get_mappings(true)
-        })
-        $('#update_postgis_source_list_btn').click(async ()=>{
-            kblayersubscription.get_mappings(true)
-        })
+        $('#update_wms_source_list_btn').click(kblayersubscription.updateSourceList)
+        $('#update_wfs_source_list_btn').click(kblayersubscription.updateSourceList)
+        $('#update_postgis_source_list_btn').click(kblayersubscription.updateSourceList)
 
         if([1,2].includes(+$('#subscription-type-num').val())){
             // WMS, WFS
@@ -405,6 +399,20 @@ var kblayersubscription = {
         kblayersubscription.retrieve_communication_types();
 
         kblayersubscription.checkCatalogueEntryInputs();
+    },
+    updateSourceList: async () => {
+        const $button = $(this);
+        const $spinner = $('#update_source_list_spinner')
+
+        $button.prop('disabled', true);
+        $spinner.show()
+        
+        try {
+            await kblayersubscription.get_mappings(true);
+        } finally {
+            $button.prop('disabled', false);
+            $spinner.hide()
+        }
     },
     checkCatalogueEntryInputs: function() {
         console.log('in checkInputs()')
@@ -676,9 +684,6 @@ var kblayersubscription = {
                 kblayersubscription.get_mapping_source(force_to_query),
                 kblayersubscription.get_mapping_info()
             ]);
-            console.log('in get_mappings()')
-            console.log({source_layers})
-            console.log({catalogue_entries})
 
             kblayersubscription.var.source_layers = source_layers
             kblayersubscription.construct_catalogue_entries_table(catalogue_entries);  // This table is displayed on the page.
@@ -697,8 +702,6 @@ var kblayersubscription = {
         return true;
     },
     construct_catalogue_entries_table: function(catalogue_entries){
-        console.log('in construct_catalogue_entries_table()')
-
         const table = $('#catalogue-entries-table')
         let is_locked = $('#subscription_obj_is_locked').val()
 
@@ -729,7 +732,7 @@ var kblayersubscription = {
                     if (type === 'display') {
                         const sourceLayerNames = new Set(kblayersubscription.var.source_layers.map(layer => layer.name));
                         const isMappingNameInSourceLayers = sourceLayerNames.has(data);
-                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}">${data}</span>`;
+                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}" title="The mapping name does not match any layer name on the server.">${data}</span>`;
                     }
                     return data;
                 }
@@ -784,8 +787,6 @@ var kblayersubscription = {
         });
     },
     construct_source_layers_table: function(catalogue_entries){
-        console.log('in construct_source_layers_table()')
-        
         /* Construct the table in a add/edit catalogue entry modal */
         const tableBody = $('#source-layers-table tbody');
         tableBody.empty(); // Clear existing rows
@@ -877,10 +878,6 @@ var kblayersubscription = {
             'mapping_name': layer_name,
         }
 
-        // for(const key in fields){
-        //     mapping_data[key] = utils.validate_empty_input(key, $('#'+fields[key]).val());
-        // }
-        
         url = ''
         method = ''
         if (catalogue_entry_id){
