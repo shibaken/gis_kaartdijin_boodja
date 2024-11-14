@@ -824,7 +824,7 @@ class LayerSubscriptionViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=catalogue_entry,
-                action=f'Created with the data: [{data}].'
+                action=f'Created with the data: [{data}] from the layer subscription: [{subscription}].'
             )
             logs_utils.add_to_actions_log(
                 user=request.user,
@@ -871,7 +871,7 @@ class LayerSubscriptionViewSet(
         logs_utils.add_to_actions_log(
             user=request.user,
             model=catalogue_entry,
-            action=f'Updated with the data: [{request.data}].'
+            action=f'Updated with the data: [{request.data}] from the layer subscription: [{subscription}].'
         )
         logs_utils.add_to_actions_log(
             user=request.user,
