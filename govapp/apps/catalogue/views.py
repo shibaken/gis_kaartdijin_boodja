@@ -821,13 +821,17 @@ class LayerSubscriptionViewSet(
             serializer.is_valid(raise_exception=True)
             catalogue_entry = serializer.save()
 
-            msg = f'New CatalogueEntry: [{catalogue_entry}] has been created.'
-            logger.info(msg)
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=catalogue_entry,
-                action=msg
+                action=f'Created with the data: [{data}].'
             )
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=subscription,
+                action=f'New CatalogueEntry: [{catalogue_entry}] has been created.'
+            )
+            logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created with the data: [{data}].')
             return response.Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as e:
             logger.info(f'CatalogueEntry with the name: [{data['name']}] already exists.')
@@ -864,13 +868,17 @@ class LayerSubscriptionViewSet(
         serializer.is_valid(raise_exception=True)
         catalogue_entry = serializer.save()
 
-        msg = f'CatalogueEntry: [{catalogue_entry}] has been updated.'
-        logger.info(msg)
         logs_utils.add_to_actions_log(
             user=request.user,
             model=catalogue_entry,
-            action=msg
+            action=f'Updated with the data: [{request.data}].'
         )
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=subscription,
+            action=f'CatalogueEntry: [{catalogue_entry}] has been updated.'
+        )
+        logger.info(f'CatalogueEntry: [{catalogue_entry}] has been updated with the data: [{request.data}]')
         
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
