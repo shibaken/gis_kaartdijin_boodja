@@ -753,7 +753,7 @@ var kblayersubscription = {
             })
         }
 
-        if(!kblayersubscription.isLocked(is_locked)){
+        if(!kblayersubscription.isLocked(is_locked) && $('#has_edit_access').val() === "True"){
             // When the page is not locked, we want to show the buttons
             columns.push({
                 title: 'Action',
@@ -1078,14 +1078,6 @@ var kblayersubscription = {
                     className: "col-2 text-end",
                     orderable: false,
                     render: function(data, type, row) {
-                        // if ($('#has_edit_access').val() === "True") {
-                        //     return '<button class="btn btn-primary btn-sm mx-1" onclick="kblayersubscription.show_custom_query_modal(' + 
-                        //            JSON.stringify(row) + 
-                        //            ')">Edit</button>' +
-                        //            '<button class="btn btn-primary btn-sm" onclick="kblayersubscription.delete_custom_query(' + 
-                        //            JSON.stringify(row) + 
-                        //            ')">Delete</button>';
-                        // }
                         if (type === 'display' && $('#has_edit_access').val() === "True") {
                             return '<div class="btn-group">' +
                                    '<button class="btn btn-primary btn-sm mx-1 btn-edit" ' +
