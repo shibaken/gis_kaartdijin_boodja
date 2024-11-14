@@ -63,12 +63,19 @@
                                                 <button class='btn btn-primary btn-sm px-4' id='subscription-lock'>Lock</button>
                                                 <div class="mt-2">
                                                       {% if subscription_obj.type is 1 %}
-                                                      <button class='btn btn-primary btn-sm px-4' id='update_wms_source_list_btn'>Update WMS Data</button>
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_wms_source_list_btn'>
+                                                            <span class="btn-text">Update WMS Data</span>
+                                                      </button>
                                                       {% elif subscription_obj.type is 2 %}
-                                                      <button class='btn btn-primary btn-sm px-4' id='update_wfs_source_list_btn'>Update WFS Data</button>
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_wfs_source_list_btn'>
+                                                            <span class="btn-text">Update WFS Data</span>
+                                                      </button>
                                                       {% elif subscription_obj.type is 3 %}
-                                                      <button class='btn btn-primary btn-sm px-4' id='update_postgis_source_list_btn'>Update Postgis Data</button>
+                                                      <button class='btn btn-primary btn-sm px-4' id='update_postgis_source_list_btn'>
+                                                            <span class="btn-text">Update Postgis Data</span>
+                                                      </button>
                                                       {% endif %}
+                                                      <span class="spinner-border spinner-border-sm" id="update_source_list_spinner" role="status" aria-hidden="true" style="display: none; color: #0b5ed7;"></span>
                                                 </div>
                                           {% endif %}
                                     </div>

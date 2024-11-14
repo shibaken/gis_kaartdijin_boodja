@@ -77,9 +77,9 @@ var kblayersubscription = {
                 quietMillis: 100,
                 data: function (params, page) {
                     return {
-                        q: params.term,                        
+                        q: params.term,
                     };
-                },          
+                },
                   processResults: function (data) {
                     // Transforms the top-level key of the response object from 'items' to 'results'
                     var results = [];
@@ -92,7 +92,7 @@ var kblayersubscription = {
                     return {
                         results: results
                     };
-                  }                  
+                  }
             },
         });
 
@@ -374,23 +374,15 @@ var kblayersubscription = {
         $("#subscription-btn-save-exit").click(function() {
             kblayersubscription.save_subscription('save-and-exit');
         });
-        $('#update_wms_source_list_btn').click(async ()=>{
-            kblayersubscription.get_mappings(true)
-        })
-        $('#update_wfs_source_list_btn').click(async ()=>{
-            kblayersubscription.get_mappings(true)
-        })
-        $('#update_postgis_source_list_btn').click(async ()=>{
-            kblayersubscription.get_mappings(true)
-        })
+        $('#update_wms_source_list_btn').click(kblayersubscription.updateSourceList)
+        $('#update_wfs_source_list_btn').click(kblayersubscription.updateSourceList)
+        $('#update_postgis_source_list_btn').click(kblayersubscription.updateSourceList)
 
         if([1,2].includes(+$('#subscription-type-num').val())){
             // WMS, WFS
-            console.log('This is WMS/WFS.')
             kblayersubscription.get_mappings();
         }else{
             // PostGIS
-            console.log('This is PostGIS.')
             kblayersubscription.get_mappings();
             kblayersubscription.get_custom_query_info();
         }
@@ -405,6 +397,20 @@ var kblayersubscription = {
         kblayersubscription.retrieve_communication_types();
 
         kblayersubscription.checkCatalogueEntryInputs();
+    },
+    updateSourceList: async () => {
+        const $button = $(this);
+        const $spinner = $('#update_source_list_spinner')
+
+        $button.prop('disabled', true);
+        $spinner.show()
+        
+        try {
+            await kblayersubscription.get_mappings(true);
+        } finally {
+            $button.prop('disabled', false);
+            $spinner.hide()
+        }
     },
     checkCatalogueEntryInputs: function() {
         console.log('in checkInputs()')
@@ -456,11 +462,8 @@ var kblayersubscription = {
                     common_entity_modal.show_alert("ERROR Setting assigned person.");
                 },
             });
-    
-            
         } else {
             common_entity_modal.show_alert("Please select an assigned to person first.");
-
         }
     },
     show_action_log: function(){
@@ -676,9 +679,6 @@ var kblayersubscription = {
                 kblayersubscription.get_mapping_source(force_to_query),
                 kblayersubscription.get_mapping_info()
             ]);
-            console.log('in get_mappings()')
-            console.log({source_layers})
-            console.log({catalogue_entries})
 
             kblayersubscription.var.source_layers = source_layers
             kblayersubscription.construct_catalogue_entries_table(catalogue_entries);  // This table is displayed on the page.
@@ -696,9 +696,15 @@ var kblayersubscription = {
         }
         return true;
     },
+    getTitleByMappingName: (mappingName) => {
+        for (let layer of kblayersubscription.var.source_layers) {
+            if (layer.name === mappingName) {
+                return layer.title;
+            }
+        }
+        return '';
+    },
     construct_catalogue_entries_table: function(catalogue_entries){
-        console.log('in construct_catalogue_entries_table()')
-
         const table = $('#catalogue-entries-table')
         let is_locked = $('#subscription_obj_is_locked').val()
 
@@ -729,12 +735,23 @@ var kblayersubscription = {
                     if (type === 'display') {
                         const sourceLayerNames = new Set(kblayersubscription.var.source_layers.map(layer => layer.name));
                         const isMappingNameInSourceLayers = sourceLayerNames.has(data);
-                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}">${data}</span>`;
+                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}" title="This mapping name does not match any layer name on the server.">${data}</span>`;
                     }
                     return data;
                 }
             }
         ];
+        if([1, 2].includes(+$('#subscription-type-num').val())){
+            // When WMS/WFS, display the Title column in the table
+            columns.push({
+                title: 'Title',
+                data: null,
+                // className: "col-2 text-end",
+                render: (data, type, row) => {
+                    return kblayersubscription.getTitleByMappingName(row.mapping_name)
+                },
+            })
+        }
 
         if(!kblayersubscription.isLocked(is_locked)){
             // When the page is not locked, we want to show the buttons
@@ -784,8 +801,6 @@ var kblayersubscription = {
         });
     },
     construct_source_layers_table: function(catalogue_entries){
-        console.log('in construct_source_layers_table()')
-        
         /* Construct the table in a add/edit catalogue entry modal */
         const tableBody = $('#source-layers-table tbody');
         tableBody.empty(); // Clear existing rows
@@ -877,10 +892,6 @@ var kblayersubscription = {
             'mapping_name': layer_name,
         }
 
-        // for(const key in fields){
-        //     mapping_data[key] = utils.validate_empty_input(key, $('#'+fields[key]).val());
-        // }
-        
         url = ''
         method = ''
         if (catalogue_entry_id){
