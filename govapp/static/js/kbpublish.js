@@ -1466,6 +1466,7 @@ var kbpublish = {
             $('#new-publish-cddp-frequency-type').removeAttr('disabled').val(cddp_publish_channel_obj.frequency);
             $('#new-publish-cddp-spatial-mode').removeAttr('disabled').val(cddp_publish_channel_obj.mode);  
             $('#new-publish-cddp-path').removeAttr('disabled').val(cddp_publish_channel_obj.path); 
+            $('#new-publish-cddp-xml-path').removeAttr('disabled').val(cddp_publish_channel_obj.xml_path); 
         } else {
             // Set modal title
             $('#new_update_cddp_modal_title').text('Create New CDDP Publish Entry');
@@ -1478,19 +1479,22 @@ var kbpublish = {
             $('#new-publish-cddp-frequency-type').removeAttr('disabled').val('');
             $('#new-publish-cddp-spatial-mode').removeAttr('disabled').val('');  
             $('#new-publish-cddp-path').removeAttr('disabled').val(''); 
+            $('#new-publish-cddp-xml-path').removeAttr('disabled').val(''); 
         }
 
-        $("#new-publish-cddp-xml-path-div").hide();
-        $("#new-publish-cddp-xml-path").val('');
         $('#new-publish-cddp-spatial-format').change(function(){
-            $('#new-publish-cddp-xml-path-div').hide();
-            if($('#new-publish-cddp-spatial-format').val() == 3){
-                $('#new-publish-cddp-xml-path-div').show();
-            }
+            kbpublish.show_hide_cddp_xml_path()
         });
+        kbpublish.show_hide_cddp_xml_path()
 
         // Show modal
         $('#PublishNewCDDPModal').modal('show');
+    },
+    show_hide_cddp_xml_path: () => {
+        $('#new-publish-cddp-xml-path-div').fadeOut(300);
+        if($('#new-publish-cddp-spatial-format').val() == 3){
+            $('#new-publish-cddp-xml-path-div').fadeIn(300);
+        }
     },
     toBoolean: function(value) {
         if (typeof value === 'boolean') {
