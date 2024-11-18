@@ -248,10 +248,29 @@ var kbcatalogue = {
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {
-                window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
+                console.log({response})
+                // window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
             },
-            error: function (error) {
-                common_entity_modal.show_alert("ERROR Changing Status");
+            error: function (xhr, status, error) {
+                console.log({xhr})
+                console.log({status})
+                console.log({error})
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    if (errorResponse.error) {
+                        common_entity_modal.show_alert(errorResponse.error);
+                    } else {
+                        common_entity_modal.show_alert("An error occurred");
+                    }
+                } catch (e) {
+                    common_entity_modal.show_alert("Error Changing Status");
+                }
+        
+                console.error('Error details:', {
+                    status: xhr.status,
+                    response: xhr.responseText,
+                    error: error
+                });
             },
         });
     },
