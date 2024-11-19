@@ -28,6 +28,7 @@ import psycopg2
 import json
 import os
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 
 # Local
 from govapp import settings
@@ -132,29 +133,37 @@ class CatalogueEntryViewSet(
         Returns:
             response.Response: Empty response confirming success.
         """
-        # Retrieve Catalogue Entry
-        # Help `mypy` by casting the resulting object to a Catalogue Entry
-        # catalogue_entry = self.get_object()
-        catalogue_entry = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=pk)
-        # catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
+        try:
+            # Retrieve Catalogue Entry
+            # Help `mypy` by casting the resulting object to a Catalogue Entry
+            # catalogue_entry = self.get_object()
+            catalogue_entry = shortcuts.get_object_or_404(models.catalogue_entries.CatalogueEntry, id=pk)
+            # catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
-        # Lock
-        success = catalogue_entry.lock()
+            # Lock
+            success = catalogue_entry.lock()
 
-        # Check Success
-        if success:
-            # Add Action Log Entry
-            logs_utils.add_to_actions_log(
-                user=request.user,
-                model=catalogue_entry,
-                action="Catalogue entry was locked"
-            )
+            # Check Success
+            if success:
+                # Add Action Log Entry
+                logs_utils.add_to_actions_log(
+                    user=request.user,
+                    model=catalogue_entry,
+                    action="Catalogue entry was locked"
+                )
 
-            # Return Response
-            return response.Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            # Return Response
-            return response.Response("Error Locking Catalogue", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                # Return Response
+                return response.Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                # Return Response
+                return response.Response("Error Locking Catalogue", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ObjectDoesNotExist as e:
+            logger.error(f"Catalogue entry does not exist: {str(e)}")
+            return response.Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {str(e)}")
+            return response.Response({"error": "Error locking catalogue entry"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])

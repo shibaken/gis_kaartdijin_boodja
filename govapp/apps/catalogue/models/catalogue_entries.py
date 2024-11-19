@@ -4,6 +4,7 @@
 import os
 from django.http import JsonResponse
 import reversion
+import logging
 from datetime import datetime 
 
 # Third-Party
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
 
 # Shortcuts
 UserModel = auth.get_user_model()
-
+logger = logging.getLogger(__name__)
 
 class CatalogueEntryPermissionType(models.IntegerChoices):
     NOT_RESTRICTED = 1, 'Not restricted'
@@ -323,7 +324,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 # Check if Catalogue Entry is new
                 if self.is_new():
                     if not self.active_layer:
-                        raise ObjectDoesNotExist("Catalogue Entry has no active layer")
+                        raise ObjectDoesNotExist("Catalogue Entry has no active layer.")
                     # Lock the currently active layer
                     self.active_layer.accept()
 
@@ -351,16 +352,14 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 # Send Emails
                 notifications_utils.catalogue_entry_lock(self)
 
-                print ("TRYING TO LOCK")
-                print (lock_success)
                 # Success!
                 return lock_success
             except ObjectDoesNotExist as e:
-                return JsonResponse({
-                    "error": str(e)
-                }, status=404)
-
-    
+                logger.error(f"Object does not exist: {str(e)}")
+                raise
+            except Exception as e:
+                logger.error(f"An unexpected error occurred: {str(e)}")
+                raise
         # Failed
         return lock_success
 

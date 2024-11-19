@@ -248,13 +248,9 @@ var kbcatalogue = {
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
             success: function (response) {
-                console.log({response})
-                // window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
+                window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
             },
             error: function (xhr, status, error) {
-                console.log({xhr})
-                console.log({status})
-                console.log({error})
                 try {
                     const errorResponse = JSON.parse(xhr.responseText);
                     if (errorResponse.error) {
@@ -265,12 +261,6 @@ var kbcatalogue = {
                 } catch (e) {
                     common_entity_modal.show_alert("Error Changing Status");
                 }
-        
-                console.error('Error details:', {
-                    status: xhr.status,
-                    response: xhr.responseText,
-                    error: error
-                });
             },
         });
     },
