@@ -2,6 +2,7 @@
 
 
 # Third-Party
+import pytz
 from rest_framework import serializers
 
 # Local
@@ -47,5 +48,6 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
 
     def get_submitted_at_str(self, obj):
         if obj.submitted_at:
-            return obj.submitted_at.strftime('%d/%m/%Y %H:%M:%S')
+            local_time = obj.submitted_at.astimezone(pytz.timezone('Australia/Perth'))
+            return local_time.strftime('%d-%m-%Y %H:%M:%S')
         return None
