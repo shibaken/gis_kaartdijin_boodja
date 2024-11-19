@@ -250,8 +250,17 @@ var kbcatalogue = {
             success: function (response) {
                 window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
             },
-            error: function (error) {
-                common_entity_modal.show_alert("ERROR Changing Status");
+            error: function (xhr, status, error) {
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    if (errorResponse.error) {
+                        common_entity_modal.show_alert(errorResponse.error);
+                    } else {
+                        common_entity_modal.show_alert("An error occurred");
+                    }
+                } catch (e) {
+                    common_entity_modal.show_alert("Error Changing Status");
+                }
             },
         });
     },

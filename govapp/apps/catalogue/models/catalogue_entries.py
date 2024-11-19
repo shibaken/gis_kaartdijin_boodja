@@ -2,7 +2,9 @@
 
 # Standard
 import os
+from django.http import JsonResponse
 import reversion
+import logging
 from datetime import datetime 
 
 # Third-Party
@@ -40,7 +42,7 @@ if TYPE_CHECKING:
 
 # Shortcuts
 UserModel = auth.get_user_model()
-
+logger = logging.getLogger(__name__)
 
 class CatalogueEntryPermissionType(models.IntegerChoices):
     NOT_RESTRICTED = 1, 'Not restricted'
@@ -318,40 +320,46 @@ class CatalogueEntry(mixins.RevisionedMixin):
         lock_success = False
         # Check Catalogue Entry
         if self.is_unlocked():
-            # Check if Catalogue Entry is new
-            if self.is_new():
-                # Lock the currently active layer
-                self.active_layer.accept()
+            try:
+                # Check if Catalogue Entry is new
+                if self.is_new():
+                    if not self.active_layer:
+                        raise ObjectDoesNotExist("Catalogue Entry has no active layer.")
+                    # Lock the currently active layer
+                    self.active_layer.accept()
 
-            # Calculate the attributes hash
-            attributes_hash = utils.attributes_hash(self.attributes.all())
+                # Calculate the attributes hash
+                attributes_hash = utils.attributes_hash(self.attributes.all())
 
-            # Compare attributes hash with current active layer submission
-            if self.active_layer.hash == attributes_hash:
-                # Set Catalogue Entry to Locked
-                self.status = CatalogueEntryStatus.LOCKED
-                lock_success = True
-            else:
-                # Set Catalogue Entry to Pending
-                self.status = CatalogueEntryStatus.PENDING
-                lock_success = False
+                # Compare attributes hash with current active layer submission
+                if self.active_layer.hash == attributes_hash:
+                    # Set Catalogue Entry to Locked
+                    self.status = CatalogueEntryStatus.LOCKED
+                    lock_success = True
+                else:
+                    # Set Catalogue Entry to Pending
+                    self.status = CatalogueEntryStatus.PENDING
+                    lock_success = False
 
-            # Check for Publish Entry
-            if hasattr(self, "publish_entry"):
-                # Publish Symbology
-                self.publish_entry.publish(symbology_only=True)  # type: ignore[union-attr]
+                # Check for Publish Entry
+                if hasattr(self, "publish_entry"):
+                    # Publish Symbology
+                    self.publish_entry.publish(symbology_only=True)  # type: ignore[union-attr]
 
-            # Save the Catalogue Entry
-            self.save()
+                # Save the Catalogue Entry
+                self.save()
 
-            # Send Emails
-            notifications_utils.catalogue_entry_lock(self)
+                # Send Emails
+                notifications_utils.catalogue_entry_lock(self)
 
-            print ("TRYING TO LOCK")
-            print (lock_success)
-            # Success!
-            return lock_success
-    
+                # Success!
+                return lock_success
+            except ObjectDoesNotExist as e:
+                logger.error(f"Object does not exist: {str(e)}")
+                raise
+            except Exception as e:
+                logger.error(f"An unexpected error occurred: {str(e)}")
+                raise
         # Failed
         return lock_success
 
