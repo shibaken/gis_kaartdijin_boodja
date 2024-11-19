@@ -22,23 +22,23 @@
                         </div>
                   </div>
                   <div class="card-body collapse show" id="box1-card-body">
-                        <div class="bg-light p-3">
+                        <div class="bg-light p-2">
                               <strong>Filters</strong>
-                              <div class='row'>
+                              <div class='row mb-3'>
                                     <div class='col-3'>
-                                          <label for="layer-subscription-name" class="form-label">Name</label>
+                                          <label for="layer-subscription-name">Name</label>
                                           <input type="text" class="form-control" id="subscription-name" >
                                     </div>
                                     <div class='col-3'>
-                                          <label for="subscription-workspace" class="form-label">Workspace</label>
-                                          <select type="text" class="form-control" id="subscription-workspace" >
+                                          <label for="subscription-workspace">Workspace</label>
+                                          <select type="text" class="form-control" id="layer-subscription-workspace" >
                                                 <option value="">All</option>
                                                 <option value="1">Private</option>
                                                 <option value="2">Public</option>
                                           </select>
                                     </div>
                                     <div class='col-3'>
-                                          <label for="subscription-enabled" class="form-label">Enabled</label>
+                                          <label for="subscription-enabled">Enabled</label>
                                           <select type="text" class="form-control" id="subscription-enabled" >
                                                 <option value="">All</option>
                                                 <option value="true">True</option>
@@ -46,18 +46,18 @@
                                           </select>
                                     </div>
                               </div>
-                              <div class='row'>
+                              <div class='row mb-3'>
                                     <div class='col-3'>
-                                          <label for="subscription-updated-from" class="form-label">Updated From</label>
+                                          <label for="subscription-updated-from">Updated From</label>
                                           <input type="text" class="form-control" id="subscription-updated-from"  placeholder="Select Date"  >
 
                                     </div>
                                     <div class='col-3'>
-                                          <label for="subscription-updated-to" class="form-label">Updated To</label>
+                                          <label for="subscription-updated-to">Updated To</label>
                                           <input type="text" class="form-control" id="subscription-updated-to" placeholder="Select Date"  >
                                     </div>
                                     <div class='col-3'>
-                                          <label for="subscription-type" class="form-label">Type</label>
+                                          <label for="subscription-type">Type</label>
                                           <select type="text" class="form-control" id="subscription-type" >
                                                 <option value="">All</option>
                                                 <option value="1">WMS</option>
@@ -68,15 +68,15 @@
                               </div>
                               <div class='row'>
                                     <div class='col-3'>
-                                          <label for="subscription-description" class="form-label">Description</label>
+                                          <label for="subscription-description">Description</label>
                                           <input type="text" class="form-control" id="subscription-description" >
                                     </div>
                                     <div class='col-3'>
-                                          <label for="layer-subscription-number" class="form-label">Number</label>
+                                          <label for="layer-subscription-number">Number</label>
                                           <input type="text" class="form-control" id="subscription-number" >
                                     </div>
                                     <div class='col-3'>
-                                          <label for="subscription-assignedto" class="form-label">Assigned To</label>
+                                          <label for="subscription-assignedto">Assigned To</label>
                                           <select type="text" class="form-select" id="subscription-assignedto"></select>
                                     </div>
                                     <div class='col-3 p-4'>
@@ -84,17 +84,10 @@
                                     </div>
                               </div>
                         </div>
-                        <div class='col-12 pt-4'>
-                              <div class='row'>
-                                    <div class='col-6'>
-                                          &nbsp;
-                                    </div>
-                                    <div class='col-6 text-end'>
-                                          {% if is_administrator %}
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>Create New Subscription</button>
-                                          {% endif %}
-                                    </div>
-                              </div>
+                        <div class='text-end my-3'>
+                              {% if is_administrator %}
+                                    <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-new-btn'>Create New Subscription</button>
+                              {% endif %}
                         </div>
 
                         <div class='row mb-2'>
