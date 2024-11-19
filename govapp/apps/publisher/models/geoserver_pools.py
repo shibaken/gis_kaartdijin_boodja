@@ -652,21 +652,21 @@ class GeoServerPool(mixins.RevisionedMixin):
 
         log.info(f'Users associated with active GeoServerRole or GeoServerGroup: [{users}]')
 
+        # Sync all the groups
+        self.sync_groups()
+
+        # Sync all the roles
+        self.sync_roles()
+
         for user in users:
             if not user.email:
                 log.warning(f'User: [ID: {user.id}, username: {user.username}, first_name: {user.first_name}, last_name: {user.last_name}] does not have email address.  Skip the geoserver process for this user.')
                 continue
             self.create_or_update_user(user)
 
-            # Sync all the groups
-            self.sync_groups()
-
             # Sync relations between users and groups
             groups_for_user_in_kb = self.associate_user_with_groups(user)
             self.disassociate_user_from_groups(user, groups_for_user_in_kb)
-
-            # Sync all the roles
-            self.sync_roles()
 
             # Sync relations between users and roles
             roles_for_user_in_kb = self.associate_user_with_roles(user)
