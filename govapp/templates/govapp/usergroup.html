@@ -302,11 +302,8 @@
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles_related",
+                        "url": "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles_related/",
                         "type": "GET",
-                        "dataSrc": function(data_in_json) {
-                            return data_in_json;
-                        }
                     },
                     "columnDefs": [
                         {
@@ -324,6 +321,7 @@
                         { 
                             "data": "active",
                             "render": function(data, type, row) {
+                                console.log({row})
                                 return data ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>';
                             }
                         },
@@ -419,11 +417,8 @@
                     "processing": true,
                     "serverSide": true,
                     "ajax": {
-                        "url": "/api/publish/geoservergroup/{{ geoserver_group.id }}/users_related",
+                        "url": "/api/publish/geoservergroup/{{ geoserver_group.id }}/users_related/",
                         "type": "GET",
-                        "dataSrc": function(data_in_json) {
-                            return data_in_json;
-                        }
                     },
                     "columnDefs": [
                         {

@@ -116,17 +116,12 @@
         <div class="card-body collapse show" id="box2-card-body">
               <div class='row'>
                     <div class='col-12'>
-                        {% if catalogue_entry_obj.type == 1 %}
                           {% if has_edit_access %}     
                                 <textarea class="form-control"id="catalogue-entry-description" rows="3">{{ catalogue_entry_obj.description }}</textarea>                                    
-                                &nbsp;
                           {% else %}
                                 {{ catalogue_entry_obj.description }}
                           {% endif %}
-                        {% else %}
-                              {{ catalogue_entry_obj.description }}
-                        {% endif %}
-                    </div>                        
+                    </div>
               </div>
         </div>
 </div>

@@ -186,27 +186,27 @@ class FTPPublishChannelAdmin(reversion.admin.VersionAdmin):
 
 class GeoServerRolePermissionInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerRolePermission
-    extra = 1  # Number of empty forms to display
+    extra = 0  # Number of empty forms to display
     # fields = ['workspace', 'read', 'write', 'admin', 'active']
     fields = ['geoserver_role', 'active', 'read', 'write', 'admin']
 
 
 class GeoServerGroupRoleInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerGroupRole
-    extra = 1  # Number of empty forms to display
+    extra = 0  # Number of empty forms to display
     fields = ['geoserver_role', 'active',]
 
 
 class GeoServerGroupUserInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerGroupUser
-    extra = 1  # Number of empty forms to display
+    extra = 0  # Number of empty forms to display
     fields = ['geoserver_group', 'user',]
     raw_id_fields = ('user',)
 
 
 class GeoServerRoleUserInline(admin.TabularInline):
     model = models.geoserver_roles_groups.GeoServerRoleUser
-    extra = 1  # Number of empty forms to display
+    extra = 0  # Number of empty forms to display
     fields = ['geoserver_role', 'user',]
     raw_id_fields = ('user',)
 
