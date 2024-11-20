@@ -1023,11 +1023,18 @@ class LayerSubscriptionViewSet(
             type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
             layer_subscription=subscription
         )
-        msg = f'New CatalogueEntry: [{catalogue_entry}] has been created.'
+        msg = f'This CatalogueEntry: [{catalogue_entry}] has been created from the subscription: [{subscription}].'
         logger.info(msg)
         logs_utils.add_to_actions_log(
             user=request.user,
             model=catalogue_entry,
+            action=msg
+        )
+
+        msg = f'New CatalogueEntry: [{catalogue_entry}] has been created from this subscription: [{subscription}].'
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=subscription,
             action=msg
         )
         
