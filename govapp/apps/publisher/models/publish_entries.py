@@ -94,7 +94,7 @@ class PublishEntry(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.name}"
+        return f"PE:{self.id}: {self.name}"
 
     @property
     def name(self) -> str:

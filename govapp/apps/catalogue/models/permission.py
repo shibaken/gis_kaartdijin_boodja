@@ -31,7 +31,7 @@ class CatalogueEntryPermission(mixins.RevisionedMixin):
     access_permission = models.IntegerField(choices=CatalogueEntryAccessPermission.choices, default=CatalogueEntryAccessPermission.READ)
     
     def __str__(self):
-        return str(self.catalogue_entry)
+        return f'CEP{self.id}: for CE{self.catalogue_entry.id} for {self.user}'
     
     class Meta:
         unique_together = ('user', 'catalogue_entry')

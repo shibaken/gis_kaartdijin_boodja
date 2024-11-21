@@ -78,7 +78,18 @@ class CatalogueEntryViewSet(
 
     def update(self, request, *args, **kwargs):
         logger.info(f'Updating CatalogueEntry with the data: [{request.data}]...')
-        return super().update(request, *args, **kwargs)
+        ret = super().update(request, *args, **kwargs)
+        
+        catalogue_entry = self.get_object()
+        msg = f"Catalogue entry: [{catalogue_entry}] has been updated with the data: [{request.data}]."
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=catalogue_entry,
+            action=msg
+        )
+        logger.info(msg)
+
+        return ret
 
     @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
     def delete_file(self, request: request.Request):
@@ -149,7 +160,7 @@ class CatalogueEntryViewSet(
                 logs_utils.add_to_actions_log(
                     user=request.user,
                     model=catalogue_entry,
-                    action="Catalogue entry was locked"
+                    action=f"Catalogue entry: [{catalogue_entry}] has been locked."
                 )
 
                 # Return Response
@@ -192,7 +203,7 @@ class CatalogueEntryViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=catalogue_entry,
-                action="Catalogue entry was unlocked"
+                action=f"Catalogue entry: [{catalogue_entry}] has been unlocked."
             )
 
         # Return Response
@@ -224,7 +235,7 @@ class CatalogueEntryViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=catalogue_entry,
-                action="Catalogue entry was declined"
+                action=f"Catalogue entry: [{catalogue_entry}] has been declined."
             )
 
         # Return Response
@@ -260,7 +271,7 @@ class CatalogueEntryViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=catalogue_entry,
-                action=f"Catalogue entry was assigned to {user} (id: {user.pk})"
+                action=f"Catalogue entry: [{catalogue_entry}] has been assigned to {user} (id: {user.pk})"
             )
 
         # Return Response
@@ -292,7 +303,7 @@ class CatalogueEntryViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=catalogue_entry,
-                action="Catalogue entry was unassigned"
+                action=f"Catalogue entry: [{catalogue_entry}] has been unassigned."
             )
 
         # Return Response
@@ -419,6 +430,34 @@ class LayerAttributeViewSet(
         if context['request'].method == 'PUT':
             context['pk'] = self.kwargs['pk']
         return context
+
+    def perform_create(self, serializer):
+        layer_attribute = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= layer_attribute.catalogue_entry,
+            action=f"LayerAttribute: [{layer_attribute}] has been created with the data: [{serializer.data}]."
+        )
+        logger.info(f"LayerAttribute: [{layer_attribute}] has been created with the data: [{serializer.data}] from this CatalogueEntry: [{layer_attribute.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        layer_attribute = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=layer_attribute.catalogue_entry,
+            action=f"LayerAttribute: [{layer_attribute}] has been updated with the data: [{serializer.data}]."
+        )
+        logger.info(f"LayerAttribute: [{layer_attribute}] has been updated with the data: [{serializer.data}] from the CatalogueEntry: [{layer_attribute.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        catalogue_entry = instance.catalogue_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry,
+            action=f"LayerAttribute: [{instance}] has been deleted."
+        )
+        logger.info(f"LayerAttribute: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Attribute Types"])
@@ -656,9 +695,16 @@ class LayerSubscriptionViewSet(
             setattr(subscription_obj, key, data[key])
         
         subscription_obj.save()
+
+        msg=f'Layer subscription: [{subscription_obj}] has been updated with the data: [{data}].'
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=subscription_obj,
+            action=msg
+        )
+        logger.info(msg)
         
         return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)
-            
     
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
@@ -682,12 +728,14 @@ class LayerSubscriptionViewSet(
 
         # Check Success
         if success:
+            msg=f"Layer Subscription: [{subscription}] has been locked."
             # Add Action Log Entry
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=subscription,
-                action="Layer Subscription was locked"
+                action=msg
             )
+            logger.info(msg)
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -715,11 +763,13 @@ class LayerSubscriptionViewSet(
         # Check Success
         if success:
             # Add Action Log Entry
+            msg=f"Layer Subscription: [{subscription}] has been unlocked."
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=subscription,
-                action="Layer Subscription was unlocked"
+                action=msg,
             )
+            logger.info(msg)
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -751,11 +801,13 @@ class LayerSubscriptionViewSet(
         # Check Success
         if success:
             # Add Action Log Entry
+            msg=f"Layer Subscription has been assigned to the user: [{user} (id: {user.pk})]."
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=subscription,
-                action=f"Layer Subscription was assigned to {user} (id: {user.pk})"
+                action=msg
             )
+            logger.info(msg)
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -783,11 +835,13 @@ class LayerSubscriptionViewSet(
         # Check Success
         if success:
             # Add Action Log Entry
+            msg="Layer Subscription was unassigned"
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=subscription,
-                action="Layer Subscription was unassigned"
+                action=msg
             )
+            logger.info(msg)
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -880,7 +934,7 @@ class LayerSubscriptionViewSet(
         logs_utils.add_to_actions_log(
             user=request.user,
             model=catalogue_entry,
-            action=f'Updated with the data: [{request.data}] from the layer subscription: [{subscription}].'
+            action=f'CatalogueEntry: [{catalogue_entry}] has been updated with the data: [{request.data}] from the layer subscription: [{subscription}].'
         )
         logs_utils.add_to_actions_log(
             user=request.user,
@@ -911,17 +965,6 @@ class LayerSubscriptionViewSet(
         layer_subscription = self.get_object()
         layer_subscription = cast(models.layer_subscriptions.LayerSubscription, layer_subscription)
         
-        # Retrieve Catalogue Entry with Layer Submission Id
-        # mappings = list(models.catalogue_entries.CatalogueEntry.objects
-        #                      .filter(layer_subscription=layer_subscription)
-        #                      .values('id', 'mapping_name', 'name', 'description', 'is_custom_query'))
-        # mappings = [{
-        #     'mapping_name': mapping['mapping_name'],
-        #     'name': mapping['name'],
-        #     'description': mapping['description'],
-        #     'id': mapping['id']
-        # } for mapping in mappings]
-
         entries = models.catalogue_entries.CatalogueEntry.objects.filter(layer_subscription=layer_subscription)
         mappings = [
             {
@@ -933,17 +976,6 @@ class LayerSubscriptionViewSet(
             }
             for entry in entries
         ]
-
-        # if not mappings:
-        #     mappings = [] 
-        # else:
-        #     mappings = {
-        #         mapping['mapping_name']:{
-        #             'name':mapping['name'],
-        #             'description':mapping['description'],
-        #             'catalogue_entry_id':mapping['id']
-        #         } for mapping in mappings
-        #     }
 
         # Return Response
         logger.debug(f'mappings: {mappings}')
@@ -1023,11 +1055,18 @@ class LayerSubscriptionViewSet(
             type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
             layer_subscription=subscription
         )
-        msg = f'New CatalogueEntry: [{catalogue_entry}] has been created.'
+        msg = f'This CatalogueEntry: [{catalogue_entry}] has been created from the subscription: [{subscription}].'
         logger.info(msg)
         logs_utils.add_to_actions_log(
             user=request.user,
             model=catalogue_entry,
+            action=msg
+        )
+
+        msg = f'New CatalogueEntry: [{catalogue_entry}] has been created from this subscription: [{subscription}].'
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=subscription,
             action=msg
         )
         
@@ -1101,27 +1140,22 @@ class LayerSubscriptionViewSet(
         subscription = self.get_object()
         subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
         
-        # # Validation check
-        # data = validate_request(serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer, request.data)
-        
-        # # Update Catalogue Entry
-        # catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id)
-        # catalogue_entry.name = data['name'] if 'name' in data else catalogue_entry.name
-        # catalogue_entry.description = data['description'] if 'description' in data else catalogue_entry.description
-        # catalogue_entry.sql_query = data['sql_query'] if 'sql_query' in data else catalogue_entry.sql_query
-        # catalogue_entry.force_run_postgres_scanner = True if request.data.get('force_run_postgres_scanner', False) else False
-        # catalogue_entry.save()
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id)
         serializer = serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionQuerySerializer(catalogue_entry, request.data)
         serializer.is_valid(raise_exception=True)
         catalogue_entry = serializer.save()
 
-        msg = f'CatalogueEntry: [{catalogue_entry}] has been updated.'
+        msg = f'CatalogueEntry: [{catalogue_entry}] has been updated by the user: [{request.user}] from the subscription: [{subscription}].'
         logger.info(msg)
         logs_utils.add_to_actions_log(
             user=request.user,
             model=catalogue_entry,
-            action=msg
+            action=f'CatalogueEntry: [{catalogue_entry}] has been updated from the subscription: [{subscription}].'
+        )
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=subscription,
+            action=f'CatalogueEntry: [{catalogue_entry}] has been updated.'
         )
         
         if 'frequency_type' not in request.data:
@@ -1219,7 +1253,7 @@ class LayerSubscriptionViewSet(
         """
         # Retrieve Catalogue Entry with Layer Submission Id
         models.catalogue_entries.CatalogueEntry.objects.get(pk=catalogue_id).delete()
-        msg = f'CatalogueEntry (id: {catalogue_id}) has been deleted.'
+        msg = f'CatalogueEntry (id: {catalogue_id}) has been deleted by the user: [{request.user}].'
         logger.info(msg)
         # logs_utils.add_to_actions_log(
         #     user=request.user,
@@ -1271,6 +1305,34 @@ class EmailNotificationViewSet(
         if context['request'].method == 'PUT':
             context['pk'] = self.kwargs['pk']
         return context
+
+    def perform_create(self, serializer):
+        email_notification = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= email_notification.catalogue_entry,
+            action=f"EmailNotification: [{email_notification}] has been created with the data: [{serializer.data}]."
+        )
+        logger.info(f"EmailNotification: [{email_notification}] has been created with the data: [{serializer.data}] from this CatalogueEntry: [{email_notification.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        email_notification = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=email_notification.catalogue_entry,
+            action=f"EmailNotification: [{email_notification}] has been updated with the data: [{serializer.data}]."
+        )
+        logger.info(f"EmailNotification: [{email_notification}] has been updated with the data: [{serializer.data}] from the CatalogueEntry: [{email_notification.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        catalogue_entry = instance.catalogue_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry,
+            action=f"EmailNotification: [{instance}] has been deleted."
+        )
+        logger.info(f"EmailNotification: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
     
 
 @drf_utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
@@ -1294,7 +1356,7 @@ class WebhookNotificationViewSet(
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Permissions"])
-class CataloguePermissionViewSet(
+class CatalogueEntryPermissionViewSet(
     mixins.MultipleSerializersMixin,
     viewsets.mixins.ListModelMixin,
     viewsets.mixins.CreateModelMixin,
@@ -1308,3 +1370,31 @@ class CataloguePermissionViewSet(
     filterset_class = filters.CataloguePermissionFilter
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
     pagination_class = None
+
+    def perform_create(self, serializer):
+        catalogue_entry_permission = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= catalogue_entry_permission.catalogue_entry,
+            action=f"AccessPermission: [{catalogue_entry_permission}] has been created with the data: [{serializer.data}]."
+        )
+        logger.info(f"AccessPermission: [{catalogue_entry_permission}] has been created with the data: [{serializer.data}] from this CatalogueEntry: [{catalogue_entry_permission.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        catalogue_entry_permission = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry_permission.catalogue_entry,
+            action=f"AccessPermission: [{catalogue_entry_permission}] has been updated with the data: [{serializer.data}]."
+        )
+        logger.info(f"AccessPermission: [{catalogue_entry_permission}] has been updated with the data: [{serializer.data}] from the CatalogueEntry: [{catalogue_entry_permission.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        catalogue_entry = instance.catalogue_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry,
+            action=f"AccessPermission: [{instance}] has been deleted."
+        )
+        logger.info(f"AccessPermission: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
