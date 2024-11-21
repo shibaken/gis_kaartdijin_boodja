@@ -2,6 +2,7 @@
 
 
 # Third-Party
+import pytz
 from rest_framework import serializers
 
 # Local
@@ -45,7 +46,12 @@ class LayerSubscriptionSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "assigned_to", "status", "created_at", "updated_at")
 
     def get_updated_at(self, obj):
-        return obj.updated_at.strftime("%d-%m-%Y %H:%M:%S")
+        if obj.updated_at:
+            # Convert to local time
+            local_time = obj.updated_at.astimezone(pytz.timezone('Australia/Perth'))
+            # Return formatted string
+            return local_time.strftime('%d-%m-%Y %H:%M:%S')
+        return None
 
         
 class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):

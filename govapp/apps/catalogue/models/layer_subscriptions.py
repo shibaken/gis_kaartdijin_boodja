@@ -100,7 +100,7 @@ class LayerSubscription(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.name}"
+        return f"{self.id}: {self.name}"
 
     # @property
     # def name(self) -> str:

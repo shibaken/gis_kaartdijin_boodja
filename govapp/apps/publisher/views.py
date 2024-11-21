@@ -92,6 +92,37 @@ class PublishEntryViewSet(
                 result['updated_at'] = str(date_obj.astimezone().strftime('%d %b %Y %H:%M %p'))
                  
         return response
+
+    def perform_create(self, serializer):
+        publish_entry = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=publish_entry,
+            action=f"PublishEntry: [{publish_entry}] has been created with the data: [{serializer.data}]."
+        )
+        log.info(f"PublishEntry: [{publish_entry}] has been created with the data: [{serializer.data}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        publish_entry = serializer.instance
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=publish_entry,
+            action=f"PublishEntry: [{publish_entry}] has been updated with the data: [{serializer.data}]."
+        )
+        log.info(f"PublishEntry: [{publish_entry}] has been updated with the data: [{serializer.data}] by the user: [{self.request.user}].")
+
+    # def update(self, request, *args, **kwargs):
+    #     ret = super(PublishEntryViewSet, self).update(request, *args, **kwargs)
+
+    #     publish_entry = self.get_object()
+    #     logs_utils.add_to_actions_log(
+    #         user=request.user,
+    #         model=publish_entry,
+    #         action=f"PublishEntry: [{publish_entry}] has been updated with the data: [{request.data}]."
+    #     )
+    #     log.info(f"PublishEntry: [{publish_entry}] has been updated with the data: [{request.data}] by the user: [{request.user}].")
+
+    #     return ret
     
     @drf_utils.extend_schema(
         parameters=[drf_utils.OpenApiParameter("symbology_only", type=bool)],
@@ -353,29 +384,6 @@ class PublishEntryViewSet(
         # Return Response
         return response.Response(ftp_list, status=status.HTTP_200_OK)
 
-    # @decorators.action(detail=True, methods=["GET"], url_path=r"ftp-server")
-    # def ftp_server_list(self, request: request.Request, pk: str) -> response.Response:
-    #     """Produce a list of FTP Servers
-
-    #     Args:
-    #         request (request.Request): API request.
-    #         pk (str): Primary key of the Publish Entry.
-
-    #     Returns:
-    #         response.Response: Empty response confirming success.
-    #     """
-    #     # Retrieve Publish Entry
-    #     # Help `mypy` by casting the resulting object to a Publish Entry
-    #     publish_entry = self.get_object()
-    #     publish_entry = cast(models.publish_entries.PublishEntry, publish_entry)
-    #     ftp_servers = models.publish_channels.FTPServer.objects.filter(enabled=True)
-    #     ftp_servers_list = []
-    #     for cpc in ftp_servers:              
-    #         ftp_servers_list.append({"id": cpc.id, "name":cpc.name})
-
-    #     # Return Response
-    #     return response.Response(ftp_servers_list, status=status.HTTP_200_OK)
-
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def lock(self, request: request.Request, pk: str) -> response.Response:
@@ -402,12 +410,12 @@ class PublishEntryViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=publish_entry,
-                action="Publish entry was locked"
+                action=f"Publish entry: [{publish_entry}] has been locked."
             )
+            log.info(f"Publish entry: [{publish_entry}] has been locked by the user: [{request.user}].")
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
-
 
     @drf_utils.extend_schema(request=None, responses=serializers.publish_entries.PublishEntryCreateEditorSerializer)
     @decorators.action(detail=True, methods=["POST"], url_path=r"editors/add/(?P<user_pk>\d+)")
@@ -503,7 +511,6 @@ class PublishEntryViewSet(
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
     def unlock(self, request: request.Request, pk: str) -> response.Response:
@@ -530,8 +537,9 @@ class PublishEntryViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=publish_entry,
-                action="Publish entry was unlocked"
+                action=f"Publish entry: [{publish_entry}] has been unlocked."
             )
+            log.info(f"Publish entry: [{publish_entry}] has been unlocked by the user: [{request.user}].")
 
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -566,7 +574,7 @@ class PublishEntryViewSet(
             logs_utils.add_to_actions_log(
                 user=request.user,
                 model=publish_entry,
-                action=f"Publish entry was assigned to {user} (id: {user.pk})"
+                action=f"Publish entry has been assigned to the user: [{user} (id: {user.pk})]."
             )
 
         # Return Response
@@ -624,6 +632,34 @@ class CDDPPublishChannelViewSet(
     search_fields = ["publish_entry__catalogue_entry__name",]# "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
 
+    def perform_create(self, serializer):
+        cddp_publish_channel = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= cddp_publish_channel.publish_entry,
+            action=f"CDDPPublishChannel: [{cddp_publish_channel}] has been created with the data: [{serializer.data}]."
+        )
+        log.info(f"CDDPPublishChannel: [{cddp_publish_channel}] has been created with the data: [{serializer.data}] from this PublishEntry: [{cddp_publish_channel.publish_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        cddp_publish_channel = serializer.instance
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=cddp_publish_channel.publish_entry,
+            action=f"CDDPPublishChannel: [{cddp_publish_channel}] has been updated with the data: [{serializer.data}]."
+        )
+        log.info(f"CDDPPublishChannel: [{cddp_publish_channel}] has been updated with the data: [{serializer.data}] from the PublishEntry: [{cddp_publish_channel.publish_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        publish_entry = instance.publish_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=publish_entry,
+            action=f"CDDPPublishChannel: [{instance}] has been deleted."
+        )
+        log.info(f"CDDPPublishChannel: [{instance}] has been deleted from the PublishEntry: [{publish_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
+
 
 @drf_utils.extend_schema(tags=["Publisher - GeoServer Publish Channels"])
 class GeoServerPublishChannelViewSet(
@@ -644,11 +680,33 @@ class GeoServerPublishChannelViewSet(
     search_fields = ["publish_entry__catalogue_entry__name", "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
 
-    def create(self, request, *args, **kwargs):
-        return super(GeoServerPublishChannelViewSet, self).create(request, *args, **kwargs)
+    def perform_create(self, serializer):
+        geoserver_publish_channel = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= geoserver_publish_channel.publish_entry,
+            action=f"GeoServerPublishChannel: [{geoserver_publish_channel}] has been created with the data: [{serializer.data}]."
+        )
+        log.info(f"GeoServerPublishChannel: [{geoserver_publish_channel}] has been created with the data: [{serializer.data}] from this PublishEntry: [{geoserver_publish_channel.publish_entry}] by the user: [{self.request.user}].")
 
-    def update(self, request, *args, **kwargs):
-        return super(GeoServerPublishChannelViewSet, self).update(request, *args, **kwargs)
+    def perform_update(self, serializer):
+        geoserver_publish_channel = serializer.instance
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=geoserver_publish_channel.publish_entry,
+            action=f"GeoServerPublishChannel: [{geoserver_publish_channel}] has been updated with the data: [{serializer.data}]."
+        )
+        log.info(f"GeoServerPublishChannel: [{geoserver_publish_channel}] has been updated with the data: [{serializer.data}] from the PublishEntry: [{geoserver_publish_channel.publish_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        publish_entry = instance.publish_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=publish_entry,
+            action=f"GeoServerPublishChannel: [{instance}] has been deleted."
+        )
+        log.info(f"GeoServerPublishChannel: [{instance}] has been deleted from the PublishEntry: [{publish_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
 
 
 @drf_utils.extend_schema(tags=["Publisher - Notifications (Email)"])
@@ -707,6 +765,34 @@ class FTPPublishChannelViewSet(
     filterset_class = filters.FTPPublishChannelFilter
     search_fields = ["publish_entry__catalogue_entry__name",]# "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
+
+    def perform_create(self, serializer):
+        ftp_publish_channel = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= ftp_publish_channel.publish_entry,
+            action=f"FTPPublishChannel: [{ftp_publish_channel}] has been created with the data: [{serializer.data}]."
+        )
+        log.info(f"FTPPublishChannel: [{ftp_publish_channel}] has been created with the data: [{serializer.data}] from this PublishEntry: [{ftp_publish_channel.publish_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        ftp_publish_channel = serializer.instance
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=ftp_publish_channel.publish_entry,
+            action=f"FTPPublishChannel: [{ftp_publish_channel}] has been updated with the data: [{serializer.data}]."
+        )
+        log.info(f"FTPPublishChannel: [{ftp_publish_channel}] has been updated with the data: [{serializer.data}] from the PublishEntry: [{ftp_publish_channel.publish_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        publish_entry = instance.publish_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=publish_entry,
+            action=f"FTPPublishChannel: [{instance}] has been deleted."
+        )
+        log.info(f"FTPPublishChannel: [{instance}] has been deleted from the PublishEntry: [{publish_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
 
 
 @drf_utils.extend_schema(tags=["Publisher - FTP Publish Channels"])
