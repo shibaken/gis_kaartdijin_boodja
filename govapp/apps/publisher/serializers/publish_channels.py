@@ -188,8 +188,6 @@ def _has_null(*args):
     return False
 
 
-
-
 class FTPPublishChannelSerializer(serializers.ModelSerializer):
     """FTP Publish Channel Model Serializer."""
     #workspace_name = serializers.ReadOnlyField(source='workspace.name')
@@ -200,14 +198,7 @@ class FTPPublishChannelSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = (
             "id",
-            # "name",
-            # "ftp_server",
-            # "format",
-            # "frequency",
              "published_at",
-            # "publish_entry",
-            # "path",
-            # "description"
         )
 
 
@@ -223,8 +214,6 @@ class FTPPublishChannelCreateSerializer(serializers.ModelSerializer):
             "id",
             "published_at",
         )
-
-
 
 
 class FTPServerSerializer(serializers.ModelSerializer):

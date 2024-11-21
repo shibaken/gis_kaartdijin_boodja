@@ -108,7 +108,6 @@ class CatalogueEntryViewSet(
 
     @decorators.action(detail=False, methods=["POST"], permission_classes=[accounts_permissions.IsInCatalogueAdminGroup])
     def upload_file(self, request: request.Request):
-        catalogue_entry = self.get_object()
         if request.FILES:
             # uploaded_files = []  # Multiple files might be uploaded
             allowed_extensions = ['.zip', '.7z',]
@@ -431,6 +430,34 @@ class LayerAttributeViewSet(
         if context['request'].method == 'PUT':
             context['pk'] = self.kwargs['pk']
         return context
+
+    def perform_create(self, serializer):
+        layer_attribute = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= layer_attribute.catalogue_entry,
+            action=f"LayerAttribute: [{layer_attribute}] has been created with the data: [{serializer.data}]."
+        )
+        logger.info(f"LayerAttribute: [{layer_attribute}] has been created with the data: [{serializer.data}] from this CatalogueEntry: [{layer_attribute.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        layer_attribute = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=layer_attribute.catalogue_entry,
+            action=f"LayerAttribute: [{layer_attribute}] has been updated with the data: [{serializer.data}]."
+        )
+        logger.info(f"LayerAttribute: [{layer_attribute}] has been updated with the data: [{serializer.data}] from the CatalogueEntry: [{layer_attribute.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        catalogue_entry = instance.catalogue_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry,
+            action=f"LayerAttribute: [{instance}] has been deleted."
+        )
+        logger.info(f"LayerAttribute: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Attribute Types"])
@@ -1278,6 +1305,34 @@ class EmailNotificationViewSet(
         if context['request'].method == 'PUT':
             context['pk'] = self.kwargs['pk']
         return context
+
+    def perform_create(self, serializer):
+        email_notification = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= email_notification.catalogue_entry,
+            action=f"EmailNotification: [{email_notification}] has been created with the data: [{serializer.data}]."
+        )
+        logger.info(f"EmailNotification: [{email_notification}] has been created with the data: [{serializer.data}] from this CatalogueEntry: [{email_notification.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        email_notification = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=email_notification.catalogue_entry,
+            action=f"EmailNotification: [{email_notification}] has been updated with the data: [{serializer.data}]."
+        )
+        logger.info(f"EmailNotification: [{email_notification}] has been updated with the data: [{serializer.data}] from the CatalogueEntry: [{email_notification.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        catalogue_entry = instance.catalogue_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry,
+            action=f"EmailNotification: [{instance}] has been deleted."
+        )
+        logger.info(f"EmailNotification: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
     
 
 @drf_utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
@@ -1301,7 +1356,7 @@ class WebhookNotificationViewSet(
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Permissions"])
-class CataloguePermissionViewSet(
+class CatalogueEntryPermissionViewSet(
     mixins.MultipleSerializersMixin,
     viewsets.mixins.ListModelMixin,
     viewsets.mixins.CreateModelMixin,
@@ -1315,3 +1370,31 @@ class CataloguePermissionViewSet(
     filterset_class = filters.CataloguePermissionFilter
     permission_classes = [permissions.HasCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
     pagination_class = None
+
+    def perform_create(self, serializer):
+        catalogue_entry_permission = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= catalogue_entry_permission.catalogue_entry,
+            action=f"AccessPermission: [{catalogue_entry_permission}] has been created with the data: [{serializer.data}]."
+        )
+        logger.info(f"AccessPermission: [{catalogue_entry_permission}] has been created with the data: [{serializer.data}] from this CatalogueEntry: [{catalogue_entry_permission.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        catalogue_entry_permission = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry_permission.catalogue_entry,
+            action=f"AccessPermission: [{catalogue_entry_permission}] has been updated with the data: [{serializer.data}]."
+        )
+        logger.info(f"AccessPermission: [{catalogue_entry_permission}] has been updated with the data: [{serializer.data}] from the CatalogueEntry: [{catalogue_entry_permission.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        catalogue_entry = instance.catalogue_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=catalogue_entry,
+            action=f"AccessPermission: [{instance}] has been deleted."
+        )
+        logger.info(f"AccessPermission: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)

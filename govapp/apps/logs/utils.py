@@ -4,6 +4,7 @@
 # Third-Party
 from django.db import models
 from django.contrib.auth import models as auth_models
+from django.contrib import auth
 
 # Local
 from govapp.apps.logs import models as logs_models
@@ -16,18 +17,28 @@ def add_to_actions_log(
     user: Union[auth_models.User, auth_models.AnonymousUser],
     model: models.Model,
     action: str,
+    default_to_system: bool = False,
 ) -> logs_models.ActionsLogEntry:
-    """Adds an Actions Log entry for the specified model.
 
-    Args:
-        user (Union[auth_models.User, auth_models.AnonymousUser]): User to
-            attribute this actions Log entry to.
-        model (models.Model): Model for the actions log entry.
-        action (str): Content of the actions log entry.
+    if user is None and default_to_system:
+        UserModel = auth.get_user_model()
+        system_email = 'gis_system@dbca.wa.gov.au'
+        first_name = 'GIS'
+        last_name = 'System'
+        
+        try:
+            user = UserModel.objects.get(email=system_email)
+        except UserModel.DoesNotExist:
+            user = UserModel.objects.create_user(
+                username=system_email,
+                email=system_email,
+                password=UserModel.objects.make_random_password(),
+                is_staff=True,
+                is_superuser=False,
+                first_name=first_name,
+                lost_name=last_name,
+            )
 
-    Returns:
-        logs_models.ActionsLogEntry: The created actions log entry.
-    """
     # Create and Return Actions Log Entry
     return logs_models.ActionsLogEntry.objects.create(
         content_object=model,  # type: ignore

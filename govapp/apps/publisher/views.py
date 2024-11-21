@@ -103,7 +103,7 @@ class PublishEntryViewSet(
         log.info(f"PublishEntry: [{publish_entry}] has been created with the data: [{serializer.data}] by the user: [{self.request.user}].")
 
     def perform_update(self, serializer):
-        publish_entry = serializer.instance
+        publish_entry = serializer.save()
         logs_utils.add_to_actions_log(
             user=self.request.user,
             model=publish_entry,
@@ -156,7 +156,7 @@ class PublishEntryViewSet(
         logs_utils.add_to_actions_log(
             user=request.user,
             model=publish_entry,
-            action="Publish entry was manually re-published to both channels"
+            action=f"PublishEntry: [{publish_entry}] has been manually re-published to all the channels."
         )
 
         # Return Response
@@ -194,7 +194,7 @@ class PublishEntryViewSet(
         logs_utils.add_to_actions_log(
             user=request.user,
             model=publish_entry,
-            action="Publish entry was manually re-published to the CDDP channel"
+            action=f"PublishEntry: [{publish_entry}] has been manually re-published to the CDDP channel."
         )
 
         # Return Response
@@ -235,6 +235,11 @@ class PublishEntryViewSet(
             res = geoserver_manager.push(publish_entry=publish_entry, 
                                                symbology_only=symbology_only, 
                                                submitter=request.user)
+            logs_utils.add_to_actions_log(
+                user=request.user,
+                model=publish_entry,
+                action=f"PublishEntry: [{publish_entry}] has been manually pushed to the GeoServerQueue."
+            )
         if res:
             return response.Response(status=status.HTTP_204_NO_CONTENT)
         else :
@@ -642,7 +647,7 @@ class CDDPPublishChannelViewSet(
         log.info(f"CDDPPublishChannel: [{cddp_publish_channel}] has been created with the data: [{serializer.data}] from this PublishEntry: [{cddp_publish_channel.publish_entry}] by the user: [{self.request.user}].")
 
     def perform_update(self, serializer):
-        cddp_publish_channel = serializer.instance
+        cddp_publish_channel = serializer.save()
         logs_utils.add_to_actions_log(
             user=self.request.user,
             model=cddp_publish_channel.publish_entry,
@@ -690,7 +695,7 @@ class GeoServerPublishChannelViewSet(
         log.info(f"GeoServerPublishChannel: [{geoserver_publish_channel}] has been created with the data: [{serializer.data}] from this PublishEntry: [{geoserver_publish_channel.publish_entry}] by the user: [{self.request.user}].")
 
     def perform_update(self, serializer):
-        geoserver_publish_channel = serializer.instance
+        geoserver_publish_channel = serializer.save()
         logs_utils.add_to_actions_log(
             user=self.request.user,
             model=geoserver_publish_channel.publish_entry,
@@ -735,6 +740,34 @@ class EmailNotificationViewSet(
             context['pk'] = self.kwargs['pk']
         return context
 
+    def perform_create(self, serializer):
+        email_notification = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model= email_notification.publish_entry,
+            action=f"EmailNotification: [{email_notification}] has been created with the data: [{serializer.data}]."
+        )
+        log.info(f"EmailNotification: [{email_notification}] has been created with the data: [{serializer.data}] from this PublishEntry: [{email_notification.publish_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        email_notification = serializer.save()
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=email_notification.publish_entry,
+            action=f"EmailNotification: [{email_notification}] has been updated with the data: [{serializer.data}]."
+        )
+        log.info(f"EmailNotification: [{email_notification}] has been updated with the data: [{serializer.data}] from the PublishEntry: [{email_notification.publish_entry}] by the user: [{self.request.user}].")
+
+    def perform_destroy(self, instance):
+        publish_entry = instance.publish_entry
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=publish_entry,
+            action=f"EmailNotification: [{instance}] has been deleted."
+        )
+        log.info(f"EmailNotification: [{instance}] has been deleted from the PublishEntry: [{publish_entry}] by the user: [{self.request.user}].")
+        return super().perform_destroy(instance)
+
 
 @drf_utils.extend_schema(tags=["Publisher - Workspaces"])
 class WorkspaceViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
@@ -766,6 +799,9 @@ class FTPPublishChannelViewSet(
     search_fields = ["publish_entry__catalogue_entry__name",]# "publish_entry__description"]
     permission_classes = [permissions.HasPublishEntryPermissions]
 
+    # def update(self, request, *args, **kwargs):
+    #     return super().update(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         ftp_publish_channel = serializer.save()
         logs_utils.add_to_actions_log(
@@ -776,7 +812,7 @@ class FTPPublishChannelViewSet(
         log.info(f"FTPPublishChannel: [{ftp_publish_channel}] has been created with the data: [{serializer.data}] from this PublishEntry: [{ftp_publish_channel.publish_entry}] by the user: [{self.request.user}].")
 
     def perform_update(self, serializer):
-        ftp_publish_channel = serializer.instance
+        ftp_publish_channel = serializer.save()
         logs_utils.add_to_actions_log(
             user=self.request.user,
             model=ftp_publish_channel.publish_entry,
