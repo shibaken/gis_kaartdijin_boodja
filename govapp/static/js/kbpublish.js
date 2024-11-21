@@ -1413,6 +1413,7 @@ var kbpublish = {
                             $('#confirmDeleteBtn').click(function() {
                                 // Retrieve the data-json data form the 'Delete' button on the modal
                                 var btndata_json = $(this).attr('data-json');
+                                console.log({btndata_json})
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.delete_publish_geoserver(btndata.id);
                                 // Remove the data-json attribute

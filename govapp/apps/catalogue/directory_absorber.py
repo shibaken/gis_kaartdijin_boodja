@@ -26,7 +26,7 @@ from govapp.apps.catalogue import models
 from govapp.apps.catalogue import directory_notifications
 from govapp.apps.catalogue import utils
 from govapp.gis.readers import types
-
+from govapp.apps.logs import utils as logs_utils
 
 # Logging
 log = logging.getLogger(__name__)
@@ -251,6 +251,12 @@ class Absorber:
             description=metadata.description,
         )
         log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+        logs_utils.add_to_actions_log(
+            user=None,
+            model= catalogue_entry,
+            action=f"CatalogueEntry: [{catalogue_entry}] has been created.",
+            default_to_system=True
+        )
 
         # Convert to a Geojson text
         extension = pathlib.Path(archive).suffix.lower()
