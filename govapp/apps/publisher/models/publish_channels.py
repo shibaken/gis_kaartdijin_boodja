@@ -383,7 +383,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.publish_entry.catalogue_entry.name}"
+        return f"{self.id}: {self.publish_entry.name}"
 
     def perform_geoserver_layer_health_check(self):
         if not self.geoserver_pool or not self.geoserver_pool.enabled:
