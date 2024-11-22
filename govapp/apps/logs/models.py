@@ -105,6 +105,7 @@ class ActionsLogEntry(models.Model):
         """Actions Log Entry Model Metadata."""
         verbose_name = "Actions Log Entry"
         verbose_name_plural = "Actions Log Entries"
+        ordering = ["-when"]
 
     def __str__(self) -> str:
         """Provides a string representation of the object.

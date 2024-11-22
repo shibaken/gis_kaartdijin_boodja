@@ -396,6 +396,23 @@ var kbpublish = {
         kbpublish.get_publish_geoservers();
         kbpublish.get_publish_cddp();
         kbpublish.get_publish_ftp();
+        $('#confirmDeleteBtn').click(function() {
+            // Retrieve the data-json data form the 'Delete' button on the modal
+            var btndata_json = $(this).attr('data-json');
+            var btndata = JSON.parse(btndata_json);
+            var typedata = $(this).attr('data-type');
+
+            if (typedata == 'geoserver') {
+                kbpublish.delete_publish_geoserver(btndata.id);
+            } else if (typedata == 'cddp') {
+                kbpublish.delete_publish_cddp(btndata.id);
+            } else if (typedata == 'ftp') {
+                kbpublish.delete_publish_ftp(btndata.id);
+            }
+
+            // Remove the data-json attribute
+            kbpublish.close_confirmation_modal()
+        });
         kbpublish.retrieve_communication_types();
         this.retrieve_noti_types(()=>table.refresh(this.get_email_notification));
     },
@@ -485,6 +502,7 @@ var kbpublish = {
         });
     },
     delete_publish_geoserver: function(geoserver_publish_id) {        
+        console.log('delete_publish_geoserver');
         var publish_id = $('#publish_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
@@ -502,6 +520,7 @@ var kbpublish = {
         });
     },
     delete_publish_cddp: function(cddp_publish_id) {        
+        console.log('delete_publish_cddp');
         var publish_id = $('#publish_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
@@ -520,6 +539,7 @@ var kbpublish = {
     },
 
     delete_publish_ftp: function(ftp_publish_id) {        
+        console.log('delete_publish_ftp');
         var publish_id = $('#publish_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
@@ -1403,21 +1423,14 @@ var kbpublish = {
                             html+= "<tr>";                                    
                             $('#publish-geoserver-tbody').html(html);
                             $(".publish-geoserver-delete").click(function() {
+                                console.log('geoserver-delete')
                                 // Copy data-json to the 'Delete' button on the modal
                                 let btndata_json = $(this).attr('data-json');
                                 $('#confirmDeleteBtn').attr('data-json', btndata_json);
+                                $('#confirmDeleteBtn').attr('data-type', 'geoserver');
                                 // Display the item to be deleted
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.open_confirmation_modal('ID: ' + btndata.id + ' ' + btndata.geoserver_pool_name)
-                            });
-                            $('#confirmDeleteBtn').click(function() {
-                                // Retrieve the data-json data form the 'Delete' button on the modal
-                                var btndata_json = $(this).attr('data-json');
-                                console.log({btndata_json})
-                                var btndata = JSON.parse(btndata_json);
-                                kbpublish.delete_publish_geoserver(btndata.id);
-                                // Remove the data-json attribute
-                                kbpublish.close_confirmation_modal()
                             });
                             $(".publish-geoserver-update").click(function() {
                                 let data = $(this).data('json')
@@ -1747,20 +1760,14 @@ var kbpublish = {
                                 html+= "<tr>";
                                 $('#publish-cddp-tbody').html(html);
                                 $(".publish-cddp-delete").click(function() {
+                                    console.log('cddp-delete')
                                     // Copy data-json to the 'Delete' button on the modal
                                     let btndata_json = $(this).attr('data-json');
                                     $('#confirmDeleteBtn').attr('data-json', btndata_json);
+                                    $('#confirmDeleteBtn').attr('data-type', 'cddp');
                                     // Display the item to be deleted
                                     var btndata = JSON.parse(btndata_json);
-                                    kbpublish.open_confirmation_modal('ID: ' + btndata.id)
-                                });
-                                $('#confirmDeleteBtn').click(function() {
-                                    // Retrieve the data-json data form the 'Delete' button on the modal
-                                    var btndata_json = $(this).attr('data-json');
-                                    var btndata = JSON.parse(btndata_json);
-                                    kbpublish.delete_publish_cddp(btndata.id);
-                                    // Remove the data-json attribute
-                                    kbpublish.close_confirmation_modal()
+                                    kbpublish.open_confirmation_modal('ID: ' + btndata.id + ' of CDDP Publish Entry')
                                 });
                                 $(".publish-cddp-update").click(function() {
                                     let data = $(this).data('json')
@@ -1832,23 +1839,17 @@ var kbpublish = {
                             html+= "<tr>";
 
                             $('#publish-ftp-tbody').html(html);
-                            $( ".publish-ftp-delete" ).click(function() {
+                            $(".publish-ftp-delete").click(function() {
+                                console.log('ftp-delete')
                                 // Copy data-json to the 'Delete' button on the modal
                                 let btndata_json = $(this).attr('data-json');
                                 $('#confirmDeleteBtn').attr('data-json', btndata_json);
+                                $('#confirmDeleteBtn').attr('data-type', 'ftp');
                                 // Display the item to be deleted
                                 var btndata = JSON.parse(btndata_json);
-                                kbpublish.open_confirmation_modal('ID: ' + btndata.id)
+                                kbpublish.open_confirmation_modal('ID: ' + btndata.id + ' of FTP Publish Entry')
                             });
-                            $('#confirmDeleteBtn').click(function() {
-                                // Retrieve the data-json data form the 'Delete' button on the modal
-                                var btndata_json = $(this).attr('data-json');
-                                var btndata = JSON.parse(btndata_json);
-                                kbpublish.delete_publish_ftp(btndata.id);
-                                // Remove the data-json attribute
-                                kbpublish.close_confirmation_modal()
-                            });
-                            $( ".publish-ftp-update" ).click(function() {
+                            $(".publish-ftp-update").click(function() {
                                 var btndata_json = $(this).attr('data-json');
                                 var btndata = JSON.parse(btndata_json);
                                 kbpublish.show_update_ftp_modal(btndata);
@@ -1867,8 +1868,6 @@ var kbpublish = {
                 $('#save-publish-popup-error').html("Error Loading publish data");
                 $('#save-publish-popup-error').show();
                 $('#save-publish-tbody').html('');
-
-                console.log('Error Loading publish data');
             },
         });
     },
