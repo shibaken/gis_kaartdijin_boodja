@@ -1732,7 +1732,7 @@ var kbpublish = {
                 var html = '';
 
                 if (response != null) {
-                    $('#publish-cddp-user-path').text(response.cddp_user_path)
+                    $('#publish-cddp-user-path, #publish-cddp-user-xml-path').text(response.cddp_user_path)
                     if (response.cddp_publish_entries_list != null) {
                         if (response.cddp_publish_entries_list.length > 0) {
                             var responsejson = response.cddp_publish_entries_list;
