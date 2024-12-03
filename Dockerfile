@@ -61,20 +61,10 @@ COPY timezone /etc/timezone
 ENV TZ=Australia/Perth
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# kubernetes health checks script
-RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin/health_check.sh -O /bin/health_check.sh
-RUN chmod 755 /bin/health_check.sh
-
-# add python cron
-RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin-python/scheduler/scheduler.py -O /bin/scheduler.py
-RUN chmod 755 /bin/scheduler.py
-
-# Add azcopy to container
-RUN mkdir /tmp/azcopy/
-RUN wget https://aka.ms/downloadazcopy-v10-linux -O /tmp/azcopy/azcopy.tar.gz
-RUN cd /tmp/azcopy/ ; tar -xzvf azcopy.tar.gz
-RUN cp /tmp/azcopy/azcopy_linux_amd64_10.*/azcopy /bin/azcopy
-RUN chmod 755 /bin/azcopy
+# Default Scripts
+RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin/default_script_installer.sh -O /tmp/default_script_installer.sh
+RUN chmod 755 /tmp/default_script_installer.sh
+RUN /tmp/default_script_installer.sh
 
 COPY startup.sh /
 RUN chmod 755 /startup.sh
@@ -84,7 +74,7 @@ USER oim
 #ENV POETRY_VERSION=1.3.2
 RUN virtualenv /app/venv
 ENV PATH=/app/venv/bin:$PATH
-
+RUN git config --global --add safe.directory /app
 # RUN curl -sSL https://install.python-poetry.org | python -
 #RUN ln -s /root/.local/bin/poetry /usr/bin/poetry
 #RUN poetry config virtualenvs.create false
