@@ -24,7 +24,7 @@ from rest_framework.decorators import action
 from rest_framework import filters as rest_filters
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.renderers import DatatablesRenderer
-
+from rest_framework.renderers import JSONRenderer
 # Local
 from govapp import settings
 from govapp.apps.accounts.serializers import UserSerializer
@@ -1027,7 +1027,6 @@ class GeoServerGroupViewSet(
     ):
     queryset = GeoServerGroup.objects.all()
     serializer_class = GeoServerGroupSerializer
-    # pagination_class = CustomPageNumberPagination
     permission_classes = [accounts_permissions.CanAccessOptionMenu,]
     pagination_class = DatatablesPageNumberPagination
     renderer_classes = [DatatablesRenderer,]
@@ -1151,6 +1150,7 @@ class GeoServerGroupViewSet(
                 )
 
             # pagination
+            # self.renderer_classes = [JSONRenderer,]
             paginator = Paginator(available_users, page_size)
             current_page = paginator.page(page)
 
@@ -1162,12 +1162,7 @@ class GeoServerGroupViewSet(
                 for user in current_page
             ]
 
-            return Response({
-                "results": results,
-                "pagination": {
-                    "more": current_page.has_next()
-                }
-            })
+            return Response(results)
 
         except GeoServerGroup.DoesNotExist:
             return Response(
