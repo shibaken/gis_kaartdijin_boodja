@@ -284,7 +284,7 @@
                         role_id: roleId
                     },
                     success: function(response) {
-                        if (response.success) {
+                        if (response.data.success) {
                             $('#geoservergroup_roles_table').DataTable().ajax.reload();
                             FeedbackModal.showFeedback("Role removed successfully.", true);
                         } else {
@@ -345,13 +345,14 @@
 
             function fetchAvailableRoles() {
                 $.ajax({
-                    url: "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles_available",
+                    url: "/api/publish/geoservergroup/{{ geoserver_group.id }}/roles_available/",
                     type: 'GET',
                     success: function(data) {
+                        console.log({data})
                         var select = $('#roleSelect');
                         select.empty();
                         select.append($('<option></option>').attr('value', '').text('Choose a role...'));
-                        $.each(data, function(i, role) {
+                        $.each(data.data, function(i, role) {
                             select.append($('<option></option>').attr('value', role.id).text(role.name));
                         });
                     },
@@ -376,7 +377,7 @@
                         csrfmiddlewaretoken: $('#csrfmiddlewaretoken').val()
                     },
                     success: function(response) {
-                        if (response.success) {
+                        if (response.data.success) {
                             $('#addRoleModal').modal('hide');
                             $('#geoservergroup_roles_table').DataTable().ajax.reload();
                             FeedbackModal.showFeedback("Role added successfully.", true);
@@ -400,7 +401,7 @@
                         user_id: userId
                     },
                     success: function(response) {
-                        if (response.success) {
+                        if (response.data.success) {
                             $('#geoservergroup_users_table').DataTable().ajax.reload();
                             FeedbackModal.showFeedback("User removed successfully.", true);
                         } else {
@@ -471,9 +472,10 @@
                             'X-CSRFToken': $('#csrfmiddlewaretoken').val()
                         },
                         success: function(response) {
+                            console.log({response})
                             $('#addUserModal').modal('hide');
                             $('#geoservergroup_users_table').DataTable().ajax.reload();
-                            FeedbackModal.showFeedback(response.message, true);
+                            FeedbackModal.showFeedback(response.data.message, true);
                         },
                         error: function(xhr, status, error) {
                             FeedbackModal.showFeedback('Error: ' + xhr.responseJSON.error, false);
@@ -490,7 +492,7 @@
                     placeholder: 'Search for a user...',
                     allowClear: true,
                     ajax: {
-                        url: "/api/publish/geoservergroup/{{ geoserver_group.id }}/users_available",
+                        url: "/api/publish/geoservergroup/{{ geoserver_group.id }}/users_available/",
                         dataType: 'json',
                         delay: 250,
                         data: function(params) {
@@ -500,11 +502,13 @@
                             };
                         },
                         processResults: function(data, params) {
+                            console.log({data})
+                            console.log({params})
                             params.page = params.page || 1;
                             return {
-                                results: data.results,
+                                results: data.data,
                                 pagination: {
-                                    more: data.pagination.more
+                                    more: (params.page * 10) < data.recordsFiltered // Assuming 10 results per page
                                 }
                             };
                         },
