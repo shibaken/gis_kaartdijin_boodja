@@ -103,20 +103,13 @@ class Absorber:
             else:
                 filepaths_to_process.append(path_to_file)
 
-            tiff_exists = any(pathlib.Path(path).suffix.lower() in ['.tif', '.tiff',] for path in filepaths_to_process)
-
-            # Process all the files
-            if tiff_exists:
-                for filepath in filepaths_to_process:
-                    if filepath.lower().endswith(('.tiff', '.tif')):
-                        # Call a different function if the file is a TIFF
-                        self.process_tiff_file(filepath)
-            else:
-                # Call the original function for other file types
-                # self.process_vector_file(path_to_file)
-                for filepath in filepaths_to_process:
-                    self.process_vector_file(filepath)
-            
+            for filepath in filepaths_to_process:
+                if pathlib.Path(filepath).suffix.lower() in ['.tif', '.tiff']:
+                    # Call a different function if the file is a TIFF
+                    self.process_tiff_file(filepath)
+                else:
+                    # Call the original function for other file types
+                    self.process_vector_file(filepath) 
         finally:
             pass
         #     if os.path.exists(temp_dir):
