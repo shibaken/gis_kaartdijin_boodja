@@ -453,7 +453,7 @@ class Absorber:
         
         # Change the file name with uuid and join with the data storage path
         filename_to = f"{path_from.stem}_{str(uuid.uuid4())}{path_from.suffix}"
-        path_to = f"{data_storage_path}/{filename_to}"
+        path_to = os.path.join(data_storage_path, filename_to)
 
         # Move the file into a folder named date(ddmmyyyy) in the data storage
         if self.storage.move_to_storage(str(path_from), path_to):
