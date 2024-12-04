@@ -113,7 +113,9 @@ class Absorber:
                         self.process_tiff_file(filepath)
             else:
                 # Call the original function for other file types
-                self.process_vector_file(path_to_file)
+                # self.process_vector_file(path_to_file)
+                for filepath in filepaths_to_process:
+                    self.process_vector_file(filepath)
             
         finally:
             pass
@@ -447,13 +449,22 @@ class Absorber:
     def move_file_to_storage_with_uniquename(self, path_from:pathlib.Path):
         # Create a new folder hierarchically named to today's date(./yyyy/mm/dd) in the data storage when it dosen't exist
         # date_str = datetime.date.today().strftime("%d%m%Y")
-        data_storage_path = f"{self.storage.get_data_storage_path()}/geojson/{datetime.date.today().year}/{str(datetime.date.today().month).zfill(2)}/{datetime.date.today().day}"
+        # data_storage_path = f"{self.storage.get_data_storage_path()}/geojson/{datetime.date.today().year}/{str(datetime.date.today().month).zfill(2)}/{datetime.date.today().day}"
+
+        data_storage_path = os.path.join(
+            self.storage.get_data_storage_path(),
+            "geojson",
+            str(datetime.date.today().year),
+            str(datetime.date.today().month).zfill(2),
+            str(datetime.date.today().day)
+        )
+
         if not os.path.exists(data_storage_path):
             os.makedirs(data_storage_path)
         
         # Change the file name with uuid and join with the data storage path
         filename_to = f"{path_from.stem}_{str(uuid.uuid4())}{path_from.suffix}"
-        path_to = f"{data_storage_path}/{filename_to}"
+        path_to = os.path.join(data_storage_path, filename_to)
 
         # Move the file into a folder named date(ddmmyyyy) in the data storage
         if self.storage.move_to_storage(str(path_from), path_to):
