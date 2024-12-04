@@ -48,6 +48,7 @@ class Absorber:
 
         # Move the file on the remote storage into the archive area
         # The file is renamed to include a UTC timestamp, to avoid collisions
+        import pytz
         timestamp = datetime.datetime.now(pytz.utc)
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
         archive_directory = f"{conf.settings.SHAREPOINT_INPUT_ARCHIVE_AREA}/{timestamp.year}"
