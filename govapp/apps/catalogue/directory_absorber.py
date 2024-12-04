@@ -448,6 +448,7 @@ class Absorber:
         # Create a new folder hierarchically named to today's date(./yyyy/mm/dd) in the data storage when it dosen't exist
         # date_str = datetime.date.today().strftime("%d%m%Y")
         data_storage_path = f"{self.storage.get_data_storage_path()}/geojson/{datetime.date.today().year}/{str(datetime.date.today().month).zfill(2)}/{datetime.date.today().day}"
+
         if not os.path.exists(data_storage_path):
             os.makedirs(data_storage_path)
         
