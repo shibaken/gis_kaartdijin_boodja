@@ -16,9 +16,11 @@ from govapp.gis.readers import base
 # Typing
 from typing import Iterable
 
+from govapp.gis.readers.formats.geojson import GeoJSONReader
+
 
 # Logging
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class FileReader:
@@ -33,14 +35,27 @@ class FileReader:
         # Store filepath
         # Decompress and Flatten if Required
         self.file = file
-        self.file = compression.decompress(self.file)
-        self.file = compression.flatten(self.file)
+        self.file = compression.decompress(self.file)  # Extracted foler path is returned when the file is a compressed file, otherwise the file path is returned
+        self.file = compression.flatten(self.file)  # Returns the path to the innermost single subdirectory if only one subdirectory exists at each level, otherwise it returns the original path.
 
         # Get layer reader class
         self.reader = utils.get_reader(self.file)
-            
-        # Load data source
-        value = ogr.Open(str(self.file))
+
+        if self.reader == GeoJSONReader:
+            logger.info(f'self.reader is GeoJSONReader class')
+            geojson_files = self.reader.get_geojson_files(self.file)
+            logger.info(f'files: {geojson_files}')
+            if len(geojson_files) == 1:
+                # Load data source
+                value = ogr.Open(str(geojson_files[0]))
+            else:
+                logger.error(f'There are more than one GeoJSON files in the folder: [{self.file}]')
+                raise ValueError(f'There are more than one GeoJSON files in the folder: [{self.file}]')
+        else:
+            # Load data source
+            value = ogr.Open(str(self.file))  # !!! This function can accept a path to a folder as a parameter, depending on the specific driver and data source.
+
+        logger.info(f'value from ogr.Open([{self.file}]): [{value}]')
 
         if value:
             self.datasource = value
