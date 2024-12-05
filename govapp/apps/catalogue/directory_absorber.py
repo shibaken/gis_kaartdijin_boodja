@@ -66,7 +66,7 @@ class Absorber:
 
         # # Log
         log.info(f"Retrieved '{path}' -> '{filepath}'")
-        log.info(f"Archived '{path}' -> {storage_path} ({archive})")
+        log.info(f"Archived '{filepath}' -> {storage_path} ({archive})")
 
         self.process_file(storage_path)
         
@@ -113,16 +113,10 @@ class Absorber:
                         self.process_tiff_file(filepath)
             else:
                 # Call the original function for other file types
-                # self.process_vector_file(path_to_file)
-                for filepath in filepaths_to_process:
-                    self.process_vector_file(filepath)
-            
+                self.process_vector_file(path_to_file)
+
         finally:
             pass
-        #     if os.path.exists(temp_dir):
-        #         # Clean up temp directory
-        #         shutil.rmtree(temp_dir)
-        #         log.info(f'Remove the directory: [{temp_dir}]')
 
     def process_tiff_file(self, filepath):
         # Convert the file path to a pathlib.Path object
@@ -170,7 +164,6 @@ class Absorber:
     def process_vector_file(self, filepath):
         pathlib_filepath = pathlib.Path(filepath)
         # # Construct Reader
-        # reader = readers.reader.FileReader(filepath)
         reader = readers.reader.FileReader(pathlib_filepath)
 
         result = {'total':reader.layer_count(), 'success':[], 'fail':[]}
@@ -262,7 +255,8 @@ class Absorber:
 
         # Convert to a Geojson text
         extension = pathlib.Path(archive).suffix.lower()
-        geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
+        # geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
+        geojson_path = '' if extension in ['.tif', '.tiff', '.zip', '.7z',] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
         self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, True)
@@ -317,7 +311,7 @@ class Absorber:
 
         # Convert to a Geojson text
         extension = pathlib.Path(archive).suffix.lower()
-        geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
+        geojson_path = '' if extension in ['.tif', '.tiff', '.zip', '.7z',] else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create New Layer Submission
         layer_submission = self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, False)

@@ -31,7 +31,7 @@ def get_reader(file: pathlib.Path) -> type[base.LayerReader]:
     for reader in base.readers:
         # Check if this reader is compatible
         if reader.is_compatible(file):
-            # Return the reader class
+            # Return the reader class, NOT an instance!!!
             return reader
 
     # Raise
