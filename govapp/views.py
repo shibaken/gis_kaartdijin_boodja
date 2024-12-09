@@ -293,6 +293,7 @@ class CatalogueEntriesPage(base.TemplateView):
         context['catalogue_entry_list'] = catalogue_entry_list
         context['tab'] = 'catalogue_entries'
         context['ce_types_to_display'] = ce_types_to_display
+        context['extensions'] = settings.ALLOWED_EXTENSIONS_TO_UPLOAD
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
