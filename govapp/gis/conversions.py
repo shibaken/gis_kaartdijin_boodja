@@ -73,7 +73,7 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
     #return output_filepath
 
 
-def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
+def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = None, export_method: str = None) -> pathlib.Path:
     """Converts a GIS file to the GeoJSON format.
 
     Args:
