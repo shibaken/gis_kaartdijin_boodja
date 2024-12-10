@@ -409,3 +409,5 @@ if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
         environment=EMAIL_INSTANCE.lower(),
         release=APPLICATION_VERSION,
     )
+
+FILE_UPLOAD_PERMISSIONS = None

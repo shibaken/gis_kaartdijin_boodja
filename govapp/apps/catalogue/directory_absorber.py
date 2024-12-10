@@ -53,6 +53,7 @@ class Absorber:
         filepath = pathlib.Path(filepath)
         # Move the file on the remote storage into the archive area
         # The file is renamed to include a UTC timestamp, to avoid collisions
+        import pytz
         timestamp = datetime.datetime.now(pytz.utc)
         timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
         storage_directory = os.path.join(self.storage.get_data_storage_path(), f'{timestamp.year}')
