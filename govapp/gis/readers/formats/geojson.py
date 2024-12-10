@@ -53,8 +53,9 @@ class GeoJSONReader(base.LayerReader):
             data = json.load(f)
             if 'name' in data:
                 return True
-            logger.error(f'The GeoJSON file does not have a name property at the top level: [{geojson_file}]')
-            raise ValueError(f'The GeoJSON file does not have a name property at the top level: [{geojson_file}]')
+            msg = f'The GeoJSON file does not have a \'name\' property at the top level: [{geojson_file}].  The \'name\' property is used as a catalogue entry name.'
+            logger.error(msg)
+            raise ValueError(msg)
 
     @classmethod
     def contain_single_geojson(cls, path_to_folder):

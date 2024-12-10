@@ -37,6 +37,7 @@ class Absorber:
         """Instantiates the Absorber."""
         # Storage
         self.storage = local_storage.LocalStorage()
+        self.ext_not_convert_to_geojson = ['.tif', '.tiff', '.zip', '.7z', '.tar', '.rar']
 
     def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
@@ -254,8 +255,7 @@ class Absorber:
 
         # Convert to a Geojson text
         extension = pathlib.Path(archive).suffix.lower()
-        # geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
-        geojson_path = '' if extension in ['.tif', '.tiff', '.zip', '.7z',] else self.convert_to_geojson(archive, catalogue_entry)
+        geojson_path = '' if extension in self.ext_not_convert_to_geojson else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
         self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, True)
@@ -310,7 +310,7 @@ class Absorber:
 
         # Convert to a Geojson text
         extension = pathlib.Path(archive).suffix.lower()
-        geojson_path = '' if extension in ['.tif', '.tiff', '.zip', '.7z',] else self.convert_to_geojson(archive, catalogue_entry)
+        geojson_path = '' if extension in self.ext_not_convert_to_geojson else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create New Layer Submission
         layer_submission = self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, False)
