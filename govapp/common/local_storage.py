@@ -24,9 +24,9 @@ class LocalStorage():
             return pathlib.Path(filepath).suffix
     
     def move_to_storage(self, from_file_location, to_file_location):
-        try:
-            #os.rename(from_file_location,to_file_location)
-            shutil.move(from_file_location,to_file_location)
+        try:            
+            shutil.copyfile(from_file_location,to_file_location)
+            os.unlink(from_file_location)            
         except Exception as e:
             print (e)
             return False
