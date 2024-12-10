@@ -72,7 +72,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
         # Convert Layer to GeoJSON
         geojson = gis.conversions.to_geojson(
             filepath=filepath,
-            layer=entry.metadata.name,
+            layer=entry.metadata.name
         )
 
         if settings.WEBHOOK_ENABLED:
