@@ -120,8 +120,8 @@ class GeoServerHealthCheckAdmin(reversion.admin.VersionAdmin):
 
 
 class CDDPPublishChannelAdmin(reversion.admin.VersionAdmin):
-    search_fields = ('id', 'publish_entry__description',)
-    list_display = ('id', 'publish_entry_link', 'format', 'mode', 'frequency', 'path', 'xml_path', 'published_at',)
+    search_fields = ('id', 'name', 'publish_entry__description',)
+    list_display = ('id', 'name', 'publish_entry_link', 'format', 'mode', 'frequency', 'path', 'xml_path', 'published_at',)
     list_filter = ('format', 'mode', 'frequency',)
     raw_id_fields = ('publish_entry',)
     

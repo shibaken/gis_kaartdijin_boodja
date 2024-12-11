@@ -16,7 +16,7 @@ from govapp.gis import compression
 log = logging.getLogger(__name__)
 
 
-def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
+def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
     """Converts a GIS file to the GeoPackage format.
 
     Args:
@@ -38,42 +38,43 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
     output_filepath = pathlib.Path(output_dir) / f"{layer}.gpkg"
 
     if export_method =='geoserver':
-        subprocess.check_call(
-            [
-                "ogr2ogr",
-                "-overwrite",
-                str(output_filepath),
-                str(filepath),
-                str(layer),
-                "-nln",
-                str(layer),
-            ]
-        )
-
+        command = [
+            "ogr2ogr",
+            "-overwrite",
+            str(output_filepath),
+            str(filepath),
+            str(layer),
+            "-nln",
+            str(layer),
+        ]
     else:
-        # Run Command
-        subprocess.check_call(  # noqa: S603,S607
-            [
-                "ogr2ogr",
-                "-update",
-                "-overwrite",
-                "-nln", 
-                str(layer),                 #'Name' box in new CDDP dialogue
-                str(output_filepath),
-                str(filepath),              
-                str(catalogue_name)         # Catalogue name
-            ]
+        command = [
+            "ogr2ogr",
+            "-update",
+            "-overwrite",
+            "-nln", 
+            str(layer),                 #'Name' box in new CDDP dialogue
+            str(output_filepath),
+            str(filepath),              
+            str(catalogue_name)         # Catalogue name
+        ]
 
+    log.info(f"Running command: [{' '.join(command)}]")
 
-        )
+    # Run the command
+    subprocess.check_call(command)
+    
     converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
+
+    log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoPackage successfully.")
+    log.info(f'converted: [{converted}]')
 
     # Return
     return converted
     #return output_filepath
 
 
-def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = None, export_method: str = None) -> pathlib.Path:
+def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', export_method: str = '') -> pathlib.Path:
     """Converts a GIS file to the GeoJSON format.
 
     Args:
@@ -96,14 +97,18 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = None, e
 
     # Run Command
     try:
+        command = [
+            "ogr2ogr",
+            "-unsetFid",
+            str(output_filepath),
+            str(filepath),
+            str(layer),
+        ]
+        log.info(f"Running command: [{' '.join(command)}]")
+
+        # Run the command
         subprocess.check_call(  # noqa: S603,S607
-            [
-                "ogr2ogr",
-                "-unsetFid",
-                str(output_filepath),
-                str(filepath),
-                str(layer),
-            ],
+            command,
             timeout=1800,  # 30min
         )
     except subprocess.TimeoutExpired as e:
@@ -113,10 +118,12 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = None, e
         log.error(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
         raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON")
 
+    log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoJSON successfully.")
+
     return pathlib.Path(output_filepath)
 
 
-def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
+def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
     """Converts a GIS file to the ShapeFile format.
 
     Args:
@@ -140,27 +147,32 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
     output_filepath.mkdir(parents=True, exist_ok=True)
     output_filepath = output_filepath / f"{layer}.shp"
 
-    # Run Command
-    subprocess.check_call(  # noqa: S603,S607
-        [
-            "ogr2ogr",
-            "-overwrite",
-            "-unsetFid",
-            str(output_filepath),
-            str(filepath),        
-            str(catalogue_name),
-        ]
-    )
+    command = [
+        "ogr2ogr",
+        "-overwrite",
+        "-unsetFid",
+        str(output_filepath),
+        str(filepath),        
+        str(catalogue_name)
+    ]
+
+    log.info(f"Running command: [{' '.join(command)}]")
+
+    # Run the command
+    subprocess.check_call(command)
 
     # Compress!
     compressed_filepath = compression.compress(output_filepath.parent)
     converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent}
 
+    log.info(f"Converted file [{filepath}], layer: [{layer}] to Shapefile successfully.")
+    log.info(f'converted: [{converted}]')
+
     # Return
     return converted
 
 
-def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> pathlib.Path:
+def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
     """Converts a GIS file to the GeoDatabase format.
 
     Args:
@@ -185,18 +197,8 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
     output_filepath.mkdir(parents=True, exist_ok=True)
     output_filepath = output_filepath / f"{layer}.gdb"
 
-    # Run Command
-    subprocess.check_call(  # noqa: S603,S607
-        # [
-        #     "ogr2ogr",
-        #     "-overwrite",
-        #     "-append",
-        #     str(output_filepath),
-        #     str(filepath),
-        #     "-nln",
-        #     str(layer),
-        # ]
-        [
+    # Construct the command
+    command = [
         "ogr2ogr",
         "-update",
         "-overwrite",
@@ -205,30 +207,33 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
         str(output_filepath),
         str(filepath),
         str(layer)
-        ]
+    ]
 
+    log.info(f"Running command: [{' '.join(command)}]")
 
-    )
+    # Run the command
+    subprocess.check_call(command)
 
     # Compress!
-    #compressed_filepath = compression.compress(output_filepath.parent)
-
     compressed_filepath = compression.compress(output_filepath.parent)
     converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent, "orignal_filepath": filepath, "filepath_before_flatten": filepath_before_flatten}
+
+    log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoDatabase successfully.")
+    log.info(f'converted: [{converted}]')
+
     # Return
     return converted
-    #return compressed_filepath
 
 
 def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str,sqlquery: str) -> pathlib.Path: 
     log.info(f"Converting custom query for the PostGIS to shapefile...")
 
-    hash_array = {}
+    converted = {}
     output_dir = tempfile.mkdtemp()
     cleaned_sqlquery = sqlquery.replace('\n', ' ')
 
-    subprocess.check_call(
-        ["pgsql2shp",
+    command = [
+        "pgsql2shp",
         "-f",
         layer_name,
         "-h", 
@@ -242,14 +247,21 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
         str(database),
         # str(sqlquery)
         str(cleaned_sqlquery)
-        ],
+    ]
+    log.info(f"Running command: [{' '.join(command)}]")
+
+    subprocess.check_call(
+        command,
         cwd=output_dir
     )
     
     compressed_filepath = compression.compress(output_dir)
-    hash_array["output_dir"] = output_dir
-    hash_array["compressed_filepath"] = compressed_filepath
-    return hash_array 
+    converted["output_dir"] = output_dir
+    converted["compressed_filepath"] = compressed_filepath
+
+    log.info(f"Converted custom query for the PostGIS to shapefile successfully.")
+
+    return converted 
 
 
 def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
