@@ -26,52 +26,61 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
     Returns:
         pathlib.Path: Path to the converted GeoPackage file.
     """
-    # Log
     log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoPackage...")
 
-    # Decompress and Flatten if Required
-    filepath = compression.decompress(filepath)
-    filepath = compression.flatten(filepath)
+    try:
+        # Decompress and Flatten if Required
+        filepath = compression.decompress(filepath)
+        filepath = compression.flatten(filepath)
 
-    # Construct Output Filepath
-    output_dir = tempfile.mkdtemp()
-    output_filepath = pathlib.Path(output_dir) / f"{layer}.gpkg"
+        # Construct Output Filepath
+        output_dir = tempfile.mkdtemp()
+        output_filepath = pathlib.Path(output_dir) / f"{layer}.gpkg"
 
-    if export_method =='geoserver':
-        command = [
-            "ogr2ogr",
-            "-overwrite",
-            str(output_filepath),
-            str(filepath),
-            str(layer),
-            "-nln",
-            str(layer),
-        ]
-    else:
-        command = [
-            "ogr2ogr",
-            "-update",
-            "-overwrite",
-            "-nln", 
-            str(layer),                 #'Name' box in new CDDP dialogue
-            str(output_filepath),
-            str(filepath),              
-            str(catalogue_name)         # Catalogue name
-        ]
+        if export_method =='geoserver':
+            command = [
+                "ogr2ogr",
+                "-overwrite",
+                str(output_filepath),
+                str(filepath),
+                str(layer),
+                "-nln",
+                str(layer),
+            ]
+        else:
+            command = [
+                "ogr2ogr",
+                "-update",
+                "-overwrite",
+                "-nln", 
+                str(layer),                 #'Name' box in new CDDP dialogue
+                str(output_filepath),
+                str(filepath),              
+                str(catalogue_name)         # Catalogue name
+            ]
+        log.info(f"Running command: [{' '.join(command)}]")
 
-    log.info(f"Running command: [{' '.join(command)}]")
+        # Run the command
+        subprocess.check_call(command)
+        log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoPackage successfully.")
+        
+        converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
+        log.info(f'converted: [{converted}]')
 
-    # Run the command
-    subprocess.check_call(command)
-    
-    converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
+        return converted
 
-    log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoPackage successfully.")
-    log.info(f'converted: [{converted}]')
-
-    # Return
-    return converted
-    #return output_filepath
+    except subprocess.TimeoutExpired as e:
+        log.error(f"The command has reached a timeout. Error converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}")
+        raise RuntimeError(f"Timeout error converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}")
+    except subprocess.CalledProcessError as e:
+        log.error(f"CalledProcessError: Error converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}")
+        raise RuntimeError(f"CalledProcessError converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}")
+    except FileNotFoundError as e:
+        log.error(f"FileNotFoundError: Error converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}")
+        raise RuntimeError(f"FileNotFoundError converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}")
+    except Exception as e:
+        log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}")
+        raise
 
 
 def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', export_method: str = '') -> pathlib.Path:
@@ -84,19 +93,17 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
     Returns:
         pathlib.Path: Path to the converted GeoJSON file.
     """
-    # Log
     log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoJSON...")
 
-    # Decompress and Flatten if Required
-    filepath = compression.decompress(filepath)
-    filepath = compression.flatten(filepath)
-
-    # Construct Output Filepath
-    output_dir = tempfile.mkdtemp()
-    output_filepath = pathlib.Path(output_dir) / f"{layer}.geojson"
-
-    # Run Command
     try:
+        # Decompress and Flatten if Required
+        filepath = compression.decompress(filepath)
+        filepath = compression.flatten(filepath)
+
+        # Construct Output Filepath
+        output_dir = tempfile.mkdtemp()
+        output_filepath = pathlib.Path(output_dir) / f"{layer}.geojson"
+
         command = [
             "ogr2ogr",
             "-unsetFid",
@@ -111,16 +118,22 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
             command,
             timeout=1800,  # 30min
         )
+        log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoJSON successfully.")
+
+        return pathlib.Path(output_filepath)
+
     except subprocess.TimeoutExpired as e:
-        log.error(f"The command has reached a 30-minute timeout.  Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
+        log.error(f"The command has reached a timeout.  Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
         raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON")
     except subprocess.CalledProcessError as e:
         log.error(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
         raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to GeoJSON")
-
-    log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoJSON successfully.")
-
-    return pathlib.Path(output_filepath)
+    except FileNotFoundError as e:
+        log.error(f"FileNotFoundError: Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
+        raise RuntimeError(f"FileNotFoundError converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
+    except Exception as e:
+        log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
+        raise
 
 
 def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
@@ -133,43 +146,54 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
     Returns:
         pathlib.Path: Path to the converted ShapeFile file.
     """
-    # Log
     log.info(f"Converting file '{filepath}' layer: '{layer}' to ShapeFile...")
 
-    # Decompress and Flatten if Required
-    filepath = compression.decompress(filepath)
-    filepath = compression.flatten(filepath)
+    try:
+        # Decompress and Flatten if Required
+        filepath = compression.decompress(filepath)
+        filepath = compression.flatten(filepath)
 
-    # Construct Output Filepath
-    # Here we double up on the `layer.shp` to ensure its in a directory
-    output_dir = tempfile.mkdtemp()
-    output_filepath = pathlib.Path(output_dir) / f"{layer}.shp"
-    output_filepath.mkdir(parents=True, exist_ok=True)
-    output_filepath = output_filepath / f"{layer}.shp"
+        # Construct Output Filepath
+        # Here we double up on the `layer.shp` to ensure its in a directory
+        output_dir = tempfile.mkdtemp()
+        output_filepath = pathlib.Path(output_dir) / f"{layer}.shp"
+        output_filepath.mkdir(parents=True, exist_ok=True)
+        output_filepath = output_filepath / f"{layer}.shp"
 
-    command = [
-        "ogr2ogr",
-        "-overwrite",
-        "-unsetFid",
-        str(output_filepath),
-        str(filepath),        
-        str(catalogue_name)
-    ]
+        command = [
+            "ogr2ogr",
+            "-overwrite",
+            "-unsetFid",
+            str(output_filepath),
+            str(filepath),        
+            str(catalogue_name)
+        ]
+        log.info(f"Running command: [{' '.join(command)}]")
 
-    log.info(f"Running command: [{' '.join(command)}]")
+        # Run the command
+        subprocess.check_call(command)
+        log.info(f"Converted file [{filepath}], layer: [{layer}] to Shapefile successfully.")
 
-    # Run the command
-    subprocess.check_call(command)
+        # Compress!
+        compressed_filepath = compression.compress(output_filepath.parent)
+        converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent}
+        log.info(f'converted: [{converted}]')
 
-    # Compress!
-    compressed_filepath = compression.compress(output_filepath.parent)
-    converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent}
+        return converted
 
-    log.info(f"Converted file [{filepath}], layer: [{layer}] to Shapefile successfully.")
-    log.info(f'converted: [{converted}]')
+    except subprocess.TimeoutExpired as e:
+        log.error(f"The command has reached a 30-minute timeout.  Error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
+        raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to Shapefile")
+    except subprocess.CalledProcessError as e:
+        log.error(f"Error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
+        raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to Shapefile")
+    except FileNotFoundError as e:
+        log.error(f"FileNotFoundError: Error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
+        raise RuntimeError(f"FileNotFoundError converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
+    except Exception as e:
+        log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
+        raise
 
-    # Return
-    return converted
 
 
 def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
@@ -182,86 +206,111 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
     Returns:
         pathlib.Path: Path to the converted GeoDatabase file.
     """
-    # Log
     log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoDatabase...")
 
-    # Decompress and Flatten if Required
-    filepath = compression.decompress(filepath)
-    filepath_before_flatten = filepath
-    filepath = compression.flatten(filepath)
+    try:
+        # Decompress and Flatten if Required
+        filepath = compression.decompress(filepath)
+        filepath_before_flatten = filepath
+        filepath = compression.flatten(filepath)
 
-    # Construct Output Filepath
-    # Here we double up on the `layer.gdb` to ensure its in a directory
-    output_dir = tempfile.mkdtemp()
-    output_filepath = pathlib.Path(output_dir) / f"{layer}.gdb"
-    output_filepath.mkdir(parents=True, exist_ok=True)
-    output_filepath = output_filepath / f"{layer}.gdb"
+        # Construct Output Filepath
+        # Here we double up on the `layer.gdb` to ensure its in a directory
+        output_dir = tempfile.mkdtemp()
+        output_filepath = pathlib.Path(output_dir) / f"{layer}.gdb"
+        output_filepath.mkdir(parents=True, exist_ok=True)
+        output_filepath = output_filepath / f"{layer}.gdb"
 
-    # Construct the command
-    command = [
-        "ogr2ogr",
-        "-update",
-        "-overwrite",
-        "-nln", 
-        str(layer),
-        str(output_filepath),
-        str(filepath),
-        str(layer)
-    ]
+        # Construct the command
+        command = [
+            "ogr2ogr",
+            "-update",
+            "-overwrite",
+            "-nln", 
+            str(layer),
+            str(output_filepath),
+            str(filepath),
+            str(layer)
+        ]
+        log.info(f"Running command: [{' '.join(command)}]")
 
-    log.info(f"Running command: [{' '.join(command)}]")
+        # Run the command
+        subprocess.check_call(command)
+        log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoDatabase successfully.")
 
-    # Run the command
-    subprocess.check_call(command)
+        # Compress!
+        compressed_filepath = compression.compress(output_filepath.parent)
+        converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent, "orignal_filepath": filepath, "filepath_before_flatten": filepath_before_flatten}
+        log.info(f'converted: [{converted}]')
 
-    # Compress!
-    compressed_filepath = compression.compress(output_filepath.parent)
-    converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent, "orignal_filepath": filepath, "filepath_before_flatten": filepath_before_flatten}
+        # Return
+        return converted
 
-    log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoDatabase successfully.")
-    log.info(f'converted: [{converted}]')
+    except subprocess.TimeoutExpired as e:
+        log.error(f"The command has reached a 30-minute timeout. Error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
+        raise RuntimeError(f"Timeout error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
+    except subprocess.CalledProcessError as e:
+        log.error(f"CalledProcessError: Error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
+        raise RuntimeError(f"CalledProcessError converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
+    except FileNotFoundError as e:
+        log.error(f"FileNotFoundError: Error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
+        raise RuntimeError(f"FileNotFoundError converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
+    except Exception as e:
+        log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
+        raise
 
-    # Return
-    return converted
 
-
-def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str,sqlquery: str) -> pathlib.Path: 
+def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str,sqlquery: str): 
     log.info(f"Converting custom query for the PostGIS to shapefile...")
 
-    converted = {}
-    output_dir = tempfile.mkdtemp()
-    cleaned_sqlquery = sqlquery.replace('\n', ' ')
+    try:
+        converted = {}
+        output_dir = tempfile.mkdtemp()
+        cleaned_sqlquery = sqlquery.replace('\n', ' ')
 
-    command = [
-        "pgsql2shp",
-        "-f",
-        layer_name,
-        "-h", 
-        str(hostname),
-        "-u", 
-        str(username),
-        "-p",
-        str(port),
-        "-P",
-        str(password),
-        str(database),
-        # str(sqlquery)
-        str(cleaned_sqlquery)
-    ]
-    log.info(f"Running command: [{' '.join(command)}]")
+        command = [
+            "pgsql2shp",
+            "-f",
+            layer_name,
+            "-h", 
+            str(hostname),
+            "-u", 
+            str(username),
+            "-p",
+            str(port),
+            "-P",
+            str(password),
+            str(database),
+            # str(sqlquery)
+            str(cleaned_sqlquery)
+        ]
+        log.info(f"Running command: [{' '.join(command)}]")
 
-    subprocess.check_call(
-        command,
-        cwd=output_dir
-    )
-    
-    compressed_filepath = compression.compress(output_dir)
-    converted["output_dir"] = output_dir
-    converted["compressed_filepath"] = compressed_filepath
+        subprocess.check_call(
+            command,
+            cwd=output_dir
+        )
+        log.info(f"Converted custom query for the PostGIS to shapefile successfully.")
+        
+        compressed_filepath = compression.compress(pathlib.Path(output_dir))
+        converted["output_dir"] = output_dir
+        converted["compressed_filepath"] = str(compressed_filepath)
+        log.info(f'converted: [{converted}]')
 
-    log.info(f"Converted custom query for the PostGIS to shapefile successfully.")
+        return converted 
 
-    return converted 
+    except subprocess.TimeoutExpired as e:
+        log.error(f"The command has reached a timeout. Error converting custom query for the PostGIS to shapefile: {e}")
+        raise RuntimeError(f"Timeout error converting custom query for the PostGIS to shapefile: {e}")
+    except subprocess.CalledProcessError as e:
+        log.error(f"CalledProcessError: Error converting custom query for the PostGIS to shapefile: {e}")
+        raise RuntimeError(f"CalledProcessError converting custom query for the PostGIS to shapefile: {e}")
+    except FileNotFoundError as e:
+        log.error(f"FileNotFoundError: Error converting custom query for the PostGIS to shapefile: {e}")
+        raise RuntimeError(f"FileNotFoundError converting custom query for the PostGIS to shapefile: {e}")
+    except Exception as e:
+        log.error(f"Unexpected error converting custom query for the PostGIS to shapefile: {e}")
+        raise
 
 
 def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
@@ -274,42 +323,53 @@ def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
     output_layer_name (str): Name of the layer to be added in the GeoPackage.
 
     """
-    log.info(f"Converting tiff file '{input_tiff}' to GeoDatabase...")
+    log.info(f"Converting tiff file: [{input_tiff}] to GeoDatabase...")
 
-    # Open the input TIFF file
-    tiff_dataset = gdal.Open(input_tiff)
-    
-    if tiff_dataset is None:
-        raise ValueError("Failed to open the input TIFF file.")
+    try:
+        # Open the input TIFF file
+        tiff_dataset = gdal.Open(input_tiff)
+        
+        if tiff_dataset is None:
+            raise ValueError("Failed to open the input TIFF file.")
 
-    # Get the GeoPackage driver
-    gpkg_driver = gdal.GetDriverByName("GPKG")
-    
-    if gpkg_driver is None:
-        log.error("GeoPackage driver is not available.")
-        raise ValueError("GeoPackage driver is not available.")
+        # Get the GeoPackage driver
+        gpkg_driver = gdal.GetDriverByName("GPKG")
+        
+        if gpkg_driver is None:
+            log.error("GeoPackage driver is not available.")
+            raise ValueError("GeoPackage driver is not available.")
 
-    # Create the GeoPackage file
-    gpkg_dataset = gpkg_driver.Create(output_gpkg,
-                                      tiff_dataset.RasterXSize,
-                                      tiff_dataset.RasterYSize,
-                                      tiff_dataset.RasterCount,
-                                      gdal.GDT_Byte)
-    
-    if gpkg_dataset is None:
-        log.error("Failed to create the GeoPackage file.")
-        raise ValueError("Failed to create the GeoPackage file.")
+        # Create the GeoPackage file
+        gpkg_dataset = gpkg_driver.Create(output_gpkg,
+                                        tiff_dataset.RasterXSize,
+                                        tiff_dataset.RasterYSize,
+                                        tiff_dataset.RasterCount,
+                                        gdal.GDT_Byte)
+        
+        if gpkg_dataset is None:
+            log.error("Failed to create the GeoPackage file.")
+            raise ValueError("Failed to create the GeoPackage file.")
 
-    # Copy data from the TIFF file to the GeoPackage file
-    for band_number in range(1, tiff_dataset.RasterCount + 1):
-        band = tiff_dataset.GetRasterBand(band_number)
-        gpkg_band = gpkg_dataset.GetRasterBand(band_number)
-        gpkg_band.WriteArray(band.ReadAsArray())
+        # Copy data from the TIFF file to the GeoPackage file
+        for band_number in range(1, tiff_dataset.RasterCount + 1):
+            band = tiff_dataset.GetRasterBand(band_number)
+            gpkg_band = gpkg_dataset.GetRasterBand(band_number)
+            gpkg_band.WriteArray(band.ReadAsArray())
 
-    # Set the layer name in the GeoPackage file
-    gpkg_dataset.SetMetadataItem("LAYERS", output_layer_name)
+        # Set the layer name in the GeoPackage file
+        gpkg_dataset.SetMetadataItem("LAYERS", output_layer_name)
 
-    # Close the GeoPackage file
-    gpkg_dataset = None
+        # Close the GeoPackage file
+        gpkg_dataset = None
 
-    log.info("Converted TIFF file to GeoPackage successfully.")
+        log.info(f'Converted tiff file: [{input_tiff}] to GeoPackage successfully.')
+
+    except ValueError as e:
+        log.error(f"ValueError: {e}")
+        raise
+    except RuntimeError as e:
+        log.error(f"RuntimeError: {e}")
+        raise
+    except Exception as e:
+        log.error(f"Unexpected error converting tiff file '{input_tiff}' to GeoPackage: {e}")
+        raise
