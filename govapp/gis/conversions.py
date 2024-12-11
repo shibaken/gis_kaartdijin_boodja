@@ -195,7 +195,6 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
         raise
 
 
-
 def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
     """Converts a GIS file to the GeoDatabase format.
 
@@ -260,7 +259,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
         raise
 
 
-def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str,sqlquery: str): 
+def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str, sqlquery: str): 
     log.info(f"Converting custom query for the PostGIS to shapefile...")
 
     try:

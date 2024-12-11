@@ -154,15 +154,9 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             case CDDPPublishChannelFormat.GEOJSON:
                 function = gis.conversions.to_geojson
 
-        # Convert Layer to Chosen Format
-        # converted = function(
-        #     filepath=filepath,
-        #     layer=self.publish_entry.catalogue_entry.metadata.name,
-        # )
-
         publish_directory = function(
             filepath=filepath,
-            layer=self.name,
+            layer=self.publish_entry.name,
             catalogue_name=self.publish_entry.catalogue_entry.name,
             export_method='cddp'
         )
