@@ -2,6 +2,7 @@
 
 # Standard
 import logging
+import os
 import shutil
 import calendar
 from datetime import datetime
@@ -182,8 +183,12 @@ class Scanner:
                 catalogue_entry_obj.layer_subscription.port,
                 catalogue_entry_obj.sql_query
             )
-            new_path = shutil.move(co["compressed_filepath"], conf.settings.PENDING_IMPORT_PATH)
-            log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{new_path}].')
+            # new_path = shutil.move(co["compressed_filepath"], conf.settings.PENDING_IMPORT_PATH)
+            source_path = co["compressed_filepath"]
+            destination_path = os.path.join(conf.settings.PENDING_IMPORT_PATH, os.path.basename(source_path))
+            shutil.copyfile(source_path, destination_path)
+            os.unlink(source_path)
+            log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{destination_path}].')
         except Exception as e:
             log.error(f"ERROR Running POSTGIS to Shapefile conversation for the CatalogueEntry: [{catalogue_entry_obj}]. error: [{e}]")
             # raise
