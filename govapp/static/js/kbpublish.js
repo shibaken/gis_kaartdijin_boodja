@@ -1230,12 +1230,24 @@ var kbpublish = {
             function(response) {
                 overlay_loading.remove();
                 button.parent().append(overlay_checkmark);
-                overlay_checkmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+                overlay_checkmark.css({
+                    top: position.top,
+                    left: position.left,
+                    width: button.outerWidth(),
+                    height: button.outerHeight(),
+                    'pointer-events': 'none'
+                }).show();
             },
             function(error) {
                 overlay_loading.remove();
                 button.parent().append(overlay_crossmark);
-                overlay_crossmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+                overlay_crossmark.css({
+                    top: position.top,
+                    left: position.left,
+                    width: button.outerWidth(),
+                    height: button.outerHeight(),
+                    'pointer-events': 'none'
+                }).show();
             },
             function(xhr, status) {
                 kbpublish.enable_buttons(publish_entry_id);
@@ -1262,13 +1274,25 @@ var kbpublish = {
             function (response) {
                 overlay_loading.remove();
                 button.parent().append(overlay_checkmark);
-                overlay_checkmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+                overlay_checkmark.css({
+                    top: position.top,
+                    left: position.left,
+                    width: button.outerWidth(),
+                    height: button.outerHeight(),
+                    'pointer-events': 'none'
+                }).show();
                 common_pagination.var.current_page=0;
             },
             function (error) {
                 overlay_loading.remove();
                 button.parent().append(overlay_crossmark);
-                overlay_crossmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+                overlay_crossmark.css({
+                    top: position.top,
+                    left: position.left,
+                    width: button.outerWidth(),
+                    height: button.outerHeight(),
+                    'pointer-events': 'none'
+                }).show();
                 if(error.status == 409){
                     common_entity_modal.show_alert("This geoserver publish is already in a queue.", "Duplicated");
                 } else if(error.status == 412){
@@ -1300,12 +1324,24 @@ var kbpublish = {
             function (response) {
                 overlay_loading.remove();
                 button.parent().append(overlay_checkmark);
-                overlay_checkmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+                overlay_checkmark.css({
+                    top: position.top,
+                    left: position.left,
+                    width: button.outerWidth(),
+                    height: button.outerHeight(),
+                    'pointer-events': 'none'
+                }).show();
             },
             function (error) {
                 overlay_loading.remove();
                 button.parent().append(overlay_crossmark);
-                overlay_crossmark.css({ top: position.top, left: position.left, width: button.outerWidth(), height: button.outerHeight() }).show();
+                overlay_crossmark.css({
+                    top: position.top,
+                    left: position.left,
+                    width: button.outerWidth(),
+                    height: button.outerHeight(),
+                    'pointer-events': 'none'
+                }).show();
             },
             function(xhr, status){
                 kbpublish.enable_buttons(publish_entry_id);

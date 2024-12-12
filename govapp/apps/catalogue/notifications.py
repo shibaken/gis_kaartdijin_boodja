@@ -72,14 +72,14 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
         # Convert Layer to GeoJSON
         geojson = gis.conversions.to_geojson(
             filepath=filepath,
-            layer=entry.metadata.name,
+            layer=entry.metadata.name
         )
 
         if settings.WEBHOOK_ENABLED:
             # Send Webhook Posts
             webhooks.post_geojson(
                 *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-                geojson=geojson,
+                geojson=geojson['full_filepath'],
             )
 
         # Delete local temporary copy of file if we can
