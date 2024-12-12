@@ -110,7 +110,7 @@ class CatalogueEntryViewSet(
     def upload_file(self, request: request.Request):
         if request.FILES:
             # uploaded_files = []  # Multiple files might be uploaded
-            allowed_extensions = ['.zip', '.7z',]
+            allowed_extensions = settings.ALLOWED_EXTENSIONS_TO_UPLOAD
             uploaded_file = request.FILES.getlist('file')[0]
             newFileName = request.POST.get('newFileName', '')
 

@@ -53,8 +53,13 @@
         </div>
         <form id="uploadForm" enctype="multipart/form-data">
           <div class="mb-3 custom-file-upload">
-            <label for="fileInput" class="form-label custom-file-label">Select File(s) [.zip, .7z]</label>
-            <input type="file" class="form-control" id="fileInput" accept=".zip,.7z" multiple>
+            <!-- <label for="fileInput" class="form-label custom-file-label">Select File(s)<br/><span style="font-size: 0.8em;">{{ extensions }}</span></label> -->
+            <label for="fileInput" class="form-label custom-file-label">Select File(s)</label>
+              <div style="font-size: 0.8em;">
+              Compressed: .zip, .7z, .tar, .rar (may include .geojson, .json, .tif, .tiff file(s))<br/>
+              Uncompressed: .geojson, .json, .tif, .tiff
+              </div>
+            <input type="file" class="form-control" id="fileInput" accept=".zip,.7z,.tar,.rar,.json,.geojson,.tif,.tiff" multiple>
           </div>
         </form>
         <div id="progressBars">

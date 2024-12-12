@@ -154,15 +154,9 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             case CDDPPublishChannelFormat.GEOJSON:
                 function = gis.conversions.to_geojson
 
-        # Convert Layer to Chosen Format
-        # converted = function(
-        #     filepath=filepath,
-        #     layer=self.publish_entry.catalogue_entry.metadata.name,
-        # )
-
         publish_directory = function(
             filepath=filepath,
-            layer=self.name,
+            layer=self.publish_entry.name,
             catalogue_name=self.publish_entry.catalogue_entry.name,
             export_method='cddp'
         )
@@ -191,7 +185,11 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             else:
                 if os.path.isfile(new_output_path):                    
                         os.remove(new_output_path)   
-            shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)), file_name), output_path)
+            # shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)), file_name), output_path)
+            source_path = os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath']) + os.path.sep + str(geodb_dir)), file_name)
+            destination_path = os.path.join(output_path, file_name)
+            shutil.copyfile(source_path, destination_path)
+            os.unlink(source_path)
 
         if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.

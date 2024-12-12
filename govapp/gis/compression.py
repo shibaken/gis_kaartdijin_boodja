@@ -58,6 +58,32 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
     log.info(f"Attemping to decompress '{file}' if required")
 
     # Check file
+    algorithm = get_compressed_algorithm(file)
+
+    # Check
+    if not algorithm:
+        log.info("No compression detected, leaving unchanged")
+        return file  # Return the original filepath
+    log.info(f"Detected compression: [{algorithm}]")
+
+    if not os.path.exists('/tmp/gis_processing/'):
+        os.makedirs('/tmp/gis_processing/')
+
+    log.info(f"Preparing decompressing the file: [{file}]...")
+    timestamp_str = datetime.datetime.now(pytz.utc).strftime("%Y%m%dT%H%M%S")
+
+    # Construct Path for Extraction
+    extracted_path = pathlib.Path("/tmp/gis_processing/extracted_" + file.stem + "_" + timestamp_str)
+    log.info(f"Decompressing the file:[{file}] to the folder: [{extracted_path}]...")
+
+    # Decompress
+    with algorithm(file) as archive:
+        archive.extractall(path=extracted_path)
+
+    return extracted_path  # Return the path to the extracted directory
+
+
+def get_compressed_algorithm(file):
     if zipfile.is_zipfile(file):
         # `.zip`
         algorithm = zipfile.ZipFile
@@ -78,36 +104,7 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
         # None!
         algorithm = None
 
-    # Check
-    if not algorithm:
-        # Log
-        log.info("No compression detected, leaving unchanged")
-
-        # Return the file unchanged
-        return file
-
-    if not os.path.exists('/tmp/gis_processing/'):
-        os.makedirs('/tmp/gis_processing/')
-
-    log.info(f"Preparing extracting...")
-    timestamp = datetime.datetime.now(pytz.utc)
-    timestamp_str = timestamp.strftime("%Y%m%dT%H%M%S")
-
-    # Construct Path for Extraction
-    #extracted_path = file.with_name(f"extracted_{file.stem}_{timestamp_str}")
-    extracted_path = pathlib.Path("/tmp/gis_processing/extracted_"+file.stem+"_"+timestamp_str)
-
-    # Log
-    log.info(f"Detected compression '{algorithm}'")
-    log.info(f"Decompressing '[{file}]' to '[{extracted_path}]'...")
-
-    # Decompress
-    with algorithm(file) as archive:
-        # Extract
-        archive.extractall(path=extracted_path)
-
-    # Return
-    return extracted_path
+    return algorithm # this is a path to the directory
 
 
 def flatten(path: pathlib.Path) -> pathlib.Path:
@@ -120,7 +117,7 @@ def flatten(path: pathlib.Path) -> pathlib.Path:
         pathlib.Path: Flattened directory.
     """
     # Log
-    log.info(f"Attemping to flatten '{path}' if required")
+    log.info(f"Attemping to flatten the directory: [{path}] if required")
 
     # Enumerate subdirectories
     subdirs = [p for p in path.glob("*") if p.is_dir()]

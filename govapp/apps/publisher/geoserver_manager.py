@@ -73,8 +73,8 @@ class GeoServerQueueExcutor:
         """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """
         query = Q(status=GeoServerQueueStatus.READY) | \
                 Q(status=GeoServerQueueStatus.ON_PUBLISHING, started_at__lte=timezone.now() - timezone.timedelta(minutes=QUEUE_EXPIRED_MINUTES))
-        
-        return geoserver_queues.GeoServerQueue.objects.filter(query)
+        target_items = geoserver_queues.GeoServerQueue.objects.filter(query).order_by('created_at')
+        return target_items
     
     def _init_excuting(self, queue_item):
         queue_item.change_status(GeoServerQueueStatus.ON_PUBLISHING)

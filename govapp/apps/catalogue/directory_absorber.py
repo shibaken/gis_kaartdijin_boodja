@@ -4,9 +4,7 @@
 import datetime
 import logging
 import pathlib
-import shutil
 import os
-import tempfile
 from typing import Optional
 import uuid
 import zipfile
@@ -16,11 +14,11 @@ from django import conf
 from django.db import transaction
 import py7zr
 import pytz
-import osgeo
+from osgeo import gdal
 
 # Local
 from govapp.common import local_storage
-from govapp.gis import readers
+from govapp.gis import compression, readers
 from govapp.gis.conversions import to_geojson
 from govapp.apps.catalogue import models
 from govapp.apps.catalogue import directory_notifications
@@ -29,7 +27,7 @@ from govapp.gis.readers import types
 from govapp.apps.logs import utils as logs_utils
 
 # Logging
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Absorber:
@@ -39,6 +37,7 @@ class Absorber:
         """Instantiates the Absorber."""
         # Storage
         self.storage = local_storage.LocalStorage()
+        self.ext_not_convert_to_geojson = ['.tif', '.tiff', '.zip', '.7z', '.tar', '.rar']
 
     def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
@@ -46,7 +45,7 @@ class Absorber:
         Args:
             path (str): File to absorb.
         """
-        log.info(f"Retrieving '[{path}]' from storage...")        
+        logger.info(f"Retrieving '[{path}]' from storage...")        
 
         # # Retrieve file from remote storage
         # # This retrieves and writes the file to our own temporary filesystem
@@ -60,14 +59,14 @@ class Absorber:
         storage_directory = os.path.join(self.storage.get_data_storage_path(), f'{timestamp.year}')
         if not os.path.exists(storage_directory):
             os.makedirs(storage_directory)
-            log.info(f"Directory created: [{storage_directory}]")
+            logger.info(f"Directory created: [{storage_directory}]")
 
         storage_path = os.path.join(storage_directory, filepath.stem + "." + timestamp_str + filepath.suffix)
         archive = self.storage.move_to_storage(filepath, storage_path)  # Move file to archive
 
         # # Log
-        log.info(f"Retrieved '{path}' -> '{filepath}'")
-        log.info(f"Archived '{path}' -> {storage_path} ({archive})")
+        logger.info(f"Retrieved '{path}' -> '{filepath}'")
+        logger.info(f"Archived '{filepath}' -> {storage_path} ({archive})")
 
         self.process_file(storage_path)
         
@@ -85,47 +84,43 @@ class Absorber:
 
         try:
             filepaths_to_process = []
-            file_ext = os.path.splitext(path_to_file)[1].lower()
-            if file_ext in ['.7z', '.zip',]:
-                os.makedirs(temp_dir, exist_ok=True)
-                if file_ext == '.7z':
-                    # Extract .7z file
-                    with py7zr.SevenZipFile(path_to_file, mode='r') as z:
-                        z.extractall(path=temp_dir)
-                elif file_ext == '.zip':
-                    # Extract .zip file
-                    with zipfile.ZipFile(path_to_file, 'r') as z:
-                        z.extractall(path=temp_dir)
+
+            compressed_algorithm = compression.get_compressed_algorithm(path_to_file)
+            if compressed_algorithm:
+                logger.info(f'Compressed algorithm detected: [{compressed_algorithm}] for the file: [{path_to_file}]')
+                # Decompress the file into the temp folder
+                with compressed_algorithm(path_to_file) as archive:
+                    os.makedirs(temp_dir, exist_ok=True)
+                    archive.extractall(path=temp_dir)
 
                 # If extracted, loop through extracted files and process them
                 for extracted_filepath in os.listdir(temp_dir):
                     filepaths_to_process.append(os.path.join(temp_dir, extracted_filepath))
-                
             else:
+                logger.info(f'No compressed algorithm detected for the file: [{path_to_file}].')
                 filepaths_to_process.append(path_to_file)
 
             tiff_exists = any(pathlib.Path(path).suffix.lower() in ['.tif', '.tiff',] for path in filepaths_to_process)
+            geojson_exists = any(pathlib.Path(path).suffix.lower() in ['.json', '.geojson',] for path in filepaths_to_process)
 
             # Process all the files
-            if tiff_exists:
+            if tiff_exists or geojson_exists:
+                logger.info(f'.tiff/.geojson file(s) detected')
                 for filepath in filepaths_to_process:
                     if filepath.lower().endswith(('.tiff', '.tif')):
-                        # Call a different function if the file is a TIFF
                         self.process_tiff_file(filepath)
+                    elif filepath.lower().endswith(('.json', '.geojson')):
+                        self.process_vector_file(filepath)
             else:
                 # Call the original function for other file types
                 self.process_vector_file(path_to_file)
-            
+
         finally:
             pass
-        #     if os.path.exists(temp_dir):
-        #         # Clean up temp directory
-        #         shutil.rmtree(temp_dir)
-        #         log.info(f'Remove the directory: [{temp_dir}]')
 
     def process_tiff_file(self, filepath):
-        # Convert the file path to a pathlib.Path object
         pathlib_filepath = pathlib.Path(filepath)
+        logger.info(f'Processing tiff file: [{pathlib_filepath}]')
         
         result = {'total': 1, 'success':[], 'fail':[]}
         # Create CatalogueEntry
@@ -135,16 +130,16 @@ class Absorber:
         except Exception as exc:
             result['fail'].append(f"layer:{pathlib_filepath.name}, exception:{exc}")
             # Log and continue
-            log.error(f"Error absorbing tiff as a layer:'{pathlib_filepath.name}': file:'{filepath}'", exc_info=exc)
+            logger.error(f"Error absorbing tiff as a layer:'{pathlib_filepath.name}': file:'{filepath}'", exc_info=exc)
 
-        log.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
-        log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
+        logger.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
+        logger.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
 
     def absorb_tiff_as_layer(self, pathlib_filepath):
         # Open the file with GDAL
-        dataset = osgeo.gdal.Open(str(pathlib_filepath))
+        dataset = gdal.Open(str(pathlib_filepath))
         if dataset is None:
-            log.error(f'Failed to open file: {str(pathlib_filepath)}')
+            logger.error(f'Failed to open the file: {str(pathlib_filepath)}')
             return
         additional_data = utils.retrieve_additional_data(dataset)
         
@@ -168,14 +163,14 @@ class Absorber:
 
     def process_vector_file(self, filepath):
         pathlib_filepath = pathlib.Path(filepath)
-        # # Construct Reader
-        # reader = readers.reader.FileReader(filepath)
+        logger.info(f'Processing vector file: [{pathlib_filepath}]')
+
         reader = readers.reader.FileReader(pathlib_filepath)
 
         result = {'total':reader.layer_count(), 'success':[], 'fail':[]}
         # Create catalogue entries by looping through the layers
         for layer in reader.layers():
-            log.info(f"Absorbing layer '{layer.name}' from '{filepath}'")
+            logger.info(f"Absorbing layer '{layer.name}' from '{filepath}'")
 
             try:
                 # Absorb layer
@@ -184,12 +179,12 @@ class Absorber:
             except Exception as exc:
                 result['fail'].append(f"layer:{layer.name}, exception:{exc}")
                 # Log and continue
-                log.error(f"Error absorbing layer:'{layer.name}': file:'{filepath}'", exc_info=exc)
+                logger.error(f"Error absorbing layer:'{layer.name}': file:'{filepath}'", exc_info=exc)
 
-            log.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
+            logger.info(f"Processing.. fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
 
-        log.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
-        log.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
+        logger.info(f"End of absorbing layers from '{filepath}' :  fail:{len(result['fail'])} success:{len(result['success'])} total:{result['total']}")
+        logger.info(f" - Succeed layers : {result['success']}\n - Failed layers : {result['fail']}")
 
     def absorb_vector_layer(self, layer: readers.base.LayerReader, archive: str) -> None:
         """Absorbs a layer into the system.
@@ -199,14 +194,14 @@ class Absorber:
             archive (str): URL to the archived file for this layer.
         """
         # Log
-        log.info(f"Extracting data from layer: '{layer.name}'")
+        logger.info(f"Extracting data from layer: '{layer.name}'")
 
         # Extract metadata, attributes and symbology
         metadata = layer.metadata()
         attributes = layer.attributes()
         symbology = layer.symbology()
 
-        log.info(f"Extracting data from layer: '{attributes}'")
+        logger.info(f"Extracting data from layer: '{attributes}'")
         # Retrieve existing catalogue entry from the database
         # Here we specifically check the Layer Metadata name
         catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.filter(name=metadata.name).first()
@@ -237,7 +232,7 @@ class Absorber:
             bool: Whether the creation was successful.
         """
         # Log
-        log.info(f"Creating a new CatalogueEntry with the name: [{metadata.name}]...")
+        logger.info(f"Creating a new CatalogueEntry with the name: [{metadata.name}]...")
         
         # Calculate attributes hash
         attributes_hash = utils.attributes_hash(attributes)
@@ -251,7 +246,7 @@ class Absorber:
             name=metadata.name,
             description=metadata.description,
         )
-        log.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
+        logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created.')
         logs_utils.add_to_actions_log(
             user=None,
             model= catalogue_entry,
@@ -261,7 +256,7 @@ class Absorber:
 
         # Convert to a Geojson text
         extension = pathlib.Path(archive).suffix.lower()
-        geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
+        geojson_path = '' if extension in self.ext_not_convert_to_geojson else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create Layer Submission
         self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, True)
@@ -305,7 +300,7 @@ class Absorber:
             bool: Whether the update was successful.
         """
         # Log
-        log.info(f"Updating existing catalogue entry: [{catalogue_entry}]...")
+        logger.info(f"Updating existing catalogue entry: [{catalogue_entry}]...")
         
         # Calculate Layer Submission Attributes Hash
         attributes_hash = utils.attributes_hash(attributes)
@@ -316,7 +311,7 @@ class Absorber:
 
         # Convert to a Geojson text
         extension = pathlib.Path(archive).suffix.lower()
-        geojson_path = '' if extension in ['.tif', '.tiff'] else self.convert_to_geojson(archive, catalogue_entry)
+        geojson_path = '' if extension in self.ext_not_convert_to_geojson else self.convert_to_geojson(archive, catalogue_entry)
 
         # Create New Layer Submission
         layer_submission = self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, False)
@@ -387,19 +382,19 @@ class Absorber:
         }
         layer_metadata, created = models.layer_metadata.LayerMetadata.objects.get_or_create(defaults=create_params, **get_params)
         if created:
-            log.info(f'LayerMetadata: [{layer_metadata}] has been created for the CatalogueEntry: [{catalogue_entry}].')
+            logger.info(f'LayerMetadata: [{layer_metadata}] has been created for the CatalogueEntry: [{catalogue_entry}].')
         else:
             if not layer_metadata.additional_data:
                 layer_metadata.additional_data = metadata.additional_data
                 layer_metadata.save()
-                log.info(f'The empty additional_data of the LayerMetadata: [{layer_metadata}] for the CatalogueEntry: [{catalogue_entry}]  has been replaced by the additional_data: [{metadata.additional_data}].')
+                logger.info(f'The empty additional_data of the LayerMetadata: [{layer_metadata}] for the CatalogueEntry: [{catalogue_entry}]  has been replaced by the additional_data: [{metadata.additional_data}].')
             else:
-                log.warning(f'The additional_data of the existing LayerMetadata: [{layer_metadata}] has a value, but an attempt was made to update it.')
+                logger.warning(f'The additional_data of the existing LayerMetadata: [{layer_metadata}] has a value, but an attempt was made to update it.')
 
     def create_layer_attributes(self, attributes, catalogue_entry):
         existing_attributes = catalogue_entry.attributes.all()
         if existing_attributes.count():
-            log.warning(f'There are already existing LayerAttributes: [{catalogue_entry.attributes}] of the CatalogueEntry: [{catalogue_entry}].')
+            logger.warning(f'There are already existing LayerAttributes: [{catalogue_entry.attributes}] of the CatalogueEntry: [{catalogue_entry}].')
         else:
             for attribute in attributes:
                 # Create Attribute
@@ -409,7 +404,7 @@ class Absorber:
                     order=attribute.order,
                     catalogue_entry=catalogue_entry,
                 )
-                log.info(f'LayerMetadata: [{layer_attribute}] has been created for the CatalogueEntry: [{catalogue_entry}].')
+                logger.info(f'LayerMetadata: [{layer_attribute}] has been created for the CatalogueEntry: [{catalogue_entry}].')
 
     def create_layer_symbology(self, symbology, catalogue_entry):
         """
@@ -423,14 +418,14 @@ class Absorber:
         if created:
             layer_symbology.sld = symbology.sld
             layer_symbology.save()
-            log.info(f'LayerSymbology: [{layer_symbology}] has been created for the CatalogueEntry: [{catalogue_entry}].')
+            logger.info(f'LayerSymbology: [{layer_symbology}] has been created for the CatalogueEntry: [{catalogue_entry}].')
         else:
             if not layer_symbology.sld:
                 layer_symbology.sld = symbology.sld
                 layer_symbology.save()
-                log.info(f'The empty sld of the LayerSymbology: [{layer_symbology}] for the CatalogueEntry: [{catalogue_entry}] has been replaced by the sld: [{symbology.sld}].')
+                logger.info(f'The empty sld of the LayerSymbology: [{layer_symbology}] for the CatalogueEntry: [{catalogue_entry}] has been replaced by the sld: [{symbology.sld}].')
             else:
-                log.warning(f'The sld of the existing LayerSymbology: [{layer_symbology}] has a value, but an attempt was made to update it.')
+                logger.warning(f'The sld of the existing LayerSymbology: [{layer_symbology}] has a value, but an attempt was made to update it.')
 
     def convert_to_geojson(
         self, 
@@ -439,22 +434,29 @@ class Absorber:
         # Convert to a Geojson file
         path_from = to_geojson(
             filepath=pathlib.Path(filepath),
-            layer=catalogue_entry.name,
-            catalogue_name=catalogue_entry.name,
-            export_method=None
+            layer=catalogue_entry.name
         )
-        return self.move_file_to_storage_with_uniquename(path_from)
+        return self.move_file_to_storage_with_uniquename(path_from['full_filepath'])
 
     def move_file_to_storage_with_uniquename(self, path_from:pathlib.Path):
         # Create a new folder hierarchically named to today's date(./yyyy/mm/dd) in the data storage when it dosen't exist
         # date_str = datetime.date.today().strftime("%d%m%Y")
-        data_storage_path = f"{self.storage.get_data_storage_path()}/geojson/{datetime.date.today().year}/{str(datetime.date.today().month).zfill(2)}/{datetime.date.today().day}"
+        # data_storage_path = f"{self.storage.get_data_storage_path()}/geojson/{datetime.date.today().year}/{str(datetime.date.today().month).zfill(2)}/{datetime.date.today().day}"
+
+        data_storage_path = os.path.join(
+            self.storage.get_data_storage_path(),
+            "geojson",
+            str(datetime.date.today().year),
+            str(datetime.date.today().month).zfill(2),
+            str(datetime.date.today().day)
+        )
+
         if not os.path.exists(data_storage_path):
             os.makedirs(data_storage_path)
         
         # Change the file name with uuid and join with the data storage path
         filename_to = f"{path_from.stem}_{str(uuid.uuid4())}{path_from.suffix}"
-        path_to = f"{data_storage_path}/{filename_to}"
+        path_to = os.path.join(data_storage_path, filename_to)
 
         # Move the file into a folder named date(ddmmyyyy) in the data storage
         if self.storage.move_to_storage(str(path_from), path_to):
