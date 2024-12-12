@@ -16,7 +16,7 @@ from govapp.gis import compression
 log = logging.getLogger(__name__)
 
 
-def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
+def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> dict:
     """Converts a GIS file to the GeoPackage format.
 
     Args:
@@ -62,7 +62,7 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
 
         # Run the command
         subprocess.check_call(command)
-        log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoPackage successfully.")
+        log.info(f"Success: Converted file [{filepath}], layer: [{layer}] to GeoPackage successfully.")
         
         converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
         log.info(f'converted: [{converted}]')
@@ -83,7 +83,7 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
         raise
 
 
-def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', export_method: str = '') -> pathlib.Path:
+def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', export_method: str = '') -> dict:
     """Converts a GIS file to the GeoJSON format.
 
     Args:
@@ -118,9 +118,12 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
             command,
             timeout=1800,  # 30min
         )
-        log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoJSON successfully.")
+        log.info(f"Success: Converted file: [{filepath}], layer: [{layer}] to GeoJSON successfully.")
 
-        return pathlib.Path(output_filepath)
+        converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
+        log.info(f'converted: [{converted}]')
+
+        return converted
 
     except subprocess.TimeoutExpired as e:
         log.error(f"The command has reached a timeout.  Error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
@@ -136,7 +139,7 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
         raise
 
 
-def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
+def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> dict:
     """Converts a GIS file to the ShapeFile format.
 
     Args:
@@ -172,7 +175,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
 
         # Run the command
         subprocess.check_call(command)
-        log.info(f"Converted file [{filepath}], layer: [{layer}] to Shapefile successfully.")
+        log.info(f"Success: Converted file [{filepath}], layer: [{layer}] to Shapefile successfully.")
 
         # Compress!
         compressed_filepath = compression.compress(output_filepath.parent)
@@ -195,7 +198,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
         raise
 
 
-def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str):
+def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> dict:
     """Converts a GIS file to the GeoDatabase format.
 
     Args:
@@ -235,7 +238,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 
         # Run the command
         subprocess.check_call(command)
-        log.info(f"Converted file [{filepath}], layer: [{layer}] to GeoDatabase successfully.")
+        log.info(f"Success: Converted file [{filepath}], layer: [{layer}] to GeoDatabase successfully.")
 
         # Compress!
         compressed_filepath = compression.compress(output_filepath.parent)
@@ -259,7 +262,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
         raise
 
 
-def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str, sqlquery: str): 
+def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str, sqlquery: str) -> dict: 
     log.info(f"Converting custom query for the PostGIS to shapefile...")
 
     try:
@@ -289,7 +292,7 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
             command,
             cwd=output_dir
         )
-        log.info(f"Converted custom query for the PostGIS to shapefile successfully.")
+        log.info(f"Success: Converted custom query for the PostGIS to shapefile successfully.")
         
         compressed_filepath = compression.compress(pathlib.Path(output_dir))
         converted["output_dir"] = output_dir
@@ -361,7 +364,7 @@ def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
         # Close the GeoPackage file
         gpkg_dataset = None
 
-        log.info(f'Converted tiff file: [{input_tiff}] to GeoPackage successfully.')
+        log.info(f'Success: Converted tiff file: [{input_tiff}] to GeoPackage successfully.')
 
     except ValueError as e:
         log.error(f"ValueError: {e}")
