@@ -82,7 +82,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
             # Send Webhook Posts
             webhooks.post_geojson(
                 *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-                geojson=output_filepath,
+                geojson=output_filepath['full_filepath'],
             )
     else:
         pass

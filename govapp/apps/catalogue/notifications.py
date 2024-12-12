@@ -79,7 +79,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
             # Send Webhook Posts
             webhooks.post_geojson(
                 *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-                geojson=geojson,
+                geojson=geojson['full_filepath'],
             )
 
         # Delete local temporary copy of file if we can

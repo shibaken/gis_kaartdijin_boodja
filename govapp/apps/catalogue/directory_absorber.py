@@ -436,7 +436,7 @@ class Absorber:
             filepath=pathlib.Path(filepath),
             layer=catalogue_entry.name
         )
-        return self.move_file_to_storage_with_uniquename(path_from)
+        return self.move_file_to_storage_with_uniquename(path_from['full_filepath'])
 
     def move_file_to_storage_with_uniquename(self, path_from:pathlib.Path):
         # Create a new folder hierarchically named to today's date(./yyyy/mm/dd) in the data storage when it dosen't exist
