@@ -58,6 +58,7 @@ class FTPPublishChannelFormat(models.IntegerChoices):
     GEODATABASE = 3
     GEOJSON = 4
 
+
 @reversion.register()
 class CDDPPublishChannel(mixins.RevisionedMixin):
     """Model for a CDDP Publish Channel."""
@@ -90,16 +91,6 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.name}"
-
-    # @property
-    # def name(self) -> str:
-    #     """Proxies the Publish Entry's name to this model.
-
-    #     Returns:
-    #         str: Name of the Publish Entry.
-    #     """
-    #     # Retrieve and Return
-    #     return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
@@ -177,15 +168,14 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             new_output_path = os.path.join(output_path,file_name)
             if self.format == CDDPPublishChannelFormat.GEODATABASE:
                 if len(new_output_path) > 0:
-                    if os.path.isdir(new_output_path): 
+                    if os.path.isdir(new_output_path):
                         shutil.rmtree(pathlib.Path(new_output_path))
-                    if os.path.isfile(new_output_path):                                            
+                    if os.path.isfile(new_output_path):
                         os.remove(new_output_path)   
 
             else:
-                if os.path.isfile(new_output_path):                    
-                        os.remove(new_output_path)   
-            # shutil.move(os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath'])+ os.path.sep + str(geodb_dir)), file_name), output_path)
+                if os.path.isfile(new_output_path):
+                    os.remove(new_output_path)
             source_path = os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath']) + os.path.sep + str(geodb_dir)), file_name)
             destination_path = os.path.join(output_path, file_name)
             shutil.copyfile(source_path, destination_path)
@@ -200,16 +190,6 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                     xml_output_path = xml_output_path.joinpath(self.xml_path)
                 log.info(f'Copy xml_file: [{xml_file}] to xml_output_path: [{xml_output_path}].')
                 shutil.copy(xml_file, xml_output_path)
-                       
-
-        # # Push to Azure
-        # azure.azure_output().put(
-        #     path=publish_path,
-        #     contents=converted.read_bytes(),
-        # )
-
-        # Delete local temporary copy of file if we can
-        # shutil.rmtree(filepath.parent, ignore_errors=True)
 
     def publish_sharepoint(self) -> None:
         """Publishes the Catalogue Entry to SharePoint if applicable."""
@@ -217,12 +197,8 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
         log.info(f"Publishing '{self}' to SharePoint")
 
         # Retrieve the Layer File from Storage
-        # filepath = sharepoint.sharepoint_input().get_from_url(
-        #     url=self.publish_entry.catalogue_entry.active_layer.file,
-        # )
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file)  
 
-        
         # Select Conversion Function
         match self.format:
             case CDDPPublishChannelFormat.GEOPACKAGE:
@@ -242,17 +218,11 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             export_method='cddp'
         )    
 
-
-        # Construct Path
-        #publish_directory = pathlib.Path(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA)
-        #publish_path = str(publish_directory / self.path / converted.name)
-
         geodb_dir = ""
         if self.format == CDDPPublishChannelFormat.GEODATABASE:
             file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
             if len(file_names_geodb) == 1:
                 geodb_dir = file_names_geodb[0]
-            
 
         # Push to Sharepoint
         file_names = os.listdir(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir))        
@@ -262,8 +232,6 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                 path=new_output_path,
                 contents=pathlib.Path(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir,file_name)).read_bytes(),
             )
-
-
 
         if self.format == CDDPPublishChannelFormat.GEODATABASE:
             # Copy XML from orignal spatial archive.
@@ -276,17 +244,6 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
                         path=new_output_path,
                         contents=pathlib.Path(os.path.join(xml_file)).read_bytes(),
                     )
-
-                
-                       
-
-            # sharepoint.sharepoint_output().put(
-            #     path=os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,filepath),
-            #     contents=pathlib.Path(converted['compressed_filepath']).read_bytes(),
-            # )
-
-        # Delete local temporary copy of file if we can
-        #shutil.rmtree(filepath.parent, ignore_errors=True)
 
 
 class GeoServerPublishChannelMode(models.IntegerChoices):

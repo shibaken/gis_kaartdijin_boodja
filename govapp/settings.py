@@ -242,6 +242,9 @@ LOGGING = {
         # },
     }
 }
+
+print(json.dumps(LOGGING, indent=4))
+
 ENABLE_SQL_LOGGING = decouple.config("ENABLE_SQL_LOGGING", default=False, cast=bool)
 if ENABLE_SQL_LOGGING:
     LOGGING['loggers']['django.db.backends'] = {
