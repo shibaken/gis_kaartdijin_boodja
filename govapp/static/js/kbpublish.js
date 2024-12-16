@@ -146,9 +146,6 @@ var kbpublish = {
             },
         });
 
-
-        
-
         $('#publish-lastupdatedfrom').datepicker({ dateFormat: this.var.publish_date_format, 
             format: this.var.publish_date_format,
         });
@@ -521,7 +518,6 @@ var kbpublish = {
         });
     },
     delete_publish_geoserver: function(geoserver_publish_id) {        
-        console.log('delete_publish_geoserver');
         var publish_id = $('#publish_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
@@ -639,11 +635,11 @@ var kbpublish = {
         let newpublishgeoserverpool = $('#new-publish-geoserver-pool').val();
         let newpublishstoretype = $('#new-publish-store-type').val();
         let newpublishactive = $('#new-publish-active').is(':checked');
-        let newpublishCreateCacheLayer = $('#new-publish-create-cached-layer').is(':checked');
+        let newpublishCreateCachedLayer = $('#new-publish-create-cached-layer').is(':checked');
         let expireServerCacheInSeconds = $('#expire-server-cache-in-seconds').val();
         let expireClientCacheInSeconds = $('#expire-client-cache-in-seconds').val();
 
-        console.log({expireClientCacheInSeconds, expireServerCacheInSeconds})
+        console.log({newpublishCreateCachedLayer})
 
         // Validate data
         if (newpublishgeoserverpool.length < 1) {
@@ -666,14 +662,17 @@ var kbpublish = {
             error_msg_elem.html("Please choose a store type.").show();
             return false;
         }
-        if (!expireServerCacheInSeconds || isNaN(expireServerCacheInSeconds) || expireServerCacheInSeconds <= 0) {
-            error_msg_elem.html("Please enter a valid number of seconds for server cache expiration.").show();
-            return false;
+        if (newpublishCreateCachedLayer){
+            if (!expireServerCacheInSeconds || isNaN(expireServerCacheInSeconds) || expireServerCacheInSeconds < 0) {
+                error_msg_elem.html("Please enter a valid number of seconds for server cache expiration.").show();
+                return false;
+            }
+            if (!expireClientCacheInSeconds || isNaN(expireClientCacheInSeconds) || expireClientCacheInSeconds < 0) {
+                error_msg_elem.html("Please enter a valid number of seconds for client cache expiration.").show();
+                return false;
+            }
         }
-        if (!expireClientCacheInSeconds || isNaN(expireClientCacheInSeconds) || expireClientCacheInSeconds <= 0) {
-            error_msg_elem.html("Please enter a valid number of seconds for client cache expiration.").show();
-            return false;
-        }
+
         // Construct data to send
         let geoserver_publish_channel_id = $('#geoserver_publish_channel_id').val()
         var post_data = {
@@ -684,7 +683,7 @@ var kbpublish = {
             "geoserver_pool": newpublishgeoserverpool,
             "store_type": newpublishstoretype,
             "active": newpublishactive,
-            "create_cache_layer": newpublishCreateCacheLayer,
+            "create_cached_layer": newpublishCreateCachedLayer,
             "expire_server_cache_in_seconds": expireServerCacheInSeconds,
             "expire_client_cache_in_seconds": expireClientCacheInSeconds
         };
@@ -1618,6 +1617,8 @@ var kbpublish = {
             $('#new-publish-store-type').removeAttr('disabled').val(geoserver_publish_channel_obj.store_type);  
             $('#new-publish-active').removeAttr('disabled').prop('checked', this.toBoolean(geoserver_publish_channel_obj.active));  
             $('#new-publish-create-cached-layer').removeAttr('disabled').prop('checked', this.toBoolean(geoserver_publish_channel_obj.create_cached_layer));  
+            $('#expire-server-cache-in-seconds').removeAttr('disabled').val(geoserver_publish_channel_obj.expire_server_cache_in_seconds);
+            $('#expire-client-cache-in-seconds').removeAttr('disabled').val(geoserver_publish_channel_obj.expire_client_cache_in_seconds);
         } else { // Create new
             // Set modal title
             $('#new-update-geoserver-modal-title').text('Create New Geoserver Publish Entry');
@@ -1632,6 +1633,8 @@ var kbpublish = {
             $('#new-publish-store-type').removeAttr('disabled').val(PUBLISH_STORE_TYPE_GEOTIFF);  
             $('#new-publish-active').removeAttr('disabled').prop('checked', true);
             $('#new-publish-create-cached-layer').removeAttr('disabled').prop('checked', true);
+            $('#expire-server-cache-in-seconds').removeAttr('disabled').val('');
+            $('#expire-client-cache-in-seconds').removeAttr('disabled').val('');
         }
         // Remove success/error message
         $('#new-publish-new-geoserver-popup-error').html('').hide();
