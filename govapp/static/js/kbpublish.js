@@ -268,8 +268,6 @@ var kbpublish = {
             },
         });
         $('#new-publish-create-cached-layer').change(function(){
-            console.log('in new-publish-create-cached-layer')
-
             kbpublish.toggleOtherOptions();
         })
         kbpublish.toggleOtherOptions();
@@ -368,8 +366,8 @@ var kbpublish = {
             }
         }
 
+        // Construct the options for the Geoserver Pool dropdown
         const publish_geoserver_pools_temp = $('#publish_geoserver_pools').data('list');
-        console.log({publish_geoserver_pools_temp})
         if (publish_geoserver_pools_temp){
             for(let i in publish_geoserver_pools_temp){
                 let entry = publish_geoserver_pools_temp[i];
@@ -1651,7 +1649,6 @@ var kbpublish = {
         $('#PublishNewUpdateGeoserverModal').modal('show');
     },
     show_write_geoserver_subscription_modal: function(prev){
-        console.log({prev})
         let workspace = prev ? prev.workspace : null;
         let geoserver_pool = prev ? prev.geoserver_pool : null;
         let srs = prev ? prev.srs : null;
