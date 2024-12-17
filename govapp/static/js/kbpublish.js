@@ -29,7 +29,7 @@ var kbpublish = {
             2: "WMS & WFS"
         },
         publish_geoserver_pools: {
-
+            // Value passed in publish_view.html <script> section 
         },
         publish_geoserver_frequency: {
             1: "OnChange"
@@ -268,8 +268,6 @@ var kbpublish = {
             },
         });
         $('#new-publish-create-cached-layer').change(function(){
-            console.log('in new-publish-create-cached-layer')
-
             kbpublish.toggleOtherOptions();
         })
         kbpublish.toggleOtherOptions();
@@ -368,11 +366,19 @@ var kbpublish = {
             }
         }
 
+        // Construct the options for the Geoserver Pool dropdown
+        const publish_geoserver_pools_temp = $('#publish_geoserver_pools').data('list');
+        if (publish_geoserver_pools_temp){
+            for(let i in publish_geoserver_pools_temp){
+                let entry = publish_geoserver_pools_temp[i];
+                this.var.publish_geoserver_pools[entry.id] = entry.name;
+            }
+        }
+
         $("#log_actions_show").click(kbpublish.show_action_log);
         $("#log_communication_show").click(kbpublish.show_communication_log);
         $("#log_communication_add").click(kbpublish.add_communication_log);
         
-
         $('#manage-editors-search').select2({
             placeholder: 'Select an option',
             minimumInputLength: 2,
@@ -1643,7 +1649,6 @@ var kbpublish = {
         $('#PublishNewUpdateGeoserverModal').modal('show');
     },
     show_write_geoserver_subscription_modal: function(prev){
-        console.log({prev})
         let workspace = prev ? prev.workspace : null;
         let geoserver_pool = prev ? prev.geoserver_pool : null;
         let srs = prev ? prev.srs : null;
