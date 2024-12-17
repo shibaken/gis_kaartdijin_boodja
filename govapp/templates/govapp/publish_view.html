@@ -468,12 +468,15 @@
             <input type="hidden" id="catalogue-name-id" name="catalogue_name" value="{{ publish_entry_obj.catalogue_entry.name }}">
             <input type="hidden" id="publish-entry-id" name="publish_entry_id" value="{{ publish_id }}">
             <div id="publish_workspace_list" data-list="{{ publish_workspace_list }}"></div>
+            <div id="publish_geoserver_pools" data-list="{{ geoserver_pool_list_json }}"></div>
             <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
             <input type="hidden" id="catalogue-type" name="current_user" value="{{ publish_entry_obj.catalogue_entry.type }}">
 
             <script>
                   kbpublish.init_publish_item();
-                  kbpublish.var.publish_geoserver_pools = {{ geoserver_pool_list_json|safe }};
+                  // kbpublish.var.publish_geoserver_pools = {{ geoserver_pool_list_json|safe }};
+                  // console.log('****************************')
+                  // console.log(kbpublish.var.publish_geoserver_pools);
             </script>
       {% else %}
             <div class="container" id="dashboard-table-container">
