@@ -305,6 +305,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         on_delete=models.SET_NULL,
     )
     store_type = models.IntegerField(choices=StoreType.choices, default=StoreType.GEOPACKAGE)
+    # Cached layer
+    create_cached_layer = models.BooleanField(default=True, blank=True)
+    expire_server_cache_after_n_seconds = models.IntegerField(default=0, null=True, blank=True)  # meaningfull only if create_cached_layer is True
+    expire_client_cache_after_n_seconds = models.IntegerField(default=0, null=True, blank=True)  # meaningfull only if create_cached_layer is True
+
     objects = GeoServerPublishChannelManager()
 
     class Meta:
@@ -394,7 +399,6 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
-    # def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
@@ -499,7 +503,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             # Once uploaded, create a layer for the coverage store
             geoserver.create_layer_from_coveragestore(workspace_name, layer_name)
         else:
-            log.warn(f'Unknown store_type: [{self.store_type}].')
+            log.warning(f'Unknown store_type: [{self.store_type}].')
 
         # Set Default Style
         style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') else ''

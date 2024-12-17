@@ -55,6 +55,26 @@ class GeoServer:
         return {"content-type": "application/json","Accept": "application/json"}
 
     @handle_http_exceptions(log)
+    def get_all_cached_layers(self):
+        # Construct URL
+        url = f"{self.service_url}/gwc/rest/layers.json"
+
+        # Perform Request
+        response = httpx.get(
+            url=url,
+            auth=(self.username, self.password),
+            headers=self.headers_json,
+            timeout=120.0
+        )
+
+        # Check Response
+        response.raise_for_status()
+
+        # Return JSON
+        return response.json()
+
+
+    @handle_http_exceptions(log)
     def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):
         # URL to check the existence of the store
         store_get_url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}/{store_name}"

@@ -82,8 +82,20 @@ class GeoServerPoolAdmin(reversion.admin.VersionAdmin):
 
 class GeoServerPublishChannelAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'publish_entry__catalogue_entry__name', 'geoserver_pool__name', 'workspace__name',)
-    list_display = ('id', 'publish_entry_link', 'geoserver_pool_link', 'store_type', 'mode', 'frequency', 'workspace_link', 'active',)
-    list_filter = ('geoserver_pool', 'store_type', 'mode', 'frequency', 'workspace', 'active',)
+    list_display = (
+        'id',
+        'publish_entry_link',
+        'geoserver_pool_link',
+        'store_type',
+        'mode',
+        'frequency',
+        'workspace_link',
+        'active',
+        'create_cached_layer',
+        'expire_server_cache_after_n_seconds',
+        'expire_client_cache_after_n_seconds'
+    )
+    list_filter = ('geoserver_pool', 'store_type', 'mode', 'frequency', 'workspace', 'active', 'create_cached_layer',)
     raw_id_fields = ('publish_entry',)
 
     def publish_entry_link(self, obj):

@@ -105,21 +105,25 @@
                                    </div>
                               </div>
                          </div>
-                         <div id="create-cached-layer-options">
-                              <div class='row align-items-center mb-3'>
-                                   <div class='col-4 text-end'>
-                                        <label for="" class="form-label mb-0">Expire server cache in n seconds</label>
-                                   </div>
-                                   <div class='col-3'>
-                                        <input type="number" class="form-control" id="expire-server-cache-in-seconds" placeholder="Enter seconds" min="0">
-                                   </div>
+                         <div class='row align-items-center mb-3' id="create-cached-layer-options">
+                              <div class='col-4 text-end'>
                               </div>
-                              <div class='row align-items-center mb-3'>
-                                   <div class='col-4 text-end'>
-                                        <label for="" class="form-label mb-0">Expire client cache in n seconds</label>
+                              <div class='col-8'>
+                                   <div class='row align-items-center mb-3'>
+                                        <div class='col-7 text-end'>
+                                             <label for="" class="form-label mb-0">Expire server cache after n seconds<br>(set to 0 to use source setting)</label>
+                                        </div>
+                                        <div class='col-4'>
+                                             <input type="number" class="form-control" id="expire-server-cache-after-n-seconds" placeholder="Enter seconds" min="0">
+                                        </div>
                                    </div>
-                                   <div class='col-3'>
-                                        <input type="number" class="form-control" id="expire-client-cache-in-seconds" placeholder="Enter seconds" min="0">
+                                   <div class='row align-items-center mb-3'>
+                                        <div class='col-7 text-end'>
+                                             <label for="" class="form-label mb-0">Expire client cache after n seconds<br>(set to 0 to use source setting)</label>
+                                        </div>
+                                        <div class='col-4'>
+                                             <input type="number" class="form-control" id="expire-client-cache-after-n-seconds" placeholder="Enter seconds" min="0">
+                                        </div>
                                    </div>
                               </div>
                          </div>
