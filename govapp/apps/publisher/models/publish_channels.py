@@ -399,7 +399,6 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         return self.publish_entry.name
 
     def publish(self, symbology_only: bool = False) -> None:
-    # def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
 
         Args:
@@ -504,7 +503,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             # Once uploaded, create a layer for the coverage store
             geoserver.create_layer_from_coveragestore(workspace_name, layer_name)
         else:
-            log.warn(f'Unknown store_type: [{self.store_type}].')
+            log.warning(f'Unknown store_type: [{self.store_type}].')
 
         # Set Default Style
         style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') else ''
