@@ -55,9 +55,10 @@ class GeoServer:
         return {"content-type": "application/json","Accept": "application/json"}
 
     @handle_http_exceptions(log)
-    def get_all_cached_layers(self):
+    def get_cached_layer(self, layer_name):
         # Construct URL
-        url = f"{self.service_url}/gwc/rest/layers.json"
+        url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
+        log.debug(f'get_cached_layer url: {url}')
 
         # Perform Request
         response = httpx.get(
@@ -70,9 +71,36 @@ class GeoServer:
         # Check Response
         response.raise_for_status()
 
-        # Return JSON
-        return response.json()
+        try:
+            json_data = response.json()
+            log.info(f"Response JSON: {json_data}")
+            return json_data
+        except ValueError as e:
+            log.error(f"Failed to parse JSON response: {e}")
 
+    @handle_http_exceptions(log)
+    def get_all_cached_layers(self):
+        # Construct URL
+        url = f"{self.service_url}/gwc/rest/layers.json"
+        log.debug(f'get_all_cached_layers url: {url}')  
+
+        # Perform Request
+        response = httpx.get(
+            url=url,
+            auth=(self.username, self.password),
+            headers=self.headers_json,
+            timeout=120.0
+        )
+
+        # Check Response
+        response.raise_for_status()
+
+        try:
+            json_data = response.json()
+            log.info(f"Response JSON: {json_data}")
+            return json_data
+        except ValueError as e:
+            log.error(f"Failed to parse JSON response: {e}")
 
     @handle_http_exceptions(log)
     def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):
@@ -182,7 +210,6 @@ class GeoServer:
             except requests.exceptions.RequestException as e:
                 log.error(f'Upload failed: [{str(e)}]')
                 raise
-
 
     @handle_http_exceptions(log)
     def upload_tif(
@@ -534,7 +561,6 @@ class GeoServer:
     def upload_style(
         self,
         workspace: str,
-        layer: str,
         name: str,
         sld: str,
     ) -> None:

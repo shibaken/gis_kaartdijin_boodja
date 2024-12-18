@@ -450,7 +450,6 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             # Publish Style to GeoServer
             geoserver.upload_style(
                 workspace=self.workspace.name,
-                layer=self.publish_entry.catalogue_entry.metadata.name,
                 name=self.publish_entry.catalogue_entry.symbology.name,
                 sld=self.publish_entry.catalogue_entry.symbology.sld,
             )
@@ -469,7 +468,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         
         # TEST
         ret = geoserver.get_all_cached_layers()
-        ret2 = geoserver.get_cached_layer(self.publish_entry.catalogue_entry.metadata.name)
+        ret2 = geoserver.get_cached_layer(self.layer_name_with_workspace)
 
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
  
@@ -605,12 +604,6 @@ class FTPPublishChannel(mixins.RevisionedMixin):
                 function = gis.conversions.to_geodatabase
             case CDDPPublishChannelFormat.GEOJSON:
                 function = gis.conversions.to_geojson
-
-        # Convert Layer to Chosen Format
-        # converted = function(
-        #     filepath=filepath,
-        #     layer=self.publish_entry.catalogue_entry.metadata.name,
-        # )
 
         t = Template(self.name)
         c = Context({"date_time": datetime.now()})
