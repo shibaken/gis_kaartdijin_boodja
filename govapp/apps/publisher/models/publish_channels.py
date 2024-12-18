@@ -468,6 +468,9 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         """
         # Log
         log.info(f"Publishing '[{self.publish_entry.catalogue_entry}]' (Layer) to GeoServer: [{geoserver}]...")
+        
+        # TEST
+        geoserver.get_all_cached_layers()
 
         # geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
 
