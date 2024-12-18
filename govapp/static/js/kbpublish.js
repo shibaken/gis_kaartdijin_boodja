@@ -235,8 +235,6 @@ var kbpublish = {
         kbpublish.get_publish();
     },
     toggleOtherOptions: function() {
-        console.log('in toggleOtherOptions()')
-
         let checkbox = $('#new-publish-create-cached-layer');
         let otherOptions = $('#create-cached-layer-options');
 
