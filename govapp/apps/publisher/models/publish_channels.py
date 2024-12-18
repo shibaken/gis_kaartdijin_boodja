@@ -353,12 +353,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
 
             try:
-                layer_name = self.name  # self.name is retrieved from the catalogue_entry.name, which is used as a layer name.
-                response_data = geoserver_obj.get_layer_details(layer_name)  # Return value can be the layer details or None
+                response_data = geoserver_obj.get_layer_details(self.layer_name_with_workspace)  # Return value can be the layer details or None
                 if response_data:
                     GeoServerLayerHealthcheck.objects.update_or_create(
                         geoserver_publish_channel=self,
-                        layer_name=layer_name,
+                        layer_name=self.layer_name_with_workspace,
                         defaults={
                             'health_status': GeoServerLayerHealthcheck.HEALTHY,
                             'error_message': None,
@@ -370,7 +369,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             except Exception as e:
                 GeoServerLayerHealthcheck.objects.update_or_create(
                     geoserver_publish_channel=self,
-                    layer_name=layer_name,
+                    layer_name=self.layer_name_with_workspace,
                     defaults={
                         'health_status': GeoServerLayerHealthcheck.UNHEALTHY,
                         'error_message': str(e),
@@ -390,13 +389,13 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
     @property
     def name(self) -> str:
-        """Proxies the Publish Entry's name to this model.
-
-        Returns:
-            str: Name of the Publish Entry.
-        """
-        # Retrieve and Return
         return self.publish_entry.name
+
+    @property
+    def layer_name_with_workspace(self) -> str:
+        if self.workspace:
+            return f"{self.workspace.name}:{self.name}"
+        return self.name
 
     def publish(self, symbology_only: bool = False) -> None:
         """Publishes the Catalogue Entry to this channel if applicable.
@@ -459,7 +458,6 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             log.info(f'Catalogue Entry: [{self.publish_entry.catalogue_entry}] does not have Symbology.')
 
     def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
-    # def publish_geoserver_layer(self, wms: bool, wfs: bool) -> None:
         """Publishes the Catalogue Entry to GeoServer if applicable.
 
         Args:
@@ -470,14 +468,9 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         log.info(f"Publishing '[{self.publish_entry.catalogue_entry}]' (Layer) to GeoServer: [{geoserver}]...")
         
         # TEST
-        geoserver.get_all_cached_layers()
+        ret = geoserver.get_all_cached_layers()
+        ret2 = geoserver.get_cached_layer(self.publish_entry.catalogue_entry.metadata.name)
 
-        # geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
-
-        # Retrieve the Layer File from Storage
-        # filepath = sharepoint.sharepoint_input().get_from_url(
-        #     url=self.publish_entry.catalogue_entry.active_layer.file,
-        # )
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
  
         if self.store_type == StoreType.GEOPACKAGE:
