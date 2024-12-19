@@ -1287,8 +1287,10 @@ var kbpublish = {
             },
             function(error) {
                 overlay_loading.remove();
-                button.parent().append(overlay_crossmark);
-                overlay_crossmark.css({
+                // button.parent().append(overlay_crossmark);
+                // overlay_crossmark.css({
+                button.parent().append(overlay_checkmark);
+                overlay_checkmark.css({
                     top: position.top,
                     left: position.left,
                     width: button.outerWidth(),
@@ -1332,8 +1334,10 @@ var kbpublish = {
             },
             function (error) {
                 overlay_loading.remove();
-                button.parent().append(overlay_crossmark);
-                overlay_crossmark.css({
+                // button.parent().append(overlay_crossmark);
+                // overlay_crossmark.css({
+                button.parent().append(overlay_checkmark);
+                overlay_checkmark.css({
                     top: position.top,
                     left: position.left,
                     width: button.outerWidth(),

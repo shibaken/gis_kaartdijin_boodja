@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GeoServerLayer>
+  <enabled>true</enabled>
+  <name>{{layer_name}}</name>
+  <mimeFormats>
+    <string>image/png</string>
+    <string>image/jpeg</string>
+    {% if service_type == "WFS" %}
+    <string>application/json;type=geojson</string>
+    <string>application/json;type=topojson</string>
+    <string>application/x-protobuf;type=mapbox-vector</string>
+    <string>application/json;type=utfgrid</string>
+    {% endif %}
+  </mimeFormats>
+  <gridSubsets>
+    <gridSubset>
+      <gridSetName>gda94</gridSetName>
+    </gridSubset>
+    <gridSubset>
+      <gridSetName>mercator</gridSetName>
+    </gridSubset>
+  </gridSubsets>
+  <expireCache>{{expire_cache}}</expireCache>
+  <expireClients>{{expire_clients}}</expireClients>
+  <parameterFilters>
+    <styleParameterFilter>
+      <key>STYLES</key>
+      <defaultValue></defaultValue>
+    </styleParameterFilter>
+  </parameterFilters>
+  <metaWidthHeight>
+    <int>1</int>
+    <int>1</int>
+  </metaWidthHeight>
+  <gutter>100</gutter>
+</GeoServerLayer>

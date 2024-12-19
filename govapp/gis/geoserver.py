@@ -2,11 +2,11 @@
 
 
 # Standard
-import asyncio
 import json
 import logging
 import pathlib
 import requests
+from django.template import loader
 
 # Third-Party
 from django import conf
@@ -55,10 +55,10 @@ class GeoServer:
         return {"content-type": "application/json","Accept": "application/json"}
 
     @handle_http_exceptions(log)
-    def get_cached_layer(self, layer_name):
+    def retrieve_cached_layer(self, layer_name):
         # Construct URL
         url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
-        log.debug(f'get_cached_layer url: {url}')
+        log.info(f'Retrieving cached layer... url: [{url}]')
 
         # Perform Request
         response = httpx.get(
@@ -73,16 +73,17 @@ class GeoServer:
 
         try:
             json_data = response.json()
-            log.info(f"Response JSON: {json_data}")
+            formatted_json = json.dumps(json_data, indent=4, sort_keys=True, ensure_ascii=False)
+            log.info(f"Cached layer: [{layer_name}] retrieved: [{formatted_json}]")
             return json_data
         except ValueError as e:
             log.error(f"Failed to parse JSON response: {e}")
 
     @handle_http_exceptions(log)
-    def get_all_cached_layers(self):
+    def get_list_of_cached_layers(self):
         # Construct URL
         url = f"{self.service_url}/gwc/rest/layers.json"
-        log.debug(f'get_all_cached_layers url: {url}')  
+        log.info(f'Getting the list of cached layers... url: [{url}]')  
 
         # Perform Request
         response = httpx.get(
@@ -97,10 +98,74 @@ class GeoServer:
 
         try:
             json_data = response.json()
-            log.info(f"Response JSON: {json_data}")
+            formatted_json = json.dumps(json_data, indent=4, sort_keys=True, ensure_ascii=False)
+            log.info(f"List of the cached layers retrieved: [{formatted_json}]")
             return json_data
         except ValueError as e:
             log.error(f"Failed to parse JSON response: {e}")
+
+    @handle_http_exceptions(log)
+    def create_or_update_cached_layer(self, layer_name, expire_server_cache_after_n_seconds=0, expire_client_cache_after_n_seconds=0):
+        # Construct URL
+        url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
+        log.info(f'Creating/Updating the cached layer... url: [{url}]')
+        
+        template = loader.get_template('govapp/geoserver/gwc_layer_setting.xml')
+        response = httpx.put(
+            url=url,
+            auth=(self.username, self.password),
+            headers={'content-type':'text/xml'},
+            data=template.render({
+                'layer_name': layer_name,
+                'expire_cache': expire_server_cache_after_n_seconds,
+                'expire_clients': expire_client_cache_after_n_seconds
+            })
+        )
+
+        response.raise_for_status()
+
+        if response.status_code == 201:
+            log.info(f"Cached layer: [{layer_name}] created successfully in the geoserver: [{self.service_url}].")
+        elif response.status_code == 200:
+            log.info(f"Cached layer: [{layer_name}] updated successfully in the geoserver: [{self.service_url}].")
+        else:
+            log.error(f"Failed to create/update the cached layer: [{layer_name}] in the geoserver: [{self.service_url}].  {response.status_code} {response.text}")
+        # Layer exists, proceed with deletion
+    
+    @handle_http_exceptions(log)
+    def delete_cached_layer(self, layer_name):
+        """Delete a cached layer if it exists.
+        
+        Args:
+            layer_name (str): Name of the layer to delete
+        """
+        # Check if layer exists
+        check_url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
+        log.info(f'Checking if cached layer exists... url: [{check_url}]')
+        
+        response = httpx.get(
+            url=check_url,
+            auth=(self.username, self.password),
+            headers=self.headers_json,
+            timeout=120.0
+        )
+        
+        if response.status_code == 404:
+            log.info(f"Cached layer: [{layer_name}] does not exist in geoserver: [{self.service_url}].")
+            return
+            
+        # Layer exists, proceed with deletion
+        log.info(f"Cached layer: [{layer_name}] exists in geoserver: [{self.service_url}].")
+        log.info(f'Deleting the cached layer... url: [{check_url}]')
+        response = httpx.delete(
+            url=check_url,
+            auth=(self.username, self.password),
+            headers=self.headers_json,
+            timeout=120.0
+        )
+        
+        response.raise_for_status()
+        log.info(f"Cached layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].")
 
     @handle_http_exceptions(log)
     def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):

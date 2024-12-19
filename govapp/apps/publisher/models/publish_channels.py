@@ -407,8 +407,6 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self.geoserver_pool}'")
 
         geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
-        # if not geoserver:
-        #     geoserver = gis.geoserver.geoserver()
 
         # Publish Symbology
         self.publish_geoserver_symbology(geoserver=geoserver_obj)
@@ -416,10 +414,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Check Symbology Only Flag
         if symbology_only:
-            # Log
             log.info(f"Skipping due to {symbology_only=}")
-
-            # Exit Early
             return
 
         # Check Mode
@@ -427,12 +422,10 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             case GeoServerPublishChannelMode.WMS:
                 # Publish to GeoServer (WMS Only)
                 self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver_obj)
-                # self.publish_geoserver_layer(wms=True, wfs=False)
 
             case GeoServerPublishChannelMode.WMS_AND_WFS:
                 # Publish to GeoServer (WMS and WFS)
                 self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver_obj)
-                # self.publish_geoserver_layer(wms=True, wfs=True)
 
         # Update Published At
         publish_time = timezone.now()
@@ -466,10 +459,6 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Publishing '[{self.publish_entry.catalogue_entry}]' (Layer) to GeoServer: [{geoserver}]...")
         
-        # TEST
-        ret = geoserver.get_all_cached_layers()
-        ret2 = geoserver.get_cached_layer(self.layer_name_with_workspace)
-
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
  
         if self.store_type == StoreType.GEOPACKAGE:
@@ -508,10 +497,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             name=style_name,
         )
 
-        ## HERE 
-        
-        # Delete local temporary copy of file if we can
-        #shutil.rmtree(filepath.parent, ignore_errors=True)
+        # Handle cached layer
+        if self.create_cached_layer:
+            ret = geoserver.create_or_update_cached_layer(self.layer_name_with_workspace, self.expire_server_cache_after_n_seconds, self.expire_client_cache_after_n_seconds)
+        else:
+            ret = geoserver.delete_cached_layer(self.layer_name_with_workspace)
 
 
 @reversion.register()
