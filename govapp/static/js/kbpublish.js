@@ -874,8 +874,6 @@ var kbpublish = {
         });
     },
     create_update_publish_geoserver: function() {
-        console.log('in create_update_publish_geoserver')
-
         let error_msg_elem = $('#new-publish-new-geoserver-popup-error');
         let success_msg_elem = $('#new-publish-new-geoserver-success');
 

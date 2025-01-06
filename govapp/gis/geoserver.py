@@ -495,28 +495,6 @@ class GeoServer:
                 timeout=3000
             )
 
-            # if response.status_code == 404: 
-            #     # Perform Request
-            #     response = httpx.post(
-            #         url=url,
-            #         auth=(self.username, self.password),
-            #         data=xml_data,
-            #         headers={"content-type": "application/json","Accept": "application/json"}
-            #     )
-            #     print ("404")
-            #     print (response.text)
-            # else:          
-            #     # Perform Request
-            #     response = httpx.put(
-            #         url=store_get_url,
-            #         auth=(self.username, self.password),
-            #         data=xml_data,
-            #         headers={"content-type": "application/json","Accept": "application/json"}
-            #     )
-
-            # log.info(response.text)
-            
-            # Log
             log.info(f'Response of the create: { response.status_code }: { response.text }')
             
             # Check Response
