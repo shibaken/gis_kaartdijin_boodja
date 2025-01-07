@@ -497,11 +497,17 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             name=style_name,
         )
 
-        # Handle cached layer
-        if self.create_cached_layer:
-            ret = geoserver.create_or_update_cached_layer(self.layer_name_with_workspace, self.expire_server_cache_after_n_seconds, self.expire_client_cache_after_n_seconds)
-        else:
-            ret = geoserver.delete_cached_layer(self.layer_name_with_workspace)
+        # # Handle cached layer
+        # if self.create_cached_layer:
+        #     ret = geoserver.create_or_update_cached_layer(
+        #         self.layer_name_with_workspace,
+        #         self.publish_entry.catalogue_entry.type,
+        #         self.create_cached_layer,
+        #         self.expire_server_cache_after_n_seconds,
+        #         self.expire_client_cache_after_n_seconds
+        #     )
+        # else:
+        #     ret = geoserver.delete_cached_layer(self.layer_name_with_workspace)
 
 
 @reversion.register()

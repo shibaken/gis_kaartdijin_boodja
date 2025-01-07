@@ -76,6 +76,18 @@
                         {% endif %}
                   </div>
             </div>
+            {% if display_layer_subscription_field %}
+                  <div class="row">
+                        <div class='col-3'>Layer Subscription</div>
+                        <div class='col-5 p-1'>
+                              {% if catalogue_entry_obj.layer_subscription %}
+                                    <a href="/layer/subscriptions/{{ catalogue_entry_obj.layer_subscription.id }}/" target="_blank" style="text-decoration: none;">{{ catalogue_entry_obj.layer_subscription.name }}</a>
+                              {% else %}
+                                    No Layer Subscription
+                              {% endif %}
+                        </div>
+                  </div>
+            {% endif %}
             <div class="row">
                   <div class='col-3'>Permission Type</div>
                   <div class='col-5 p-1'>

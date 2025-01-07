@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GeoServerLayer>
-  <enabled>true</enabled>
+  <enabled>{{create_cached_layer}}</enabled>
   <name>{{layer_name}}</name>
   <mimeFormats>
     <string>image/png</string>
     <string>image/jpeg</string>
-    {% if service_type == "WFS" %}
+    {% if service_type == CatalogueEntryType.SUBSCRIPTION_WFS %}
     <string>application/json;type=geojson</string>
     <string>application/json;type=topojson</string>
     <string>application/x-protobuf;type=mapbox-vector</string>

@@ -155,7 +155,7 @@
                                                       {% endfor %}
                                                 </select>
                                                 {% else %}
-                                                <a href="/catalogue/entries/{{ publish_entry_obj.catalogue_entry.id }}/details/" style="text-decoration: none;">{{ publish_entry_obj.catalogue_entry.name }}</a>
+                                                <a href="/catalogue/entries/{{ publish_entry_obj.catalogue_entry.id }}/details/" style="text-decoration: none;" target="_blank">CE{{ publish_entry_obj.catalogue_entry.id }}: {{ publish_entry_obj.catalogue_entry.name }}</a>
                                                 {% endif %}
                                           </div>
                                     </div>

@@ -390,6 +390,11 @@ class CatalogueEntriesView(base.TemplateView):
         if catalogue_layer_metadata_obj.count() > 0:
             catalogue_layer_metadata = catalogue_layer_metadata_obj[0]
 
+        # Layer Subscription field
+        display_layer_subscription_field = True
+        if catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SPATIAL_FILE:
+            display_layer_subscription_field = False
+
         # context['catalogue_entry_list'] = catalogue_entry_list
         context['catalogue_entry_obj'] = catalogue_entry_obj
         context['custodians_obj'] = custodians_obj
@@ -400,6 +405,7 @@ class CatalogueEntriesView(base.TemplateView):
         context['display_symbology_definition_tab'] = display_symbology_definition_tab
         context['display_metadata_tab'] = display_metadata_tab
         context['display_layer_submission_tab'] = display_layer_submission_tab
+        context['display_layer_subscription_field'] = display_layer_subscription_field
         context['layer_symbology'] = layer_symbology
         context['catalogue_layer_metadata'] = catalogue_layer_metadata
         context['is_administrator'] = is_administrator

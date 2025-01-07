@@ -105,7 +105,9 @@ class GeoServer:
             log.error(f"Failed to parse JSON response: {e}")
 
     @handle_http_exceptions(log)
-    def create_or_update_cached_layer(self, layer_name, expire_server_cache_after_n_seconds=0, expire_client_cache_after_n_seconds=0):
+    def create_or_update_cached_layer(self, layer_name, service_type, create_cached_layer=True, expire_server_cache_after_n_seconds=0, expire_client_cache_after_n_seconds=0):
+        from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntryType
+
         # Construct URL
         url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
         log.info(f'Creating/Updating the cached layer... url: [{url}]')
@@ -117,8 +119,11 @@ class GeoServer:
             headers={'content-type':'text/xml'},
             data=template.render({
                 'layer_name': layer_name,
+                'service_type': service_type,
+                'create_cac hed_layer': create_cached_layer,
                 'expire_cache': expire_server_cache_after_n_seconds,
-                'expire_clients': expire_client_cache_after_n_seconds
+                'expire_clients': expire_client_cache_after_n_seconds,
+                'CatalogueEntryType': CatalogueEntryType
             })
         )
 
@@ -470,7 +475,7 @@ class GeoServer:
             log.info(f'Response of the check: { response.status_code }: { response.text }')
 
             if response.status_code == 200:
-                log.info("Layer exists.  Delete it...")
+                log.info(f"Layer: {layer_name} exists.  Delete it...")
                 response = httpx.delete(
                     url=layer_get_url+"?recurse=true",
                     auth=(self.username, self.password),
@@ -479,7 +484,7 @@ class GeoServer:
                     timeout=120.0
                 )
             else:
-                log.info(f'Layer does not exist.')
+                log.info(f'Layer: {layer_name} does not exist.')
 
             # Construct URL
             url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store_name}/wmslayers/"
