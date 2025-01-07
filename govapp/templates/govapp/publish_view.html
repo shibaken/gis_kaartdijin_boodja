@@ -4,7 +4,11 @@
       {% if request.user.is_authenticated is True %}
 
             {% include "govapp/manage_editors_modal.html" %}
-            {% include "govapp/publish_view_create_update_geoserver.html" %}
+            {% if publish_entry_obj.catalogue_entry.type == 1 or publish_entry_obj.catalogue_entry.type == 5 %}
+                  {% include "govapp/publish_geoserver_create_or_update_modal.html" %}
+            {% else %}
+                  {% include "govapp/publish_geoserver_subscription_create_or_update_modal.html" %}
+            {% endif %}
             {% include "govapp/publish_view_new_cddp.html" %}
             {% include "govapp/publish_view_new_ftp.html" %}
             {% include "govapp/common_entity_modal.html" %}
@@ -112,12 +116,12 @@
                               <div class="card mb-3" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
-                                    <div class="col-6">
-                                          Details
-                                    </div>
-                                    <div class="col-6 text-end">
-                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
-                                    </div>
+                                          <div class="col-6">
+                                                Details
+                                          </div>
+                                          <div class="col-6 text-end">
+                                                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                                          </div>
                                     </div>
                               </div>
                               <div class="card-body collapse show" id="box1-card-body">
@@ -132,10 +136,9 @@
                                                       {{ publish_entry_obj.name }}
                                                 {% endif %}
                                           </div>
-                                          <div class='col-4'>
-                                                &nbsp;
-                                          </div>                        
+                                    </div>
 
+                                    <div class='row'>
                                           <div class='col-3'>
                                                 Catalogue entry 
                                           </div>
@@ -152,18 +155,17 @@
                                                       {% endfor %}
                                                 </select>
                                                 {% else %}
-                                                      {{ publish_entry_obj.catalogue_entry.name }}
+                                                <a href="/catalogue/entries/{{ publish_entry_obj.catalogue_entry.id }}/details/" style="text-decoration: none;" target="_blank">CE{{ publish_entry_obj.catalogue_entry.id }}: {{ publish_entry_obj.catalogue_entry.name }}</a>
                                                 {% endif %}
                                           </div>
-                                          <div class='col-4'>
-                                                &nbsp;
-                                          </div> 
+                                    </div>
 
+                                    <div class='row'>
                                           <div class='col-3'>
                                                 Custodian
                                           </div>
                                           <div class='col-5 p-1'>
-                                                {% if has_edit_access is True %}                                          
+                                                {% if has_edit_access is True %}
                                                       <select type="text" class="form-control" id="publish-custodian-entry" disabled style='display:none'>
                                                             <option value="">Select One</option>
                                                             {% for cd in custodians_obj %}
@@ -172,27 +174,22 @@
                                                                   {% else %}
                                                                         <option value="{{ cd.id }}">{{ cd.name }}</option>
                                                                   {% endif %}
-                                                            {% endfor %}                                                            
+                                                            {% endfor %}
                                                       </select>
                                                       {{ publish_entry_obj.catalogue_entry.custodian.name }}
                                                 {% else %}
                                                       {{ publish_entry_obj.catalogue_entry.custodian.name }}
                                                 {% endif %}
                                           </div>
-                                          <div class='col-4'>
-                                                &nbsp;
-                                          </div>       
+                                    </div>
 
+                                    <div class='row'>
                                           <div class='col-3'>
                                                 Last Updated Date Time
                                           </div>
-
-                                          <div class='col-5 p-1'>                              
+                                          <div class='col-5 p-1'>
                                                 {{ publish_entry_obj.updated_at }}
                                           </div>
-                                          <div class='col-4'>
-                                                &nbsp;
-                                          </div>       
                                     </div>
                               </div>
                         </div>
@@ -360,18 +357,18 @@
                         <div class="card mb-3" >
                               <div class="card-header fw-bold h4" style="padding:30px;">
                                     <div class="row">
-                                    <div class="col-6">
-                                          Notification
+                                          <div class="col-6">
+                                                Notification
+                                          </div>
+                                          <div class="col-6 text-end">
+                                                <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box5-card-body" onclick=""></i>
+                                          </div>
                                     </div>
-                                    <div class="col-6 text-end">
-                                          <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box5-card-body" onclick=""></i>
-                                    </div>
-                                    </div>         
                               </div>
                               <div class="card-body collapse show" id="box5-card-body">
                                     <div class="col-12 text-end">
                                     {% if has_edit_access is True %}
-                                          <button class="btn btn-primary left" id='publish-btn-add-notification' aria-current="page" >Add Notification</button>
+                                          <button class="btn btn-primary btn-sm left" id='publish-btn-add-notification' aria-current="page" >Add Notification</button>
                                     {% endif %}
                                     </div>
                                     <div class='col-12 pt-2 pb-2 '>
@@ -470,7 +467,7 @@
             <div id="publish_workspace_list" data-list="{{ publish_workspace_list }}"></div>
             <div id="publish_geoserver_pools" data-list="{{ geoserver_pool_list_json }}"></div>
             <input type="hidden" id="current-user" name="current_user" value="{{ request.user.id }}">
-            <input type="hidden" id="catalogue-type" name="current_user" value="{{ publish_entry_obj.catalogue_entry.type }}">
+            <input type="hidden" id="catalogue-type" name="catalogue_type" value="{{ publish_entry_obj.catalogue_entry.type }}">
 
             <script>
                   kbpublish.init_publish_item();

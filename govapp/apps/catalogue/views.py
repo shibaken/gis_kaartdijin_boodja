@@ -76,6 +76,9 @@ class CatalogueEntryViewSet(
     search_fields = ["name", "description", "assigned_to__username", "assigned_to__email", "custodian__name"]    
     permission_classes = [permissions.IsCatalogueEntryPermissions | accounts_permissions.IsInAdministratorsGroup]
 
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
     def update(self, request, *args, **kwargs):
         logger.info(f'Updating CatalogueEntry with the data: [{request.data}]...')
         ret = super().update(request, *args, **kwargs)
@@ -174,7 +177,6 @@ class CatalogueEntryViewSet(
         except Exception as e:
             logger.error(f"An unexpected error occurred: {str(e)}")
             return response.Response({"error": "Error locking catalogue entry"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=True, methods=["POST"])
