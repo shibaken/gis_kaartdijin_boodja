@@ -1,0 +1,185 @@
+<div class="modal fade" id="PublishGeoserverSubscriptionCreateOrUpdateModal" tabindex="-1" aria-labelledby="PublishGeoserverSubscriptionCreateOrUpdateModal" aria-hidden="true" data-bs-backdrop="static" data-backdrop="static" data-keyboard="false">
+     <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+               <div class="modal-header">
+                   <h5 class="modal-title" id="publish-geoserver-subscription-modal-title"></h5>
+                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body">
+                    <div class="alert alert-danger" role="alert" id='publish-geoserver-subscription-modal-popup-error' style='display:none'>
+                    </div>
+                    <div class="alert alert-success" role="alert" id='publish-geoserver-subscription-modal-popup-success' style='display:none'>
+                    </div>
+                    <input type="hidden" name="geoserver_publish_channel_id" id="geoserver_publish_channel_id" value=""/>
+                    <form>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-2 text-end'>
+                                   <label for="" class="form-label mb-0">Name</label>
+                              </div>
+                              <div class='col-10'>
+                                   <input type="text" readonly class="form-control-plaintext" value="{{ publish_entry_obj.catalogue_entry.name }}" autocomplete="off">
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-2 text-end'>
+                                   <label for="" class="form-label mb-0">GeoServer Pool</label>
+                              </div>
+                              <div class='col-5'>
+                                   <select type="text" class="form-control" id="new-publish-geoserver-pool">
+                                        <option value="">Select One</option>
+                                        {% for gsp in geoserver_pools %}
+                                             {% if gsp.enabled %}
+                                                  <option value="{{ gsp.id }}" data-enabled="{{ gsp.enabled }}">{{ gsp.name }}</option>
+                                             {% else %}
+                                                  <option value="{{ gsp.id }}" data-enabled="{{ gsp.enabled }}" style="color: #dc3545;">{{ gsp.name }} (Disabled)</option>
+                                             {% endif %}
+                                        {% endfor %}
+                                   </select>
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-2 text-end'>
+                                   <label for="" class="form-label mb-0">Workspace</label>
+                              </div>
+                              <div class='col-5'>
+                                   <select type="text" class="form-control" id="new-publish-workspace" >
+                                   <option value="">Select One</option>
+                                   {% for pw in publish_workspaces %}
+                                        <option value="{{ pw.id }}">{{ pw.name }}</option>
+                                   {% endfor %}
+                                   </select>
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-2 text-end'>
+                                   <label for="" class="form-label mb-0">SRS</label>
+                              </div>
+                              <div class='col-3'>
+                                   <input type="text" class="form-control" id="new-publish-srs" min="0">
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-2 text-end'>
+                                   <label for="" class="form-label mb-0">Active</label>
+                              </div>
+                              <div class='col-4'>
+                                   <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="new-publish-active" checked>
+                                   </div>
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-2 text-end'>
+                                   <label for="" class="form-label mb-0">Override BBox</label>
+                              </div>
+                              <div class='col-3'>
+                                   <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="new-publish-override-bbox" checked>
+                                   </div>
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3' id="override-bbox-options">
+                              <div class='col-2 text-end'>
+                              </div>
+                              <div class='col-10'>
+                                   <div class='row align-items-center mb-3'>
+                                        <div class='col-2'>
+                                             <label for="" class="form-label mb-0">Native CRS</label>
+                                        </div>
+                                        <div class='col-3'>
+                                             <input type="text" class="form-control" id="override-bbox-native-crs">
+                                        </div>
+                                   </div>
+                                   <div class='row align-items-center mb-3'>
+                                        <div>Native Bounding Box (Optional)</div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Min X</label></div>
+                                             <input type="text" class="form-control" id="nbb-minx">
+                                        </div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Max X</label></div>
+                                             <input type="text" class="form-control" id="nbb-maxx">
+                                        </div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Min Y</label></div>
+                                             <input type="text" class="form-control" id="nbb-miny">
+                                        </div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Max Y</label></div>
+                                             <input type="text" class="form-control" id="nbb-maxy">
+                                        </div>
+                                        <div class='col-3'>
+                                             <div><label for="" class="form-label mb-0">CRS</label></div>
+                                             <input type="text" class="form-control" id="nbb-crs">
+                                        </div>
+                                   </div>
+                                   <div class='row align-items-center mb-3'>
+                                        <div>Lat Lon Bounding Box (Optional)</div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Min X</label></div>
+                                             <input type="text" class="form-control" id="llb-minx">
+                                        </div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Max X</label></div>
+                                             <input type="text" class="form-control" id="llb-maxx">
+                                        </div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Min Y</label></div>
+                                             <input type="text" class="form-control" id="llb-miny">
+                                        </div>
+                                        <div class='col-2'>
+                                             <div><label for="" class="form-label mb-0">Max Y</label></div>
+                                             <input type="text" class="form-control" id="llb-maxy">
+                                        </div>
+                                        <div class='col-3'>
+                                             <div><label for="" class="form-label mb-0">CRS</label></div>
+                                             <input type="text" class="form-control" id="llb-crs">
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3'>
+                              <div class='col-2 text-end'>
+                                   <label for="" class="form-label mb-0">Create a cached layer</label>
+                              </div>
+                              <div class='col-4'>
+                                   <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="new-publish-create-cached-layer" checked>
+                                   </div>
+                              </div>
+                         </div>
+                         <div class='row align-items-center mb-3' id="create-cached-layer-options">
+                              <div class='col-2 text-end'>
+                              </div>
+                              <div class='col-8'>
+                                   <div class='row align-items-center mb-3'>
+                                        <div class='col-5'>
+                                             <label for="" class="form-label mb-0">Expire server cache after n seconds<br>(set to 0 to use source setting)</label>
+                                        </div>
+                                        <div class='col-3'>
+                                             <input type="number" class="form-control" id="expire-server-cache-after-n-seconds" placeholder="Enter seconds" min="0">
+                                        </div>
+                                   </div>
+                                   <div class='row align-items-center mb-3'>
+                                        <div class='col-5'>
+                                             <label for="" class="form-label mb-0">Expire client cache after n seconds<br>(set to 0 to use source setting)</label>
+                                        </div>
+                                        <div class='col-3'>
+                                             <input type="number" class="form-control" id="expire-client-cache-after-n-seconds" placeholder="Enter seconds" min="0">
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+                    </form>
+                    <div class="modal-footer">
+                         <div class='col-12 text-end'>
+                              <button type="button" class="btn btn-primary booking-policy-save" id='create-update-publish-geoserver-subscription-btn'></button>
+                              <div class="spinner-border text-primary" role="status" style="display:none" id="newpublish-geoserver-subscription-loader-popup">
+                                   <span class="visually-hidden">Loading...</span>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </div>
+</div>
