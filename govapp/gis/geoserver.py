@@ -458,7 +458,7 @@ class GeoServer:
             log.info(f"Uploading WMS Layer to GeoServer...")
             
             xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
-            log.info(f'xml_data: { xml_data }')
+            log.info(f'data: { xml_data }')
 
             layer_get_url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store_name}/wmslayers/{layer_name}"
             log.info(f'layer_get_url: {layer_get_url}')
