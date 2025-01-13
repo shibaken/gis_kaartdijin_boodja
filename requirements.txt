@@ -35,5 +35,5 @@ oauthlib==3.2.2
 sentry-sdk==2.19.0
 requests>=2.32.3
 anyio>=4.4.0
-GDAL==3.8.4
+GDAL==3.9.3
 setuptools==72.0.0
