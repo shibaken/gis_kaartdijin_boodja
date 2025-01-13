@@ -22,7 +22,8 @@ RUN apt-get install --no-install-recommends -y libpq-dev patch virtualenv
 RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
 RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
 RUN apt-get install --no-install-recommends -y software-properties-common 
-
+RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable -y
+ 
 # ADDED START from bottom
 RUN apt-get install --no-install-recommends -y python3-pil
 RUN apt-get install --no-install-recommends -y postgis 
