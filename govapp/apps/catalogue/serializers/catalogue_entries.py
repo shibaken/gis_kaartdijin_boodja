@@ -149,6 +149,7 @@ class CatalogueEntryUpdateSubscriptionQuerySerializer(serializers.ModelSerialize
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     sql_query = serializers.CharField(required=False)
+    force_run_postgres_scanner = serializers.BooleanField(required=False)
 
     def validate(self, data):
         return data
@@ -162,7 +163,7 @@ class CatalogueEntryUpdateSubscriptionQuerySerializer(serializers.ModelSerialize
     class Meta:
         """Layer Subscription Model Serializer Metadata."""
         model = models.catalogue_entries.CatalogueEntry
-        fields = ("name", "description", "sql_query")
+        fields = ("name", "description", "sql_query", "force_run_postgres_scanner")
 
 
 class CatalogueEntryGetSubscriptionQuerySerializer(serializers.ModelSerializer):
