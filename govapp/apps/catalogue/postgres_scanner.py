@@ -198,4 +198,4 @@ class Scanner:
             custom_query_freq.save()
         else:
             catalogue_entry_obj.custom_query_frequencies.update(last_job_run=now_dt)
-        return new_path
+        return destination_path
