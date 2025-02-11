@@ -1,6 +1,7 @@
 {% extends 'govapp/base.html' %}
 
 {% block content %}
+      {{ block.super }}
       {% if request.user.is_authenticated is True %}
 
             {% include "govapp/publish_geoserver_create_or_update_modal.html" %}

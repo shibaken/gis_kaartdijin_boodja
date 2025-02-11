@@ -590,6 +590,8 @@ var kbpublish = {
         });
     },    
     set_assigned_to: function() { 
+        $('#loadingOverlay').fadeIn();
+
         var publishassignedto = $('#publish-assigned-to').val();
         var publish_id = $('#publish_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
@@ -605,19 +607,18 @@ var kbpublish = {
                 },
                 error: function (error) {
                     common_entity_modal.show_alert("ERROR Setting assigned person.");
-    
-            
                 },
+                complete: function(xhr, status){
+                    $('#loadingOverlay').fadeOut();
+                }
             });
-    
-            
         } else {
             common_entity_modal.show_alert("Please select an assigned to person first.");
-
         }
-
     },
     change_publish_status: function(status) {        
+        $('#loadingOverlay').fadeIn();
+
         var status_url = "lock";
         if (status == 'unlock') {
             status_url = 'unlock';
@@ -637,6 +638,9 @@ var kbpublish = {
             error: function (error) {
                 common_entity_modal.show_alert("ERROR Changing Status");
             },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
         });
     },
     validateBoundingBox: function(errors, prefix, minx, maxx, miny, maxy, isLatLon = false) {
