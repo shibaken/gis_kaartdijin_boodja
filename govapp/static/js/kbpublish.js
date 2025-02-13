@@ -597,13 +597,13 @@ var kbpublish = {
         });
     },    
     set_assigned_to: function() { 
-        $('#loadingOverlay').fadeIn();
-
         var publishassignedto = $('#publish-assigned-to').val();
         var publish_id = $('#publish_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
-        if (publishassignedto.length > 0) {  
+        if (publishassignedto == null || publishassignedto === ''){
+            $('#loadingOverlay').fadeIn();
+
             $.ajax({
                 url: kbpublish.var.publish_save_url+publish_id+"/assign/"+publishassignedto+"/",
                 type: 'POST',

@@ -164,13 +164,13 @@ var kbcatalogue = {
             kbcatalogue.save_symbology('save-and-exit');
         });
 
-        $( "#catalogue-lock" ).click(function() {
+        $("#catalogue-lock").click(function() {
             kbcatalogue.change_catalogue_status('lock');
         });
-        $( "#catalogue-unlock" ).click(function() {
+        $("#catalogue-unlock").click(function() {
             kbcatalogue.change_catalogue_status('unlock');
         });
-        $( "#catalogue-assigned-to-btn" ).click(function() {
+        $("#catalogue-assigned-to-btn").click(function() {
             kbcatalogue.set_assigned_to();
         });
 
@@ -268,13 +268,14 @@ var kbcatalogue = {
     },
 
     set_assigned_to: function() { 
-        $('#loadingOverlay').fadeIn();
         var catalogueassignedto = $('#catalogue-assigned-to').val();
         var catalogue_entry_id = $('#catalogue_entry_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
         var pagetab = $('#pagetab').val();
 
-        if (catalogueassignedto.length > 0) {  
+        if (catalogueassignedto == null || catalogueassignedto.length == ''){
+            $('#loadingOverlay').fadeIn();
+
             $.ajax({
                 url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/assign/"+catalogueassignedto+"/",
                 type: 'POST',
@@ -284,7 +285,6 @@ var kbcatalogue = {
                     var html = '';
                    
                     window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/"; 
-           
                 },
                 error: function (error) {
                     common_entity_modal.show_alert("ERROR Setting assigned person.");
