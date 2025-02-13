@@ -14,84 +14,64 @@
             <div class="card" >
                   <div class="card-header fw-bold h4" style="padding:30px;">
                         <div class="row">
-                        <div class="col-6">
-                              Publish Entries
+                              <div class="col-6">
+                                    Publish Entries
+                              </div>
+                              <div class="col-6 text-end">
+                                    <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
+                              </div>
                         </div>
-                        <div class="col-6 text-end">
-                              <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
-                        </div>
-                  </div>         
                   </div>
                   <div class="card-body collapse show" id="box1-card-body">
-                        <div class="col-12 bg-light p-3">
-                              <B>Filters</B>
-                              <div class='row'>
-                                    <div class='col-12'>
-                                          <div class='row'>
-                                                <div class='col-3'>
-                                                      <label for="publish-name" class="form-label">Name</label>
-                                                      <input type="text" class="form-control" id="publish-name" >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="publish-custodian" class="form-label">Custodian</label>                                                      
-                                                      <select type="text" class="form-select" id="publish-custodian" >
-                                                      </select>
-                                                                                                    
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="publish-status" class="form-label">Status</label>
-                                                      <select type="text" class="form-control" id="publish-status" >
-                                                            <option value="">All</option>
-                                                            <option value="1">Locked</option>
-                                                            <option value="2">Unlocked</option>
-                                                      </select>
-                                                </div>
-                                                <div class='col-3'>                                                
-                                                      &nbsp;
-                                                </div>
-                                          </div>
+                        <div class="bg-light p-2">
+                              <strong>Filters</strong>
+                              <div class='row mb-3'>
+                                    <div class='col-3'>
+                                          <label for="publish-name">Name</label>
+                                          <input type="text" class="form-control" id="publish-name" >
                                     </div>
-                                    <div class='col-12'>
-                                          <div class='row'>
-                                                <div class='col-3'>
-                                                      <label for="publish-lastupdatedfrom" class="form-label">Last Updated From</label>
-                                                      <input type="text" class="form-control" id="publish-lastupdatedfrom"  placeholder="Select Date"  >
-
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="publish-lastupdatedto" class="form-label">Last Updated To</label>
-                                                      <input type="text" class="form-control" id="publish-lastupdatedto" placeholder="Select Date"  >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="publish-assignedto" class="form-label">Assigned To</label>
-                                                      <select type="text" class="form-select" id="publish-assignedto" >
-                                                      </select>                                                      
-                                                </div>
-                                                <div class='col-3'>
-                                                      &nbsp;
-                                                </div>
-                                          </div>
+                                    <div class='col-3'>
+                                          <label for="publish-custodian">Custodian</label>                                                      
+                                          <select type="text" class="form-select" id="publish-custodian" >
+                                          </select>
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="publish-status">Status</label>
+                                          <select type="text" class="form-control" id="publish-status" >
+                                                <option value="">All</option>
+                                                <option value="1">Locked</option>
+                                                <option value="2">Unlocked</option>
+                                          </select>
                                     </div>
                               </div>
 
-                              <div class='col-12'>
-                                    <div class='row'>
-                                          <div class='col-3'>
-                                                <label for="e1" class="form-label">Description</label>
-                                                <input type="text" class="form-control" id="publish-description" >
+                              <div class='row mb-3'>
+                                    <div class='col-3'>
+                                          <label for="publish-lastupdatedfrom">Last Updated From</label>
+                                          <input type="text" class="form-control" id="publish-lastupdatedfrom"  placeholder="Select Date"  >
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="publish-lastupdatedto">Last Updated To</label>
+                                          <input type="text" class="form-control" id="publish-lastupdatedto" placeholder="Select Date"  >
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="publish-assignedto">Assigned To</label>
+                                          <select type="text" class="form-select" id="publish-assignedto" >
+                                          </select>
+                                    </div>
+                              </div>
 
-                                          </div>
-                                          <div class='col-3'>
-                                                <label for="publish-number" class="form-label">Number</label>
-                                                <input type="text" class="form-control" id="publish-number" >
-                                          </div>
-                                          <div class='col-3'>
-                                                &nbsp;
-                                                
-                                          </div>
-                                          <div class='col-3 p-4'>
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='publish-filter-btn'>Filter</button>
-                                          </div>
+                              <div class='row mb-3'>
+                                    <div class='col-3'>
+                                          <label for="e1">Description</label>
+                                          <input type="text" class="form-control" id="publish-description" >
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="publish-number">Number</label>
+                                          <input type="text" class="form-control" id="publish-number" >
+                                    </div>
+                                    <div class='col-3 p-4'>
+                                          <button class="btn btn-primary btn-sm" aria-current="page" id='publish-filter-btn'>Filter</button>
                                     </div>
                               </div>
                         </div>
@@ -162,19 +142,10 @@
                               </table>  
                               <nav aria-label="Page navigation example">
                                     <ul class="pagination justify-content-end" id="paging_navi">
-                                      <!-- <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                      <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                                    </ul> -->
-                              </nav>  
-                              
-                        </div>           
-                        
+                              </nav>
+                        </div>
                   </div>
             </div>
-
       </div>
       
       <div id="catalogue_entry_list" data-list="{{ catalogue_entry_list }}"></div>
@@ -183,9 +154,6 @@
 
       <script>
             kbpublish.init_dashboard();
-            $(document).ready(function () {
-                 // $('#example').DataTable();
-            });
       </script>
 {% else %}
       <div class="container" id="dashboard-table-container">
