@@ -1,6 +1,7 @@
 {% extends 'govapp/base.html' %}
 
 {% block content %}
+      {{ block.super }}
       {% if request.user.is_authenticated is True %}
             {% include "govapp/manage_editors_modal.html" %}
             <div class="container" id="dashboard-table-container">
@@ -133,4 +134,5 @@
                   <h3>Permission Denied.  You are not authenticated.</h3>
             </div>
       {% endif %}
+
 {% endblock %}

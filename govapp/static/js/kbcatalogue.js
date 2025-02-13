@@ -165,15 +165,12 @@ var kbcatalogue = {
         });
 
         $( "#catalogue-lock" ).click(function() {
-            console.log("Locking");
             kbcatalogue.change_catalogue_status('lock');
         });
         $( "#catalogue-unlock" ).click(function() {
-            console.log("Unlocking");
             kbcatalogue.change_catalogue_status('unlock');
         });
         $( "#catalogue-assigned-to-btn" ).click(function() {
-            console.log("Assign To");
             kbcatalogue.set_assigned_to();
         });
 
@@ -231,6 +228,8 @@ var kbcatalogue = {
     },
 
     change_catalogue_status: function(status) {        
+        $('#loadingOverlay').fadeIn();
+
         var status_url = "lock";
         if (status == 'unlock') {
             status_url = 'unlock';
@@ -262,10 +261,14 @@ var kbcatalogue = {
                     common_entity_modal.show_alert("Error Changing Status");
                 }
             },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
         });
     },
 
     set_assigned_to: function() { 
+        $('#loadingOverlay').fadeIn();
         var catalogueassignedto = $('#catalogue-assigned-to').val();
         var catalogue_entry_id = $('#catalogue_entry_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
@@ -284,9 +287,12 @@ var kbcatalogue = {
            
                 },
                 error: function (error) {
-                     common_entity_modal.show_alert("ERROR Setting assigned person.");
+                    common_entity_modal.show_alert("ERROR Setting assigned person.");
                 },
-            });            
+                complete: function(xhr, status){
+                    $('#loadingOverlay').fadeOut();
+                }
+            });
         } else {
             common_entity_modal.show_alert("Please select an assigned to person first.");
         }

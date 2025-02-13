@@ -420,6 +420,8 @@ var kblayersubscription = {
         }
     },
     change_subscription_status: function(status){
+        $('#loadingOverlay').fadeIn();
+
         var status_url = "lock";
         if (status == 'unlock') {
             status_url = 'unlock';
@@ -439,9 +441,14 @@ var kblayersubscription = {
             error: function (error) {
                 common_entity_modal.show_alert("ERROR Changing Status");
             },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
         });
     },
     set_assigned_to: function(){
+        $('#loadingOverlay').fadeIn();
+
         var assignedto = $('#subsctiption-assigned-to').val();
         var subscription_id = $('#subscription_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
@@ -458,6 +465,9 @@ var kblayersubscription = {
                 error: function (error) {
                     common_entity_modal.show_alert("ERROR Setting assigned person.");
                 },
+                complete: function(xhr, status){
+                    $('#loadingOverlay').fadeOut();
+                }
             });
         } else {
             common_entity_modal.show_alert("Please select an assigned to person first.");
