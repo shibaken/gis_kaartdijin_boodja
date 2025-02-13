@@ -83,6 +83,13 @@ var kbpublish = {
             '</div>')
     },
     init_dashboard: function() {    
+        $('#new-publish-entry-catalogue-entry').select2({
+            placeholder: 'Select an option',
+            allowClear: true,
+            theme: 'bootstrap-5',
+            dropdownParent: $('#new-publish-entry-modal'),  // Set parent elem here to avoid being displayed behind the parent modal
+        });
+
         $('#publish-custodian').select2({
             placeholder: 'Select an option',
             minimumInputLength: 2,
@@ -127,10 +134,10 @@ var kbpublish = {
                 quietMillis: 100,
                 data: function (params, page) {
                     return {
-                        q: params.term,                        
+                        q: params.term,
                     };
-                },          
-                  processResults: function (data) {
+                },
+                processResults: function (data) {
                     // Transforms the top-level key of the response object from 'items' to 'results'
                     var results = [];
                     $.each(data.results, function(index, item){
@@ -142,7 +149,7 @@ var kbpublish = {
                     return {
                         results: results
                     };
-                  }                  
+                }
             },
         });
 
@@ -1271,7 +1278,6 @@ var kbpublish = {
             params_str = utils.make_query_params(params);
         }
 
-        //order_by=&limit=10" 
         $.ajax({
             url: kbpublish.var.publish_data_url+"?"+params_str,
             method: 'GET',

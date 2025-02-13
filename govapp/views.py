@@ -137,13 +137,13 @@ class PublishPage(base.TemplateView):
         ce_obj = catalogue_entries_models.CatalogueEntry.objects.all().order_by('id')
         pe_obj = publish_entries_models.PublishEntry.objects.all()
 
-        for pe in pe_obj:            
+        for pe in pe_obj:
             pe_list.append(pe.catalogue_entry.id)
 
         for ce in ce_obj:
             if ce.id not in pe_list:
                 catalogue_entry_list.append({'id': ce.id, 'name': ce.name, 'type': catalogue_entries_models.CatalogueEntryType.get_as_string(ce.type)})
-                   
+
         is_administrator = utils.is_administrator(request.user)
 
         # END - To be improved later todo a reverse table join    
@@ -247,7 +247,7 @@ class PublishView(base.TemplateView):
     
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)
-        
+
 
 class CatalogueEntriesPage(base.TemplateView):
     """Home page view."""
@@ -533,7 +533,8 @@ class LayerSubscriptions(base.TemplateView):
         
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)   
-    
+
+
 class LayerSubscriptionsView(base.TemplateView):
     """Layer Submissions view."""
 
@@ -582,7 +583,7 @@ class LayerSubscriptionsView(base.TemplateView):
         
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        
-    
+
 
 class GeoServerQueue(base.TemplateView):
     """ GeoServer Queue to show Geoserver Queue status """
