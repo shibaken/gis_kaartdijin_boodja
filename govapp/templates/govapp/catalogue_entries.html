@@ -21,80 +21,63 @@
                         </div>         
                   </div>
                   <div class="card-body collapse show" id="box1-card-body">
-                        <div class="col-12 bg-light p-3">
-                              <B>Filters</B>
-                              <div class='row'>
-                                    <div class='col-12'>
-                                          <div class='row'>
-                                                <div class='col-3'>
-                                                      <label for="catalogue-name" class="form-label">Name</label>
-                                                      <input type="text" class="form-control" id="catalogue-name" >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="catalogue-custodian" class="form-label">Custodian</label>
-                                                      <select type="text" class="form-select" id="catalogue-custodian" >
-                                                      </select>
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="catalogue-status" class="form-label">Status</label>
-                                                      <select type="text" class="form-control" id="catalogue-status" >
-                                                            <option value="">All</option>
-                                                            <option value="1">New Draft</option>
-                                                            <option value="2">Locked</option>
-                                                            <option value="3">Declined</option>
-                                                            <option value="4">Draft</option>
-                                                            <option value="4"></option>
-                                                      </select>
-                                                </div>
-                                                <div class='col-3'>
-                                                      &nbsp;
-                                                </div>
-                                          </div>
+                        <div class="col-12 bg-light p-2">
+                              <strong>Filters</strong>
+                              <div class='row mb-3'>
+                                    <div class='col-3'>
+                                          <label for="catalogue-name">Name</label>
+                                          <input type="text" class="form-control" id="catalogue-name" >
                                     </div>
-                                    <div class='col-12'>
-                                          <div class='row'>
-                                                <div class='col-3'>
-                                                      <label for="catalogue-lastupdatedfrom" class="form-label">Last Updated From</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedfrom"  placeholder="Select Date"  >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="catalogue-lastupdatedto" class="form-label">Last Updated To</label>
-                                                      <input type="text" class="form-control" id="catalogue-lastupdatedto" placeholder="Select Date"  >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="catalogue-assignedto" class="form-label">Assigned To</label>
-                                                      
-                                                      <select type="text" class="form-select" id="catalogue-assignedto" >
-                                                      </select>
-                                                </div>
-                                                <div class='col-3'>
-                                                      &nbsp;
-                                                </div>
-                                          </div>
+                                    <div class='col-3'>
+                                          <label for="catalogue-custodian">Custodian</label>
+                                          <select type="text" class="form-select" id="catalogue-custodian" >
+                                          </select>
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="catalogue-status">Status</label>
+                                          <select type="text" class="form-control" id="catalogue-status" >
+                                                <option value="">All</option>
+                                                <option value="1">New Draft</option>
+                                                <option value="2">Locked</option>
+                                                <option value="3">Declined</option>
+                                                <option value="4">Draft</option>
+                                                <option value="4"></option>
+                                          </select>
                                     </div>
                               </div>
 
-                              <div class='col-12'>
-                                    <div class='row'>
-                                          <div class='col-3'>
-                                                <label for="e1" class="form-label">Description</label>
-                                                <input type="text" class="form-control" id="catalogue-description" >
-
-                                          </div>
-                                          <div class='col-3'>
-                                                <label for="publish-number" class="form-label">Number</label>
-                                                <input type="text" class="form-control" id="catalogue-number" >
-                                          </div>
-                                          <div class='col-3'>
-                                                &nbsp;
-                                          </div>
-                                          <div class='col-3 p-4'>
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-filter-btn'>Filter</button>
-                                                &nbsp;
-                                          </div>
+                              <div class='row mb-3'>
+                                    <div class='col-3'>
+                                          <label for="catalogue-lastupdatedfrom">Last Updated From</label>
+                                          <input type="text" class="form-control" id="catalogue-lastupdatedfrom"  placeholder="Select Date"  >
                                     </div>
-                              </div>                        
-                        </div>                  
+                                    <div class='col-3'>
+                                          <label for="catalogue-lastupdatedto">Last Updated To</label>
+                                          <input type="text" class="form-control" id="catalogue-lastupdatedto" placeholder="Select Date"  >
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="catalogue-assignedto">Assigned To</label>
+                                          
+                                          <select type="text" class="form-select" id="catalogue-assignedto" >
+                                          </select>
+                                    </div>
+                              </div>
+
+                              <div class='row mb-3'>
+                                    <div class='col-3'>
+                                          <label for="e1">Description</label>
+                                          <input type="text" class="form-control" id="catalogue-description" >
+
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="publish-number">Number</label>
+                                          <input type="text" class="form-control" id="catalogue-number" >
+                                    </div>
+                                    <div class='col-3 p-4'>
+                                          <button class="btn btn-primary btn-sm" aria-current="page" id='catalogue-filter-btn'>Filter</button>
+                                    </div>
+                              </div>
+                        </div>
 
                         <div class='row'>
                               <div class='col-12 pt-2 pb-2 text-end'>
@@ -103,13 +86,6 @@
                                     {% endif %}
                               </div>
                         </div>
-
-                        <!-- <div class='row'>
-                              <div class='col-12 text-end'>
-                                    <button class="btn btn-secondary btn-sm" aria-current="page" href="#">Excel</button>
-                                    <button class="btn btn-secondary btn-sm" aria-current="page" href="#">CSV</button>
-                              </div>
-                        </div> -->
 
                         <div class='row mb-2'>
                               <div class="col-2">
