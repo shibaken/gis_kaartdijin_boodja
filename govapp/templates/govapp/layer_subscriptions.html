@@ -66,7 +66,7 @@
                                           </select>
                                     </div>
                               </div>
-                              <div class='row'>
+                              <div class='row align-items-end'>
                                     <div class='col-3'>
                                           <label for="subscription-description">Description</label>
                                           <input type="text" class="form-control" id="subscription-description" >
@@ -79,8 +79,8 @@
                                           <label for="subscription-assignedto">Assigned To</label>
                                           <select type="text" class="form-select" id="subscription-assignedto"></select>
                                     </div>
-                                    <div class='col-3 p-4'>
-                                          <button class="btn btn-primary btn-sm" aria-current="page" id='subscription-filter-btn'>Filter</button>
+                                    <div class='col-3 text-end'>
+                                          <button class="btn btn-primary btn-sm px-4" aria-current="page" id='subscription-filter-btn'>Filter</button>
                                     </div>
                               </div>
                         </div>
@@ -128,22 +128,22 @@
                         <div id='subscription-table'>
                               <table id="example" class="table" style="width:100%">
                                     <thead class='table-dark'>
-                                    <tr>
-                                          <th>Number</th>
-                                          <th>Name</th>
-                                          <th>Status</th>
-                                          <th>Type</th>
-                                          <th>Workspace</th>
-                                          <th>Enabled</th>
-                                          <th>Updated_at</th>
-                                          <th>Assigned to</th>
-                                          <th class="text-center">Action</th>
-                                    </tr>
+                                          <tr>
+                                                <th>Number</th>
+                                                <th>Name</th>
+                                                <th>Status</th>
+                                                <th>Type</th>
+                                                <th>Workspace</th>
+                                                <th>Enabled</th>
+                                                <th>Updated_at</th>
+                                                <th>Assigned to</th>
+                                                <th class="text-center">Action</th>
+                                          </tr>
                                     </thead>
                                     <tbody id='subscription-tbody'>
-                                    <tr>
-                                          <td colspan="7" class='text-center'>No Results</td>
-                                    </tr>
+                                          <tr>
+                                                <td colspan="7" class='text-center'>No Results</td>
+                                          </tr>
                                     </tbody>
                               </table>
                               <nav aria-label="Page navigation example">

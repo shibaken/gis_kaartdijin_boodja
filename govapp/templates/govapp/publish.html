@@ -31,7 +31,7 @@
                                           <input type="text" class="form-control" id="publish-name" >
                                     </div>
                                     <div class='col-3'>
-                                          <label for="publish-custodian">Custodian</label>                                                      
+                                          <label for="publish-custodian">Custodian</label>
                                           <select type="text" class="form-select" id="publish-custodian" >
                                           </select>
                                     </div>
@@ -61,7 +61,7 @@
                                     </div>
                               </div>
 
-                              <div class='row mb-3'>
+                              <div class='row align-items-end'>
                                     <div class='col-3'>
                                           <label for="e1">Description</label>
                                           <input type="text" class="form-control" id="publish-description" >
@@ -70,20 +70,16 @@
                                           <label for="publish-number">Number</label>
                                           <input type="text" class="form-control" id="publish-number" >
                                     </div>
-                                    <div class='col-3 p-4'>
-                                          <button class="btn btn-primary btn-sm" aria-current="page" id='publish-filter-btn'>Filter</button>
+                                    <div class='col-6 text-end'>
+                                          <button class="btn btn-primary btn-sm px-4" aria-current="page" id='publish-filter-btn'>Filter</button>
                                     </div>
                               </div>
                         </div>
 
-                        <div class='col-12 pt-4'>
-                              <div class='row'>
-                                    <div class='col-6 text-end offset-6'>
-                                          {% if is_administrator %}
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='create-new-publish-entry-btn'>Create New Publish Entry</button>
-                                          {% endif %}
-                                    </div>
-                              </div>
+                        <div class='text-end my-3'>
+                              {% if is_administrator %}
+                                    <button class="btn btn-primary btn-sm" aria-current="page" id='create-new-publish-entry-btn'>Create New Publish Entry</button>
+                              {% endif %}
                         </div>
 
                         <div class='row mb-2'>
@@ -124,20 +120,20 @@
                         <div id='publish-table'>
                               <table id="example" class="table" style="width:100%">
                                     <thead class='table-dark'>
-                                    <tr>
-                                          <th>Number</th>
-                                          <th>Name</th>
-                                          <th>Custodian</th>
-                                          <th>Status</th>
-                                          <th>Last Updated</th>
-                                          <th>Assigned To</th>
-                                          <th>Action</th>
-                                    </tr>
+                                          <tr>
+                                                <th>Number</th>
+                                                <th>Name</th>
+                                                <th>Custodian</th>
+                                                <th>Status</th>
+                                                <th>Last Updated</th>
+                                                <th>Assigned To</th>
+                                                <th>Action</th>
+                                          </tr>
                                     </thead>
                                     <tbody id='publish-tbody'>
-                                    <tr>
-                                          <td colspan="7" class='text-center'>No Results</td>
-                                    </tr>
+                                          <tr>
+                                                <td colspan="7" class='text-center'>No Results</td>
+                                          </tr>
                                     </tbody>
                               </table>  
                               <nav aria-label="Page navigation example">

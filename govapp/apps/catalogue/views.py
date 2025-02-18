@@ -32,6 +32,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 # Local
 from govapp import settings
+from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
 from govapp.common import mixins
 from govapp.apps.accounts import permissions as accounts_permissions
 from govapp.apps.catalogue import filters

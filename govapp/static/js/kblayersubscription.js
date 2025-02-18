@@ -430,6 +430,11 @@ var kblayersubscription = {
         var subscription_id = $('#subscription_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
+        if (subscription_id == null || subscription_id == ''){
+            $('#loadingOverlay').fadeOut();
+            return
+        }
+
         $.ajax({
             url: kblayersubscription.var.subscription_save_url+subscription_id+"/"+status_url+"/",
             type: 'POST',
