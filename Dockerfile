@@ -1,5 +1,5 @@
 # Prepare the base environment.
-FROM ubuntu:24.04 as builder_base_gis_kaartdijin_boodja
+FROM ubuntu:24.04 AS builder_base_gis_kaartdijin_boodja
 MAINTAINER asi@dbca.wa.gov.au
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBUG=True
@@ -49,7 +49,7 @@ RUN apt-get install -y nodejs
 #RUN wget -O /tmp/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl https://github.com/girder/large_image_wheels/raw/wheelhouse/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=e2fe6cfbab02d535bc52c77cdbe1e860304347f16d30a4708dc342a231412c57
 #RUN pip install /tmp/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 # Install Python libs using pyproject.toml and poetry.lock
-FROM builder_base_gis_kaartdijin_boodja as python_libs_gis_kaartdijin_boodja
+FROM builder_base_gis_kaartdijin_boodja AS python_libs_gis_kaartdijin_boodja
 
 RUN groupadd -g 5000 oim
 RUN useradd -g 5000 -u 5000 oim -s /bin/bash -d /app
@@ -80,7 +80,8 @@ RUN git config --global --add safe.directory /app
 #RUN poetry config virtualenvs.create false
 #COPY pyproject.toml poetry.lock ./
 COPY requirements.txt ./
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 #RUN pip install "poetry==$POETRY_VERSION"
 #RUN poetry install 
 
