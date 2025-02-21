@@ -164,16 +164,13 @@ var kbcatalogue = {
             kbcatalogue.save_symbology('save-and-exit');
         });
 
-        $( "#catalogue-lock" ).click(function() {
-            console.log("Locking");
+        $("#catalogue-lock").click(function() {
             kbcatalogue.change_catalogue_status('lock');
         });
-        $( "#catalogue-unlock" ).click(function() {
-            console.log("Unlocking");
+        $("#catalogue-unlock").click(function() {
             kbcatalogue.change_catalogue_status('unlock');
         });
-        $( "#catalogue-assigned-to-btn" ).click(function() {
-            console.log("Assign To");
+        $("#catalogue-assigned-to-btn").click(function() {
             kbcatalogue.set_assigned_to();
         });
 
@@ -231,6 +228,8 @@ var kbcatalogue = {
     },
 
     change_catalogue_status: function(status) {        
+        $('#loadingOverlay').fadeIn();
+
         var status_url = "lock";
         if (status == 'unlock') {
             status_url = 'unlock';
@@ -262,6 +261,9 @@ var kbcatalogue = {
                     common_entity_modal.show_alert("Error Changing Status");
                 }
             },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
         });
     },
 
@@ -271,7 +273,9 @@ var kbcatalogue = {
         var csrf_token = $("#csrfmiddlewaretoken").val();
         var pagetab = $('#pagetab').val();
 
-        if (catalogueassignedto.length > 0) {  
+        if (catalogueassignedto == null || catalogueassignedto.length == ''){
+            $('#loadingOverlay').fadeIn();
+
             $.ajax({
                 url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/assign/"+catalogueassignedto+"/",
                 type: 'POST',
@@ -281,12 +285,14 @@ var kbcatalogue = {
                     var html = '';
                    
                     window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/"; 
-           
                 },
                 error: function (error) {
-                     common_entity_modal.show_alert("ERROR Setting assigned person.");
+                    common_entity_modal.show_alert("ERROR Setting assigned person.");
                 },
-            });            
+                complete: function(xhr, status){
+                    $('#loadingOverlay').fadeOut();
+                }
+            });
         } else {
             common_entity_modal.show_alert("Please select an assigned to person first.");
         }

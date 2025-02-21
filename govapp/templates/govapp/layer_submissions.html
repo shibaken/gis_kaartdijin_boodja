@@ -18,45 +18,37 @@
                               <div class="col-6 text-end">
                                     <i class="bi fw-bold chevron-toggle down-chevron-open" data-bs-target="#box1-card-body" onclick=""></i>
                               </div>
-                        </div>         
+                        </div>
                   </div>
                   <div class="card-body collapse show" id="box1-card-body">
-                        <div class="col-12 bg-light p-3">
-                              <B>Filters</B>
-                              <div class='row'>
-                                    <div class='col-12'>
-                                         
-                                          <div class='row'>
-                                                <div class='col-3'>
-                                                      <label for="layer-submission-status" class="form-label">Status</label>
-                                                      <select type="text" class="form-control" id="layer-submission-status" >
-                                                            <option value="">All</option>
-                                                            <option value="1">SUBMITTED</option>
-                                                            <option value="2">ACCEPTED</option>
-                                                            <option value="3">DECLINED</option>
-                                                            <!-- <option value="4">Draft</option> -->
-                                                      </select>
-                                                </div>                                                                                          
-                                                <div class='col-3'>
-                                                      <label for="layer-submission-submitted-from" class="form-label">Submitted From</label>
-                                                      <input type="text" class="form-control" id="layer-submission-submitted-from" placeholder="Select Date" >
-                                                </div>
-                                                <div class='col-3'>
-                                                      <label for="layer-submission-submitted-to" class="form-label">Submitted To</label>
-                                                      <input type="text" class="form-control" id="layer-submission-submitted-to" placeholder="Select Date"  >
-                                                </div>
-                                          </div>
-                                          <div class='row'>
-                                                <div class='col-3'>
-                                                      <label for="layer-submission-name" class="form-label">Name</label>
-                                                      <input type="text" class="form-control" id="layer-submission-name">
-                                                </div>
-                                                <div class='col-6'>                                                
-                                                </div>
-                                                <div class='col-3 p-4'>
-                                                <button class="btn btn-primary btn-sm" aria-current="page" id='layer-submission-filter-btn'>Filter</button>
-                                          </div>
-                                          </div>
+                        <div class="bg-light p-3">
+                              <strong>Filters</strong>
+                              <div class='row mb-3'>
+                                    <div class='col-3'>
+                                          <label for="layer-submission-status">Status</label>
+                                          <select type="text" class="form-control" id="layer-submission-status" >
+                                                <option value="">All</option>
+                                                <option value="1">SUBMITTED</option>
+                                                <option value="2">ACCEPTED</option>
+                                                <option value="3">DECLINED</option>
+                                          </select>
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="layer-submission-submitted-from">Submitted From</label>
+                                          <input type="text" class="form-control" id="layer-submission-submitted-from" placeholder="Select Date" >
+                                    </div>
+                                    <div class='col-3'>
+                                          <label for="layer-submission-submitted-to">Submitted To</label>
+                                          <input type="text" class="form-control" id="layer-submission-submitted-to" placeholder="Select Date"  >
+                                    </div>
+                              </div>
+                              <div class='row align-items-end'>
+                                    <div class='col-3'>
+                                          <label for="layer-submission-name">Name</label>
+                                          <input type="text" class="form-control" id="layer-submission-name">
+                                    </div>
+                                    <div class='col-9 text-end'>
+                                          <button class="btn btn-primary btn-sm px-4" aria-current="page" id='layer-submission-filter-btn'>Filter</button>
                                     </div>
                               </div>
                         </div>
@@ -95,19 +87,19 @@
                         <div id='layersubmission-table'>
                               <table id="example" class="table" style="width:100%">
                                     <thead class='table-dark'>
-                                    <tr>
-                                          <th>Number</th>
-                                          <th>Catalogue Entry</th>
-                                          <th>Permission Type</th>
-                                          <th>Submitted At</th>
-                                          <th>Status</th>
-                                          <th>Action</th>
-                                    </tr>
+                                          <tr>
+                                                <th>Number</th>
+                                                <th>Catalogue Entry</th>
+                                                <th>Permission Type</th>
+                                                <th>Submitted At</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                          </tr>
                                     </thead>
                                     <tbody id='layersubmission-tbody'>
-                                    <tr>
-                                          <td colspan="6" class='text-center'>No Results</td>
-                                    </tr>
+                                          <tr>
+                                                <td colspan="6" class='text-center'>No Results</td>
+                                          </tr>
                                     </tbody>
                               </table>   
                               <nav aria-label="Page navigation example">
@@ -118,12 +110,11 @@
                                       <li class="page-item"><a class="page-link" href="#">3</a></li>
                                       <li class="page-item"><a class="page-link" href="#">Next</a></li>
                                     </ul>
-                              </nav>                               
-                        </div>           
+                              </nav>
+                        </div>
                         
                   </div>
             </div>
-
       </div>
       <style>
       .public-icon, .restricted-icon{
@@ -135,7 +126,7 @@
       }
       </style>
       <script>
-            kblayersubmission.init_dashboard();      
+            kblayersubmission.init_dashboard();
       </script>
 {% else %}
       <div class="container" id="dashboard-table-container">
