@@ -98,6 +98,8 @@ urlpatterns = [
     urls.path('api/geoserver-config-files/', FileListView.as_view(), name='geoserver-config-files'),
     urls.path('api/geoserver-config-files/retrieve-file/', FileDownloadView.as_view(), name='geoserver-retrieve-file'),
     urls.path('api/geoserver-config-files/delete-file/', FileDeleteView.as_view(), name='geoserver-delete-config-file'),
+
+    urls.path('api/logfile/', views.get_logs, name='get_logs'),
 ]
 
 # DBCA Template URLs
