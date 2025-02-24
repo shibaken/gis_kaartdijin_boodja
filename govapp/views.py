@@ -600,6 +600,11 @@ class CDDPQueueView(base.TemplateView):
     template_name = "govapp/cddpqueue.html"
 
 
+class LogFileView(base.TemplateView):
+    # Template name
+    template_name = "govapp/logfile.html"
+
+
 class GeoServerGroupsView(base.TemplateView):
     template_name = "govapp/usergroups.html"
 

@@ -1,0 +1,77 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+
+{% if request.user.is_authenticated is True %}
+      {% include "govapp/common_entity_modal.html" %}
+
+      <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+
+      <div class="container" id="dashboard-table-container">
+            
+            <div class="card" >
+                  <div class="card-header fw-bold h4" style="padding:30px;">
+                        <div class="row">
+                              <div class="col-6">
+                                    Logfile
+                              </div>
+                        </div>
+                  </div>
+                  <div class="card-body collapse show" id="box1-card-body">
+                        <pre id="log-container">
+                        </pre>
+                  </div>
+            </div>
+      </div>
+      
+      <div id="catalogue_entry_list" data-list="{{ catalogue_entry_list }}"></div>
+      <style>
+      #log-container {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 400px;
+        overflow-y: scroll;
+        background-color: #f9f9f9;
+        white-space: pre-wrap;
+        font-family: monospace;
+      }
+      </style>
+      <script>
+            let currentPosition = null;
+
+            function fetchLogs() {
+            let url = '/api/logcontents/';
+            if (currentPosition !== null) {
+                  url += '?last_position=' + currentPosition;
+            }
+
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                  const logContainer = document.getElementById('log-container');
+                  if (data.new_lines) {
+                        // Append new lines
+                        data.new_lines.forEach(line => {
+                        logContainer.textContent += line;
+                  });
+                  } else if (data.log_lines) {
+                        // Initial load; replace log content with the last 1000 lines
+                        logContainer.textContent = data.log_lines.join('');
+                  }
+                  // Update the current file pointer
+                  currentPosition = data.current_position;
+            })
+            .catch(error => console.error("Error fetching logs:", error));
+            }
+
+            // Initial fetch
+            fetchLogs();
+            // Poll every 5 seconds
+            setInterval(fetchLogs, 5000);
+      </script>
+{% else %}
+      <div class="container" id="dashboard-table-container">
+            <h3>Permission Denied.  You are not authenticated.</h3>
+      </div>
+{% endif %}
+{% endblock %}
