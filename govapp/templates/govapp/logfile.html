@@ -34,6 +34,8 @@
                                     <option value="1000" selected>1000</option>
                                     <option value="2000">2000</option>
                                     <option value="3000">3000</option>
+                                    <option value="4000">4000</option>
+                                    <option value="5000">5000</option>
                               </select></label>
                         </div>
                         <pre id="log-container">
@@ -59,11 +61,11 @@
       </style>
       <script>
             let currentPosition = null;
-            let linesCount = parseInt(document.getElementById('lines-count-select').value);
+            let linesToBeLoaded = parseInt(document.getElementById('lines-count-select').value);
             let polling_interval_ms = 3000;  // [ms]
             let displayedLines = [];
             let displayedLinesBuffer = 500;  // [lines]
-            let maxLines = linesCount + displayedLinesBuffer;
+            let maxLinesToBeDisplayed = linesToBeLoaded + displayedLinesBuffer;
 
             // Format a log line; lines starting with "ERROR" will be red.
             function formatLine(line) {
@@ -91,7 +93,7 @@
                   let url = '/api/logcontents/';
                   if (currentPosition === null) {
                         // On initial load, send the selected number of lines as a parameter.
-                        url += '?lines_count=' + linesCount;
+                        url += '?lines_count=' + linesToBeLoaded;
                   } else {
                         url += '?last_position=' + currentPosition;
                   }
@@ -110,8 +112,8 @@
                         }
 
                         // Ensure we only keep the last maxLines entries
-                        if (displayedLines.length > maxLines) {
-                              displayedLines = displayedLines.slice(displayedLines.length - maxLines);
+                        if (displayedLines.length > maxLinesToBeDisplayed) {
+                              displayedLines = displayedLines.slice(displayedLines.length - maxLinesToBeDisplayed);
                         }
                         
                         // Render the log container
@@ -141,8 +143,8 @@
 
             document.getElementById('lines-count-select').addEventListener('change', function() {
                   currentPosition = null;
-                  linesCount = parseInt(document.getElementById('lines-count-select').value);
-                  maxLines = linesCount + displayedLinesBuffer;
+                  linesToBeLoaded = parseInt(document.getElementById('lines-count-select').value);
+                  maxLinesToBeDisplayed = linesToBeLoaded + displayedLinesBuffer;
                   fetchLogs();
             });
 
