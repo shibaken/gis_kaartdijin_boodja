@@ -3,14 +3,15 @@
 
 # Third-Party
 import os
+import json
 from django import http
 from django import shortcuts
 from django.views.generic import base
 from django.contrib import auth
 from django.utils.decorators import method_decorator
+from django.http import JsonResponse
 from rest_framework.decorators import permission_classes
 from owslib.wms import WebMapService
-import json
 
 # Internal
 from govapp import settings
@@ -599,6 +600,18 @@ class CDDPQueueView(base.TemplateView):
     template_name = "govapp/cddpqueue.html"
 
 
+class LogFileView(base.TemplateView):
+    # Template name
+    template_name = "govapp/logfile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Add any additional context variables here.
+        context['log_file_name'] = settings.LOG_FILE_NAME
+
+        return context
+
 class GeoServerGroupsView(base.TemplateView):
     template_name = "govapp/usergroups.html"
 
@@ -625,3 +638,57 @@ class GeoServerGroupView(base.TemplateView):
         }
 
         return shortcuts.render(request, self.template_name, context)
+
+
+def get_logs(request):
+    """
+    API endpoint that returns log updates based on the given offset.
+
+    - If the GET parameter 'last_position' is provided:
+      Returns all new log lines from that file offset and the updated file pointer.
+    - If 'last_position' is not provided:
+      Returns the last 1000 lines of the log file and the file's current end position.
+    
+    Returns:
+        JsonResponse: A JSON response containing the log lines and current file position.
+    """
+    last_position_param = request.GET.get('last_position', None)
+    try:
+        lines_count = int(request.GET.get('lines_count', 1000))
+        lines_count = 5000 if lines_count > 5000 else lines_count  # Cap the maximum number of lines to 5000
+    except (TypeError, ValueError):
+        lines_count = 1000
+
+    if last_position_param is not None:
+        try:
+            last_position = int(last_position_param)
+        except ValueError:
+            last_position = 0
+
+        new_lines = []
+        current_position = last_position
+
+        if os.path.exists(settings.LOG_FILE_PATH):
+            with open(settings.LOG_FILE_PATH, 'r') as log:
+                log.seek(last_position)
+                new_lines = log.readlines()
+                current_position = log.tell()
+
+        return JsonResponse({
+            'new_lines': new_lines,
+            'current_position': current_position,
+        })
+    else:
+        log_lines = []
+        if os.path.exists(settings.LOG_FILE_PATH):
+            with open(settings.LOG_FILE_PATH, 'r') as log:
+                log_lines = log.readlines()
+        # Retrieve the last 1000 lines
+        last_1000_lines = log_lines[-lines_count:]
+        # Get the current file pointer (i.e., file size)
+        current_position = os.path.getsize(settings.LOG_FILE_PATH) if os.path.exists(settings.LOG_FILE_PATH) else 0
+
+        return JsonResponse({
+            'log_lines': last_1000_lines,
+            'current_position': current_position,
+        })

@@ -11,5 +11,5 @@
 		   "--hostname","gis-kaartdijin-boodja-dev"
 		   ],
 	"forwardPorts": [9136,9137,9138,9139,9140],
-	"initializeCommand" : "${localEnv:HOME}/docker-scripts-dev/windows_vbox/postgres_docker_load.sh"
+	"initializeCommand" : "${localEnv:HOME}/docker-scripts-dev/windows_vbox/postgres_docker_load_2404.sh"
 }

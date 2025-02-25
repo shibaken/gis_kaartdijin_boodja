@@ -196,6 +196,8 @@ SPECTACULAR_SETTINGS = {
 path_to_logs = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(path_to_logs):
     os.mkdir(path_to_logs)
+LOG_FILE_NAME = 'kaartdijin_boodja.log'
+LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', LOG_FILE_NAME)
 
 # Logging
 # https://docs.djangoproject.com/en/3.2/topics/logging/
@@ -216,7 +218,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'kaartdijin_boodja.log'),
+            'filename': LOG_FILE_PATH,
             'formatter': 'verbose2',
             'maxBytes': 5242880
         },
