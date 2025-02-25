@@ -604,6 +604,13 @@ class LogFileView(base.TemplateView):
     # Template name
     template_name = "govapp/logfile.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Add any additional context variables here.
+        context['log_file_name'] = settings.LOG_FILE_NAME
+
+        return context
 
 class GeoServerGroupsView(base.TemplateView):
     template_name = "govapp/usergroups.html"
@@ -646,6 +653,11 @@ def get_logs(request):
         JsonResponse: A JSON response containing the log lines and current file position.
     """
     last_position_param = request.GET.get('last_position', None)
+    try:
+        lines_count = int(request.GET.get('lines_count', 1000))
+        lines_count = 5000 if lines_count > 5000 else lines_count  # Cap the maximum number of lines to 5000
+    except (TypeError, ValueError):
+        lines_count = 1000
 
     if last_position_param is not None:
         try:
@@ -672,7 +684,7 @@ def get_logs(request):
             with open(settings.LOG_FILE_PATH, 'r') as log:
                 log_lines = log.readlines()
         # Retrieve the last 1000 lines
-        last_1000_lines = log_lines[-1000:]
+        last_1000_lines = log_lines[-lines_count:]
         # Get the current file pointer (i.e., file size)
         current_position = os.path.getsize(settings.LOG_FILE_PATH) if os.path.exists(settings.LOG_FILE_PATH) else 0
 
