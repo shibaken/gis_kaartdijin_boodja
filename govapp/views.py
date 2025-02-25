@@ -639,6 +639,24 @@ class GeoServerGroupView(base.TemplateView):
 
         return shortcuts.render(request, self.template_name, context)
 
+def tail_lines(file_path, lines=1000, block_size=1024):
+    """
+    Efficiently retrieves the last `lines` lines from file_path in binary mode.
+    Returns a list of decoded strings.
+    """
+    with open(file_path, 'rb') as f:
+        f.seek(0, os.SEEK_END)
+        file_size = f.tell()
+        data = b""
+        lines_to_find = lines + 1
+        while file_size > 0 and data.count(b'\n') < lines_to_find:
+            increment = min(block_size, file_size)
+            file_size -= increment
+            f.seek(file_size)
+            data = f.read(increment) + data
+        all_lines = data.splitlines(keepends=True)
+        return [line.decode('utf-8', errors='replace') for line in all_lines[-lines:]]
+
 
 def get_logs(request):
     """
@@ -679,16 +697,15 @@ def get_logs(request):
             'current_position': current_position,
         })
     else:
-        log_lines = []
         if os.path.exists(settings.LOG_FILE_PATH):
-            with open(settings.LOG_FILE_PATH, 'r') as log:
-                log_lines = log.readlines()
-        # Retrieve the last 1000 lines
-        last_1000_lines = log_lines[-lines_count:]
+            last_x_lines = tail_lines(settings.LOG_FILE_PATH, lines=lines_count)
+        else:
+            last_x_lines = []
+
         # Get the current file pointer (i.e., file size)
         current_position = os.path.getsize(settings.LOG_FILE_PATH) if os.path.exists(settings.LOG_FILE_PATH) else 0
 
         return JsonResponse({
-            'log_lines': last_1000_lines,
+            'log_lines': last_x_lines,
             'current_position': current_position,
         })
