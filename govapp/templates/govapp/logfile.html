@@ -1,0 +1,160 @@
+{% extends 'govapp/base.html' %}
+
+{% block content %}
+
+{% if request.user.is_authenticated is True %}
+      {% include "govapp/common_entity_modal.html" %}
+
+      <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+
+      <div class="container" id="dashboard-table-container">
+            
+            <div class="card" >
+                  <div class="card-header fw-bold h4" style="padding:30px;">
+                        <div class="row">
+                              <div class="col-12">
+                                    Log: {{ log_file_name }}
+                              </div>
+                        </div>
+                  </div>
+                  <div class="card-body collapse show" id="box1-card-body">
+                        <div class="mb-2">
+                              <label>
+                                    <input type="checkbox" id="auto-reload-checkbox" checked> Auto Reload
+                              </label>
+                              <label style="margin-left: 2em;">
+                                    <input type="checkbox" id="line-wrap-checkbox" checked> Wrap Lines
+                              </label>
+                              <label style="margin-left: 2em;">
+                                    <input type="checkbox" id="auto-scroll-checkbox" checked> Auto Scroll
+                              </label>
+                              <label style="display: inline-block; white-space: nowrap; margin-left: 2em;">Lines: <select id="lines-count-select" class="form-select" style="display: inline;">
+                                    <option value="100">100</option>
+                                    <option value="500">500</option>
+                                    <option value="1000" selected>1000</option>
+                                    <option value="2000">2000</option>
+                                    <option value="3000">3000</option>
+                              </select></label>
+                        </div>
+                        <pre id="log-container">
+                        </pre>
+                  </div>
+            </div>
+      </div>
+      
+      <div id="catalogue_entry_list" data-list="{{ catalogue_entry_list }}"></div>
+      <style>
+            #log-container {
+                  border: 1px solid #ccc;
+                  padding: 10px;
+                  height: 400px;
+                  min-height: 200px;
+                  max-height: 800px;
+                  overflow-y: scroll;
+                  background-color: #f9f9f9;
+                  white-space: pre-wrap;
+                  font-family: monospace;
+                  resize: vertical;
+            }
+      </style>
+      <script>
+            let currentPosition = null;
+            let linesCount = parseInt(document.getElementById('lines-count-select').value);
+            let polling_interval_ms = 3000;  // [ms]
+            let displayedLines = [];
+            let displayedLinesBuffer = 500;  // [lines]
+            let maxLines = linesCount + displayedLinesBuffer;
+
+            // Format a log line; lines starting with "ERROR" will be red.
+            function formatLine(line) {
+                  let formatted = line.replace(
+                        // colour datetime and function name
+                        /^(\S+\s+)(\S+\s+\S+\s)(\S+\s+\S+\s+)/,
+                        "$1<span style='color: green;'>$2</span><span style='color: blue;'>$3</span>"
+                  );
+                  formatted = formatted.replace(/^INFO\b/, '<span style="color: dodgerblue;">INFO</span>');
+                  // Only replace the word "ERROR" (if at the start) with red, leaving the rest untouched.
+                  formatted = formatted.replace(/^ERROR\b/, '<span style="color: red;">ERROR</span>');
+                  // Only replace the word "WARNING" (if at the start) with orange, leaving the rest untouched.
+                  formatted = formatted.replace(/^WARNING\b/, '<span style="color: orange;">WARNING</span>');
+
+                  return formatted;
+            }
+
+            function fetchLogs() {
+                  let autoReloadEnabled = document.getElementById('auto-reload-checkbox').checked;
+                  if (!autoReloadEnabled) {
+                        // auto-reload is disabled, don't fetch logs
+                        return;
+                  }
+
+                  let url = '/api/logcontents/';
+                  if (currentPosition === null) {
+                        // On initial load, send the selected number of lines as a parameter.
+                        url += '?lines_count=' + linesCount;
+                  } else {
+                        url += '?last_position=' + currentPosition;
+                  }
+                  fetch(url)
+                  .then(response => response.json())
+                  .then(data => {
+                        const logContainer = document.getElementById('log-container');
+                        if (data.new_lines) {
+                              // Append formatted new lines to our global array
+                              data.new_lines.forEach(line => {
+                                    displayedLines.push(formatLine(line));
+                              });
+                        } else if (data.log_lines) {
+                              // Initial load; replace displayedLines with formatted log lines
+                              displayedLines = data.log_lines.map(formatLine);
+                        }
+
+                        // Ensure we only keep the last maxLines entries
+                        if (displayedLines.length > maxLines) {
+                              displayedLines = displayedLines.slice(displayedLines.length - maxLines);
+                        }
+                        
+                        // Render the log container
+                        logContainer.innerHTML = displayedLines.join('');
+
+                        // Update the current file pointer
+                        currentPosition = data.current_position;
+
+                        // Scroll to the bottom if auto-scroll is enabled
+                        if (document.getElementById('auto-scroll-checkbox').checked) {
+                              logContainer.scrollTop = logContainer.scrollHeight;
+                        }
+                  })
+                  .catch(error => console.error("Error fetching logs:", error));
+            }
+
+            document.getElementById('line-wrap-checkbox').addEventListener('change', function() {
+                  const logContainer = document.getElementById('log-container');
+                  if (this.checked) {
+                        // When checked, allow wrapping
+                        logContainer.style.whiteSpace = "pre-wrap";
+                  } else {
+                        // When not checked, do not wrap; enable horizontal scrolling
+                        logContainer.style.whiteSpace = "pre";
+                  }
+            });
+
+            document.getElementById('lines-count-select').addEventListener('change', function() {
+                  currentPosition = null;
+                  linesCount = parseInt(document.getElementById('lines-count-select').value);
+                  maxLines = linesCount + displayedLinesBuffer;
+                  fetchLogs();
+            });
+
+            // Initial fetch
+            fetchLogs();
+
+            // Poll every 5 seconds
+            setInterval(fetchLogs, polling_interval_ms);
+      </script>
+{% else %}
+      <div class="container" id="dashboard-table-container">
+            <h3>Permission Denied.  You are not authenticated.</h3>
+      </div>
+{% endif %}
+{% endblock %}
