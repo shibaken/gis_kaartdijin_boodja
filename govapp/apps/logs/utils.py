@@ -28,7 +28,7 @@ def add_to_actions_log(
         
         try:
             user = UserModel.objects.get(email=system_email)
-        except UserModel.DoesNotExist:
+        except (UserModel.DoesNotExist, auth_models.user.DoesNotExist):
             user = UserModel.objects.create_user(
                 username=system_email,
                 email=system_email,
@@ -36,7 +36,7 @@ def add_to_actions_log(
                 is_staff=True,
                 is_superuser=False,
                 first_name=first_name,
-                lost_name=last_name,
+                last_name=last_name,
             )
 
     # Create and Return Actions Log Entry
