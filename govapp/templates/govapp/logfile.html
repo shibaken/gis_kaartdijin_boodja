@@ -36,12 +36,10 @@
                               </label>
                               <label style="display: inline-block; white-space: nowrap; margin-left: 2em;">Lines: <select id="lines-count-select" class="form-select" style="display: inline;">
                                     <option value="100">100</option>
-                                    <option value="500">500</option>
-                                    <option value="1000" selected>1000</option>
+                                    <option value="500" selected>500</option>
+                                    <option value="1000">1000</option>
                                     <option value="2000">2000</option>
                                     <option value="3000">3000</option>
-                                    <option value="4000">4000</option>
-                                    <option value="5000">5000</option>
                               </select></label>
                         </div>
                         <pre id="log-container">
@@ -66,22 +64,18 @@
             }
       </style>
       <script>
-            let currentPosition = null;
-            let displayedLines = [];
-            let displayedLinesBuffer = 500;  // [lines]
-
             // Format a log line; lines starting with "ERROR" will be red.
             function formatLine(line, filename) {
+                  let formatted_line = line
                   // You may add more log file formats here according to the project's log file format.
                   if (filename.startsWith('kaartdijin_boodja') && filename.endsWith('.log')) {
-                        return formatLineKaartdijinBoodjaLog(line)
+                        formatted_line = formatLineKaartdijinBoodjaLog(line)
                   } else if (filename.startsWith('email') && filename.endsWith('.log')) {
-                        return formatLineEmailLog(line)
+                        formatted_line = formatLineEmailLog(line)
                   } else if (filename.startsWith('cronjob') && filename.endsWith('.log')) {
-                        return formatLineCronjobLog(line)
-                  } else {
-                        return line
+                        formatted_line = formatLineCronjobLog(line)
                   }
+                  return '<span>' + formatted_line + '</span>';
             }
 
             function formatLineCronjobLog(line) {
@@ -124,10 +118,13 @@
                   return line
             }
 
+            let currentPosition = null;
+            let displayedLines = [];
             function fetchLogs() {
                   let autoReloadEnabled = document.getElementById('auto-reload-checkbox').checked;
                   let logFileSelected = document.getElementById('log-file-select').value;
                   let linesToBeLoaded = parseInt(document.getElementById('lines-count-select').value);
+                  let displayedLinesBuffer = 0;  // Maximum number of lines to be displayed is calculated as linesToBeLoaded + displayedLinesBuffer (See below)
                   let maxLinesToBeDisplayed = linesToBeLoaded + displayedLinesBuffer;
 
                   if (!autoReloadEnabled) {
@@ -166,16 +163,30 @@
                               newLinesAdded = true;
                         }
 
-                        // Ensure we only keep the last maxLines entries
+                        let excess = 0
+                        console.log(displayedLines)
                         if (displayedLines.length > maxLinesToBeDisplayed) {
-                              displayedLines = displayedLines.slice(displayedLines.length - maxLinesToBeDisplayed);
+                              excess = displayedLines.length - maxLinesToBeDisplayed;
+                              displayedLines = displayedLines.slice(excess);
+                              // Remove excess old lines from the DOM (from the top)
+                              for (let i = 0; i < excess; i++) {
+                                    if (logContainer.firstChild) {
+                                          logContainer.removeChild(logContainer.firstChild);
+                                    }
+                              }
                         }
-                        
-                        // Render the log container
-                        logContainer.innerHTML = displayedLines.join('');
+
+                        if (data.log_lines && data.log_lines.length > 0) {
+                              // For the initial load, replace entire content
+                              logContainer.innerHTML = displayedLines.join('');
+                        } else if (data.new_lines && data.new_lines.length > 0) {
+                              // For subsequent updates, append only the new lines
+                              let newContent = displayedLines.slice(-excess).join('');
+                              logContainer.innerHTML += newContent;
+                        }
 
                         if (autoScroll && newLinesAdded) {
-                              // Scroll to the bottom if auto-scroll is enabled
+                              // Scroll to the bottom if auto-scroll is enabled and new lines are added
                               logContainer.scrollTop = logContainer.scrollHeight;
                         }
 
@@ -211,6 +222,9 @@
 
             // Poll every 5 seconds
             let fetching_interval_ms = parseInt(document.getElementById('log_file_fetching_interval_ms').value);
+            if (fetching_interval_ms < 1000) {
+                  fetching_interval_ms = 1000;  // minimum 1 second to send fetch request
+            }
             setInterval(fetchLogs, fetching_interval_ms);
       </script>
 {% else %}

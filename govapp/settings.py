@@ -417,3 +417,4 @@ if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
 
 FILE_UPLOAD_PERMISSIONS = None
 LOG_FILE_FETCHING_INTERVAL_MS = decouple.config("LOG_FILE_FETCHING_INTERVAL_MS", default=3000)
+LOG_FILE_NAMES_TO_DISPLAY = decouple.config("LOG_FILE_NAMES_TO_DISPLAY", default="kaartdijin_boodja.log,email.log,cronjob.log").split(',')
