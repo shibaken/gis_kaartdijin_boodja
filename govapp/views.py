@@ -612,8 +612,9 @@ class LogFileView(base.TemplateView):
 
         # Retrieve all files ending with .log from the PATH_TO_LOGS folder.
         import os, glob
-        log_pattern = os.path.join(settings.PATH_TO_LOGS, '*.log')
-        context['log_files'] = sorted([os.path.basename(f) for f in glob.glob(log_pattern)])
+        # log_pattern = os.path.join(settings.PATH_TO_LOGS, '*.log')
+        # context['log_files'] = sorted([os.path.basename(f) for f in glob.glob(log_pattern)])
+        context['log_files'] = sorted(settings.LOG_FILE_NAMES_TO_DISPLAY)
         context['log_file_fetching_interval_ms'] = settings.LOG_FILE_FETCHING_INTERVAL_MS
 
         return context
@@ -688,6 +689,7 @@ def get_logs(request):
         lines_count = 1000
 
     if last_position_param is not None:
+        # Log is already displayed in the frontend, only return new lines
         try:
             last_position = int(last_position_param)
         except ValueError:
@@ -709,6 +711,7 @@ def get_logs(request):
             'current_position': current_position,
         })
     else:
+        # Initial load.  Return the last X lines of the log file.
         last_x_lines = []
         if os.path.exists(log_file_path):
             last_x_lines = tail_lines(log_file_path, lines=lines_count)
