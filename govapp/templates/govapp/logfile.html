@@ -211,6 +211,9 @@
 
             // Poll every 5 seconds
             let fetching_interval_ms = parseInt(document.getElementById('log_file_fetching_interval_ms').value);
+            if (fetching_interval_ms < 1000) {
+                  fetching_interval_ms = 1000;  // minimum 1 second to send fetch request
+            }
             setInterval(fetchLogs, fetching_interval_ms);
       </script>
 {% else %}
