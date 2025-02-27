@@ -6,14 +6,20 @@
       {% include "govapp/common_entity_modal.html" %}
 
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+      <input type="hidden" id="log_file_fetching_interval_ms" name="log_file_fetching_interval_ms" value="{{ log_file_fetching_interval_ms }}">
 
       <div class="container" id="dashboard-table-container">
             
             <div class="card" >
                   <div class="card-header fw-bold h4" style="padding:30px;">
                         <div class="row">
-                              <div class="col-12">
-                                    Log: {{ log_file_name }}
+                              <div class="col-1">Log:</div>
+                              <div class="col-5">
+                                    <select id="log-file-select" class="form-select" style="display: inline;">
+                                          {% for file in log_files %}
+                                                <option value="{{ file }}" {% if forloop.first %}selected{% endif %}>{{ file }}</option>
+                                          {% endfor %}
+                                    </select>
                               </div>
                         </div>
                   </div>
@@ -34,6 +40,8 @@
                                     <option value="1000" selected>1000</option>
                                     <option value="2000">2000</option>
                                     <option value="3000">3000</option>
+                                    <option value="4000">4000</option>
+                                    <option value="5000">5000</option>
                               </select></label>
                         </div>
                         <pre id="log-container">
@@ -59,71 +67,120 @@
       </style>
       <script>
             let currentPosition = null;
-            let linesCount = parseInt(document.getElementById('lines-count-select').value);
-            let polling_interval_ms = 3000;  // [ms]
             let displayedLines = [];
             let displayedLinesBuffer = 500;  // [lines]
-            let maxLines = linesCount + displayedLinesBuffer;
 
             // Format a log line; lines starting with "ERROR" will be red.
-            function formatLine(line) {
+            function formatLine(line, filename) {
+                  // You may add more log file formats here according to the project's log file format.
+                  if (filename.startsWith('kaartdijin_boodja') && filename.endsWith('.log')) {
+                        return formatLineKaartdijinBoodjaLog(line)
+                  } else if (filename.startsWith('email') && filename.endsWith('.log')) {
+                        return formatLineEmailLog(line)
+                  } else if (filename.startsWith('cronjob') && filename.endsWith('.log')) {
+                        return formatLineCronjobLog(line)
+                  } else {
+                        return line
+                  }
+            }
+
+            function formatLineCronjobLog(line) {
                   let formatted = line.replace(
-                        // colour datetime and function name
+                        // colour datetime, etc
                         /^(\S+\s+)(\S+\s+\S+\s)(\S+\s+\S+\s+)/,
                         "$1<span style='color: green;'>$2</span><span style='color: blue;'>$3</span>"
                   );
-                  formatted = formatted.replace(/^INFO\b/, '<span style="color: dodgerblue;">INFO</span>');
-                  // Only replace the word "ERROR" (if at the start) with red, leaving the rest untouched.
-                  formatted = formatted.replace(/^ERROR\b/, '<span style="color: red;">ERROR</span>');
-                  // Only replace the word "WARNING" (if at the start) with orange, leaving the rest untouched.
-                  formatted = formatted.replace(/^WARNING\b/, '<span style="color: orange;">WARNING</span>');
-
+                  formatted = colourLogLevel(formatted);
                   return formatted;
+            }
+
+            function formatLineKaartdijinBoodjaLog(line) {
+                  let formatted = line.replace(
+                        // colour datetime, etc
+                        /^(\S+\s+)(\S+\s+\S+\s)(\S+\s+\S+\s+)/,
+                        "$1<span style='color: green;'>$2</span><span style='color: blue;'>$3</span>"
+                  );
+                  formatted = colourLogLevel(formatted);
+                  return formatted;
+            }
+
+            function formatLineEmailLog(line) {
+                  let formatted = line.replace(
+                        // colour datetime, etc
+                        /^(\S+\s+\S+\s)(\S+\s+\S+\s+)/,
+                        "<span style='color: green;'>$1</span><span style='color: blue;'>$2</span>"
+                  );
+                  formatted = colourLogLevel(formatted);
+                  return formatted;
+            }
+
+            function colourLogLevel(line){
+                  // Colour it if the following owrd is at the beginning of the line
+                  line = line.replace(/^DEBUG\b/, '<span style="color: gray;">DEBUG</span>');
+                  line = line.replace(/^INFO\b/, '<span style="color: dodgerblue;">INFO</span>');
+                  line = line.replace(/^WARNING\b/, '<span style="color: orange;">WARNING</span>');
+                  line = line.replace(/^ERROR\b/, '<span style="color: red;">ERROR</span>');
+                  line = line.replace(/^CRITICAL\b/, '<span style="color: red;">CRITICAL</span>');
+                  return line
             }
 
             function fetchLogs() {
                   let autoReloadEnabled = document.getElementById('auto-reload-checkbox').checked;
+                  let logFileSelected = document.getElementById('log-file-select').value;
+                  let linesToBeLoaded = parseInt(document.getElementById('lines-count-select').value);
+                  let maxLinesToBeDisplayed = linesToBeLoaded + displayedLinesBuffer;
+
                   if (!autoReloadEnabled) {
                         // auto-reload is disabled, don't fetch logs
                         return;
                   }
 
-                  let url = '/api/logcontents/';
+                  if (!logFileSelected || logFileSelected.trim() === "") {
+                        // If logFileSelected is null or its value is empty, do not fetch logs.
+                        return;
+                  }
+
+                  let url = '/api/logcontents/?log_file_name=' + logFileSelected;
                   if (currentPosition === null) {
                         // On initial load, send the selected number of lines as a parameter.
-                        url += '?lines_count=' + linesCount;
+                        url += '&lines_count=' + linesToBeLoaded;
                   } else {
-                        url += '?last_position=' + currentPosition;
+                        url += '&last_position=' + currentPosition;
                   }
                   fetch(url)
                   .then(response => response.json())
                   .then(data => {
                         const logContainer = document.getElementById('log-container');
-                        if (data.new_lines) {
+                        let autoScroll = document.getElementById('auto-scroll-checkbox').checked;
+                        let newLinesAdded = false;
+
+                        if (data.new_lines && data.new_lines.length > 0) {
                               // Append formatted new lines to our global array
                               data.new_lines.forEach(line => {
-                                    displayedLines.push(formatLine(line));
+                                    displayedLines.push(formatLine(line, logFileSelected));
                               });
+                              newLinesAdded = true;
                         } else if (data.log_lines) {
                               // Initial load; replace displayedLines with formatted log lines
-                              displayedLines = data.log_lines.map(formatLine);
+                              displayedLines = data.log_lines.map(line => formatLine(line, logFileSelected));
+                              newLinesAdded = true;
                         }
 
                         // Ensure we only keep the last maxLines entries
-                        if (displayedLines.length > maxLines) {
-                              displayedLines = displayedLines.slice(displayedLines.length - maxLines);
+                        if (displayedLines.length > maxLinesToBeDisplayed) {
+                              displayedLines = displayedLines.slice(displayedLines.length - maxLinesToBeDisplayed);
                         }
                         
                         // Render the log container
                         logContainer.innerHTML = displayedLines.join('');
 
-                        // Update the current file pointer
-                        currentPosition = data.current_position;
-
-                        // Scroll to the bottom if auto-scroll is enabled
-                        if (document.getElementById('auto-scroll-checkbox').checked) {
+                        if (autoScroll && newLinesAdded) {
+                              // Scroll to the bottom if auto-scroll is enabled
                               logContainer.scrollTop = logContainer.scrollHeight;
                         }
+
+                        // Update the current file pointer
+                        currentPosition = data.current_position;
                   })
                   .catch(error => console.error("Error fetching logs:", error));
             }
@@ -139,10 +196,13 @@
                   }
             });
 
+            document.getElementById('log-file-select').addEventListener('change', function() {
+                  currentPosition = null;
+                  fetchLogs();
+            });
+
             document.getElementById('lines-count-select').addEventListener('change', function() {
                   currentPosition = null;
-                  linesCount = parseInt(document.getElementById('lines-count-select').value);
-                  maxLines = linesCount + displayedLinesBuffer;
                   fetchLogs();
             });
 
@@ -150,7 +210,8 @@
             fetchLogs();
 
             // Poll every 5 seconds
-            setInterval(fetchLogs, polling_interval_ms);
+            let fetching_interval_ms = parseInt(document.getElementById('log_file_fetching_interval_ms').value);
+            setInterval(fetchLogs, fetching_interval_ms);
       </script>
 {% else %}
       <div class="container" id="dashboard-table-container">
