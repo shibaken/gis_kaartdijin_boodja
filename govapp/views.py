@@ -688,6 +688,7 @@ def get_logs(request):
         lines_count = 1000
 
     if last_position_param is not None:
+        # Log is already displayed in the frontend, only return new lines
         try:
             last_position = int(last_position_param)
         except ValueError:
@@ -709,6 +710,7 @@ def get_logs(request):
             'current_position': current_position,
         })
     else:
+        # Initial load.  Return the last X lines of the log file.
         last_x_lines = []
         if os.path.exists(log_file_path):
             last_x_lines = tail_lines(log_file_path, lines=lines_count)
