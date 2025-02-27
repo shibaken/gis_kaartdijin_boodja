@@ -6,6 +6,7 @@
       {% include "govapp/common_entity_modal.html" %}
 
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">
+      <input type="hidden" id="log_file_fetching_interval_ms" name="log_file_fetching_interval_ms" value="{{ log_file_fetching_interval_ms }}">
 
       <div class="container" id="dashboard-table-container">
             
@@ -66,7 +67,6 @@
       </style>
       <script>
             let currentPosition = null;
-            let polling_interval_ms = 3000;  // [ms]
             let displayedLines = [];
             let displayedLinesBuffer = 500;  // [lines]
 
@@ -115,6 +115,7 @@
             }
 
             function colourLogLevel(line){
+                  // Colour it if the following owrd is at the beginning of the line
                   line = line.replace(/^DEBUG\b/, '<span style="color: gray;">DEBUG</span>');
                   line = line.replace(/^INFO\b/, '<span style="color: dodgerblue;">INFO</span>');
                   line = line.replace(/^WARNING\b/, '<span style="color: orange;">WARNING</span>');
@@ -209,7 +210,8 @@
             fetchLogs();
 
             // Poll every 5 seconds
-            setInterval(fetchLogs, polling_interval_ms);
+            let fetching_interval_ms = parseInt(document.getElementById('log_file_fetching_interval_ms').value);
+            setInterval(fetchLogs, fetching_interval_ms);
       </script>
 {% else %}
       <div class="container" id="dashboard-table-container">
