@@ -193,9 +193,9 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
-path_to_logs = os.path.join(BASE_DIR, 'logs')
-if not os.path.exists(path_to_logs):
-    os.mkdir(path_to_logs)
+PATH_TO_LOGS = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(PATH_TO_LOGS):
+    os.mkdir(PATH_TO_LOGS)
 LOG_FILE_NAME = 'kaartdijin_boodja.log'
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', LOG_FILE_NAME)
 
