@@ -66,31 +66,69 @@
       </style>
       <script>
             let currentPosition = null;
-            let linesToBeLoaded = parseInt(document.getElementById('lines-count-select').value);
             let polling_interval_ms = 3000;  // [ms]
-            let logFileSelected = document.getElementById('log-file-select').value;
             let displayedLines = [];
             let displayedLinesBuffer = 500;  // [lines]
-            let maxLinesToBeDisplayed = linesToBeLoaded + displayedLinesBuffer;
 
             // Format a log line; lines starting with "ERROR" will be red.
-            function formatLine(line) {
+            function formatLine(line, filename) {
+                  // You may add more log file formats here according to the project's log file format.
+                  if (filename === 'kaartdijin_boodja.log') {
+                        return formatLineKaartdijinBoodjaLog(line)
+                  } else if (filename === 'email.log') {
+                        return formatLineEmailLog(line)
+                  } else if (filename === 'cronjob.log') {
+                        return formatLineCronjobLog(line)
+                  } else {
+                        return line
+                  }
+            }
+
+            function formatLineCronjobLog(line) {
                   let formatted = line.replace(
-                        // colour datetime and function name
+                        // colour datetime, etc
                         /^(\S+\s+)(\S+\s+\S+\s)(\S+\s+\S+\s+)/,
                         "$1<span style='color: green;'>$2</span><span style='color: blue;'>$3</span>"
                   );
-                  formatted = formatted.replace(/^INFO\b/, '<span style="color: dodgerblue;">INFO</span>');
-                  // Only replace the word "ERROR" (if at the start) with red, leaving the rest untouched.
-                  formatted = formatted.replace(/^ERROR\b/, '<span style="color: red;">ERROR</span>');
-                  // Only replace the word "WARNING" (if at the start) with orange, leaving the rest untouched.
-                  formatted = formatted.replace(/^WARNING\b/, '<span style="color: orange;">WARNING</span>');
-
+                  formatted = colourLogLevel(formatted);
                   return formatted;
+            }
+
+            function formatLineKaartdijinBoodjaLog(line) {
+                  let formatted = line.replace(
+                        // colour datetime, etc
+                        /^(\S+\s+)(\S+\s+\S+\s)(\S+\s+\S+\s+)/,
+                        "$1<span style='color: green;'>$2</span><span style='color: blue;'>$3</span>"
+                  );
+                  formatted = colourLogLevel(formatted);
+                  return formatted;
+            }
+
+            function formatLineEmailLog(line) {
+                  let formatted = line.replace(
+                        // colour datetime, etc
+                        /^(\S+\s+\S+\s)(\S+\s+\S+\s+)/,
+                        "<span style='color: green;'>$1</span><span style='color: blue;'>$2</span>"
+                  );
+                  formatted = colourLogLevel(formatted);
+                  return formatted;
+            }
+
+            function colourLogLevel(line){
+                  line = line.replace(/^DEBUG\b/, '<span style="color: gray;">DEBUG</span>');
+                  line = line.replace(/^INFO\b/, '<span style="color: dodgerblue;">INFO</span>');
+                  line = line.replace(/^WARNING\b/, '<span style="color: orange;">WARNING</span>');
+                  line = line.replace(/^ERROR\b/, '<span style="color: red;">ERROR</span>');
+                  line = line.replace(/^CRITICAL\b/, '<span style="color: red;">CRITICAL</span>');
+                  return line
             }
 
             function fetchLogs() {
                   let autoReloadEnabled = document.getElementById('auto-reload-checkbox').checked;
+                  let logFileSelected = document.getElementById('log-file-select').value;
+                  let linesToBeLoaded = parseInt(document.getElementById('lines-count-select').value);
+                  let maxLinesToBeDisplayed = linesToBeLoaded + displayedLinesBuffer;
+
                   if (!autoReloadEnabled) {
                         // auto-reload is disabled, don't fetch logs
                         return;
@@ -118,12 +156,12 @@
                         if (data.new_lines && data.new_lines.length > 0) {
                               // Append formatted new lines to our global array
                               data.new_lines.forEach(line => {
-                                    displayedLines.push(formatLine(line));
+                                    displayedLines.push(formatLine(line, logFileSelected));
                               });
                               newLinesAdded = true;
                         } else if (data.log_lines) {
                               // Initial load; replace displayedLines with formatted log lines
-                              displayedLines = data.log_lines.map(formatLine);
+                              displayedLines = data.log_lines.map(line => formatLine(line, logFileSelected));
                               newLinesAdded = true;
                         }
 
@@ -142,16 +180,9 @@
 
                         // Update the current file pointer
                         currentPosition = data.current_position;
-
                   })
                   .catch(error => console.error("Error fetching logs:", error));
             }
-
-            document.getElementById('log-file-select').addEventListener('change', function() {
-                  currentPosition = null;
-                  logFileSelected = document.getElementById('log-file-select').value;
-                  fetchLogs();
-            });
 
             document.getElementById('line-wrap-checkbox').addEventListener('change', function() {
                   const logContainer = document.getElementById('log-container');
@@ -164,10 +195,13 @@
                   }
             });
 
+            document.getElementById('log-file-select').addEventListener('change', function() {
+                  currentPosition = null;
+                  fetchLogs();
+            });
+
             document.getElementById('lines-count-select').addEventListener('change', function() {
                   currentPosition = null;
-                  linesToBeLoaded = parseInt(document.getElementById('lines-count-select').value);
-                  maxLinesToBeDisplayed = linesToBeLoaded + displayedLinesBuffer;
                   fetchLogs();
             });
 
