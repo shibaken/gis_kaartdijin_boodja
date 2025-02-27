@@ -616,7 +616,7 @@ class LogFileView(base.TemplateView):
         # Retrieve all files ending with .log from the PATH_TO_LOGS folder.
         import os, glob
         log_pattern = os.path.join(settings.PATH_TO_LOGS, '*.log')
-        context['log_files'] = [os.path.basename(f) for f in glob.glob(log_pattern)]
+        context['log_files'] = sorted([os.path.basename(f) for f in glob.glob(log_pattern)])
 
         return context
 
