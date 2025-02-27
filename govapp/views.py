@@ -4,6 +4,7 @@
 # Third-Party
 import os
 import json
+import logging
 from django import http
 from django import shortcuts
 from django.views.generic import base
@@ -33,6 +34,8 @@ from govapp.apps.publisher.models.geoserver_pools import GeoServerPool, GeoServe
 from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel, StoreType
 
 UserModel = auth.get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 class HomePage(base.TemplateView):
@@ -607,8 +610,11 @@ class LogFileView(base.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Add any additional context variables here.
-        context['log_file_name'] = settings.LOG_FILE_NAME
+        # Retrieve all files ending with .log from the PATH_TO_LOGS folder.
+        import os, glob
+        log_pattern = os.path.join(settings.PATH_TO_LOGS, '*.log')
+        context['log_files'] = sorted([os.path.basename(f) for f in glob.glob(log_pattern)])
+        context['log_file_fetching_interval_ms'] = settings.LOG_FILE_FETCHING_INTERVAL_MS
 
         return context
 
@@ -670,10 +676,14 @@ def get_logs(request):
     Returns:
         JsonResponse: A JSON response containing the log lines and current file position.
     """
+    log_file_name = request.GET.get('log_file_name', settings.LOG_FILE_NAME)
+    log_file_path = os.path.join(settings.BASE_DIR, 'logs', log_file_name)
     last_position_param = request.GET.get('last_position', None)
+    MAX_NUM_LINES_TO_READ = 10000
+
     try:
         lines_count = int(request.GET.get('lines_count', 1000))
-        lines_count = 5000 if lines_count > 5000 else lines_count  # Cap the maximum number of lines to 5000
+        lines_count = MAX_NUM_LINES_TO_READ if lines_count > MAX_NUM_LINES_TO_READ else lines_count  # Cap the maximum number of lines to 5000
     except (TypeError, ValueError):
         lines_count = 1000
 
@@ -686,24 +696,27 @@ def get_logs(request):
         new_lines = []
         current_position = last_position
 
-        if os.path.exists(settings.LOG_FILE_PATH):
-            with open(settings.LOG_FILE_PATH, 'r') as log:
+        if os.path.exists(log_file_path):
+            with open(log_file_path, 'r') as log:
                 log.seek(last_position)
                 new_lines = log.readlines()
                 current_position = log.tell()
+        else:
+            logger.warning(f"Log file: '[{log_file_path}]' does not exist.")
 
         return JsonResponse({
             'new_lines': new_lines,
             'current_position': current_position,
         })
     else:
-        if os.path.exists(settings.LOG_FILE_PATH):
-            last_x_lines = tail_lines(settings.LOG_FILE_PATH, lines=lines_count)
+        last_x_lines = []
+        if os.path.exists(log_file_path):
+            last_x_lines = tail_lines(log_file_path, lines=lines_count)
         else:
-            last_x_lines = []
+            logger.warning(f"Log file: '[{log_file_path}]' does not exist.")
 
         # Get the current file pointer (i.e., file size)
-        current_position = os.path.getsize(settings.LOG_FILE_PATH) if os.path.exists(settings.LOG_FILE_PATH) else 0
+        current_position = os.path.getsize(log_file_path) if os.path.exists(log_file_path) else 0
 
         return JsonResponse({
             'log_lines': last_x_lines,

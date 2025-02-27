@@ -193,9 +193,9 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
-path_to_logs = os.path.join(BASE_DIR, 'logs')
-if not os.path.exists(path_to_logs):
-    os.mkdir(path_to_logs)
+PATH_TO_LOGS = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(PATH_TO_LOGS):
+    os.mkdir(PATH_TO_LOGS)
 LOG_FILE_NAME = 'kaartdijin_boodja.log'
 LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs', LOG_FILE_NAME)
 
@@ -416,3 +416,4 @@ if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
     )
 
 FILE_UPLOAD_PERMISSIONS = None
+LOG_FILE_FETCHING_INTERVAL_MS = decouple.config("LOG_FILE_FETCHING_INTERVAL_MS", default=3000)
