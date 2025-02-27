@@ -73,11 +73,11 @@
             // Format a log line; lines starting with "ERROR" will be red.
             function formatLine(line, filename) {
                   // You may add more log file formats here according to the project's log file format.
-                  if (filename === 'kaartdijin_boodja.log') {
+                  if (filename.startsWith('kaartdijin_boodja') && filename.endsWith('.log')) {
                         return formatLineKaartdijinBoodjaLog(line)
-                  } else if (filename === 'email.log') {
+                  } else if (filename.startsWith('email') && filename.endsWith('.log')) {
                         return formatLineEmailLog(line)
-                  } else if (filename === 'cronjob.log') {
+                  } else if (filename.startsWith('cronjob') && filename.endsWith('.log')) {
                         return formatLineCronjobLog(line)
                   } else {
                         return line
