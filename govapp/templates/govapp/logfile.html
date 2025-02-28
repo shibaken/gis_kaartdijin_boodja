@@ -180,7 +180,7 @@
                               logContainer.innerHTML = displayedLines.join('');
                         } else if (data.new_lines && data.new_lines.length > 0) {
                               // For subsequent updates, append only the new lines
-                              displayedLines.slice(-excess).forEach(line => {
+                              displayedLines.slice(-data.new_lines.length).forEach(line => {
                                     const tempDiv = document.createElement('div');  // Create a temporary div to parse the HTML
                                     tempDiv.innerHTML = line;
                                     logContainer.appendChild(tempDiv.firstChild);  // Append the first child of the temporary div
