@@ -164,7 +164,6 @@
                         }
 
                         let excess = 0
-                        console.log(displayedLines)
                         if (displayedLines.length > maxLinesToBeDisplayed) {
                               excess = displayedLines.length - maxLinesToBeDisplayed;
                               displayedLines = displayedLines.slice(excess);
@@ -181,8 +180,11 @@
                               logContainer.innerHTML = displayedLines.join('');
                         } else if (data.new_lines && data.new_lines.length > 0) {
                               // For subsequent updates, append only the new lines
-                              let newContent = displayedLines.slice(-excess).join('');
-                              logContainer.innerHTML += newContent;
+                              displayedLines.slice(-data.new_lines.length).forEach(line => {
+                                    const tempDiv = document.createElement('div');  // Create a temporary div to parse the HTML
+                                    tempDiv.innerHTML = line;
+                                    logContainer.appendChild(tempDiv.firstChild);  // Append the first child of the temporary div
+                              });
                         }
 
                         if (autoScroll && newLinesAdded) {
@@ -209,11 +211,13 @@
 
             document.getElementById('log-file-select').addEventListener('change', function() {
                   currentPosition = null;
+                  displayedLines = [];
                   fetchLogs();
             });
 
             document.getElementById('lines-count-select').addEventListener('change', function() {
                   currentPosition = null;
+                  displayedLines = [];
                   fetchLogs();
             });
 
