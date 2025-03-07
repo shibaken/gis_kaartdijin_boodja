@@ -601,27 +601,27 @@ var kbpublish = {
         var publish_id = $('#publish_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
-        if (publishassignedto == null || publishassignedto === ''){
-            $('#loadingOverlay').fadeIn();
-
-            $.ajax({
-                url: kbpublish.var.publish_save_url+publish_id+"/assign/"+publishassignedto+"/",
-                type: 'POST',
-                headers: {'X-CSRFToken' : csrf_token},
-                contentType: 'application/json',
-                success: function (response) {
-                    window.location = "/publish/"+publish_id;
-                },
-                error: function (error) {
-                    common_entity_modal.show_alert("ERROR Setting assigned person.");
-                },
-                complete: function(xhr, status){
-                    $('#loadingOverlay').fadeOut();
-                }
-            });
-        } else {
-            common_entity_modal.show_alert("Please select an assigned to person first.");
+        if (publishassignedto == null || publishassignedto.length == 0 || publishassignedto === ''){
+            common_entity_modal.show_alert("Please select an assigned-to person first.");
+            return
         }
+
+        $('#loadingOverlay').fadeIn();
+        $.ajax({
+            url: kbpublish.var.publish_save_url+publish_id+"/assign/"+publishassignedto+"/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                window.location = "/publish/"+publish_id;
+            },
+            error: function (error) {
+                common_entity_modal.show_alert("ERROR Setting assigned person.");
+            },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
+        });
     },
     change_publish_status: function(status) {        
         $('#loadingOverlay').fadeIn();

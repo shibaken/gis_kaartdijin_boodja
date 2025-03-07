@@ -40,7 +40,7 @@
                                           <div>
                                                 <strong>Currently assigned to</strong>
                                                 <div class='text-end'>
-                                                      <select class='form-control' id="subsctiption-assigned-to">
+                                                      <select class='form-control' id="subscription-assigned-to">
                                                             <option value=''>-- Select One --</option>
                                                             {% for su in system_users %}
                                                                   {% if subscription_obj.assigned_to.id == su.id %}
@@ -50,7 +50,7 @@
                                                                   {% endif %}
                                                             {% endfor %}
                                                       </select>
-                                                      <button class='btn btn-primary btn-sm mt-1' id='subsctiption-assigned-to-btn' href=''>Assign</button>
+                                                      <button class='btn btn-primary btn-sm mt-1' id='subscription-assigned-to-btn' href=''>Assign</button>
                                                 </div>
                                           </div>
                                     </div>
