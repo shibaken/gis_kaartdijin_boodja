@@ -273,29 +273,29 @@ var kbcatalogue = {
         var csrf_token = $("#csrfmiddlewaretoken").val();
         var pagetab = $('#pagetab').val();
 
-        if (catalogueassignedto == null || catalogueassignedto.length == ''){
-            $('#loadingOverlay').fadeIn();
-
-            $.ajax({
-                url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/assign/"+catalogueassignedto+"/",
-                type: 'POST',
-                headers: {'X-CSRFToken' : csrf_token},
-                contentType: 'application/json',
-                success: function (response) {
-                    var html = '';
-                   
-                    window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/"; 
-                },
-                error: function (error) {
-                    common_entity_modal.show_alert("ERROR Setting assigned person.");
-                },
-                complete: function(xhr, status){
-                    $('#loadingOverlay').fadeOut();
-                }
-            });
-        } else {
-            common_entity_modal.show_alert("Please select an assigned to person first.");
+        if (catalogueassignedto == null || catalogueassignedto.length == 0 || catalogueassignedto == "") {
+            common_entity_modal.show_alert("Please select an assigned-to person first.");
+            return
         }
+
+        $('#loadingOverlay').fadeIn();
+        $.ajax({
+            url: kbcatalogue.var.catalogue_data_url+catalogue_entry_id+"/assign/"+catalogueassignedto+"/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                var html = '';
+                
+                window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/"; 
+            },
+            error: function (error) {
+                common_entity_modal.show_alert("ERROR Setting assigned person.");
+            },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
+        });
     },
 
     save_symbology: function(save_status) {        

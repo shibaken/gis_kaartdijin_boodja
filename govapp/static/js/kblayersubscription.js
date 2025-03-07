@@ -62,7 +62,7 @@ var kblayersubscription = {
             kblayersubscription.get_layer_subscription();
         });
         $( "#subscription-new-btn" ).click(function() {
-            kblayersubscription.show_new_subsctiption_modal();
+            kblayersubscription.show_new_subscription_modal();
         });
 
         $('#subscription-assignedto').select2({
@@ -218,7 +218,7 @@ var kblayersubscription = {
             }
         });
     },
-    show_new_subsctiption_modal: function(){
+    show_new_subscription_modal: function(){
         common_entity_modal.init("New Subscription", "submit");
 
         fields = {};
@@ -337,7 +337,7 @@ var kblayersubscription = {
         console.log('in init_subscription_item')
         $("#subscription-lock").click(() => kblayersubscription.change_subscription_status('lock'));
         $("#subscription-unlock").click(() => kblayersubscription.change_subscription_status('unlock'));
-        $("#subsctiption-assigned-to-btn").click(() =>kblayersubscription.set_assigned_to());
+        $("#subscription-assigned-to-btn").click(() =>kblayersubscription.set_assigned_to());
         
         $("#log_actions_show").click(kblayersubscription.show_action_log);
         $("#log_communication_show").click(kblayersubscription.show_communication_log);
@@ -454,7 +454,7 @@ var kblayersubscription = {
     set_assigned_to: function(){
         $('#loadingOverlay').fadeIn();
 
-        var assignedto = $('#subsctiption-assigned-to').val();
+        var assignedto = $('#subscription-assigned-to').val();
         var subscription_id = $('#subscription_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
@@ -475,7 +475,7 @@ var kblayersubscription = {
                 }
             });
         } else {
-            common_entity_modal.show_alert("Please select an assigned to person first.");
+            common_entity_modal.show_alert("Please select an assigned-to person first.");
         }
     },
     show_action_log: function(){
