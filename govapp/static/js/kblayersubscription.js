@@ -452,31 +452,32 @@ var kblayersubscription = {
         });
     },
     set_assigned_to: function(){
-        $('#loadingOverlay').fadeIn();
 
         var assignedto = $('#subscription-assigned-to').val();
         var subscription_id = $('#subscription_id').val();
         var csrf_token = $("#csrfmiddlewaretoken").val();
 
-        if (assignedto.length > 0) {  
-            $.ajax({
-                url: kblayersubscription.var.subscription_save_url+subscription_id+"/assign/"+assignedto+"/",
-                type: 'POST',
-                headers: {'X-CSRFToken' : csrf_token},
-                contentType: 'application/json',
-                success: function (response) {
-                    window.location = "/layer/subscriptions/"+subscription_id;
-                },
-                error: function (error) {
-                    common_entity_modal.show_alert("ERROR Setting assigned person.");
-                },
-                complete: function(xhr, status){
-                    $('#loadingOverlay').fadeOut();
-                }
-            });
-        } else {
+        if (assignedto == null || assignedto.length == 0 || assignedto === ''){
             common_entity_modal.show_alert("Please select an assigned-to person first.");
+            return
         }
+
+        $('#loadingOverlay').fadeIn();
+        $.ajax({
+            url: kblayersubscription.var.subscription_save_url+subscription_id+"/assign/"+assignedto+"/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                window.location = "/layer/subscriptions/"+subscription_id;
+            },
+            error: function (error) {
+                common_entity_modal.show_alert("ERROR Setting assigned person.");
+            },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
+        });
     },
     show_action_log: function(){
         common_entity_modal.init("Action log", "info");
