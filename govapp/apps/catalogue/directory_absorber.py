@@ -37,7 +37,7 @@ class Absorber:
         """Instantiates the Absorber."""
         # Storage
         self.storage = local_storage.LocalStorage()
-        self.ext_not_convert_to_geojson = ['.tif', '.tiff', '.zip', '.7z', '.tar', '.rar']
+        self.ext_not_convert_to_geojson = ['.tif', '.tiff',]
 
     def absorb(self, path: str) -> None:
         """Absorbs new layers into the system.
