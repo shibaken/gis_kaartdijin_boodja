@@ -309,9 +309,10 @@ class GeoServer:
         }
         
         params = {
-            'filename': filepath.name,
+            'filename': layer,
             'update': 'overwrite',
-            'configure': 'all'
+            'configure': 'all',
+            # 'coverageName': layer
         }
 
         file_size = filepath.stat().st_size
@@ -346,7 +347,11 @@ class GeoServer:
             workspace (str): Workspace where the coverage store exists.
             layer (str): Name of the layer to create in GeoServer.
         """
-        response_data = self.get_layer_details(layer)
+        try:
+            response_data = self.get_layer_details(layer)
+        except Exception as e:
+            log.error(f'Failed to get layer details: [{layer}].  {str(e)}')
+            raise
         response_data['layer']['resource']['srs'] = "EPSG:26918"
         response_data['layer']['resource']['boundingBox'] = {
                 "nativeBoundingBox": {
@@ -369,44 +374,12 @@ class GeoServer:
         log.info(f"Creating layer '{layer}' in workspace '{workspace}'")
 
         # Construct URL for layers endpoint
-        # layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}_store/coverages"
-        # layers_url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{layer}/reset"
         layers_url = f"{self.service_url}/rest/layers/{workspace}:{layer}.json"
 
-        # response_data['layer']['defaultStyle'] = {"name": "raster"}
-        # response_data['layer']['resource']['srs'] = "EPSG:4326"
-        # response_data['layer']['resource']['boundingBox'] = {
-        #     "nativeBoundingBox": {
-        #         "minx": -180,
-        #         "miny": -90,
-        #         "maxx": 180,
-        #         "maxy": 90,
-        #         "crs": "EPSG:4326"
-        #     },
-        #     "latLonBoundingBox": {
-        #         "minx": -180,
-        #         "miny": -90,
-        #         "maxx": 180,
-        #         "maxy": 90,
-        #         "crs": "EPSG:4326"
-        #     }
-        # }
-        
         # Perform POST request to create the layer
         response = httpx.put(
             url=layers_url,
             content=json.dumps(response_data),
-            # content=json.dumps({
-            #     "coverage": {
-            #         # "name": f'{workspace}:{layer}',
-            #         # "name": f'{workspace}',
-            #         # "name": f'{layer}',
-            #         # "name": "aho1", #201, 500
-            #         # "name": "aho2", #201, 500
-            #         "title": f'{layer}',
-            #         "enabled": True
-            #     }
-            # }),
             headers=self.headers_json,
             auth=(self.username, self.password),
             timeout=3000.0
