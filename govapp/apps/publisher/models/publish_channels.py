@@ -490,24 +490,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             log.warning(f'Unknown store_type: [{self.store_type}].')
 
         # Set Default Style
-        style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') else ''
+        style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') and self.publish_entry.catalogue_entry.symbology.name else 'generic'
         geoserver.set_default_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
             name=style_name,
         )
-
-        # # Handle cached layer
-        # if self.create_cached_layer:
-        #     ret = geoserver.create_or_update_cached_layer(
-        #         self.layer_name_with_workspace,
-        #         self.publish_entry.catalogue_entry.type,
-        #         self.create_cached_layer,
-        #         self.expire_server_cache_after_n_seconds,
-        #         self.expire_client_cache_after_n_seconds
-        #     )
-        # else:
-        #     ret = geoserver.delete_cached_layer(self.layer_name_with_workspace)
 
 
 @reversion.register()
