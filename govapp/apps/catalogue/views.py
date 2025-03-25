@@ -345,13 +345,17 @@ class CatalogueEntryViewSet(
         """
         layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.filter(catalogue_entry=id, is_active=True).first()
         map_data = None
-        try:
-            with open(layer_submission.geojson) as file:
-                map_data = file.read()
-                map_data = json.loads(map_data)
-        except Exception as e:
-            return response.Response({"error": 'An exception was occured while loading a target file.'}, 
-                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if layer_submission.geojson:
+            try:
+                with open(layer_submission.geojson) as file:
+                    map_data = file.read()
+                    map_data = json.loads(map_data)
+            except Exception as e:
+                return response.Response({"error": 'An exception was occured while loading a target file.'}, 
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return response.Response({"error": 'The geojson file does not exist.  The GeoJson file is not generated from the TIFF file.'}, 
+                                    status=status.HTTP_404_NOT_FOUND)
         
         return response.Response(map_data, content_type='application/json', status=status.HTTP_200_OK)
     
