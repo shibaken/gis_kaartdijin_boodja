@@ -38,6 +38,49 @@ class GeoServerQueueExcutor:
         self.result_success = True
         self.publishing_log = ""
 
+    def auto_enqueue(self) -> None:
+        """Automatically identify and enqueue eligible publish entries to GeoServer Queue.
+        
+        This method finds publish entries that meet the following criteria and adds them to the queue:
+        1. The entry is registered as a ForeignKey in a GeoServerPublishChannel
+        2. The GeoServerPublishChannel.active is True
+        3. The GeoServerPublishChannel.geoserver_pool exists and is enabled (geoserver_pool.enabled == True)
+        """
+        from govapp.apps.publisher.models.publish_entries import PublishEntry
+        from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
+        
+        log.info("Starting automatic enqueue process")
+        
+        # Get all active GeoServerPublishChannels with enabled geoserver_pools
+        active_channels = GeoServerPublishChannel.objects.filter(
+            active=True,
+            geoserver_pool__isnull=False,
+            geoserver_pool__enabled=True
+        ).select_related('publish_entry', 'geoserver_pool')
+        
+        # Get unique publish entries from these channels
+        eligible_entries_ids = active_channels.values_list('publish_entry_id', flat=True).distinct()
+        eligible_entries = PublishEntry.objects.filter(id__in=eligible_entries_ids)
+        
+        count = 0
+        for entry in eligible_entries:
+            # Check if there's already a queue item for this entry that's not completed
+            existing_queue = geoserver_queues.GeoServerQueue.objects.filter(
+                publish_entry=entry,
+                status__in=[GeoServerQueueStatus.READY, GeoServerQueueStatus.ON_PUBLISHING]
+            ).exists()
+            
+            if not existing_queue:
+                # Create new queue item
+                geoserver_queues.GeoServerQueue.objects.create(
+                    publish_entry=entry,
+                    symbology_only=False,  # Full publish by default
+                )
+                count += 1
+                log.info(f"{count}: Auto-enqueued publish entry: [{entry}]")
+        
+        log.info(f"Auto-enqueue process completed. Added {count} entries to queue")
+
     def excute(self) -> None:
         geoserver_queues = self._retrieve_target_items()
         log.info(f"Start publishing for {geoserver_queues.count()} geoserver queue items.")
