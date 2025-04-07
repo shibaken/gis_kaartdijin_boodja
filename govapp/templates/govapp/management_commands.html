@@ -8,128 +8,142 @@
                 <div class='col-12'>
                     <div id='publish-table'>
                           <table id="example" class="table" style="width:100%">
-                                <thead class='table-dark'>
+                              <thead class='table-dark'>
                                     <tr>
                                           <th>Management Command</th>
                                           <th></th>
                                           <th>Action</th>
                                           <th>Response</th>
                                     </tr>
-                                </thead>
-                                <tbody id='publish-cddp-tbody'>
-                                <tr>
-                                    <td>Run Directory Scanner</td>
-                                    <td>Scan for files in the pending_imports folder and absorb them into the system.</td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-scanner'>RUN</button>
-                                      <button class="btn btn-primary btn-sm" type="button" id='run-scanner-loader' disabled>
-                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                          <span class="visually-hidden">Loading...</span>
-                                        </button>
-                                     </td>
-                                     <td>
-                                      <span id='scanner-job-response-success' class='text-success'></span>
-                                      <span id='scanner-job-response-error' class='text-danger'></span>
-                                     </td>
-                                </tr>
-                                <tr>
-                                    <td>Run Sharepoint Scanner</td>
-                                    <td></td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-sharepoint-scanner'>RUN</button>
-                                      <button class="btn btn-primary btn-sm" type="button" id='run-sharepoint-scanner-loader' disabled>
-                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                          <span class="visually-hidden">Loading...</span>
-                                        </button>
-                                     </td>
-                                     <td>
-                                      <span id='sharepoint-scanner-job-response-success' class='text-success'></span>
-                                      <span id='sharepoint-scanner-job-response-error' class='text-danger'></span>
-                                     </td>
-                                 </tr>
-                                <tr>
-                                    <td>Run PostGIS Scanner</td>
-                                    <td>Scan catalogue entries with custom queries, convert them to shapefiles, and save them in the pending_import folder.</td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-postgis-scanner'>RUN</button>
-                                      <button class="btn btn-primary btn-sm" type="button" id='run-postgis-scanner-loader' disabled>
-                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                          <span class="visually-hidden">Loading...</span>
-                                        </button>
-                                     </td>
-                                     <td>
-                                      <span id='postgis-scanner-job-response-success' class='text-success'></span>
-                                      <span id='postgis-scanner-job-response-error' class='text-danger'></span>
-                                     </td>
-                                 </tr>
-                              <tr>
-                                    <td>Run GeoServer Queue Cron Job</td>
-                                    <td>Execute the publish entries to the GeoServer in the queue one by one.</td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-queue'>RUN</button>
-                                          <button class="btn btn-primary btn-sm" type="button" id='run-geoserver-queue-loader' disabled>
+                              </thead>
+                              <tbody id='publish-cddp-tbody'>
+                                    <tr>
+                                          <td>Run Directory Scanner</td>
+                                          <td>Scan for files in the pending_imports folder and absorb them into the system.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-scanner'>RUN</button>
+                                          <button class="btn btn-primary btn-sm" type="button" id='run-scanner-loader' disabled>
                                                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                                 <span class="visually-hidden">Loading...</span>
                                           </button>
-                                    </td>
-                                    <td>
-                                     <span id='geoserver-queue-job-response-success' class='text-success'></span>
-                                     <span id='geoserver-queue-job-response-error' class='text-danger'></span>
-                                    </td>
-                              </tr>
-                              <tr>
-                                    <td>Run Sync Layers</td>
-                                    <td>Remove layers from Geoservers that have been deleted from the KB.</td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-layers'>RUN</button>
-                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-layers-loader' disabled>
-                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                          <span class="visually-hidden">Loading...</span>
+                                          </td>
+                                          <td>
+                                          <span id='scanner-job-response-success' class='text-success'></span>
+                                          <span id='scanner-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run Sharepoint Scanner</td>
+                                          <td></td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-sharepoint-scanner'>RUN</button>
+                                          <button class="btn btn-primary btn-sm" type="button" id='run-sharepoint-scanner-loader' disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Loading...</span>
                                           </button>
-                                    </td>
-                                    <td>
-                                          <span id='geoserver-sync-layers-job-response-success' class='text-success'></span>
-                                          <span id='geoserver-sync-layers-job-response-error' class='text-danger'></span>
-                                    </td>
-                              </tr>
-                              <tr>
-                                    <td>Run Sync Workspaces, Roles and Permissions</td>
-                                    <td>Synchronize relations between workspaces and roles, including permissions such as read, write and admin.</td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-rules'>RUN</button>
-                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-rules-loader' disabled>
-                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                          <span class="visually-hidden">Loading...</span>
+                                          </td>
+                                          <td>
+                                          <span id='sharepoint-scanner-job-response-success' class='text-success'></span>
+                                          <span id='sharepoint-scanner-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run PostGIS Scanner</td>
+                                          <td>Scan catalogue entries with custom queries, convert them to shapefiles, and save them in the pending_import folder.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-postgis-scanner'>RUN</button>
+                                          <button class="btn btn-primary btn-sm" type="button" id='run-postgis-scanner-loader' disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Loading...</span>
                                           </button>
-                                    </td>
-                                    <td>
-                                          <span id='geoserver-sync-rules-job-response-success' class='text-success'></span>
-                                          <span id='geoserver-sync-rules-job-response-error' class='text-danger'></span>
-                                    </td>
-                              </tr>
-                              <tr>
-                                    <td>Run Sync Users, Groups and Roles</td>
-                                    <td>Synchronize users, groups and roles, along with their relationships.</td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-users'>RUN</button>
-                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-users-loader' disabled>
-                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                          <span class="visually-hidden">Loading...</span>
-                                          </button>
-                                    </td>
-                                    <td>
-                                          <span id='geoserver-sync-users-job-response-success' class='text-success'></span>
-                                          <span id='geoserver-sync-users-job-response-error' class='text-danger'></span>
-                                    </td>
-                              </tr>
-                              <tr>
-                                    <td>Run Geoserver Health Check</td>
-                                    <td>Perform a health check on all layers of each enabled Geoserver based on all publish channels with an active status of True.</td>
-                                    <td><button class='btn btn-primary btn-sm' id='run-geoserver-layer-healthcheck'>RUN</button>
-                                          <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-layer-healthcheck-loader' disabled>
-                                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                          <span class="visually-hidden">Loading...</span>
-                                          </button>
-                                    </td>
-                                    <td>
-                                          <span id='geoserver-layer-healthcheck-job-response-success' class='text-success'></span>
-                                          <span id='geoserver-layer-healthcheck-job-response-error' class='text-danger'></span>
-                                    </td>
-                              </tr>
-                                </tbody>
+                                          </td>
+                                          <td>
+                                          <span id='postgis-scanner-job-response-success' class='text-success'></span>
+                                          <span id='postgis-scanner-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run GeoServer Queue Cron Job</td>
+                                          <td>Execute the publish entries to the GeoServer in the queue one by one.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-geoserver-queue'>RUN</button>
+                                                <button class="btn btn-primary btn-sm" type="button" id='run-geoserver-queue-loader' disabled>
+                                                      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                      <span class="visually-hidden">Loading...</span>
+                                                </button>
+                                          </td>
+                                          <td>
+                                          <span id='geoserver-queue-job-response-success' class='text-success'></span>
+                                          <span id='geoserver-queue-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run Sync Layers</td>
+                                          <td>Remove layers from Geoservers that have been deleted from the KB.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-layers'>RUN</button>
+                                                <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-layers-loader' disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Loading...</span>
+                                                </button>
+                                          </td>
+                                          <td>
+                                                <span id='geoserver-sync-layers-job-response-success' class='text-success'></span>
+                                                <span id='geoserver-sync-layers-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run Sync Workspaces, Roles and Permissions</td>
+                                          <td>Synchronize relations between workspaces and roles, including permissions such as read, write and admin.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-rules'>RUN</button>
+                                                <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-rules-loader' disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Loading...</span>
+                                                </button>
+                                          </td>
+                                          <td>
+                                                <span id='geoserver-sync-rules-job-response-success' class='text-success'></span>
+                                                <span id='geoserver-sync-rules-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run Sync Users, Groups and Roles</td>
+                                          <td>Synchronize users, groups and roles, along with their relationships.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-geoserver-sync-users'>RUN</button>
+                                                <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-sync-users-loader' disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Loading...</span>
+                                                </button>
+                                          </td>
+                                          <td>
+                                                <span id='geoserver-sync-users-job-response-success' class='text-success'></span>
+                                                <span id='geoserver-sync-users-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run Geoserver Health Check</td>
+                                          <td>Perform a health check on all layers of each enabled Geoserver based on all publish channels with an active status of True.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-geoserver-layer-healthcheck'>RUN</button>
+                                                <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-layer-healthcheck-loader' disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Loading...</span>
+                                                </button>
+                                          </td>
+                                          <td>
+                                                <span id='geoserver-layer-healthcheck-job-response-success' class='text-success'></span>
+                                                <span id='geoserver-layer-healthcheck-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                                    <tr>
+                                          <td>Run GeoServer Auto Enqueue</td>
+                                          <td>Automatically identify and enqueue eligible publish entries to GeoServer Queue based on active publish channels with enabled GeoServer pools.</td>
+                                          <td><button class='btn btn-primary btn-sm' id='run-geoserver-auto-enqueue'>RUN</button>
+                                                <button class="btn btn-primary btn-sm spinner-btn" type="button" id='run-geoserver-auto-enqueue-loader' disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Loading...</span>
+                                                </button>
+                                          </td>
+                                          <td>
+                                                <span id='geoserver-auto-enqueue-job-response-success' class='text-success'></span>
+                                                <span id='geoserver-auto-enqueue-job-response-error' class='text-danger'></span>
+                                          </td>
+                                    </tr>
+                              </tbody>
                           </table>
                     </div>      
               </div>

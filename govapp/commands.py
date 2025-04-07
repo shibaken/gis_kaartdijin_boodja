@@ -210,6 +210,33 @@ class ManagementCommands(viewsets.ViewSet):
 
     @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
     @decorators.action(detail=False, methods=["POST"])
+    def geoserver_auto_enqueue(self, request: request.Request) -> response.Response:
+        """Runs the `geoserver_auto_enqueue` Management Command.
+
+        This command identifies eligible publish entries based on active channels with enabled GeoServer pools
+        and automatically adds them to the GeoServer processing queue.
+
+        Args:
+            request (request.Request): API request.
+
+        Returns:
+            response.Response: Empty response confirming success.
+        """
+        # Handle Errors
+        try:
+            # Run the geoserver_auto_enqueue command directly
+            management.call_command("geoserver_auto_enqueue")
+            
+        except Exception as exc:
+            # Log
+            log.error(f"Unable to perform auto enqueue: {exc}")
+            return response.Response({'detail': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Return Response
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=False, methods=["POST"])
     def perform_geoserver_layer_healthcheck(self, request: request.Request) -> response.Response:
         try:
             management.call_command("runcrons", "govapp.apps.publisher.cron.GeoServerLayerHealthcheckCronJob", "--force")
