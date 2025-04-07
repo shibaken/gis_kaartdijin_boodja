@@ -18,14 +18,14 @@ log = logging.getLogger(__name__)
 class PublishGeoServerQueueCronJob(django_cron.CronJobBase):
     """Cron Job for publishing Geoserver queue."""
     schedule = django_cron.Schedule(run_every_mins=conf.settings.PUBLISH_GEOSERVER_QUEUE_PERIOD_MINS)
-    code = "govapp.publisher.geoserver_queue"
+    code = "govapp.publisher.geoserver_execute_queue"
 
     def do(self) -> None:
         """Excute items in the geoserver queue."""
         log.info("Publish GeoServerQueue cron job triggered, running...")
 
         # Run Management Command
-        management.call_command("geoserver_queue")
+        management.call_command("geoserver_execute_queue")
 
 
 class GeoServerLayerHealthcheckCronJob(django_cron.CronJobBase):
