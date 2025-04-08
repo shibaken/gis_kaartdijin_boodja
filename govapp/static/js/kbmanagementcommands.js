@@ -7,6 +7,7 @@ var kbmanagementcommands = {
         "geoserver_queue_sync_job" : "/api/management/commands/excute_geoserver_sync/",
         "run_randomize_password": "/api/management/commands/randomize_password/",
         "geoserver_layer_healthcheck": "/api/management/commands/perform_geoserver_layer_healthcheck/",
+        "geoserver_auto_enqueue": "/api/management/commands/geoserver_auto_enqueue/",
     },
     run_scanner: function() {
         $('#scanner-job-response-success').html('');
@@ -175,6 +176,32 @@ var kbmanagementcommands = {
             },
         });
     },
+    run_geoserver_auto_enqueue_job: function(){
+        let res_success = $('#geoserver-auto-enqueue-job-response-success').html('');
+        let res_error = $('#geoserver-auto-enqueue-job-response-error').html('');
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+        let run_btn = $('#run-geoserver-auto-enqueue').attr('disabled','disabled');
+        let loader = $('#run-geoserver-auto-enqueue-loader').show();
+        $.ajax({
+            url: kbmanagementcommands.var.geoserver_auto_enqueue,
+            type: 'POST',
+            data: JSON.stringify({}),
+            dataType: 'json',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response) {
+                res_success.html("Completed");
+                run_btn.removeAttr('disabled');
+                loader.hide();
+            },
+            error: function (error) {
+                text = error?.responseJSON?.detail ?? '' 
+                res_error.html("Error running job. " + text);
+                run_btn.removeAttr('disabled');
+                loader.hide();
+            },
+        });
+    },
     init: function() {
         $( "#run-scanner" ).click(function() {
             kbmanagementcommands.run_scanner();
@@ -206,6 +233,9 @@ var kbmanagementcommands = {
         $( "#run-geoserver-layer-healthcheck" ).click(function() {
             kbmanagementcommands.run_geoserver_layer_healthcheck_job();
         });
+        $( "#run-geoserver-auto-enqueue" ).click(function() {
+            kbmanagementcommands.run_geoserver_auto_enqueue_job();
+        });
         $( "#run-randomize-password" ).click(function() {
             kbmanagementcommands.run_randomize_password();
         });
@@ -213,5 +243,6 @@ var kbmanagementcommands = {
         $('#run-sharepoint-scanner-loader').hide();
         $('#run-postgis-scanner-loader').hide();
         $('#run-geoserver-queue-loader').hide();
+        $('#run-geoserver-auto-enqueue-loader').hide();
     }
 }

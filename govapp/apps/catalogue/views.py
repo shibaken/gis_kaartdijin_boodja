@@ -8,7 +8,7 @@ from django import shortcuts
 from django.contrib import auth
 from django.db import connection
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.core.paginator import Paginator
 from drf_spectacular import utils as drf_utils
 from rest_framework import decorators
@@ -344,16 +344,23 @@ class CatalogueEntryViewSet(
             response.Response: HTTP response with geojson data file
         """
         layer_submission = catalogue_layer_submissions_models.LayerSubmission.objects.filter(catalogue_entry=id, is_active=True).first()
-        map_data = None
-        try:
-            with open(layer_submission.geojson) as file:
-                map_data = file.read()
-                map_data = json.loads(map_data)
-        except Exception as e:
-            return response.Response({"error": 'An exception was occured while loading a target file.'}, 
-                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if not layer_submission.geojson:
+            return response.Response(
+                {"error": 'The geojson file path cannot be found. The GeoJson file may not has been generated from the TIFF file.'},
+                status=status.HTTP_404_NOT_FOUND)
         
-        return response.Response(map_data, content_type='application/json', status=status.HTTP_200_OK)
+        if not os.path.exists(layer_submission.geojson):
+            return response.Response(
+                {"error": f'The geojson file does not exist at the specified path: [{layer_submission.geojson}].'},
+                status=status.HTTP_404_NOT_FOUND)
+            
+        try:
+            return FileResponse(open(layer_submission.geojson, 'rb'), 
+                                content_type='application/json', 
+                                status=status.HTTP_200_OK)
+        except Exception as e:
+            return response.Response({"error": f'An exception occurred while opening the target file: [{ layer_submission.geojson }]. Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @drf_utils.extend_schema(parameters=[drf_utils.OpenApiParameter("days_ago", type=int, required=True)])
     @decorators.action(detail=False, methods=['GET'])
