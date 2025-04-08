@@ -356,9 +356,11 @@ class CatalogueEntryViewSet(
                 status=status.HTTP_404_NOT_FOUND)
             
         try:
-            return FileResponse(open(layer_submission.geojson, 'rb'), 
+            resp = FileResponse(open(layer_submission.geojson, 'rb'), 
                                 content_type='application/json', 
                                 status=status.HTTP_200_OK)
+            resp['Content-Disposition'] = 'attachment; filename=' + layer_submission.catalogue_entry.name + '.geojson'
+            return resp
         except Exception as e:
             return response.Response({"error": f'An exception occurred while opening the target file: [{ layer_submission.geojson }]. Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
