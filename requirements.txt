@@ -1,10 +1,10 @@
-django~=5.2
+django~=5.1.8
 django-extensions>=3.2.3
 djangorestframework>=3.14.0
 djangorestframework-datatables>=0.7.2
 python-decouple>=3.6
 dj-database-url>=1.0.0
-psycopg2>=^2.9.4
+psycopg2>=2.9.4
 gunicorn==23.0.0
 whitenoise==5.3.0
 # git+https://github.com/dbca-wa/dbca-utils.git#egg=dbca-utils
@@ -18,8 +18,8 @@ git+https://github.com/jasonrollins/shareplum.git#55d860b
 django-reversion>=5.0.4
 django-reversion-rest-framework>=1.1.2
 # django-cron>=0.6.0
-# git+https://github.com/jorenham/django-cron.git#egg=django-cron
-git+https://github.com/dbca-wa/django-cron#egg=django-cron
+git+https://github.com/jorenham/django-cron.git#egg=django-cron
+# git+https://github.com/dbca-wa/django-cron#egg=django-cron
 py7zr>=0.20.2
 rarfile>=4.0
 httpx>=0.23.2
@@ -36,5 +36,5 @@ oauthlib==3.2.2
 sentry-sdk==2.19.0
 requests>=2.32.3
 anyio>=4.4.0
-GDAL==3.8.4
+GDAL==3.9.3
 setuptools==72.0.0
