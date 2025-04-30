@@ -45,16 +45,23 @@ def publish(geoserver_publish_channel: GeoServerPublishChannel , symbology_only:
 
             # Handle cached layer
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
-            if geoserver_publish_channel.create_cached_layer:
-                ret = geoserver_obj.create_or_update_cached_layer(
-                    geoserver_publish_channel.layer_name_with_workspace,
-                    geoserver_publish_channel.publish_entry.catalogue_entry.type,
-                    geoserver_publish_channel.create_cached_layer,
-                    geoserver_publish_channel.expire_server_cache_after_n_seconds,
-                    geoserver_publish_channel.expire_client_cache_after_n_seconds
-                )
-            else:
-                ret = geoserver_obj.delete_cached_layer(geoserver_publish_channel.layer_name_with_workspace)
+            # if geoserver_publish_channel.create_cached_layer:
+            #     ret = geoserver_obj.create_or_update_cached_layer(
+            #         geoserver_publish_channel.layer_name_with_workspace,
+            #         geoserver_publish_channel.publish_entry.catalogue_entry.type,
+            #         geoserver_publish_channel.create_cached_layer,
+            #         geoserver_publish_channel.expire_server_cache_after_n_seconds,
+            #         geoserver_publish_channel.expire_client_cache_after_n_seconds
+            #     )
+            # else:
+            #     ret = geoserver_obj.delete_cached_layer(geoserver_publish_channel.layer_name_with_workspace)
+            ret = geoserver_obj.create_or_update_cached_layer(
+                geoserver_publish_channel.layer_name_with_workspace,
+                geoserver_publish_channel.publish_entry.catalogue_entry.type,
+                geoserver_publish_channel.create_cached_layer,
+                geoserver_publish_channel.expire_server_cache_after_n_seconds,
+                geoserver_publish_channel.expire_client_cache_after_n_seconds
+            )
 
         else:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
