@@ -854,22 +854,21 @@ class GeoServer:
                 log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
 
             # Delete store
+            workspace_and_layer = layer_details['layer']['resource']['name'].split(':')
+
             if layer_details['layer']['type'] == 'VECTOR':
-                workspace_and_layer = layer_details['layer']['resource']['name'].split(':')
                 url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/datastores/{ workspace_and_layer[1] }"
-                response = httpx.delete(
+            else:
+                url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/coveragestores/{ workspace_and_layer[1] }"
 
-                            # url=url,
-                            url=url + '?recurse=true',
-
-                            auth=(self.username, self.password),
-                            headers=self.headers_json,
-                            timeout=120.0
-                        )
-                # Check Response
-                response.raise_for_status()
-            
-
+            response = httpx.delete(
+                        url=url + '?recurse=true',
+                        auth=(self.username, self.password),
+                        headers=self.headers_json,
+                        timeout=120.0
+                    )
+            # Check Response
+            response.raise_for_status()
 
         except Exception as e:
             log.error(f'Failed to delete layer: [{layer_name}].  {str(e)}')
