@@ -331,7 +331,7 @@ CRON_CLASSES = [
     "govapp.apps.accounts.cron.GeoServerSyncUsersCronJob", # users
     'appmonitor_client.cron.CronJobAppMonitorClient'
 ]
-MANAGEMENT_COMMANDS_PAGE_ENABLED = decouple.config('MANAGEMENT_COMMANDS_PAGE_ENABLED', default=False)
+MANAGEMENT_COMMANDS_PAGE_ENABLED = decouple.config('MANAGEMENT_COMMANDS_PAGE_ENABLED', default=False, cast=bool)
 
 # GeoServer Settings
 GEOSERVER_URL = decouple.config("GEOSERVER_URL", default="http://127.0.0.1:8600/geoserver")
@@ -391,7 +391,7 @@ SENTRY_DSN = decouple.config("SENTRY_DSN", default=None)
 SENTRY_SAMPLE_RATE = decouple.config("SENTRY_SAMPLE_RATE", default=1.0)  # Error sampling rate
 SENTRY_TRANSACTION_SAMPLE_RATE = decouple.config("SENTRY_TRANSACTION_SAMPLE_RATE", default=0.0)  # Transaction sampling
 
-WEBHOOK_ENABLED = decouple.config("WEBHOOK_ENABLED", default=False)
+WEBHOOK_ENABLED = decouple.config("WEBHOOK_ENABLED", default=False, cast=bool)
 
 # Catalogue entry type to be displayed on the catalogue entry list page
 CATALOGUE_ENTRY_TYPE_TO_DISPLAY = decouple.config("CATALOGUE_ENTRY_TYPE_TO_DISPLAY", default='1,2,3,4,5')

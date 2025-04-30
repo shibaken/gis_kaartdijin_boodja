@@ -120,7 +120,7 @@ class GeoServer:
             data=template.render({
                 'layer_name': layer_name,
                 'service_type': service_type,
-                'create_cac hed_layer': create_cached_layer,
+                'create_cached_layer': create_cached_layer,
                 'expire_cache': expire_server_cache_after_n_seconds,
                 'expire_clients': expire_client_cache_after_n_seconds,
                 'CatalogueEntryType': CatalogueEntryType
