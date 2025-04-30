@@ -835,7 +835,9 @@ class GeoServer:
     @handle_http_exceptions(log)
     def delete_layer(self, layer_name) -> None:
         try:
-            # Construct URL
+            layer_details = self.get_layer_details(layer_name)
+
+            # Delete Layer
             url = f"{self.service_url}/rest/layers/{layer_name}"
             response = httpx.delete(
                         url=url,
@@ -843,13 +845,32 @@ class GeoServer:
                         headers=self.headers_json,
                         timeout=120.0
                     )
-            
             # Check Response
             response.raise_for_status()
+
             if response.status_code == 200:
                 log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
             else:
                 log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
+
+            # Delete store
+            if layer_details['layer']['type'] == 'VECTOR':
+                workspace_and_layer = layer_details['layer']['resource']['name'].split(':')
+                url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/datastores/{ workspace_and_layer[1] }"
+                response = httpx.delete(
+
+                            # url=url,
+                            url=url + '?recurse=true',
+
+                            auth=(self.username, self.password),
+                            headers=self.headers_json,
+                            timeout=120.0
+                        )
+                # Check Response
+                response.raise_for_status()
+            
+
+
         except Exception as e:
             log.error(f'Failed to delete layer: [{layer_name}].  {str(e)}')
             raise

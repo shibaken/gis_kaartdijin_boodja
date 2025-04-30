@@ -66,6 +66,7 @@ def publish(geoserver_publish_channel: GeoServerPublishChannel , symbology_only:
                 # Layer exists --> Delete the layer from the geoserver
                 geoserver_obj.delete_layer(geoserver_publish_channel.publish_entry.catalogue_entry.name)
 
+
     except Exception as exc:
         # Log
         log.error(f"Unable to publish to GeoServer Publish Channel: {exc}")
