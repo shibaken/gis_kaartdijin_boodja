@@ -563,7 +563,7 @@ class GeoServer:
         # Create the layer
         url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store_name}/featuretypes"
 
-        log.info(f'Creat the layer by post request...')
+        log.info(f'Create the layer by post request...')
         log.info(f'Post url: { url }')
         log.info(f'Post data: {data_in_json}')
         response = httpx.post(
