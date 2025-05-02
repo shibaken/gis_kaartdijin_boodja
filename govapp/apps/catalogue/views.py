@@ -668,7 +668,8 @@ class LayerSubscriptionViewSet(
             min_connections=data.get('min_connections'),
             read_timeout=data.get('read_timeout'),
             schema=data.get('schema'),
-            fetch_size=data.get('fetch_size')
+            fetch_size=data.get('fetch_size'),
+            ssl_mode=data.get('ssl_mode')
         )
         
         return response.Response({'msg':"success"}, content_type='application/json', status=status.HTTP_200_OK)

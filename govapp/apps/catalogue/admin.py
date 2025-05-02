@@ -150,7 +150,7 @@ class LayerSubscriptionDataAdmin(reversion.admin.VersionAdmin):
 
 class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
     search_fields = ('id', 'name', 'description', 'username', 'url', 'host',)
-    list_display = ('id', 'name', 'type', 'description', 'get_status', 'enabled', 'workspace_link', 'assigned_to_link', 'username', 'url_link', 'host', 'max_connections', 'min_connections', 'updated_at', 'created_at')
+    list_display = ('id', 'name', 'type', 'description', 'get_status', 'enabled', 'workspace_link', 'assigned_to_link', 'username', 'url_link', 'host', 'get_ssl_mode', 'max_connections', 'min_connections', 'updated_at', 'created_at')
     list_filter = ('enabled', 'type', 'status', 'workspace', 'assigned_to',)
     list_display_links = ('id', 'name',)
     ordering = ('id',)
@@ -185,6 +185,12 @@ class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
             return '---'
     get_status.short_description = 'Status'
 
+    def get_ssl_mode(self, obj):
+        if obj.ssl_mode == models.layer_subscriptions.LayerSubscription.ALLOW:
+            return format_html('<span class="badge badge-pill bg-success">' + obj.get_ssl_mode_display() + '</span>')
+        else:
+            return format_html('<span class="badge badge-pill bg-warning">' + obj.get_ssl_mode_display() + '</span>')
+    get_ssl_mode.short_description = 'SSL Mode'
     
 class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
     search_fields = ('catalogue_entry__id','sld')
