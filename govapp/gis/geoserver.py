@@ -183,23 +183,22 @@ class GeoServer:
         with httpx.Client(auth=(self.username, self.password)) as client:
             response = client.get(store_get_url, headers=self.headers_json)
 
-        # Construct URL
-        url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}"
-
         # data = data.replace('\n', '')
         # Decide whether to perform a POST or PUT request based on the existence of the store
         if response.status_code == 404: 
             # Store does not exist, perform a POST request
+            url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}"
+
             log.info(f'Store: [{store_name}] does not exist. Performing POST request to create the store.')
             log.info(f'POST url: {url}')
-            log.debug(f'data: {data}')
+            log.info(f'data: {data}')
             with httpx.Client(auth=(self.username, self.password)) as client:
                 response = client.post(url=url, headers=self.headers_json, data=data)
-        else:          
+        else:
             # Store exists, perform a PUT request
             log.info(f'Store: [{store_name}] exists. Performing PUT request to update the store.')
             log.info(f'PUT url: {store_get_url}')
-            log.debug(f'data: {data}')
+            log.info(f'data: {data}')
             with httpx.Client(auth=(self.username, self.password)) as client:
                 response = client.put(url=store_get_url, headers=self.headers_json, data=data)
             
@@ -490,6 +489,7 @@ class GeoServer:
         log.info(f"Uploading POSTGIS Store to GeoServer...")
         
         data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
+        # data_update = render_to_string('govapp/geoserver/postgis/postgis_store_update.json', context)
 
         response = self.create_store_if_not_exists(workspace, store_name, data)
 
@@ -563,7 +563,7 @@ class GeoServer:
         # Create the layer
         url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store_name}/featuretypes"
 
-        log.info(f'Creat the layer by post request...')
+        log.info(f'Create the layer by post request...')
         log.info(f'Post url: { url }')
         log.info(f'Post data: {data_in_json}')
         response = httpx.post(
@@ -835,7 +835,9 @@ class GeoServer:
     @handle_http_exceptions(log)
     def delete_layer(self, layer_name) -> None:
         try:
-            # Construct URL
+            layer_details = self.get_layer_details(layer_name)
+
+            # Delete Layer
             url = f"{self.service_url}/rest/layers/{layer_name}"
             response = httpx.delete(
                         url=url,
@@ -843,13 +845,31 @@ class GeoServer:
                         headers=self.headers_json,
                         timeout=120.0
                     )
-            
             # Check Response
             response.raise_for_status()
+
             if response.status_code == 200:
                 log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
             else:
                 log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
+
+            # Delete store
+            workspace_and_layer = layer_details['layer']['resource']['name'].split(':')
+
+            if layer_details['layer']['type'] == 'VECTOR':
+                url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/datastores/{ workspace_and_layer[1] }"
+            else:
+                url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/coveragestores/{ workspace_and_layer[1] }"
+
+            response = httpx.delete(
+                        url=url + '?recurse=true',
+                        auth=(self.username, self.password),
+                        headers=self.headers_json,
+                        timeout=120.0
+                    )
+            # Check Response
+            response.raise_for_status()
+
         except Exception as e:
             log.error(f'Failed to delete layer: [{layer_name}].  {str(e)}')
             raise
