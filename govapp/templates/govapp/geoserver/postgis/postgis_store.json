@@ -28,7 +28,7 @@
         {"@key":"max connections","$":"{% if database.max_connections %}{{ database.max_connections|escape }}{% else %}10{% endif %}"},
         {"@key":"Test while idle","$":"{% if database.test_while_idle %}{{ database.test_while_idle|escape }}{% else %}false{% endif %}"},
         {"@key":"Estimated extends","$":"{% if database.estimated_extends %}{{ database.estimated_extends|escape }}{% else %}true{% endif %}"},
-        {"@key":"SSL mode","$":"{% if database.ssl_mode %}{{ database.ssl_mode|escape }}{% else %}DISABLE{% endif %}"}
+        {"@key":"SSL mode","$":"{% if database.ssl_mode %}{{ database.ssl_mode|escape }}{% else %}ALLOW{% endif %}"}
       ]
     }
   }

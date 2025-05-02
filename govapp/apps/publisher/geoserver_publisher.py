@@ -221,6 +221,7 @@ def _publish_postgis(
           "connection_timeout": layer_subscription.connection_timeout,
           "min_connections": layer_subscription.min_connections,
           "max_connections": layer_subscription.max_connections,
+          "ssl_mode": layer_subscription.get_ssl_mode_display(),
       }
     }
     geoserver_obj.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
