@@ -46,6 +46,21 @@ class LayerSubscriptionStatus(models.IntegerChoices):
 @reversion.register()
 class LayerSubscription(mixins.RevisionedMixin):
     """Model for a Layer Subscription."""
+    DISABLE = 'disable'
+    ALLOW = 'allow'
+    PREFER = 'prefer'
+    REQUIRE = 'require'
+    VERIFY_CA = 'verify-ca'
+    VERIFY_FULL = 'verify-full'
+
+    SSL_MODE_CHOICES = [
+        (DISABLE, 'DISABLE'),
+        (ALLOW, 'ALLOW'),
+        (PREFER, 'PREFER'),
+        (REQUIRE, 'REQUIRE'),
+        (VERIFY_CA, 'VERIFY_CA'),
+        (VERIFY_FULL, 'VERIFY_FULL'),
+    ]
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
     # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
     name = models.TextField()
@@ -58,6 +73,7 @@ class LayerSubscription(mixins.RevisionedMixin):
     max_connections = models.IntegerField(default=1, null=True) # for WMS or POST GIS
     min_connections = models.IntegerField(default=1, null=True) # for POST GIS
     read_timeout = models.IntegerField(default=10000, null=True) # ms, for WMS
+    ssl_mode = models.CharField(max_length=10, choices=SSL_MODE_CHOICES, default=ALLOW)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # catalogue_entry = models.OneToOneField(
