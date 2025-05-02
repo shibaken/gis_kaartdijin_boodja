@@ -183,23 +183,22 @@ class GeoServer:
         with httpx.Client(auth=(self.username, self.password)) as client:
             response = client.get(store_get_url, headers=self.headers_json)
 
-        # Construct URL
-        url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}"
-
         # data = data.replace('\n', '')
         # Decide whether to perform a POST or PUT request based on the existence of the store
         if response.status_code == 404: 
             # Store does not exist, perform a POST request
+            url = f"{self.service_url}/rest/workspaces/{workspace_name}/{datastore_type}"
+
             log.info(f'Store: [{store_name}] does not exist. Performing POST request to create the store.')
             log.info(f'POST url: {url}')
-            log.debug(f'data: {data}')
+            log.info(f'data: {data}')
             with httpx.Client(auth=(self.username, self.password)) as client:
                 response = client.post(url=url, headers=self.headers_json, data=data)
-        else:          
+        else:
             # Store exists, perform a PUT request
             log.info(f'Store: [{store_name}] exists. Performing PUT request to update the store.')
             log.info(f'PUT url: {store_get_url}')
-            log.debug(f'data: {data}')
+            log.info(f'data: {data}')
             with httpx.Client(auth=(self.username, self.password)) as client:
                 response = client.put(url=store_get_url, headers=self.headers_json, data=data)
             
@@ -490,6 +489,7 @@ class GeoServer:
         log.info(f"Uploading POSTGIS Store to GeoServer...")
         
         data = render_to_string('govapp/geoserver/postgis/postgis_store.json', context)
+        # data_update = render_to_string('govapp/geoserver/postgis/postgis_store_update.json', context)
 
         response = self.create_store_if_not_exists(workspace, store_name, data)
 

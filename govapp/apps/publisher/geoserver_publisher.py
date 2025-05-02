@@ -204,6 +204,7 @@ def _publish_postgis(
 
     context = {
       "name": layer_subscription.name,
+      "namespace": f'http://{layer_subscription.workspace.name}',
       "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
@@ -218,13 +219,8 @@ def _publish_postgis(
           "password": layer_subscription.userpassword,
           "fetch_size": layer_subscription.fetch_size,
           "connection_timeout": layer_subscription.connection_timeout,
-        #   "batch_insert_size": , #?
           "min_connections": layer_subscription.min_connections,
-        #   "loose_bbox": _has_override_bbox(publish_entry.geoserver_channel), #?
           "max_connections": layer_subscription.max_connections,
-        #   "test_while_idle": , #?
-        #   "estimated_extends":, #?
-        #   "ssl_mode":, #?
       }
     }
     geoserver_obj.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
