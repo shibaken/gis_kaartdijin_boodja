@@ -15,12 +15,12 @@ var kblayersubscription = {
         },
         required_fields:{
             1:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
-                'connection_timeout', 'max_connections', 'read_timeout'],
+                'connection_timeout', 'max_connections', 'read_timeout', 'ssl_mode',],
             2:['type', 'workspace', 'name', 'description', 'enabled', 'url', 
-                'connection_timeout',],
+                'connection_timeout', 'ssl_mode',],
             3:['type', 'workspace', 'name', 'description', 'enabled', 'host', 'port', 
                 'database', 'schema', 'connection_timeout', 
-                'max_connections', 'min_connections', 'fetch_size']},
+                'max_connections', 'min_connections', 'fetch_size', 'ssl_mode',]},
         optional_fields:['username', 'userpassword'],
         default_connection_timout: 10000,
         default_read_timout: 10000,
@@ -630,6 +630,7 @@ var kblayersubscription = {
         // make data body
         var update_subscription_data = {};
         const fields = kblayersubscription.var.required_fields;
+
         for( let i in fields[type] ){
             const key = fields[type][i];
             if( key == 'type'){

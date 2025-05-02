@@ -61,8 +61,8 @@ class LayerSubscription(mixins.RevisionedMixin):
         (VERIFY_CA, 'VERIFY_CA'),
         (VERIFY_FULL, 'VERIFY_FULL'),
     ]
+
     type = models.IntegerField(choices=LayerSubscriptionType.choices)
-    # status = models.IntegerField(choices=LayerSubscriptionStatus.choices, default=LayerSubscriptionStatus.ACTIVE)
     name = models.TextField()
     description = models.TextField(blank=True)
     enabled = models.BooleanField(default=True)
