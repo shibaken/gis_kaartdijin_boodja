@@ -368,9 +368,6 @@ var kblayersubscription = {
         $("#subscription-btn-save").click(function() {
             kblayersubscription.save_subscription('save');
         });
-        $("#subscription-btn-save-exit").click(function() {
-            kblayersubscription.save_subscription('save-and-exit');
-        });
         $('#update_wms_source_list_btn').click(kblayersubscription.updateSourceList)
         $('#update_wfs_source_list_btn').click(kblayersubscription.updateSourceList)
         $('#update_postgis_source_list_btn').click(kblayersubscription.updateSourceList)

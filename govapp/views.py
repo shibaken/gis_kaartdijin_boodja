@@ -584,6 +584,7 @@ class LayerSubscriptionsView(base.TemplateView):
         context['workspaces'] = publish_workspaces_models.Workspace.objects.all()
         context['enabled_js'] = "true" if subscription_obj.enabled else "false"
         context['is_assigned'] = is_assigned
+        context['ssl_modes'] = catalogue_layer_subscription_models.LayerSubscription.SSL_MODE_CHOICES
         
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)        

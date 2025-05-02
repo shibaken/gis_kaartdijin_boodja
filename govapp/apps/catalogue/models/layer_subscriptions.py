@@ -73,7 +73,7 @@ class LayerSubscription(mixins.RevisionedMixin):
     max_connections = models.IntegerField(default=1, null=True) # for WMS or POST GIS
     min_connections = models.IntegerField(default=1, null=True) # for POST GIS
     read_timeout = models.IntegerField(default=10000, null=True) # ms, for WMS
-    ssl_mode = models.CharField(max_length=10, choices=SSL_MODE_CHOICES, default=ALLOW)
+    ssl_mode = models.CharField(max_length=20, choices=SSL_MODE_CHOICES, default=ALLOW)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # catalogue_entry = models.OneToOneField(
