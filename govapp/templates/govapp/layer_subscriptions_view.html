@@ -303,6 +303,20 @@
                                           </div>
                                           {% endif %}
                                           <div class="row">
+                                                <div class='col-3 d-flex align-items-center'>SSL mode</div>
+                                                <div class='col-5 p-1'>
+                                                {% if has_edit_access is True %}
+                                                      <select class='form-select' id="subscription-ssl-mode">
+                                                      {% for value, label in ssl_modes %}
+                                                            <option value='{{ value }}' {% if subscription_obj.ssl_mode == value %}selected{% endif %}>{{ label }}</option>
+                                                      {% endfor %}
+                                                      </select>
+                                                {% else %}
+                                                      {{ subscription_obj.get_ssl_mode_display }}
+                                                {% endif %}
+                                                </div>
+                                          </div>
+                                          <div class="row">
                                                 <div class='col-3 d-flex align-items-center'> Last Updated Date Time </div>
                                                 <div class='col-5 p-1'> {{ subscription_obj.updated_at }} </div>
                                           </div>
@@ -399,7 +413,6 @@
                               <div class='text-end'>
                                     {% if has_edit_access is True %}
                                           <button class="btn btn-primary" id='subscription-btn-save' aria-current="page" >Save</button>  
-                                          <!-- <button class="btn btn-primary" id='subscription-btn-save-exit'  aria-current="page" >Save and exit</button>   -->
                                     {% endif %}
                               </div>
                         </div>
