@@ -6,6 +6,7 @@
     "type":"PostGIS",
     "connectionParameters": {
       "entry": [
+        {"@key":"namespace","$":"{{ namespace }}"},
         {"@key":"host","$":"{{ database.host }}"},
         {"@key":"port","$":"{{ database.port }}"},
         {"@key":"database","$":"{{ database.database }}"},

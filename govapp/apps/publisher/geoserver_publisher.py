@@ -45,16 +45,23 @@ def publish(geoserver_publish_channel: GeoServerPublishChannel , symbology_only:
 
             # Handle cached layer
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
-            if geoserver_publish_channel.create_cached_layer:
-                ret = geoserver_obj.create_or_update_cached_layer(
-                    geoserver_publish_channel.layer_name_with_workspace,
-                    geoserver_publish_channel.publish_entry.catalogue_entry.type,
-                    geoserver_publish_channel.create_cached_layer,
-                    geoserver_publish_channel.expire_server_cache_after_n_seconds,
-                    geoserver_publish_channel.expire_client_cache_after_n_seconds
-                )
-            else:
-                ret = geoserver_obj.delete_cached_layer(geoserver_publish_channel.layer_name_with_workspace)
+            # if geoserver_publish_channel.create_cached_layer:
+            #     ret = geoserver_obj.create_or_update_cached_layer(
+            #         geoserver_publish_channel.layer_name_with_workspace,
+            #         geoserver_publish_channel.publish_entry.catalogue_entry.type,
+            #         geoserver_publish_channel.create_cached_layer,
+            #         geoserver_publish_channel.expire_server_cache_after_n_seconds,
+            #         geoserver_publish_channel.expire_client_cache_after_n_seconds
+            #     )
+            # else:
+            #     ret = geoserver_obj.delete_cached_layer(geoserver_publish_channel.layer_name_with_workspace)
+            ret = geoserver_obj.create_or_update_cached_layer(
+                geoserver_publish_channel.layer_name_with_workspace,
+                geoserver_publish_channel.publish_entry.catalogue_entry.type,
+                geoserver_publish_channel.create_cached_layer,
+                geoserver_publish_channel.expire_server_cache_after_n_seconds,
+                geoserver_publish_channel.expire_client_cache_after_n_seconds
+            )
 
         else:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
@@ -65,6 +72,7 @@ def publish(geoserver_publish_channel: GeoServerPublishChannel , symbology_only:
             if geoserver_publish_channel.publish_entry.catalogue_entry.name in layer_names:
                 # Layer exists --> Delete the layer from the geoserver
                 geoserver_obj.delete_layer(geoserver_publish_channel.publish_entry.catalogue_entry.name)
+
 
     except Exception as exc:
         # Log
@@ -196,6 +204,7 @@ def _publish_postgis(
 
     context = {
       "name": layer_subscription.name,
+      "namespace": f'http://{layer_subscription.workspace.name}',
       "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
@@ -210,13 +219,8 @@ def _publish_postgis(
           "password": layer_subscription.userpassword,
           "fetch_size": layer_subscription.fetch_size,
           "connection_timeout": layer_subscription.connection_timeout,
-        #   "batch_insert_size": , #?
           "min_connections": layer_subscription.min_connections,
-        #   "loose_bbox": _has_override_bbox(publish_entry.geoserver_channel), #?
           "max_connections": layer_subscription.max_connections,
-        #   "test_while_idle": , #?
-        #   "estimated_extends":, #?
-        #   "ssl_mode":, #?
       }
     }
     geoserver_obj.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
