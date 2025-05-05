@@ -6,6 +6,7 @@ var kblayersubscription = {
         subscription_table_date_format: "DD MMM YYYY HH:mm:ss",
         workspace_map: {}, // will be filled later
         subscription_type_map: {1:"WMS", 2:"WFS", 3:"POST GIS"},
+        ssl_mode_map: {"disable":"DISABLE", "allow":"ALLOW", "prefer":"PREFER", "require":"REQUIRE", "verify_ca":"VERIFY CA", "verify_full":"VERIFY FULL"},
         status_map: {
             1: {"name": "NEW DRAFT", "class": "badge badge-pill bg-secondary"},
             2: {"name": "LOCKED", "class": "badge badge-pill bg-success"},
@@ -239,6 +240,7 @@ var kblayersubscription = {
         fields.min_connections = {id:common_entity_modal.add_field(label="Min Concurrent Connections", type="number", value=kblayersubscription.var.default_mim_concurrent_connections)};
         fields.read_timeout = {id:common_entity_modal.add_field(label="Read Timeout(ms)", type="number", value=kblayersubscription.var.default_read_timout)};
         fields.fetch_size = {id:common_entity_modal.add_field(label="Fetch Size", type="number", value=kblayersubscription.var.default_fetch_size)};
+        fields.ssl_mode = {id:common_entity_modal.add_field(label="SSL Mode", type="select", value="allow", option_map=kblayersubscription.var.ssl_mode_map)};
 
         set_entities = function(type){
             for(let key in fields){
@@ -273,6 +275,7 @@ var kblayersubscription = {
         const type = $('#'+fields.type.id).val();
         var subscription_data = {};
         required_fields = kblayersubscription.var.required_fields[type];
+
         for(let i in required_fields){
             const key = required_fields[i];
             if(key == 'enabled'){
