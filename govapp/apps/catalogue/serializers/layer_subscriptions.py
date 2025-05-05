@@ -81,7 +81,8 @@ class LayerSubscriptionCreateSerializer(serializers.ModelSerializer):
         fields = ("name", "description", "type", "enabled", 
                   "url", "username", "userpassword", "connection_timeout", "max_connections", "min_connections",
                   "read_timeout", "created_at", "updated_at", "workspace",
-                  "host", "port", "database", "schema", "fetch_size", "status", "assigned_to")
+                  "host", "port", "database", "schema", "fetch_size", "status", "assigned_to",
+                  "ssl_mode")
         
 class LayerSubscriptionUpdateSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
