@@ -703,6 +703,9 @@ var kbpublish = {
         let expire_server_cache_after_n_seconds = $('#expire-server-cache-after-n-seconds').val();
         let expire_client_cache_after_n_seconds = $('#expire-client-cache-after-n-seconds').val();
 
+        console.log({expire_client_cache_after_n_seconds})
+        console.log({expire_server_cache_after_n_seconds})
+
         // 2. Validate data
         let errors = [];
         if (geoserver_pool.length < 1) {
@@ -1807,8 +1810,8 @@ var kbpublish = {
 
             // Cached layer
             $('#new-publish-create-cached-layer').removeAttr('disabled').prop('checked', true);
-            $('#expire-server-cache-after-n-seconds').removeAttr('disabled').val('');
-            $('#expire-client-cache-after-n-seconds').removeAttr('disabled').val('');
+            $('#expire-server-cache-after-n-seconds').removeAttr('disabled').val(0);
+            $('#expire-client-cache-after-n-seconds').removeAttr('disabled').val(0);
         }
 
         // Remove success/error message
@@ -1849,8 +1852,8 @@ var kbpublish = {
             $('#new-publish-store-type').removeAttr('disabled').val(PUBLISH_STORE_TYPE_GEOTIFF);  
             $('#new-publish-active').removeAttr('disabled').prop('checked', true);
             $('#new-publish-create-cached-layer').removeAttr('disabled').prop('checked', true);
-            $('#expire-server-cache-after-n-seconds').removeAttr('disabled').val('');
-            $('#expire-client-cache-after-n-seconds').removeAttr('disabled').val('');
+            $('#expire-server-cache-after-n-seconds').removeAttr('disabled').val(0);
+            $('#expire-client-cache-after-n-seconds').removeAttr('disabled').val(0);
         }
         // Remove success/error message
         $('#new-publish-new-geoserver-popup-error').html('').hide();
