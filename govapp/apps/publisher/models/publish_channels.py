@@ -307,8 +307,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     store_type = models.IntegerField(choices=StoreType.choices, default=StoreType.GEOPACKAGE)
     # Cached layer
     create_cached_layer = models.BooleanField(default=True, blank=True)
-    expire_server_cache_after_n_seconds = models.IntegerField(default=0, null=True, blank=True)  # meaningfull only if create_cached_layer is True
-    expire_client_cache_after_n_seconds = models.IntegerField(default=0, null=True, blank=True)  # meaningfull only if create_cached_layer is True
+    expire_server_cache_after_n_seconds = models.IntegerField(default=0, null=False, blank=False)  # meaningfull only if create_cached_layer is True
+    expire_client_cache_after_n_seconds = models.IntegerField(default=0, null=False, blank=False)  # meaningfull only if create_cached_layer is True
 
     objects = GeoServerPublishChannelManager()
 
