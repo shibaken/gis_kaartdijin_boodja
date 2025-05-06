@@ -10,7 +10,11 @@ from django import conf
 from rest_framework.exceptions import ValidationError
 import reversion
 import logging
-
+import requests
+import psycopg2
+from owslib.wms import WebMapService
+from owslib.wfs import WebFeatureService
+from requests.auth import HTTPBasicAuth
 from typing import Union, Optional
 
 # Local
@@ -21,6 +25,7 @@ from govapp.apps.catalogue import notifications as notifications_utils
 from govapp.apps.accounts import utils as accounts_utils
 from govapp.apps.publisher.models import workspaces
 from govapp.apps.publisher.models import publish_entries
+
 
 # Shortcuts
 UserModel = auth.get_user_model()
@@ -117,26 +122,117 @@ class LayerSubscription(mixins.RevisionedMixin):
         """
         # Generate String and Return
         return f"{self.id}: {self.name}"
-
-    # @property
-    # def name(self) -> str:
-    #     """Proxies the Layer Subscription's name to this model.
-
-    #     Returns:
-    #         str: Name of the Layer Subscription.
-    #     """
-    #     # Retrieve and Return
-    #     return self.catalogue_entry.name
     
-    # @property
-    # def description(self) -> str:
-    #     """Proxies the Layer Subscription's description to this model.
+    def get_wms(self):
+        try:
+            wms = WebMapService(url=self.url, username=self.username, password=self.userpassword)
+            return True, wms
+        except requests.exceptions.ConnectionError:
+            return False, "Failed to connect to the server. Please check if the URL is correct and if the server is running."
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+            if status_code == 401:
+                return False, "Authentication error: Please check your username and password."
+            elif status_code == 404:
+                return False, "Server not found. Please check if the URL is correct."
+            else:
+                return False, f"HTTP error: Status code {status_code}"
+        except requests.exceptions.Timeout:
+            return False, "Connection timed out. The server may be slow to respond or there may be network issues."
+        except Exception as e:
+            return False, f"An unexpected error occurred: {str(e)}"
 
-    #     Returns:
-    #         str: Description of the Layer Subscription.
-    #     """
-    #     # Retrieve and Return
-    #     return self.catalogue_entry.description
+    def get_wfs(self):
+        try:
+            wms = WebFeatureService(url=self.url, username=self.username, password=self.userpassword)
+            return True, wms
+        except requests.exceptions.ConnectionError:
+            return False, "Failed to connect to the server. Please check if the URL is correct and if the server is running."
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+            if status_code == 401:
+                return False, "Authentication error: Please check your username and password."
+            elif status_code == 404:
+                return False, "Server not found. Please check if the URL is correct."
+            else:
+                return False, f"HTTP error: Status code {status_code}"
+        except requests.exceptions.Timeout:
+            return False, "Connection timed out. The server may be slow to respond or there may be network issues."
+        except Exception as e:
+            return False, f"An unexpected error occurred: {str(e)}"
+
+    def get_postgis(self):
+        conn = psycopg2.connect(
+            host=self.host,
+            database=self.database,
+            user=self.username,
+            password=self.userpassword,
+            port=self.port
+        )
+        return conn
+
+    def get_wms_layer_names(self):
+        res = self.get_wms()[1]
+        result = []
+        for layer in res.contents:
+            result.append({
+                "name": layer,
+                "title": res.contents[layer].title,
+            })
+        return result
+
+    def get_wfs_layer_names(self):
+        res = self.get_wfs()[1]
+        result = []
+        for layer in res.contents:
+            result.append({
+                "name": layer,
+                "title": res.contents[layer].title,
+            })
+        return result
+
+    def get_postgis_table_names(self):
+        conn = self.get_postgis()
+        query = """
+                    SELECT table_name 
+                    FROM information_schema.tables 
+                    WHERE table_schema = %s;
+                """
+        with conn.cursor() as cursor:
+            cursor.execute(query, [self.schema])
+            result = []
+            for e in cursor.fetchall():
+                result.append({
+                    "name": e[0],
+                    "title": '---',
+                })
+            return result
+
+    def retrieve_data_by_query(self):
+        try:
+            if self.type == LayerSubscriptionType.WMS:
+                metadata_json = self.get_wms_layer_names()
+                logger.info(f'Metadata_json has been retrieved from the WMS for the layer subscription: [{self}].')
+            elif self.type == LayerSubscriptionType.WFS:
+                metadata_json = self.get_wfs_layer_names()
+                logger.info(f'Metadata_json has been retrieved from the WFS for the layer subscription: [{self}].')
+            elif self.type == LayerSubscriptionType.POST_GIS:
+                metadata_json = self.get_postgis_table_names()
+                logger.info(f'Metadata_json has been retrieved from the PostGIS for the layer subscription: [{self}].')
+            else:
+                msg = f'Something wrong with the type of the layer subscription: [{self}].'
+                logger.error(msg)
+                raise ValidationError(msg)
+
+            # Store the data
+            layer_subscription_data = LayerSubscriptionData.objects.create(
+                    layer_subscription=self,
+                    metadata_json=metadata_json,
+                )
+            logger.info(f'LayerSubscriptionData: [{layer_subscription_data}] has been created.')
+            return metadata_json
+        except Exception as e:
+            logger.error(f"Unable to perform query to WMS/WFS/PostGIS for the layer subscription: [{self}]: [{e}]")
     
     def is_locked(self) -> bool:
         """Determines whether the Layer Subscription is locked.
@@ -252,30 +348,6 @@ class LayerSubscription(mixins.RevisionedMixin):
         cache.delete(conf.settings.POST_GIS_CACHE_KEY + str(self.id))
         super(LayerSubscription, self).save(*args, **kwargs)
         
-
-    # def decline(self) -> bool:
-    #     """Declines the Layer Subscription.
-
-    #     Returns:
-    #         bool: Whether the declining was successful.
-    #     """
-    #     # Check Layer Subscription
-    #     if self.is_unlocked():
-    #         # Check if Layer Subscription is new
-    #         if self.is_new():
-    #             # Decline the currently active layer
-    #             self.active_layer.decline()
-
-    #         # Set Layer Subscription to Declined
-    #         self.status = catalogue_entries.CatalogueEntryStatus.DECLINED
-    #         self.save()
-
-    #         # Success!
-    #         return True
-
-    #     # Failed
-    #     return False
-
     def assign(self, user: auth_models.User) -> bool:
         """Assigns a user to the Layer Subscription if applicable.
 
@@ -344,7 +416,7 @@ class LayerSubscriptionData(mixins.RevisionedMixin):
     def retrieve_latest_data(cls, subscription_obj, force_to_query=False):
         if force_to_query:
             # Perform query to WMS, WFS, PostGIS
-            metadata_json = cls._retrieve_data_by_query(subscription_obj)
+            metadata_json = subscription_obj.retrieve_data_by_query()
             return metadata_json
         else:
             # Retrieve the latest record from LayerSubscriptionData
@@ -354,33 +426,5 @@ class LayerSubscriptionData(mixins.RevisionedMixin):
                 return metadata_json
             else:
                 # Perform query to WMS, WFS, Post_gis
-                metadata_json = cls._retrieve_data_by_query(subscription_obj)
+                metadata_json = subscription_obj.retrieve_data_by_query()
                 return metadata_json
-
-    @classmethod
-    def _retrieve_data_by_query(cls, subscription_obj):
-        try:
-            if subscription_obj.type == LayerSubscriptionType.WMS:
-                metadata_json = catalogue_utils.get_wms(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
-                logger.info(f'Metadata_json has been retrieved from the WMS for the layer subscription: [{subscription_obj}].')
-            elif subscription_obj.type == LayerSubscriptionType.WFS:
-                metadata_json = catalogue_utils.get_wfs(subscription_obj.url, subscription_obj.username, subscription_obj.userpassword)
-                logger.info(f'Metadata_json has been retrieved from the WFS for the layer subscription: [{subscription_obj}].')
-            elif subscription_obj.type == LayerSubscriptionType.POST_GIS:
-                metadata_json = catalogue_utils.get_post_gis(subscription_obj.host, subscription_obj.database, subscription_obj.username, subscription_obj.userpassword, subscription_obj.port, subscription_obj.schema)
-                logger.info(f'Metadata_json has been retrieved from the PostGIS for the layer subscription: [{subscription_obj}].')
-            else:
-                msg = f'Something wrong with the type of the layer subscription: [{subscription_obj}].'
-                logger.error(msg)
-                raise ValidationError(msg)
-
-            # Store the data
-            layer_subscription_data = cls.objects.create(
-                    layer_subscription=subscription_obj,
-                    metadata_json=metadata_json,
-                )
-            logger.info(f'LayerSubscriptionData: [{layer_subscription_data}] has been created.')
-
-            return metadata_json
-        except Exception as e:
-            logger.error(f"Unable to perform query to WMS/WFS/PostGIS for the layer subscription: [{subscription_obj}]: [{e}]")
