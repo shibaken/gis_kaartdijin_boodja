@@ -993,7 +993,26 @@ class LayerSubscriptionViewSet(
         # Return Response
         logger.debug(f'mappings: {mappings}')
         return response.Response({'results':mappings}, content_type='application/json', status=status.HTTP_200_OK)
-    
+
+    @decorators.action(detail=True, methods=["GET"], url_path="check_connection")
+    def check_connection(self, request: request.Request, pk: str):
+        try:
+            subscription = self.get_object()
+            subscription_obj = cast(models.layer_subscriptions.LayerSubscription, subscription)
+            server_obj = subscription_obj.check_connection()
+            return response.Response(
+                {'results': 'success'},
+                content_type='application/json',
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            logger.error(f"Error occurred while checking connection: {str(e)}")
+            return response.Response(
+                {'results': str(e)},
+                content_type='application/json',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
     @drf_utils.extend_schema(
         request=serializers.catalogue_entries.CatalogueEntryUpdateSubscriptionMappingSerializer,
         responses={status.HTTP_200_OK: None})

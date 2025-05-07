@@ -67,7 +67,7 @@ class CatalogueEntryType(models.IntegerChoices):
     SUBSCRIPTION_WFS = 2
     SUBSCRIPTION_WMS = 3
     SUBSCRIPTION_POSTGIS = 4
-    SUBSCRIPTION_QUERY = 5
+    SUBSCRIPTION_QUERY = 5  # PostGIS but custom query
 
     @classmethod
     def get_as_string(cls, num):
@@ -90,6 +90,11 @@ CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_CDDP = [
 ]
 
 CATALOGUE_ENTRY_TYPES_ALLOWED_FOR_FTP = [
+    CatalogueEntryType.SPATIAL_FILE,
+    CatalogueEntryType.SUBSCRIPTION_QUERY,
+]
+
+CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER = [
     CatalogueEntryType.SPATIAL_FILE,
     CatalogueEntryType.SUBSCRIPTION_QUERY,
 ]
@@ -216,11 +221,8 @@ class CatalogueEntry(mixins.RevisionedMixin):
             layer_submissions.LayerSubmission: The currently active layer.
         """
         # Retrieve Active Layer
+        # here layers is a reverse relation to LayerSubmission
         active_layer = self.layers.filter(is_active=True).order_by('id').last()
-
-        # Check only when the type is CatalogueEntryType.SPATIAL_FILE
-        #if CatalogueEntryType.SPATIAL_FILE == self.type:
-        #    assert active_layer is not None, f"{repr(self)} has no active layer"  # noqa: S101
 
         # Return
         return active_layer
@@ -323,7 +325,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
             try:
                 # Check if Catalogue Entry is new
                 if self.is_new():
-                    if not self.active_layer:
+                    if self.type in CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER and not self.active_layer:
                         raise ObjectDoesNotExist("Catalogue Entry has no active layer.")
                     # Lock the currently active layer
                     self.active_layer.accept()

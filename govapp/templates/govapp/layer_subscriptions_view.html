@@ -79,6 +79,9 @@
                                                       <span class="spinner-border spinner-border-sm" id="update_source_list_spinner" role="status" aria-hidden="true" style="display: none; color: #0b5ed7;"></span>
                                                 </div>
                                           {% endif %}
+                                          <button class='btn btn-primary btn-sm px-4 mt-2' id='subscription_check_connection_btn'>Check Server Connection</button>
+                                          <span class="spinner-border spinner-border-sm" id="subscription_check_connection_spinner" role="status" aria-hidden="true" style="display: none; color: #0b5ed7;"></span>
+                                          <div id="subscription_check_connection_results"></div>
                                     </div>
                                     {% endif %}
                               </div>
@@ -429,6 +432,13 @@
             <script>
                   kblayersubscription.init_subscription_item();
             </script>
+            <style>
+                  #subscription_check_connection_results {
+                        white-space: normal;
+                        overflow-wrap: break-word;
+                        max-width: 100%;
+                  }
+            </style>
       {% else %}
             <div class="container" id="dashboard-table-container">
                   <h3>Permission Denied.  You are not authenticated.</h3>
