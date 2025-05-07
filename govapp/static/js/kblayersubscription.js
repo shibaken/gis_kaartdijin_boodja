@@ -337,7 +337,6 @@ var kblayersubscription = {
 
     // *** View page *** //
     init_subscription_item: function(){
-        console.log('in init_subscription_item')
         $("#subscription-lock").click(() => kblayersubscription.change_subscription_status('lock'));
         $("#subscription-unlock").click(() => kblayersubscription.change_subscription_status('unlock'));
         $("#subscription-assigned-to-btn").click(() =>kblayersubscription.set_assigned_to());
@@ -374,6 +373,7 @@ var kblayersubscription = {
         $('#update_wms_source_list_btn').click(kblayersubscription.updateSourceList)
         $('#update_wfs_source_list_btn').click(kblayersubscription.updateSourceList)
         $('#update_postgis_source_list_btn').click(kblayersubscription.updateSourceList)
+        $('#subscription_check_connection_btn').click(kblayersubscription.check_connection);
 
         if([1,2].includes(+$('#subscription-type-num').val())){
             // WMS, WFS
@@ -392,8 +392,21 @@ var kblayersubscription = {
         });
 
         kblayersubscription.retrieve_communication_types();
-
         kblayersubscription.checkCatalogueEntryInputs();
+        kblayersubscription.check_connection();
+    },
+    check_connection: async() => {
+        const $button = $(this);
+        const $spinner = $('#subscription_check_connection_spinner')
+
+        $button.prop('disabled', true);
+        $spinner.show()
+        try {
+            await kblayersubscription.perform_check_connection();
+        } finally {
+            $button.prop('disabled', false);
+            $spinner.hide()
+        }
     },
     updateSourceList: async () => {
         const $button = $(this);
@@ -844,6 +857,60 @@ var kblayersubscription = {
 
             // Step 6: Update the value of the element with id="layer_name_to_be_added"
             $('#layer_name_to_be_added').val(layerName).trigger('input');
+        });
+    },
+    perform_check_connection: function(){
+        $("#subscription_check_connection_results").empty();
+        $("#subscription_check_connection_spinner").show();
+        $("#subscription_check_connection_btn").prop("disabled", true);
+
+        // call GET API
+        $.ajax({
+            url: kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/check_connection/",
+            method: 'GET',
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            success: (response, status, xhr) => {
+                // triggered when the server responds with a status code in the range of 200 to 299 (inclusive) or 304.
+                if (xhr.status === 200) {
+                    $("#subscription_check_connection_results").html(
+                        '<div class="mt-2">' +
+                        '<span class="text-success"><img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True"></span> ' +
+                        '<span>Connection is successful.</span>' +
+                        '</div>'
+                    );
+                } else {
+                    let message = response.results || "Unknown error occurred.";
+                    $("#subscription_check_connection_results").html(
+                        '<div class="mt-2">' +
+                        '<span class="text-danger"><img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="True"></span> ' +
+                        '<span>Connection failed: ' + message + '</span>' +
+                        '</div>'
+                    );
+                }
+            },
+            error: (xhr, status, error)=> {
+                // executed when the server responds with a status code outside the 200-299 range, such as 400 (Bad Request), 404 (Not Found), or 500 (Internal Server Error). 
+                let errorMessage = "Unknown error occurred.";
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    } else if (xhr.responseJSON.results) {
+                        errorMessage = xhr.responseJSON.results;
+                    }
+                }
+                $("#subscription_check_connection_results").html(
+                    '<div class="mt-2">' +
+                    '<span class="text-danger"><img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="True"></span> ' +
+                    '<span>Connection failed: ' + errorMessage + '</span>' +
+                    '</div>'
+                );
+            },
+            complete: () => {
+                $("#subscription_check_connection_spinner").hide();
+                $("#subscription_check_connection_btn").prop("disabled", false);
+            }
         });
     },
     get_mapping_source: function(force_to_query=false){
