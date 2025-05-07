@@ -126,53 +126,35 @@ class LayerSubscription(mixins.RevisionedMixin):
     def get_wms(self):
         try:
             wms = WebMapService(url=self.url, username=self.username, password=self.userpassword)
-            return True, wms
-        except requests.exceptions.ConnectionError:
-            return False, "Failed to connect to the server. Please check if the URL is correct and if the server is running."
-        except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            if status_code == 401:
-                return False, "Authentication error: Please check your username and password."
-            elif status_code == 404:
-                return False, "Server not found. Please check if the URL is correct."
-            else:
-                return False, f"HTTP error: Status code {status_code}"
-        except requests.exceptions.Timeout:
-            return False, "Connection timed out. The server may be slow to respond or there may be network issues."
+            return wms
         except Exception as e:
-            return False, f"An unexpected error occurred: {str(e)}"
+            logger.error(f"Unable to connect to WMS: [{self.url}]: [{e}]")
+            raise
 
     def get_wfs(self):
         try:
-            wms = WebFeatureService(url=self.url, username=self.username, password=self.userpassword)
-            return True, wms
-        except requests.exceptions.ConnectionError:
-            return False, "Failed to connect to the server. Please check if the URL is correct and if the server is running."
-        except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            if status_code == 401:
-                return False, "Authentication error: Please check your username and password."
-            elif status_code == 404:
-                return False, "Server not found. Please check if the URL is correct."
-            else:
-                return False, f"HTTP error: Status code {status_code}"
-        except requests.exceptions.Timeout:
-            return False, "Connection timed out. The server may be slow to respond or there may be network issues."
+            wfs = WebFeatureService(url=self.url, username=self.username, password=self.userpassword)
+            return wfs  
         except Exception as e:
-            return False, f"An unexpected error occurred: {str(e)}"
+            logger.error(f"Unable to connect to WFS: [{self.url}]: [{e}]")
+            raise
 
     def get_postgis(self):
-        conn = psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            user=self.username,
-            password=self.userpassword,
-            port=self.port
-        )
-        return conn
+        try:
+            conn = psycopg2.connect(
+                host=self.host,
+                database=self.database,
+                user=self.username,
+                password=self.userpassword,
+                port=self.port
+            )
+            return conn
+        except Exception as e:
+            logger.error(f"Unable to connect to PostGIS: [{self.host}]: [{e}]")
+            raise
 
     def get_wms_layer_names(self):
-        res = self.get_wms()[1]
+        res = self.get_wms()
         result = []
         for layer in res.contents:
             result.append({
@@ -182,7 +164,7 @@ class LayerSubscription(mixins.RevisionedMixin):
         return result
 
     def get_wfs_layer_names(self):
-        res = self.get_wfs()[1]
+        res = self.get_wfs()
         result = []
         for layer in res.contents:
             result.append({
@@ -207,6 +189,22 @@ class LayerSubscription(mixins.RevisionedMixin):
                     "title": '---',
                 })
             return result
+    
+    def check_connection(self):
+        try:
+            if self.type == LayerSubscriptionType.WMS:
+                return self.get_wms()
+            elif self.type == LayerSubscriptionType.WFS:
+                return self.get_wfs()
+            elif self.type == LayerSubscriptionType.POST_GIS:
+                return self.get_postgis()
+            else:
+                msg = f'Something wrong with the type of the layer subscription: [{self}].'
+                logger.error(msg)
+                raise ValidationError(msg)
+        except Exception as e:
+            logger.error(f"Unable to connect to WMS/WFS/PostGIS for the layer subscription: [{self}]: [{e}]")
+            raise
 
     def retrieve_data_by_query(self):
         try:
@@ -233,6 +231,7 @@ class LayerSubscription(mixins.RevisionedMixin):
             return metadata_json
         except Exception as e:
             logger.error(f"Unable to perform query to WMS/WFS/PostGIS for the layer subscription: [{self}]: [{e}]")
+            raise
     
     def is_locked(self) -> bool:
         """Determines whether the Layer Subscription is locked.
