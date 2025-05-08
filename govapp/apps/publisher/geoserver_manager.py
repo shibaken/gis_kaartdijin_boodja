@@ -65,12 +65,9 @@ class GeoServerQueueExcutor:
         count = 0
         for entry in eligible_entries:
             # Check if there's already a queue item for this entry that's not completed
-            existing_queue = geoserver_queues.GeoServerQueue.objects.filter(
-                publish_entry=entry,
-                status__in=[GeoServerQueueStatus.READY, GeoServerQueueStatus.ON_PUBLISHING]
-            ).exists()
+            already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(entry)
             
-            if not existing_queue:
+            if not already_queued:
                 # Create new queue item
                 geoserver_queues.GeoServerQueue.objects.create(
                     publish_entry=entry,
@@ -156,12 +153,9 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
         log.info(f"'{publish_entry}' has no GeoServer Publish Channel")
         return False
 
-    existing_queue = geoserver_queues.GeoServerQueue.objects.filter(
-        publish_entry=publish_entry,
-        status__in=[GeoServerQueueStatus.READY, GeoServerQueueStatus.ON_PUBLISHING]
-    ).exists()
+    already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(publish_entry)
     
-    if not existing_queue:
+    if not already_queued:
         geoserver_queues.GeoServerQueue.objects.create(
             publish_entry=publish_entry,
             symbology_only=symbology_only,
