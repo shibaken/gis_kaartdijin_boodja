@@ -55,6 +55,23 @@ class GeoServerQueue(mixins.RevisionedMixin):
         verbose_name = "Geoserver Queue"
         verbose_name_plural = "Geoserver Queues"
 
+    @classmethod
+    def is_publish_entry_queued(cls, publish_entry: "PublishEntry") -> bool:
+        """Checks if a publish entry is already queued.
+
+        Args:
+            publish_entry (PublishEntry): The publish entry to check.
+
+        Returns:
+            bool: True if the publish entry is already queued to be processed, False otherwise.
+        """
+        # Check if the publish entry is already queued
+        existing = cls.objects.filter(
+            publish_entry=publish_entry,
+            status__in=[GeoServerQueueStatus.READY, GeoServerQueueStatus.ON_PUBLISHING,]
+        ).exists()
+        return existing
+
     def change_status(self, status:GeoServerQueueStatus) -> None:
         self.status = status
         if status == GeoServerQueueStatus.ON_PUBLISHING:

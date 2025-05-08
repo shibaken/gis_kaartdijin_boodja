@@ -325,23 +325,29 @@ class CatalogueEntry(mixins.RevisionedMixin):
             try:
                 # Check if Catalogue Entry is new
                 if self.is_new():
-                    if self.type in CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER and not self.active_layer:
-                        raise ObjectDoesNotExist("Catalogue Entry has no active layer.")
-                    # Lock the currently active layer
-                    self.active_layer.accept()
+                    if self.type in CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER:
+                        if not self.active_layer:
+                            raise ObjectDoesNotExist("Catalogue Entry has no active layer.")
+
+                        # Lock the currently active layer
+                        self.active_layer.accept()
 
                 # Calculate the attributes hash
                 attributes_hash = utils.attributes_hash(self.attributes.all())
 
-                # Compare attributes hash with current active layer submission
-                if self.active_layer.hash == attributes_hash:
-                    # Set Catalogue Entry to Locked
+                if self.type in CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER:
+                    # Compare attributes hash with current active layer submission
+                    if self.active_layer.hash == attributes_hash:
+                        # Set Catalogue Entry to Locked
+                        self.status = CatalogueEntryStatus.LOCKED
+                        lock_success = True
+                    else:
+                        # Set Catalogue Entry to Pending
+                        self.status = CatalogueEntryStatus.PENDING
+                        lock_success = False
+                else:
                     self.status = CatalogueEntryStatus.LOCKED
                     lock_success = True
-                else:
-                    # Set Catalogue Entry to Pending
-                    self.status = CatalogueEntryStatus.PENDING
-                    lock_success = False
 
                 # Check for Publish Entry
                 if hasattr(self, "publish_entry"):
