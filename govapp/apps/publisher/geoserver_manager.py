@@ -155,11 +155,17 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
     if not hasattr(publish_entry, "geoserver_channels"):
         log.info(f"'{publish_entry}' has no GeoServer Publish Channel")
         return False
-    
-    geoserver_queues.GeoServerQueue.objects.create(
+
+    existing_queue = geoserver_queues.GeoServerQueue.objects.filter(
         publish_entry=publish_entry,
-        symbology_only=symbology_only,
-        submitter=submitter)
+        status__in=[GeoServerQueueStatus.READY, GeoServerQueueStatus.ON_PUBLISHING]
+    ).exists()
+    
+    if not existing_queue:
+        geoserver_queues.GeoServerQueue.objects.create(
+            publish_entry=publish_entry,
+            symbology_only=symbology_only,
+            submitter=submitter)
     return True
 
 
