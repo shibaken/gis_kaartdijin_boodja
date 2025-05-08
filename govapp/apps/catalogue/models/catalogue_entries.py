@@ -325,10 +325,12 @@ class CatalogueEntry(mixins.RevisionedMixin):
             try:
                 # Check if Catalogue Entry is new
                 if self.is_new():
-                    if self.type in CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER and not self.active_layer:
-                        raise ObjectDoesNotExist("Catalogue Entry has no active layer.")
-                    # Lock the currently active layer
-                    self.active_layer.accept()
+                    if self.type in CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER:
+                        if not self.active_layer:
+                            raise ObjectDoesNotExist("Catalogue Entry has no active layer.")
+
+                        # Lock the currently active layer
+                        self.active_layer.accept()
 
                 # Calculate the attributes hash
                 attributes_hash = utils.attributes_hash(self.attributes.all())
