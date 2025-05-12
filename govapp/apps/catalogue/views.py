@@ -156,7 +156,7 @@ class CatalogueEntryViewSet(
             # catalogue_entry = cast(models.catalogue_entries.CatalogueEntry, catalogue_entry)
 
             # Lock
-            success = catalogue_entry.lock()
+            success, message = catalogue_entry.lock()
 
             # Check Success
             if success:
@@ -171,7 +171,9 @@ class CatalogueEntryViewSet(
                 return response.Response(status=status.HTTP_204_NO_CONTENT)
             else:
                 # Return Response
-                return response.Response("Error Locking Catalogue", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                if not message:
+                    message = "Error locking catalogue entry"
+                return response.Response(message, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except ObjectDoesNotExist as e:
             logger.error(f"Catalogue entry does not exist: {str(e)}")
             return response.Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
