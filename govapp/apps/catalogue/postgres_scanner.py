@@ -45,7 +45,7 @@ class Scanner:
             log.info(f'Scanning postgres queries for the CatalogueEntry: [{catalogue_entry_obj}]...')
 
             if catalogue_entry_obj.layer_subscription.status != layer_subscriptions.LayerSubscriptionStatus.LOCKED:
-                log.warn(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because its layer_subscription is not LOCKED.')
+                log.warning(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because its layer_subscription is not LOCKED.')
                 continue
 
             for custom_query_freq in catalogue_entry_obj.custom_query_frequencies.all():  # CatalogueEntry can have 0 or 1 custom_query_frequency.

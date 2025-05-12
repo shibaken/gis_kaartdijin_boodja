@@ -1795,7 +1795,7 @@ var kbpublish = {
             $('#new-publish-active').removeAttr('disabled').prop('checked', true);
 
             // Override BBox
-            $('#new-publish-override-bbox').removeAttr('disabled').prop('checked', true);
+            $('#new-publish-override-bbox').removeAttr('disabled').prop('checked', false);
             $('#override-bbox-native-crs').removeAttr('disabled').val('');
             $('#nbb-minx').removeAttr('disabled').val('');
             $('#nbb-maxx').removeAttr('disabled').val('');

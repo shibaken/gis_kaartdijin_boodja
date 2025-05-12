@@ -246,14 +246,18 @@ var kbcatalogue = {
             //dataType: 'json',
             headers: {'X-CSRFToken' : csrf_token},
             contentType: 'application/json',
-            success: function (response) {
+            success: function (response, status, xhr) {
+                // triggered when the server responds with a status code in the range of 200 to 299 (inclusive) or 304.
                 window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";       
             },
             error: function (xhr, status, error) {
+                // executed when the server responds with a status code outside the 200-299 range, such as 400 (Bad Request), 404 (Not Found), or 500 (Internal Server Error). 
+                console.log(xhr)
                 try {
-                    const errorResponse = JSON.parse(xhr.responseText);
-                    if (errorResponse.error) {
-                        common_entity_modal.show_alert(errorResponse.error);
+                    // const errorResponse = JSON.parse(xhr.responseText);
+                    const errorResponse = xhr.responseText
+                    if (errorResponse) {
+                        common_entity_modal.show_alert(errorResponse);
                     } else {
                         common_entity_modal.show_alert("An error occurred");
                     }

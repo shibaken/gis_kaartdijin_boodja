@@ -313,13 +313,14 @@ class CatalogueEntry(mixins.RevisionedMixin):
         # Check and Return
         return self.editors.all().filter(user=user).exists()
 
-    def lock(self) -> bool:
+    def lock(self):
         """Locks the Catalogue Entry.
 
         Returns:
             bool: Whether the locking was successful.
         """
         lock_success = False
+        message = ''
         # Check Catalogue Entry
         if self.is_unlocked():
             try:
@@ -338,13 +339,16 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 if self.type in CATALOGUE_ENTRY_TYPES_REQUIRE_ACTIVE_LAYER:
                     # Compare attributes hash with current active layer submission
                     if self.active_layer.hash == attributes_hash:
+                        logger.info(f"Attributes hash matches for the hash of the active_layer: [{self.active_layer.file}].  Catalogue Entry: [{self.name}] can be locked.")
                         # Set Catalogue Entry to Locked
                         self.status = CatalogueEntryStatus.LOCKED
                         lock_success = True
                     else:
+                        logger.info(f"Attributes hash does not match for the hash of the active_layer: [{self.active_layer.file}].  Catalogue Entry: [{self.name}] cannot be locked.")
                         # Set Catalogue Entry to Pending
                         self.status = CatalogueEntryStatus.PENDING
                         lock_success = False
+                        message = "The attributes defined here do not match the attributes of the active layer. Please check the attributes and try again."
                 else:
                     self.status = CatalogueEntryStatus.LOCKED
                     lock_success = True
@@ -361,7 +365,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 notifications_utils.catalogue_entry_lock(self)
 
                 # Success!
-                return lock_success
+                return lock_success, message
             except ObjectDoesNotExist as e:
                 logger.error(f"Object does not exist: {str(e)}")
                 raise
@@ -369,7 +373,7 @@ class CatalogueEntry(mixins.RevisionedMixin):
                 logger.error(f"An unexpected error occurred: {str(e)}")
                 raise
         # Failed
-        return lock_success
+        return lock_success, message
 
     def unlock(self) -> bool:
         """Unlocks the Catalogue Entry.
