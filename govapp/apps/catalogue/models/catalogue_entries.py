@@ -67,7 +67,7 @@ class CatalogueEntryType(models.IntegerChoices):
     SUBSCRIPTION_WFS = 2
     SUBSCRIPTION_WMS = 3
     SUBSCRIPTION_POSTGIS = 4
-    SUBSCRIPTION_QUERY = 5  # PostGIS but custom query
+    SUBSCRIPTION_QUERY = 5  # PostGIS but custom query --> Spatial file is created
 
     @classmethod
     def get_as_string(cls, num):
