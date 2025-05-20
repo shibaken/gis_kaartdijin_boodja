@@ -303,6 +303,8 @@ var kbcatalogue = {
     },
 
     save_symbology: function(save_status) {        
+        console.log('in save_symbology')
+
         let catalogue_id = $('#catalogue_entry_id').val();
         let cataloguesymbologydefinition = $('#catalogue-entry-symbology-definition').val();
         let post_data = {"sld": cataloguesymbologydefinition};
@@ -310,6 +312,8 @@ var kbcatalogue = {
         let csrf_token = $("#csrfmiddlewaretoken").val();
         let pagetab = $('#pagetab').val();
         let url = kbcatalogue.var.catalogue_layer_symbology_url + layer_symbology_id + "/"
+
+        console.log({layer_symbology_id})
 
         $.ajax({
             url: url,

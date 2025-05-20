@@ -17,10 +17,10 @@
           <div class='row'>
                 <div class='col-12'>
                       {% if has_edit_access is True %}
-                            <textarea class="form-control" rows='20' id="catalogue-entry-symbology-definition" >{{ layer_symbology.sld }}</textarea>                                    
+                            <textarea class="form-control" rows='20' id="catalogue-entry-symbology-definition" >{{ layer_symbology.sld }}</textarea>
                             &nbsp;
                       {% else %}
-                            <textarea readonly class="form-control" rows='20' > {{ layer_symbology.sld }}</textarea>      
+                            <textarea readonly class="form-control" rows='20' > {{ layer_symbology.sld }}</textarea>
                       {% endif %}
                 </div>
           </div>
@@ -29,8 +29,7 @@
 
 <div class='col-12 pt-2 text-end'>
       {% if has_edit_access is True %}
-            <button class="btn btn-primary" id='catalogue-entry-symbology-btn-save' aria-current="page">Save</button>  
-            <!-- <button class="btn btn-primary" id='catalogue-entry-symbology-btn-save-exit' aria-current="page">Save and exit</button>   -->
+            <button class="btn btn-primary" id='catalogue-entry-symbology-btn-save' aria-current="page">Save</button>
       {% endif %}
 </div>
 
