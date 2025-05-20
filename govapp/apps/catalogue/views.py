@@ -898,6 +898,13 @@ class LayerSubscriptionViewSet(
             serializer = serializers.catalogue_entries.CatalogueEntryCreateSubscriptionMappingSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             catalogue_entry = serializer.save()
+            logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created with the data: [{data}].')
+
+            layer_symbology, created = models.layer_symbology.LayerSymbology.objects.get_or_create(
+                sld='',
+                catalogue_entry=catalogue_entry,
+            )
+            logger.info(f'New LayerSymbology: [{layer_symbology}] has been created for the CatalogueEntry: [{catalogue_entry}].')
 
             logs_utils.add_to_actions_log(
                 user=request.user,
@@ -909,7 +916,6 @@ class LayerSubscriptionViewSet(
                 model=subscription,
                 action=f'New CatalogueEntry: [{catalogue_entry}] has been created.'
             )
-            logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created with the data: [{data}].')
             return response.Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as e:
             logger.info(f'CatalogueEntry with the name: [{data['name']}] already exists.')

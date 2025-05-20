@@ -20,6 +20,9 @@ def validate_xml(value: str) -> None:
     """
     # Handle Errors
     try:
+        if not value:
+            # Accept None/''
+            return
         # Validate
         etree.XML(value.encode("UTF-8"))
 
