@@ -593,26 +593,48 @@ class GeoServer:
             name (str): Name of the style.
             sld (str): Style to upload.
         """
-        # Retrieve Existing Style
-        existing_sld = self.get_style(workspace, name)
+        try:
+            # Retrieve Existing Style
+            existing_sld = self.get_style(workspace, name)
 
-        # Check if Style Exists
-        if existing_sld is None:
+            # Check if Style Exists
+            if not existing_sld:
+                # Log
+                log.info(f"Creating Style '{name}' in GeoServer")
+
+                # Create the Style
+                url = f"{self.service_url}/rest/workspaces/{workspace}/styles"
+
+                # Perform Request
+                response = httpx.post(
+                    url=url,
+                    json={
+                        "style": {
+                            "name": name,
+                            "filename": f"{name}.sld"
+                        }
+                    },
+                    auth=(self.username, self.password),
+                    timeout=120.0
+                )
+
+                # Log
+                log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+
+                # Check Response
+                response.raise_for_status()
+
             # Log
-            log.info(f"Creating Style '{name}' in GeoServer")
+            log.info(f"Uploading Style '{name}' to GeoServer")
 
-            # Create the Style
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles"
+            # Upload the Style
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}.xml"
 
             # Perform Request
-            response = httpx.post(
+            response = httpx.put(
                 url=url,
-                json={
-                    "style": {
-                        "name": name,
-                        "filename": f"{name}.sld"
-                    }
-                },
+                content=sld,
+                headers={"Content-Type": "application/vnd.ogc.sld+xml"},
                 auth=(self.username, self.password),
                 timeout=120.0
             )
@@ -622,27 +644,8 @@ class GeoServer:
 
             # Check Response
             response.raise_for_status()
-
-        # Log
-        log.info(f"Uploading Style '{name}' to GeoServer")
-
-        # Upload the Style
-        url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}.xml"
-
-        # Perform Request
-        response = httpx.put(
-            url=url,
-            content=sld,
-            headers={"Content-Type": "application/vnd.ogc.se+xml"},
-            auth=(self.username, self.password),
-            timeout=120.0
-        )
-
-        # Log
-        log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
-
-        # Check Response
-        response.raise_for_status()
+        except Exception as e:
+            log.error(f"Unable to upload the style: [{name}] to the GeoServer: [{self.service_url}]: {e}")
 
     @handle_http_exceptions(log)
     def get_style(

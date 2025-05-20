@@ -410,7 +410,6 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Publish Symbology
         self.publish_geoserver_symbology(geoserver=geoserver_obj)
-        # self.publish_geoserver_symbology()
 
         # Check Symbology Only Flag
         if symbology_only:
@@ -490,7 +489,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             log.warning(f'Unknown store_type: [{self.store_type}].')
 
         # Set Default Style
-        style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') and self.publish_entry.catalogue_entry.symbology.name else 'generic'
+        style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') and self.publish_entry.catalogue_entry.symbology.name and self.publish_entry.catalogue_entry.symbology.sld else 'generic'
         geoserver.set_default_style(
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,

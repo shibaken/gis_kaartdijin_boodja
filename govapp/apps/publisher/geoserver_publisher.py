@@ -40,7 +40,7 @@ def publish(geoserver_publish_channel: GeoServerPublishChannel , symbology_only:
                 # for spatial file
                 geoserver_publish_channel.publish(symbology_only)
             else:
-                # for layer subscription
+                # for layer subscription (SUBSCRIPTION_WFS, SUBSCRIPTION_WMS, SUBSCRIPTION_POSTGIS)
                 _publish(geoserver_publish_channel)
 
             # Handle cached layer
@@ -144,7 +144,8 @@ def _publish_wfs(
         # "keywords":, #?
     }
     geoserver_obj.upload_layer_wfs(workspace=layer_subscription.workspace.name, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
-    
+
+
 def _publish_wms(
         geoserver_publish_channel:GeoServerPublishChannel
     ):
@@ -195,12 +196,16 @@ def _publish_wms(
     }
     geoserver_obj.upload_layer_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
 
+
 def _publish_postgis(
         geoserver_publish_channel:GeoServerPublishChannel
     ):
     catalogue_entry = geoserver_publish_channel.publish_entry.catalogue_entry
     layer_subscription = catalogue_entry.layer_subscription
     geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
+
+    # Publish Symbology
+    geoserver_publish_channel.publish_geoserver_symbology(geoserver=geoserver_obj)
 
     context = {
       "name": layer_subscription.name,
