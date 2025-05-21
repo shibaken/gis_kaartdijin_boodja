@@ -727,6 +727,56 @@ class GeoServer:
 
 import xml.etree.ElementTree as ET
 
+    # No @handle_http_exceptions decorator here, as we want to handle errors locally
+    def truncate_gwc_layer_cache(self, workspace: str, layer_name: str) -> bool:
+        """
+        Truncates the GeoWebCache for a specific layer.
+
+        Args:
+            workspace (str): The workspace of the layer.
+            layer_name (str): The name of the layer.
+
+        Returns:
+            bool: True if truncation was successful or layer not found (implies no cache), 
+                  False if an error occurred during truncation.
+        """
+        gwc_layer_name = f"{workspace}:{layer_name}"
+        # Ensure no double slashes if self.service_url already has a trailing one
+        gwc_base_url = self.service_url.rstrip('/') + "/gwc/rest/seed"
+        url = f"{gwc_base_url}/{gwc_layer_name}.xml" # Format as .xml for consistency, though GWC might accept .json too
+
+        payload = f"<seedRequest><name>{gwc_layer_name}</name><type>truncate</type></seedRequest>"
+        headers = {"Content-Type": "application/xml"}
+
+        log.info(f"Attempting to truncate GWC cache for layer '{gwc_layer_name}' at {url}")
+
+        try:
+            response = httpx.post(
+                url=url,
+                content=payload,
+                headers=headers,
+                auth=self.auth,
+                timeout=120.0
+            )
+            
+            # GWC typically returns 200 OK on success for a seed/truncate task submission.
+            # A 404 might mean the layer isn't known to GWC, which is fine (nothing to truncate).
+            if response.status_code == 200:
+                log.info(f"GWC cache truncation task submitted successfully for '{gwc_layer_name}'. Response: {response.status_code}")
+                return True
+            elif response.status_code == 404:
+                log.info(f"GWC layer '{gwc_layer_name}' not found, no cache to truncate. Response: {response.status_code}")
+                return True # Considered success as there's nothing to truncate
+            else:
+                log.error(f"GWC cache truncation for '{gwc_layer_name}' failed. Status: {response.status_code}, Response: {response.text}")
+                return False
+        except httpx.RequestError as exc:
+            log.error(f"HTTPX RequestError during GWC cache truncation for '{gwc_layer_name}': {exc}")
+            return False
+        except Exception as exc:
+            log.error(f"Unexpected error during GWC cache truncation for '{gwc_layer_name}': {exc}")
+            return False
+
     @handle_http_exceptions(log)
     def set_default_style_to_layer(
         self,
@@ -743,6 +793,14 @@ import xml.etree.ElementTree as ET
         """
         try:
             log.info(f"Attempting to set default style '{style_name}' for layer '{layer}' in workspace '{workspace}' on GeoServer '{self.service_url}'")
+
+            # Attempt to truncate GWC cache before proceeding
+            log.info(f"Attempting GWC cache truncation for layer '{layer}' in workspace '{workspace}' before setting style.")
+            truncation_success = self.truncate_gwc_layer_cache(workspace, layer)
+            if truncation_success:
+                log.info(f"GWC cache truncation for '{workspace}:{layer}' succeeded or layer was not cached.")
+            else:
+                log.warning(f"GWC cache truncation for '{workspace}:{layer}' failed. Proceeding with style update anyway.")
 
             layer_url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}.xml"
             headers = {"Accept": "application/xml"} # Request XML
