@@ -416,15 +416,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             log.info(f"Skipping due to {symbology_only=}")
             return
 
-        # Check Mode
-        match self.mode:
-            case GeoServerPublishChannelMode.WMS:
-                # Publish to GeoServer (WMS Only)
-                self.publish_geoserver_layer(wms=True, wfs=False, geoserver=geoserver_obj)
-
-            case GeoServerPublishChannelMode.WMS_AND_WFS:
-                # Publish to GeoServer (WMS and WFS)
-                self.publish_geoserver_layer(wms=True, wfs=True, geoserver=geoserver_obj)
+        self.publish_geoserver_layer(geoserver=geoserver_obj)
 
         # Update Published At
         publish_time = timezone.now()
@@ -440,15 +432,25 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         if hasattr(self.publish_entry.catalogue_entry, 'symbology'):
             # Publish Style to GeoServer
-            geoserver.upload_style(
+            style_uploaded = geoserver.upload_style(
                 workspace=self.workspace.name,
                 name=self.publish_entry.catalogue_entry.symbology.name,
                 sld=self.publish_entry.catalogue_entry.symbology.sld,
             )
+            if style_uploaded:
+                # geoserver.set_style_to_layer(
+                #     self.publish_entry.catalogue_entry.name,
+                #     self.publish_entry.catalogue_entry.symbology.name
+                # )
+                geoserver.set_default_style_to_layer(
+                    self.publish_entry.catalogue_entry.symbology.name,
+                    self.workspace.name,
+                    self.publish_entry.catalogue_entry.name
+                )
         else:
             log.info(f'Catalogue Entry: [{self.publish_entry.catalogue_entry}] does not have Symbology.')
 
-    def publish_geoserver_layer(self, wms: bool, wfs: bool, geoserver: gis.geoserver.GeoServer) -> None:
+    def publish_geoserver_layer(self, geoserver: gis.geoserver.GeoServer) -> None:
         """Publishes the Catalogue Entry to GeoServer if applicable.
 
         Args:
@@ -488,12 +490,12 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         else:
             log.warning(f'Unknown store_type: [{self.store_type}].')
 
-        # Set Default Style
+        # Set Style to the layer
         style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') and self.publish_entry.catalogue_entry.symbology.name and self.publish_entry.catalogue_entry.symbology.sld else 'generic'
-        geoserver.set_default_style(
+        geoserver.set_default_style_to_layer(
+            style_name=style_name,
             workspace=self.workspace.name,
             layer=self.publish_entry.catalogue_entry.metadata.name,
-            name=style_name,
         )
 
 
