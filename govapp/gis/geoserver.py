@@ -725,6 +725,8 @@ class GeoServer:
     #         log.error(f"Unable to set the default style: [{style_name}] to the GeoServer: [{self.service_url}]: {e}")
 
 
+import xml.etree.ElementTree as ET
+
     @handle_http_exceptions(log)
     def set_default_style_to_layer(
         self,
@@ -735,34 +737,90 @@ class GeoServer:
         """Sets the default style for a layer in GeoServer.
 
         Args:
-            workspace (str): Workspace to upload files to.
-            layer (str): Name of the layer to set default style for.
-            name (str): Name of the style.
+            workspace (str): Workspace where the layer exists.
+            layer (str): Name of the layer to set the default style for.
+            style_name (str): Name of the style to set as default.
         """
         try:
-            # Log
-            log.info(f"Setting style: [{style_name}] as default to the layer: [{layer}] in the GeoServer: [{self.service_url}]...")
+            log.info(f"Attempting to set default style '{style_name}' for layer '{layer}' in workspace '{workspace}' on GeoServer '{self.service_url}'")
 
-            # Set Default Layer Style
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}.xml"
+            layer_url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}.xml"
+            headers = {"Accept": "application/xml"} # Request XML
 
-            # Perform Request
-            # This only works with XML (GeoServer is broken)
-            response = httpx.put(
-                url=url,
-                content=f"<layer><defaultStyle><name>{style_name}</name></defaultStyle></layer>",
-                headers={"Content-Type": "application/xml"},
-                auth=(self.username, self.password),
+            # 1. GET the layer's current XML definition
+            log.info(f"Fetching current layer definition from: {layer_url}")
+            get_response = httpx.get(
+                url=layer_url,
+                auth=self.auth,
+                headers=headers,
                 timeout=120.0
             )
+            get_response.raise_for_status()  # Raise exception for 4xx/5xx errors
+            current_xml = get_response.text
+            log.info(f"Successfully fetched layer XML. Status: {get_response.status_code}")
 
-            # Log
-            log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
+            # 2. Parse and Update XML
+            log.info("Parsing and updating layer XML...")
+            tree = ET.ElementTree(ET.fromstring(current_xml))
+            root = tree.getroot()
 
-            # Check Response
-            response.raise_for_status()
+            # Find defaultStyle element
+            default_style_element = root.find('defaultStyle')
+
+            if default_style_element is None:
+                # If defaultStyle element doesn't exist, create it
+                log.info("No existing <defaultStyle> element found, creating new one.")
+                default_style_element = ET.SubElement(root, 'defaultStyle')
+            else:
+                log.info("Found existing <defaultStyle> element.")
+
+            # Find name element within defaultStyle
+            name_element = default_style_element.find('name')
+            if name_element is None:
+                # If name element doesn't exist, create it
+                log.info("No existing <name> element found in <defaultStyle>, creating new one.")
+                name_element = ET.SubElement(default_style_element, 'name')
+            
+            # Set the style name
+            name_element.text = style_name
+            log.info(f"Set <defaultStyle><name> to '{style_name}'.")
+
+            # Remove existing 'styles' element if it exists, as per task instructions to PUT the *entire* modified XML.
+            # GeoServer might re-create it or it might not be needed if only defaultStyle is being set.
+            # Alternatively, if we wanted to preserve other styles, we'd need more complex logic here.
+            # For now, let's assume the requirement is to ensure the defaultStyle is set, and other style associations might be reset by the PUT.
+            styles_element = root.find('styles')
+            if styles_element is not None:
+                log.info("Removing existing <styles> element as per full XML update approach.")
+                root.remove(styles_element)
+
+
+            modified_xml = ET.tostring(root, encoding='unicode')
+            
+            # 3. PUT the entire modified XML back
+            log.info(f"Putting updated layer definition to: {layer_url}")
+            put_response = httpx.put(
+                url=layer_url,
+                content=modified_xml,
+                headers={"Content-Type": "application/xml"},
+                auth=self.auth,
+                timeout=120.0
+            )
+            put_response.raise_for_status()
+            log.info(f"Successfully updated layer with new default style. Status: {put_response.status_code}")
+
+        except httpx.HTTPStatusError as http_err:
+            log.error(f"HTTP error occurred while setting default style for layer '{layer}': {http_err.response.status_code} - {http_err.response.text}")
+            # Re-raise the exception to be handled by the decorator or calling function
+            raise
+        except ET.ParseError as parse_err:
+            log.error(f"XML parsing error for layer '{layer}': {parse_err}")
+            # Re-raise or handle as appropriate for the application
+            raise
         except Exception as e:
-            log.error(f"Unable to set the default style: [{style_name}] to the GeoServer: [{self.service_url}]: {e}")
+            log.error(f"An unexpected error occurred while setting default style for layer '{layer}': {e}")
+            # Re-raise or handle
+            raise
 
     @handle_http_exceptions(log)
     def validate_style(self, sld: str) -> Optional[dict[str, Any]]:
