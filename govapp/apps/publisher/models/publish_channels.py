@@ -428,27 +428,30 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
     def publish_geoserver_symbology(self, geoserver: gis.geoserver.GeoServer) -> None:
         """Publishes the Symbology to GeoServer if applicable."""
         # Log
-        log.info(f"Publishing '{self}' (Symbology) to GeoServer...")
+        log.info(f"Attempting to publish the style of the CatalogueEntry: [{self.publish_entry.catalogue_entry}] to GeoServer: [{geoserver.service_url}]...")
 
         if hasattr(self.publish_entry.catalogue_entry, 'symbology'):
             # Publish Style to GeoServer
+            symbology = self.publish_entry.catalogue_entry.symbology
+            log.info(f'Symbology: [{symbology}] found in the CatalogueEntry: [{self.publish_entry.catalogue_entry}]')
+
             style_uploaded = geoserver.upload_style(
                 workspace=self.workspace.name,
-                name=self.publish_entry.catalogue_entry.symbology.name,
-                sld=self.publish_entry.catalogue_entry.symbology.sld,
+                style_name=symbology.name,
+                sld=symbology.sld,
             )
-            if style_uploaded:
-                # geoserver.set_style_to_layer(
-                #     self.publish_entry.catalogue_entry.name,
-                #     self.publish_entry.catalogue_entry.symbology.name
-                # )
-                geoserver.set_default_style_to_layer(
-                    self.publish_entry.catalogue_entry.symbology.name,
-                    self.workspace.name,
-                    self.publish_entry.catalogue_entry.name
-                )
+            # if style_uploaded:
+            #     # geoserver.set_style_to_layer(
+            #     #     self.publish_entry.catalogue_entry.name,
+            #     #     self.publish_entry.catalogue_entry.symbology.name
+            #     # )
+            #     geoserver.set_default_style_to_layer(
+            #         self.publish_entry.catalogue_entry.symbology.name,
+            #         self.workspace.name,
+            #         self.publish_entry.catalogue_entry.name
+            #     )
         else:
-            log.info(f'Catalogue Entry: [{self.publish_entry.catalogue_entry}] does not have Symbology.')
+            log.info(f'CatalogueEntry: [{self.publish_entry.catalogue_entry}] does not have Symbology.')
 
     def publish_geoserver_layer(self, geoserver: gis.geoserver.GeoServer) -> None:
         """Publishes the Catalogue Entry to GeoServer if applicable.
@@ -494,8 +497,8 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') and self.publish_entry.catalogue_entry.symbology.name and self.publish_entry.catalogue_entry.symbology.sld else 'generic'
         geoserver.set_default_style_to_layer(
             style_name=style_name,
-            workspace=self.workspace.name,
-            layer=self.publish_entry.catalogue_entry.metadata.name,
+            workspace_name=self.workspace.name,
+            layer_name=self.publish_entry.catalogue_entry.metadata.name,
         )
 
 
