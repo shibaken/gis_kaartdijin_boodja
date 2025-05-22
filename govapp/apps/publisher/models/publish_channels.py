@@ -413,7 +413,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Check Symbology Only Flag
         if symbology_only:
-            log.info(f"Skipping due to {symbology_only=}")
+            log.info(f"Skipping publishing layer due to {symbology_only=}")
             return
 
         self.publish_geoserver_layer(geoserver=geoserver_obj)
