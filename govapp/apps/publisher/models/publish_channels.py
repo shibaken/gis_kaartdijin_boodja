@@ -492,11 +492,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Set Style to the layer
         style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') and self.publish_entry.catalogue_entry.symbology.name and self.publish_entry.catalogue_entry.symbology.sld else 'generic'
-        # geoserver.set_default_style_to_layer(
-        #     style_name=style_name,
-        #     workspace=self.workspace.name,
-        #     layer=self.publish_entry.catalogue_entry.metadata.name,
-        # )
+        geoserver.set_default_style_to_layer(
+            style_name=style_name,
+            workspace=self.workspace.name,
+            layer=self.publish_entry.catalogue_entry.metadata.name,
+        )
 
 
 @reversion.register()
