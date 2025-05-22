@@ -582,9 +582,9 @@ class GeoServer:
     def upload_style(
         self,
         workspace: str,
-        name: str,
+        style_name: str,
         sld: str,
-    ) -> None:
+    ):
         """Uploads an SLD Style to the GeoServer.
 
         Args:
@@ -595,15 +595,16 @@ class GeoServer:
         """
         try:
             if not sld:
+                log.warning(f'SLD is None/empty.  Stop uploading the style: [{style_name}].')
                 return False
 
             # Retrieve Existing Style
-            existing_sld = self.get_style(workspace, name)
+            existing_sld = self.get_style(workspace, style_name)
 
             # Check if Style Exists
             if not existing_sld:
                 # Log
-                log.info(f"Creating Style Metadata file: '{name}.xml' in GeoServer: [{self.service_url}]...")
+                log.info(f"Creating Style Metadata file: '{style_name}.xml' in GeoServer: [{self.service_url}]...")
 
                 # Create the Style
                 url = f"{self.service_url}/rest/workspaces/{workspace}/styles"
@@ -613,8 +614,8 @@ class GeoServer:
                     url=url,
                     json={
                         "style": {
-                            "name": name,
-                            "filename": f"{name}.sld"
+                            "name": style_name,
+                            "filename": f"{style_name}.sld"
                         }
                     },
                     auth=(self.username, self.password),
@@ -628,10 +629,10 @@ class GeoServer:
                 response.raise_for_status()
 
             # Log
-            log.info(f"Creating/Updating the Style '{name}.sld' in the GeoServer: [{self.service_url}]...")
+            log.info(f"Creating/Updating the Style '{style_name}.sld' in the GeoServer: [{self.service_url}]...")
 
             # Upload the Style
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}.xml"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style_name}.xml"
 
             # Perform Request
             response = httpx.put(
@@ -650,7 +651,7 @@ class GeoServer:
 
             return True
         except Exception as e:
-            log.error(f"Unable to create/update the style: [{name}] to the GeoServer: [{self.service_url}]: {e}")
+            log.error(f"Unable to create/update the style: [{style_name}] to the GeoServer: [{self.service_url}]: {e}")
 
     @handle_http_exceptions(log)
     def get_style(
@@ -729,8 +730,8 @@ class GeoServer:
     def set_default_style_to_layer(
         self,
         style_name: str,
-        workspace: str,
-        layer: str,
+        workspace_name: str,
+        layer_name: str,
     ) -> None:
         """Sets the default style for a layer in GeoServer.
 
@@ -741,10 +742,10 @@ class GeoServer:
         """
         try:
             # Log
-            log.info(f"Setting style: [{style_name}] as default to the layer: [{layer}] in the GeoServer: [{self.service_url}]...")
+            log.info(f"Setting style: [{style_name}] as default to the layer: [{layer_name}] in the GeoServer: [{self.service_url}]...")
 
             # Set Default Layer Style
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}.xml"
+            url = f"{self.service_url}/rest/workspaces/{workspace_name}/layers/{layer_name}.xml"
 
             # Perform Request
             # This only works with XML (GeoServer is broken)

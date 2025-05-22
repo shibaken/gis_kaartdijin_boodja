@@ -257,3 +257,10 @@ def _publish_postgis(
         "enabled": layer_subscription.enabled,
     }
     geoserver_obj.upload_layer_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)  # We can use ths function for postgis, too.
+
+    style_name = catalogue_entry.symbology.name if hasattr(catalogue_entry, 'symbology') and catalogue_entry.symbology.name and catalogue_entry.symbology.sld else 'generic'
+    geoserver_obj.set_default_style_to_layer(
+        style_name=style_name,
+        workspace_name=layer_subscription.workspace,
+        layer_name=catalogue_entry.name,
+    )
