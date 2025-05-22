@@ -404,7 +404,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             symbology_only (bool): Whether to publish symbology only.
         """
         # Log
-        log.info(f"Attempting to publish '{self.publish_entry}' to channel '{self.geoserver_pool}'")
+        log.info(f"Attempting to publish [{self.publish_entry}] to the geoserver: [{self.geoserver_pool.url}]...")
 
         geoserver_obj = geoserverWithCustomCreds(self.geoserver_pool.url, self.geoserver_pool.username, self.geoserver_pool.password)
 
@@ -458,7 +458,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             wfs (bool): Whether to enable WFS capabilities.
         """
         # Log
-        log.info(f"Publishing '[{self.publish_entry.catalogue_entry}]' (Layer) to GeoServer: [{geoserver}]...")
+        log.info(f"Publishing '[{self.publish_entry.catalogue_entry}]' (Layer) to the GeoServer: [{geoserver.service_url}]...")
         
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
  
@@ -492,11 +492,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
 
         # Set Style to the layer
         style_name = self.publish_entry.catalogue_entry.symbology.name if hasattr(self.publish_entry.catalogue_entry, 'symbology') and self.publish_entry.catalogue_entry.symbology.name and self.publish_entry.catalogue_entry.symbology.sld else 'generic'
-        geoserver.set_default_style_to_layer(
-            style_name=style_name,
-            workspace=self.workspace.name,
-            layer=self.publish_entry.catalogue_entry.metadata.name,
-        )
+        # geoserver.set_default_style_to_layer(
+        #     style_name=style_name,
+        #     workspace=self.workspace.name,
+        #     layer=self.publish_entry.catalogue_entry.metadata.name,
+        # )
 
 
 @reversion.register()
