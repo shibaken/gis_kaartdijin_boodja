@@ -900,8 +900,9 @@ class LayerSubscriptionViewSet(
             catalogue_entry = serializer.save()
             logger.info(f'New CatalogueEntry: [{catalogue_entry}] has been created with the data: [{data}].')
 
+            from govapp.gis.readers import base
             layer_symbology, created = models.layer_symbology.LayerSymbology.objects.get_or_create(
-                sld='',
+                sld=base.DEFAULT_SLD,
                 catalogue_entry=catalogue_entry,
             )
             logger.info(f'New LayerSymbology: [{layer_symbology}] has been created for the CatalogueEntry: [{catalogue_entry}].')

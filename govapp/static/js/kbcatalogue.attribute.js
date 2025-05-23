@@ -190,7 +190,7 @@ var kbcatalogue_attribute = {
     },
     delete_catalogue_attribute: function(success_callback, error_callback, att_id){
         $.ajax({
-            url: kbcatalogue_attribute.var.catalogue_attribute_url+att_id,
+            url: kbcatalogue_attribute.var.catalogue_attribute_url + att_id + '/',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             type: 'DELETE',
             success: success_callback,
