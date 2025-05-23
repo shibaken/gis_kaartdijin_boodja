@@ -17,6 +17,7 @@ from owslib.wms import WebMapService
 # Internal
 from govapp import settings
 from govapp.apps.catalogue.models import catalogue_entries as catalogue_entries_models
+from govapp.apps.catalogue.models.layer_symbology import LayerSymbology
 from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermission
 from govapp.apps.publisher.models import publish_entries as publish_entries_models
 from govapp.apps.catalogue.models import custodians as custodians_models
@@ -372,6 +373,14 @@ class CatalogueEntriesView(base.TemplateView):
             display_symbology_definition_tab = True
         elif catalogue_entry_obj.type == catalogue_entries_models.CatalogueEntryType.SPATIAL_FILE and not catalogue_entry_obj.file_extension.lower() in ['.tif', '.tiff',]:
             display_symbology_definition_tab = True
+
+        if display_symbology_definition_tab and not hasattr(catalogue_entry_obj, 'symbology'):
+            # This is specifically for backward compatibility. In the old data, there may be a catalogue_entry that should have a symbology but does not have one.
+            from govapp.gis.readers import base
+            layer_symbology, created = LayerSymbology.objects.get_or_create(
+                catalogue_entry=catalogue_entry_obj,
+                sld=base.DEFAULT_SLD
+            )
 
         # Attribute table tab
         display_attribute_table_tab = True
