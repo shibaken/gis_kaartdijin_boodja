@@ -463,6 +463,11 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
         # Log
         log.info(f"Publishing '[{self.publish_entry.catalogue_entry}]' (Layer) to the GeoServer: [{geoserver.service_url}]...")
         
+        if not self.publish_entry.catalogue_entry.active_layer:
+            msg = f'CatalogueEntry: [{self.publish_entry.catalogue_entry}] does not have an active_layer.  Nothing to publish.'
+            log.error(msg)
+            raise FileNotFoundError(msg)
+
         filepath = pathlib.Path(self.publish_entry.catalogue_entry.active_layer.file) 
  
         if self.store_type == StoreType.GEOPACKAGE:
