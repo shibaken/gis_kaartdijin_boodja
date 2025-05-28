@@ -15,6 +15,7 @@ from govapp.apps.catalogue.models import catalogue_entries
 class LayerSymbology(mixins.RevisionedMixin):
     """Model for a Layer Symbology."""
     sld = models.TextField(validators=[validators.validate_xml, validators.validate_sld], blank=True, default='')
+    use_raw = models.BooleanField(default=False)
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
         related_name="symbology",
