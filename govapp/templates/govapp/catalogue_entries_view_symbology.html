@@ -18,7 +18,18 @@
                 <div class='col-12'>
                       {% if has_edit_access is True %}
                             <textarea class="form-control" rows='20' id="catalogue-entry-symbology-definition" >{{ layer_symbology.sld }}</textarea>
-                            &nbsp;
+                            <div>
+                              <label for="raw-parameter">
+                                    <input type="checkbox" id="raw-parameter" name="raw-parameter" value="true">
+                                    Use raw parameter (forgo parsing and encoding)
+                              </label>
+                              <p>
+                                    The raw parameter specifies whether to forgo parsing and encoding of the uploaded style content. 
+                                    When set to “true” the style payload will be streamed directly to GeoServer configuration. 
+                                    Use this setting if the content and formatting of the style is to be preserved exactly. 
+                                    Use this setting with care as it may result in an invalid and unusable style. The default is “false”.
+                              </p>
+                            </div>
                       {% else %}
                             <textarea readonly class="form-control" rows='20' > {{ layer_symbology.sld }}</textarea>
                       {% endif %}

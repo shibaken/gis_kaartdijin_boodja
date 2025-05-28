@@ -307,7 +307,8 @@ var kbcatalogue = {
 
         let catalogue_id = $('#catalogue_entry_id').val();
         let cataloguesymbologydefinition = $('#catalogue-entry-symbology-definition').val();
-        let post_data = {"sld": cataloguesymbologydefinition};
+        let use_raw = $('#raw-parameter').val();
+        let post_data = {"sld": cataloguesymbologydefinition, "use_raw": use_raw};
         let layer_symbology_id = $('#catalogue-entry-symbology-definition-id').val();
         let csrf_token = $("#csrfmiddlewaretoken").val();
         let pagetab = $('#pagetab').val();
