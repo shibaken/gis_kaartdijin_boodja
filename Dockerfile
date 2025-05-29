@@ -9,7 +9,7 @@ ENV SECRET_KEY="ThisisNotRealKey"
 ENV SITE_DOMAIN='dbca.wa.gov.au'
 ENV BPAY_ALLOWED=False
 
-RUN sed 's/archive.ubuntu.com/us.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list
+RUN sed 's/archive.ubuntu.com/en.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list
 RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
 
 
