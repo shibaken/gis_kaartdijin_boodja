@@ -302,19 +302,15 @@ var kbcatalogue = {
         });
     },
 
-    save_symbology: function(save_status) {        
-        console.log('in save_symbology')
-
+    save_symbology: function(save_status) {
         let catalogue_id = $('#catalogue_entry_id').val();
         let cataloguesymbologydefinition = $('#catalogue-entry-symbology-definition').val();
-        let use_raw = $('#raw-parameter').val();
+        let use_raw = $('#raw-parameter').prop("checked")
         let post_data = {"sld": cataloguesymbologydefinition, "use_raw": use_raw};
         let layer_symbology_id = $('#catalogue-entry-symbology-definition-id').val();
         let csrf_token = $("#csrfmiddlewaretoken").val();
         let pagetab = $('#pagetab').val();
         let url = kbcatalogue.var.catalogue_layer_symbology_url + layer_symbology_id + "/"
-
-        console.log({layer_symbology_id})
 
         $.ajax({
             url: url,

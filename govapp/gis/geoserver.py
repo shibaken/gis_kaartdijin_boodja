@@ -584,6 +584,7 @@ class GeoServer:
         workspace: str,
         style_name: str,
         sld: str,
+        use_raw: bool = False
     ):
         """Uploads an SLD Style to the GeoServer.
 
@@ -597,6 +598,10 @@ class GeoServer:
             if not sld:
                 log.warning(f'SLD is None/empty.  Stop uploading the style: [{style_name}].')
                 return False
+            
+            parameters = ''
+            if use_raw:
+                parameters = '?raw=true'
 
             # Retrieve Existing Style
             existing_sld = self.get_style(workspace, style_name)
@@ -607,7 +612,7 @@ class GeoServer:
                 log.info(f"Creating Style Metadata file: '{style_name}.xml' in GeoServer: [{self.service_url}]...")
 
                 # Create the Style
-                url = f"{self.service_url}/rest/workspaces/{workspace}/styles"
+                url = f"{self.service_url}/rest/workspaces/{workspace}/styles{parameters}"
 
                 # Perform Request
                 response = httpx.post(
@@ -632,7 +637,7 @@ class GeoServer:
             log.info(f"Creating/Updating the Style '{style_name}.sld' in the GeoServer: [{self.service_url}]...")
 
             # Upload the Style
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style_name}.xml"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style_name}.xml{parameters}"
 
             # Perform Request
             response = httpx.put(

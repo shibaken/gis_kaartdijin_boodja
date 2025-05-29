@@ -193,8 +193,9 @@ class LayerSubscriptionAdmin(reversion.admin.VersionAdmin):
     get_ssl_mode.short_description = 'SSL Mode'
     
 class LayerSymbologyAdmin(reversion.admin.VersionAdmin):
-    search_fields = ('catalogue_entry__id','sld')
-    list_display = ('id', 'catalogue_entry_link', 'sld')
+    search_fields = ('catalogue_entry__id', 'sld')
+    list_display = ('id', 'catalogue_entry_link', 'use_raw', 'sld',)
+    list_filter = ('use_raw',)
     ordering = ('id',)
     raw_id_fields = ('catalogue_entry',)
 
