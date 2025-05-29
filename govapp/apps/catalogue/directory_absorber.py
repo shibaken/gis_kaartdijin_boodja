@@ -91,7 +91,10 @@ class Absorber:
                 # Decompress the file into the temp folder
                 with compressed_algorithm(path_to_file) as archive:
                     os.makedirs(temp_dir, exist_ok=True)
+                    logger.info(f'Directory: [{temp_dir}] has been made for extract the file: [{path_to_file}]')
+
                     archive.extractall(path=temp_dir)
+                    logger.info(f'The file: [{path_to_file}] has been extracted into the folder: [{temp_dir}]')
 
                 # If extracted, loop through extracted files and process them
                 for extracted_filepath in os.listdir(temp_dir):

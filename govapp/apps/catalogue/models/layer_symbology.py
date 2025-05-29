@@ -15,6 +15,8 @@ from govapp.apps.catalogue.models import catalogue_entries
 class LayerSymbology(mixins.RevisionedMixin):
     """Model for a Layer Symbology."""
     sld = models.TextField(validators=[validators.validate_xml, validators.validate_sld], blank=True, default='')
+    use_raw = models.BooleanField(default=False)  # Ref: https://docs.geoserver.org/main/en/user/rest/api/styles.html#raw
+                                                  # The raw parameter specifies whether to forgo parsing and encoding of the uploaded style content. When set to “true” the style payload will be streamed directly to GeoServer configuration. Use this setting if the content and formatting of the style is to be preserved exactly. Use this setting with care as it may result in an invalid and unusable style. The default is “false”.
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
         related_name="symbology",
