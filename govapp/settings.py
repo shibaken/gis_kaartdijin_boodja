@@ -404,7 +404,7 @@ CATALOGUE_ENTRY_TYPE_TO_DISPLAY = decouple.config("CATALOGUE_ENTRY_TYPE_TO_DISPL
                                                                                                             # SUBSCRIPTION_POSTGIS = 4
                                                                                                             # SUBSCRIPTION_QUERY = 5
 CDDP_USER_PATH = decouple.config("CDDP_USER_PATH", "V:/GIS1-Corporate/Data/")
-ALLOWED_EXTENSIONS_TO_UPLOAD = decouple.config("ALLOWED_EXTENSIONS_TO_UPLOAD", ".zip,.7z,.tar,.rar,.geojson,.json,.tif,.tiff").split(',')
+ALLOWED_EXTENSIONS_TO_UPLOAD = decouple.config("ALLOWED_EXTENSIONS_TO_UPLOAD", ".zip,.7z,.tar,.rar,.geojson,.json,.tif,.tiff,.gpkg").split(',')
 
 
 if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
