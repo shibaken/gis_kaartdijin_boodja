@@ -714,6 +714,9 @@ var kbpublish = {
         if (workspace.length < 1) {
             errors.push("Please choose a workspace.");
         }
+        if (srs.length < 1) {
+            errors.push("Please provide an SRS code.");
+        }
         if (override_bbox) {
             if (!native_crs) errors.push("Please enter Native CRS for original data source");
             
