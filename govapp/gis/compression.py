@@ -57,6 +57,10 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
     # Log
     log.info(f"Attemping to decompress '{file}' if required")
 
+    if file.is_dir():
+        log.info(f"File is a directory, no decompression required: [{file}]")
+        return file
+
     # Check file
     algorithm = get_compressed_algorithm(file)
 
