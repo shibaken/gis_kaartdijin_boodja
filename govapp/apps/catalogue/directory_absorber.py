@@ -103,11 +103,28 @@ class Absorber:
                 logger.info(f'No compressed algorithm detected for the file: [{path_to_file}].')
                 filepaths_to_process.append(path_to_file)
 
-            for filepath in filepaths_to_process:
-                if filepath.lower().endswith(('.tiff', '.tif')):
-                    self.process_tiff_file(filepath)
-                else:
-                    self.process_vector_file(filepath)
+            # for filepath in filepaths_to_process:
+            #     if filepath.lower().endswith(('.tiff', '.tif')):
+            #         self.process_tiff_file(filepath)
+            #     else:
+            #         self.process_vector_file(filepath)
+            tiff_exists = any(pathlib.Path(path).suffix.lower() in ['.tif', '.tiff',] for path in filepaths_to_process)
+            geojson_exists = any(pathlib.Path(path).suffix.lower() in ['.json', '.geojson',] for path in filepaths_to_process)
+            gpkg_exists = any(pathlib.Path(path).suffix.lower() in ['.gpkg', '.geopackage',] for path in filepaths_to_process)
+
+            # Process all the files
+            if tiff_exists or geojson_exists or gpkg_exists:
+                logger.info(f'.tiff/.geojson file(s) detected')
+                for filepath in filepaths_to_process:
+                    if filepath.lower().endswith(('.tiff', '.tif')):
+                        self.process_tiff_file(filepath)
+                    elif filepath.lower().endswith(('.json', '.geojson')):
+                        self.process_vector_file(filepath)
+                    elif filepath.lower().endswith(('.gpkg', '.geopackage')):
+                        self.process_vector_file(filepath)
+            else:
+                # Call the original function for other file types
+                self.process_vector_file(path_to_file)
 
         finally:
             pass
