@@ -51,6 +51,8 @@ class Absorber:
         # # This retrieves and writes the file to our own temporary filesystem
         filepath = self.storage.get_path(path)        
         filepath = pathlib.Path(filepath)
+        logger.info(f"Retrieved [{path}] to [{filepath}]")
+
         # Move the file on the remote storage into the archive area
         # The file is renamed to include a UTC timestamp, to avoid collisions
         import pytz
@@ -65,8 +67,10 @@ class Absorber:
         archive = self.storage.move_to_storage(filepath, storage_path)  # Move file to archive
 
         # # Log
-        logger.info(f"Retrieved '{path}' -> '{filepath}'")
-        logger.info(f"Archived '{filepath}' -> {storage_path} ({archive})")
+        if archive:
+            logger.info(f"Archived successfully: [{filepath}] to [{storage_path}]")
+        else:
+            logger.error(f"Archive failed: [{filepath}] to [{storage_path}]")
 
         self.process_file(storage_path)
         
@@ -96,7 +100,7 @@ class Absorber:
                     archive.extractall(path=temp_dir)
                     logger.info(f'The file: [{path_to_file}] has been extracted into the folder: [{temp_dir}]')
 
-                # If extracted, loop through extracted files and process them
+                # If extracted, loop through extracted files
                 for extracted_filepath in os.listdir(temp_dir):
                     filepaths_to_process.append(os.path.join(temp_dir, extracted_filepath))
             else:
@@ -122,9 +126,11 @@ class Absorber:
                         self.process_vector_file(filepath)
                     elif filepath.lower().endswith(('.gpkg', '.geopackage')):
                         self.process_vector_file(filepath)
+                    else:
+                        logger.warning(f"Unsupported file type for processing: [{filepath}].  Skipping.")
             else:
                 # Call the original function for other file types
-                self.process_vector_file(path_to_file)
+                self.process_vector_file(path_to_file)  # For compressed shapefile, compressed gdb file
 
         finally:
             pass
