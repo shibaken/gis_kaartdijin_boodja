@@ -622,10 +622,8 @@ class LogFileView(UserPassesTestMixin, base.TemplateView):
     def test_func(self):
         """
         Check if the user has permission to access this view.
-        Only staff members (who can access the admin site) are allowed.
-        Superusers are also staff members, so they are included.
         """
-        return self.request.user.is_staff
+        return utils.user_can_view_logs(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
