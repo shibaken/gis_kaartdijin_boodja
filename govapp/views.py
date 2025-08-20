@@ -13,6 +13,8 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.decorators import permission_classes
 from owslib.wms import WebMapService
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 # Internal
 from govapp import settings
@@ -613,9 +615,15 @@ class CDDPQueueView(base.TemplateView):
     template_name = "govapp/cddpqueue.html"
 
 
-class LogFileView(base.TemplateView):
+class LogFileView(UserPassesTestMixin, base.TemplateView):
     # Template name
     template_name = "govapp/logfile.html"
+
+    def test_func(self):
+        """
+        Check if the user has permission to access this view.
+        """
+        return utils.user_can_view_logs(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -675,6 +683,8 @@ def tail_lines(file_path, lines=1000, block_size=1024):
         return [line.decode('utf-8', errors='replace') for line in all_lines[-lines:]]
 
 
+@login_required # Ensures the user is logged in before any other checks.
+@user_passes_test(utils.user_can_view_logs) # Applies custom permission check.
 def get_logs(request):
     """
     API endpoint that returns log updates based on the given offset.

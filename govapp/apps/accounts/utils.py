@@ -405,3 +405,22 @@ def get_file_list(config_path):
                 })
     return file_list, num_of_files
 
+
+
+def user_can_view_logs(user):
+    """
+    Checks if a given user has permission to view the logs.
+    
+    Returns True if the user is a superuser or belongs to one of the
+    groups specified in settings.py.
+    """
+    # 1. The user must be authenticated to have properties like is_superuser or groups.
+    if not user.is_authenticated:
+        return False
+
+    # 2. Grant access immediately if the user is a superuser.
+    if user.is_superuser:
+        return True
+
+    # 3. Check for group membership.
+    return user.groups.filter(name__in=settings.ALLOWED_GROUPS_TO_VIEW_LOGFILE).exists()
