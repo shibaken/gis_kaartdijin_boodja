@@ -2,7 +2,7 @@
 
 {% block content %}
 
-{% if request.user.is_authenticated is True %}
+{% if request.user.is_authenticated and request.user.is_staff %}
       {% include "govapp/common_entity_modal.html" %}
 
       <input type="hidden" id="csrfmiddlewaretoken" name="csrfmiddlewaretoken" value="{{ csrf_token  }}">

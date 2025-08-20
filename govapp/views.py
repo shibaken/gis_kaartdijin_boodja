@@ -13,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.decorators import permission_classes
 from owslib.wms import WebMapService
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 # Internal
 from govapp import settings
@@ -613,9 +614,17 @@ class CDDPQueueView(base.TemplateView):
     template_name = "govapp/cddpqueue.html"
 
 
-class LogFileView(base.TemplateView):
+class LogFileView(UserPassesTestMixin, base.TemplateView):
     # Template name
     template_name = "govapp/logfile.html"
+
+    def test_func(self):
+        """
+        Check if the user has permission to access this view.
+        Only staff members (who can access the admin site) are allowed.
+        Superusers are also staff members, so they are included.
+        """
+        return self.request.user.is_staff
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
