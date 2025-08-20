@@ -310,6 +310,10 @@ CUSTOM_GROUPS = [
     GROUP_CATALOGUE_ADMIN,
     GROUP_API_USER,
 ]
+ALLOWED_GROUPS_TO_VIEW_LOGFILE = [
+    GROUP_ADMINISTRATORS,
+    GROUP_CATALOGUE_ADMIN,
+]
 
 # Cron Jobs
 # https://django-cron.readthedocs.io/en/latest/installation.html
