@@ -283,7 +283,6 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
         log.info(f"Running command: [{' '.join(command)}]")
 
         try:
-            # subprocess.check_call(
             subprocess.run(
                 command,
                 cwd=output_dir,
@@ -295,20 +294,20 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
             log.error(f"The command has reached a timeout after {exc.timeout} for layer {layer_name}.  Stdout before timeout: {exc.stdout}.  Stderr before timeout: {exc.stderr}.")
             raise RuntimeError(f"Timeout error converting custom query for the PostGIS to shapefile: {exc}")
         except subprocess.CalledProcessError as exc:
+            EMPTY_RESULT_MESSAGES = (
+                "returned no rows",
+                "not determine table metadata",
+                "empty table"
+            )
             # Now we handle the expected error. Check if the error message indicates that no records were returned.
-            # The exact message might vary, but "returned no rows" is common.
-            if "returned no rows" in exc.stderr:
-                log.warning("The query returned no records. No shapefile will be created. This is a valid outcome.")
-                # shutil.rmtree(output_dir) # Optional: clean up the empty temp directory
+            if any(msg in exc.stderr for msg in EMPTY_RESULT_MESSAGES):
+                log.warning(f"The query returned no records. No shapefile will be created. This is a valid outcome.  exc.stderr: [{exc.stderr}]")
                 return None  # Return None to indicate success with no output
             else:
-                # This is an unexpected error (e.g., syntax error, connection failure).
-                # Log the detailed error message and re-raise the exception.
-                log.error(f"An unexpected error occurred while running pgsql2shp. Stderr: {exc.stderr}")
-                raise exc  # Re-raise the exception to be handled by the calling function
+                log.error(f"An unexpected error occurred while running pgsql2shp.  exc.stderr: [{exc.stderr}]")
+                return False  # Return False to indicate unexpected error (e.g., syntax error, connection failure)
 
         log.info(f"Success: Converted custom query for the PostGIS to shapefile successfully.")
-        
         compressed_filepath = compression.compress(pathlib.Path(output_dir))
         converted["output_dir"] = output_dir
         converted["compressed_filepath"] = str(compressed_filepath)
