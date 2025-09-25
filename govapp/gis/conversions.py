@@ -272,26 +272,41 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
 
         command = [
             "pgsql2shp",
-            "-f",
-            layer_name,
-            "-h", 
-            str(hostname),
-            "-u", 
-            str(username),
-            "-p",
-            str(port),
-            "-P",
-            str(password),
+            "-f", layer_name,
+            "-h", str(hostname),
+            "-u", str(username),
+            "-p", str(port),
+            "-P", str(password),
             str(database),
-            # str(sqlquery)
             str(cleaned_sqlquery)
         ]
         log.info(f"Running command: [{' '.join(command)}]")
 
-        subprocess.check_call(
-            command,
-            cwd=output_dir
-        )
+        try:
+            # subprocess.check_call(
+            subprocess.run(
+                command,
+                cwd=output_dir,
+                check=True,          # Raise an exception for non-zero exit codes (like check_call)
+                capture_output=True, # Capture stdout and stderr into the result object
+                text=True            # Decode stdout/stderr from bytes to text
+            )
+        except subprocess.TimeoutExpired as exc:
+            log.error(f"The command has reached a timeout after {exc.timeout} for layer {layer_name}.  Stdout before timeout: {exc.stdout}.  Stderr before timeout: {exc.stderr}.")
+            raise RuntimeError(f"Timeout error converting custom query for the PostGIS to shapefile: {exc}")
+        except subprocess.CalledProcessError as exc:
+            # Now we handle the expected error. Check if the error message indicates that no records were returned.
+            # The exact message might vary, but "returned no rows" is common.
+            if "returned no rows" in exc.stderr:
+                log.warning("The query returned no records. No shapefile will be created. This is a valid outcome.")
+                # shutil.rmtree(output_dir) # Optional: clean up the empty temp directory
+                return None  # Return None to indicate success with no output
+            else:
+                # This is an unexpected error (e.g., syntax error, connection failure).
+                # Log the detailed error message and re-raise the exception.
+                log.error(f"An unexpected error occurred while running pgsql2shp. Stderr: {exc.stderr}")
+                raise exc  # Re-raise the exception to be handled by the calling function
+
         log.info(f"Success: Converted custom query for the PostGIS to shapefile successfully.")
         
         compressed_filepath = compression.compress(pathlib.Path(output_dir))
@@ -301,12 +316,6 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
 
         return converted 
 
-    except subprocess.TimeoutExpired as e:
-        log.error(f"The command has reached a timeout. Error converting custom query for the PostGIS to shapefile: {e}")
-        raise RuntimeError(f"Timeout error converting custom query for the PostGIS to shapefile: {e}")
-    except subprocess.CalledProcessError as e:
-        log.error(f"CalledProcessError: Error converting custom query for the PostGIS to shapefile: {e}")
-        raise RuntimeError(f"CalledProcessError converting custom query for the PostGIS to shapefile: {e}")
     except FileNotFoundError as e:
         log.error(f"FileNotFoundError: Error converting custom query for the PostGIS to shapefile: {e}")
         raise RuntimeError(f"FileNotFoundError converting custom query for the PostGIS to shapefile: {e}")
