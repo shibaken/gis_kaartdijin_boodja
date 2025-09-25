@@ -40,6 +40,8 @@ class Scanner:
         catalogue_entry_list = catalogue_entries.CatalogueEntry.objects.filter(
             type=catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
         )
+        for ce in catalogue_entry_list:
+            log.debug(f'{ce}')
 
         for catalogue_entry_obj in catalogue_entry_list:
             log.info(f'Scanning postgres queries for the CatalogueEntry: [{catalogue_entry_obj}]...')
@@ -51,6 +53,7 @@ class Scanner:
             for custom_query_freq in catalogue_entry_obj.custom_query_frequencies.all():  # CatalogueEntry can have 0 or 1 custom_query_frequency.
                 log.info(f'Working on the CustomQueryFrequency: [{catalogue_entry_obj}] for the CatalogueEntry: [{catalogue_entry_obj}]...')
                 generate_shp = False
+                skip_reason = "An unknown scheduling condition was not met."  # Fallback message
                 now_dt = datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))
                 log.info(f'Now datetime is [{now_dt}].')
 
@@ -72,6 +75,8 @@ class Scanner:
                         last_job_run_in_minutes = dt_diff.total_seconds() / 60
                         if last_job_run_in_minutes > custom_query_freq.every_minutes:
                             generate_shp = True
+                        else:
+                            skip_reason = (f"the last run was only {last_job_run_in_minutes:.2f} minutes ago, which is within the {custom_query_freq.every_minutes}-minute schedule.")
 
                     # Every hour scheduler.
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.EVERY_HOURS:
@@ -79,29 +84,39 @@ class Scanner:
                         last_job_run_in_hours = dt_diff.total_seconds() / 3600
                         if last_job_run_in_hours >= custom_query_freq.every_hours:
                             generate_shp = True
+                        else:
+                            skip_reason = (f"the last run was only {last_job_run_in_hours:.2f} hours ago, which is within the {custom_query_freq.every_hours}-hour schedule.")
 
                     # Daily scheduler.
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.DAILY:
                         # Calculate most recent scheduled datetime
                         most_recent_schedule = Scanner.get_most_recent_past_schedule_daily(now_dt, custom_query_freq)
                         generate_shp = Scanner.should_run_scanner(last_job_run, most_recent_schedule)
+                        if not generate_shp:
+                            skip_reason = (f"the last run at {last_job_run.strftime('%Y-%m-%d %H:%M')} is not before the most recent schedule at {most_recent_schedule.strftime('%Y-%m-%d %H:%M')}.")
 
                     # Weekly scedhuler
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.WEEKLY:
                         # Calculate most recent scheduled datetime
                         most_recent_schedule = Scanner.get_most_recent_past_schedule_weekly(now_dt, custom_query_freq)
                         generate_shp = Scanner.should_run_scanner(last_job_run, most_recent_schedule)
+                        if not generate_shp:
+                            skip_reason = (f"the last run at {last_job_run.strftime('%Y-%m-%d %H:%M')} is not before the most recent schedule at {most_recent_schedule.strftime('%Y-%m-%d %H:%M')}.")
 
                     # Monthly Schedule
                     elif custom_query_freq.type == custom_query_frequency.FrequencyType.MONTHLY:  
                         # Calculate most recent scheduled datetime
                         most_recent_schedule = Scanner.get_most_recent_past_schedule_monthly(now_dt, custom_query_freq)
                         generate_shp = Scanner.should_run_scanner(last_job_run, most_recent_schedule)
+                        if not generate_shp:
+                            skip_reason = (f"the last run at {last_job_run.strftime('%Y-%m-%d %H:%M')} is not before the most recent schedule at {most_recent_schedule.strftime('%Y-%m-%d %H:%M')}.")
 
                 if generate_shp:  
                     Scanner.run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq, now_dt)
                     catalogue_entry_obj.force_run_postgres_scanner = False
                     catalogue_entry_obj.save()
+                else:
+                    log.info(f"Skipping postgres_to_shapefile for CatalogueEntry: [{custom_query_freq.catalogue_entry}] because {skip_reason}")
 
         # Log
         log.info("Scanning postgres queries complete!")
@@ -173,6 +188,7 @@ class Scanner:
     
     @staticmethod
     def run_postgres_to_shapefile(catalogue_entry_obj, custom_query_freq=None, now_dt=datetime.now(tz=ZoneInfo(conf.settings.TIME_ZONE))):
+        destination_path = None
         try:
             co = conversions.postgres_to_shapefile(
                 catalogue_entry_obj.name,
@@ -183,20 +199,32 @@ class Scanner:
                 catalogue_entry_obj.layer_subscription.port,
                 catalogue_entry_obj.sql_query
             )
-            # new_path = shutil.move(co["compressed_filepath"], conf.settings.PENDING_IMPORT_PATH)
-            source_path = co["compressed_filepath"]
-            destination_path = os.path.join(conf.settings.PENDING_IMPORT_PATH, os.path.basename(source_path))
-            shutil.copyfile(source_path, destination_path)
-            os.unlink(source_path)
-            log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{destination_path}].')
 
+            if co:
+                log.debug(f'co: {co}')
+                # Case 1: A shapefile was successfully created. 'co' is a dictionary.
+                log.info(f"Shapefile created for CatalogueEntry: [{catalogue_entry_obj}]. Processing file...")
+                source_path = co["compressed_filepath"]
+                destination_path = os.path.join(conf.settings.PENDING_IMPORT_PATH, os.path.basename(source_path))
+                shutil.copyfile(source_path, destination_path)
+                os.unlink(source_path)
+                log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{destination_path}].')
+            elif co is None:
+                # Case 2: The query returned no results. 'co' is None.
+                log.info(f"Custom query for the CatalogueEntry: [{catalogue_entry_obj}] returned no results. No shapefile was created, which is a valid outcome.")
+            elif co is False:
+                # Case 3: Unexpectedly failed to create shapefile
+                log.info(f"Unexpectedly, no shapefile was created for the CatalogueEntry: [{catalogue_entry_obj}].  Check the the previous before.")
+
+            # Step 3: Update the timestamp regardless of the results.  We don't want cron to keep trying to perform the postgres_to_shapefile until success.
+            log.info(f"Updating last_job_run timestamp for CatalogueEntry: [{catalogue_entry_obj}].")
             if custom_query_freq:
                 custom_query_freq.last_job_run = now_dt
                 custom_query_freq.save()
             else:
                 catalogue_entry_obj.custom_query_frequencies.update(last_job_run=now_dt)
-
             return destination_path
+
         except Exception as e:
             log.error(f"ERROR Running POSTGIS to Shapefile conversation for the CatalogueEntry: [{catalogue_entry_obj}]. error: [{e}]")
             # raise
