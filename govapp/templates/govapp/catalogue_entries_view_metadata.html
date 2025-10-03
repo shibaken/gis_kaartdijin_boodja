@@ -11,13 +11,20 @@
           </div>
           </div>         
     </div>
-    <div class="card-body collapse show" id="box2-card-body">        
+    <div class="card-body collapse show" id="box2-card-body">
         <div class='row'>
             <div class='col-3'>
                 Created
             </div>
             <div class='col-9 p-1'>
                     {{ catalogue_layer_metadata.created_at }}
+            </div>
+
+            <div class='col-3'>
+                Updated
+            </div>
+            <div class='col-9 p-1'>
+                    {{ catalogue_layer_metadata.updated_at }}
             </div>
 
             <div class='col-3'>

@@ -13,7 +13,8 @@ from govapp.apps.catalogue.models import catalogue_entries
 @reversion.register()
 class LayerMetadata(mixins.RevisionedMixin):
     """Model for a Layer Metadata."""
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
         related_name="metadata",

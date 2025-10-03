@@ -102,7 +102,7 @@ class LayerAttributeTypeAdmin(reversion.admin.VersionAdmin):
     ordering = ('id',)
     
 class LayerMetadataAdmin(reversion.admin.VersionAdmin):
-    list_display = ('id', 'catalogue_entry_link','created_at',)
+    list_display = ('id', 'catalogue_entry_link','created_at', 'updated_at',)
     ordering = ('id',)
     raw_id_fields = ('catalogue_entry',)
 

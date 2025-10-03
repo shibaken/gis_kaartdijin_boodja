@@ -178,7 +178,7 @@ class LayerSubmission(mixins.RevisionedMixin):
             # Help `mypy` by casting the object to a Layer Metadata
             metadata = self.catalogue_entry.metadata
             metadata = cast(layer_metadata.LayerMetadata, metadata)
-            metadata.created_at = self.created_at
+            # metadata.created_at = self.created_at
             metadata.save()
 
             # Check if Catalogue Entry is Pending
