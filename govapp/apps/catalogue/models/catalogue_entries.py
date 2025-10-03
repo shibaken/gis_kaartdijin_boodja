@@ -475,4 +475,5 @@ class CatalogueEntry(mixins.RevisionedMixin):
            if lm.count() > 0:
                pass
            else:
-               layer_metadata.LayerMetadata.objects.create(catalogue_entry=self,created_at=datetime.now())
+            #    layer_metadata.LayerMetadata.objects.create(catalogue_entry=self,created_at=datetime.now())
+               layer_metadata.LayerMetadata.objects.create(catalogue_entry=self)

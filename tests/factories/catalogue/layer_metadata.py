@@ -13,7 +13,7 @@ from govapp.apps.catalogue import models
 
 class LayerMetadataFactory(factory.django.DjangoModelFactory):
     """Factory for a Layer Metadata."""
-    created_at = factory.Faker("date_time_this_year", tzinfo=datetime.timezone.utc)
+    # created_at = factory.Faker("date_time_this_year", tzinfo=datetime.timezone.utc)
 
     class Meta:
         """Layer Metadata Factory Metadata."""

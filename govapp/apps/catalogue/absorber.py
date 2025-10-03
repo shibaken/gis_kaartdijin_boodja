@@ -145,7 +145,7 @@ class Absorber:
 
         # Create Layer Metadata
         models.layer_metadata.LayerMetadata.objects.create(
-            created_at=metadata.created_at,
+            # created_at=metadata.created_at,
             catalogue_entry=catalogue_entry,
         )
 
