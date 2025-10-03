@@ -14,7 +14,7 @@ from django import conf
 from django.db import transaction
 import py7zr
 import pytz
-from osgeo import gdal
+from osgeo import gdal, osr
 
 # Local
 from govapp.common import local_storage
@@ -158,7 +158,10 @@ class Absorber:
         if dataset is None:
             logger.error(f'Failed to open the file: {str(pathlib_filepath)}')
             return
+
         additional_data = utils.retrieve_additional_data(dataset)
+        if self.is_projcs_unknown(additional_data['Projection']):
+            logger.warning(f"SRS for file '{str(pathlib_filepath)}' is identified as 'unknown'.  This indicates the file lacks a standard EPSG identifier.")
         
         metadata = types.Metadata(
             name=utils.get_first_part_of_filename(pathlib_filepath),  # filename is like: State_Map_Base_FMS.20240606T015418.tif
@@ -177,6 +180,30 @@ class Absorber:
         
         # Clean up GDAL dataset
         dataset = None
+
+    def is_projcs_unknown(self, wkt_string: str) -> bool:
+        """
+        Checks if the PROJCS name in a WKT string is 'unknown'.
+
+        :param wkt_string: The WKT string to check.
+        :return: True if the PROJCS name is 'unknown', False otherwise.
+                Returns False if the string is not a valid PROJCS.
+        """
+        if not wkt_string:
+            return False
+            
+        srs = osr.SpatialReference()
+        # ImportFromWkt can fail on invalid WKT, but GetAttrValue will just return None
+        srs.ImportFromWkt(wkt_string)
+        
+        # Get the name of the PROJCS node (the first attribute, index 0)
+        projcs_name = srs.GetAttrValue('PROJCS', 0)
+        
+        # Check if the name was found and if it is 'unknown' (case-insensitive)
+        if projcs_name and projcs_name.lower() == 'unknown':
+            return True
+            
+        return False
 
     def process_vector_file(self, filepath):
         pathlib_filepath = pathlib.Path(filepath)

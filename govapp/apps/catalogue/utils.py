@@ -12,9 +12,11 @@ import pathlib
 from rest_framework import status
 from rest_framework import response
 from rest_framework.serializers import ValidationError
+from osgeo import osr
 
 # Typing
 from typing import Any, Iterable, Optional
+
 
 
 # Logging
@@ -137,6 +139,12 @@ def retrieve_additional_data(dataset):
 
     # Get the projection information
     projection = dataset.GetProjection()
+    if not projection:
+        dataset = None
+        msg = 'File has no SRS information.  Processing cannot continue.'
+        log.error(msg)
+        raise ValueError(msg)
+    
     metadata_dict['Projection'] = projection
 
     # Corner coordinates (e.g., geographic coordinates of the upper left corner)
