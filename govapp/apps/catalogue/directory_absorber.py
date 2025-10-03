@@ -306,7 +306,7 @@ class Absorber:
         self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, True)
 
         # Create Layer Metadata
-        self.create_layer_metadata(metadata, catalogue_entry)
+        self.create_or_update_layer_metadata(metadata, catalogue_entry)
 
         # Loop through attributes
         if attributes:
@@ -360,12 +360,15 @@ class Absorber:
         # Create New Layer Submission
         layer_submission = self.create_layer_submission(metadata, archive, attributes_hash, attributes_str, catalogue_entry, geojson_path, False)
         
+        # Create Layer Metadata
+        self.create_or_update_layer_metadata(metadata, catalogue_entry)
+
         if catalogue_entry.type == models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY and not catalogue_entry.attributes.count():
             # When subscribing a custom query in PostGIS, only the catalogue_entry object is created initially,
             # and layer_attributes, layer_symbology, and layer_metadata need to be generated later here.
 
-            # Create Layer Metadata
-            self.create_layer_metadata(metadata, catalogue_entry)
+            # # Create Layer Metadata
+            # self.create_layer_metadata(metadata, catalogue_entry)
 
             # Loop through attributes
             if attributes:
@@ -410,7 +413,7 @@ class Absorber:
         )
         return layer_submission
 
-    def create_layer_metadata(self, metadata, catalogue_entry):
+    def create_or_update_layer_metadata(self, metadata, catalogue_entry):
         """
         Creates or retrieves a LayerMetadata object for the given CatalogueEntry.
         If the LayerMetadata object is created, it sets its created_at and additional_data fields.
@@ -421,19 +424,18 @@ class Absorber:
         }
         create_params = {
             'catalogue_entry': catalogue_entry,
-            'created_at': metadata.created_at,
+            # 'created_at': metadata.created_at,
             'additional_data': metadata.additional_data
         }
         layer_metadata, created = models.layer_metadata.LayerMetadata.objects.get_or_create(defaults=create_params, **get_params)
         if created:
+            # New LayerMetadata has been created
             logger.info(f'LayerMetadata: [{layer_metadata}] has been created for the CatalogueEntry: [{catalogue_entry}].')
         else:
-            if not layer_metadata.additional_data:
-                layer_metadata.additional_data = metadata.additional_data
-                layer_metadata.save()
-                logger.info(f'The empty additional_data of the LayerMetadata: [{layer_metadata}] for the CatalogueEntry: [{catalogue_entry}]  has been replaced by the additional_data: [{metadata.additional_data}].')
-            else:
-                logger.warning(f'The additional_data of the existing LayerMetadata: [{layer_metadata}] has a value, but an attempt was made to update it.')
+            # Existing LayerMetadata found
+            layer_metadata.additional_data = metadata.additional_data
+            layer_metadata.save()
+            logger.info(f'The LayerMetadata: [{layer_metadata}] for the CatalogueEntry: [{catalogue_entry}] has been updated by the additional_data: [{metadata.additional_data}].')
 
     def create_layer_attributes(self, attributes, catalogue_entry):
         existing_attributes = catalogue_entry.attributes.all()
