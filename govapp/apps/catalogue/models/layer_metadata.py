@@ -14,6 +14,7 @@ from govapp.apps.catalogue.models import catalogue_entries
 class LayerMetadata(mixins.RevisionedMixin):
     """Model for a Layer Metadata."""
     created_at = models.DateTimeField()
+    updated_at = models.DateTimeField(auto_now=True)
     catalogue_entry = models.OneToOneField(
         catalogue_entries.CatalogueEntry,
         related_name="metadata",
