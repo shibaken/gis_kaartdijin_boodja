@@ -499,7 +499,7 @@ class GeoServer:
         self,
         workspace: str,
         style_name: str,
-        sld: str,
+        new_sld: str,
         use_raw: bool = False
     ):
         """Uploads an SLD Style to the GeoServer.
@@ -511,7 +511,7 @@ class GeoServer:
             sld (str): Style to upload.
         """
         try:
-            if not sld:
+            if not new_sld:
                 log.warning(f'SLD is None/empty.  Stop uploading the style: [{style_name}].')
                 return False
             
@@ -558,7 +558,7 @@ class GeoServer:
             # Perform Request
             response = httpx.put(
                 url=url,
-                content=sld,
+                content=new_sld,
                 headers={"Content-Type": "application/vnd.ogc.sld+xml"},
                 auth=(self.username, self.password),
                 timeout=120.0
