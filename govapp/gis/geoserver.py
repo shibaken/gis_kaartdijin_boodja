@@ -16,6 +16,7 @@ import httpx
 from typing import Any, Optional
 from django.template.loader import render_to_string
 
+from govapp import settings
 from govapp.common.utils import handle_http_exceptions
 
 # Logging
@@ -767,45 +768,145 @@ class GeoServer:
     @handle_http_exceptions(log)
     def delete_layer(self, layer_name) -> None:
         try:
-            layer_details = self.get_layer_details(layer_name)
+            # --- PRE-DELETION: IDENTIFY STYLES TO WATCH ---
+            # First, get the layer details before it's gone.
+            log.info(f"Preparing to delete layer: [{layer_name}]. Fetching details first...")
+            layer_details_response = self.get_layer_details(layer_name)
 
+            if not layer_details_response or 'layer' not in layer_details_response:
+                log.warning(f"Could not retrieve details for layer [{layer_name}]. It might already be deleted. Skipping style cleanup.")
+                # If the layer doesn't exist, there's nothing to do.
+                return
+            
+            layer_data = layer_details_response['layer']
+            styles_to_check = set()
+
+            # Check for the default style and add it to my set.
+            if 'defaultStyle' in layer_data and 'name' in layer_data['defaultStyle']:
+                styles_to_check.add(layer_data['defaultStyle']['name'])
+            
+            # Also check for any other associated styles.
+            if 'styles' in layer_data and 'style' in layer_data.get('styles', {}):
+                for style in layer_data['styles']['style']:
+                    styles_to_check.add(style['name'])
+
+            log.info(f"Layer [{layer_name}] uses the following styles: {list(styles_to_check)}. check them for cleanup after deletion.")
+            # --- END PRE-DELETION ---
+
+            # --- EXECUTION: DELETE LAYER AND STORE ---
             # Delete Layer
-            url = f"{self.service_url}/rest/layers/{layer_name}"
+            log.info(f"Deleting layer resource: [{layer_name}]...")
+            layer_delete_url = f"{self.service_url}/rest/layers/{layer_name}"
             response = httpx.delete(
-                        url=url,
+                        url=layer_delete_url,
                         auth=(self.username, self.password),
                         headers=self.headers_json,
                         timeout=120.0
                     )
-            # Check Response
             response.raise_for_status()
-
             if response.status_code == 200:
                 log.info(f'Layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].')
             else:
                 log.error(f'Failed to delete layer: [{layer_name}].  {response.status_code} {response.text}')
 
             # Delete store
-            workspace_and_layer = layer_details['layer']['resource']['name'].split(':')
-
-            if layer_details['layer']['type'] == 'VECTOR':
-                url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/datastores/{ workspace_and_layer[1] }"
+            workspace_and_layer = layer_details_response['layer']['resource']['name'].split(':')
+            if layer_details_response['layer']['type'] == 'VECTOR':
+                store_delete_url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/datastores/{ workspace_and_layer[1] }"
             else:
-                url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/coveragestores/{ workspace_and_layer[1] }"
-
+                store_delete_url = f"{self.service_url}/rest/workspaces/{ workspace_and_layer[0] }/coveragestores/{ workspace_and_layer[1] }"
             response = httpx.delete(
-                        url=url + '?recurse=true',
+                        url=store_delete_url + '?recurse=true',
                         auth=(self.username, self.password),
                         headers=self.headers_json,
                         timeout=120.0
                     )
-            # Check Response
             response.raise_for_status()
+            log.info(f"Store [{workspace_and_layer[1]}] deleted successfully.")
+            # --- END: EXECUTION: DELETE LAYER AND STORE ---
+
+            # --- POST-DELETION: CLEANUP STYLES ---
+            if not styles_to_check:
+                log.info("No styles were associated with the deleted layer. Cleanup is not needed.")
+                return
+
+            log.info("Checking for orphaned styles...")
+            # get a fresh list of all styles that are still in use.
+            all_currently_used_styles = self.get_used_styles()
+
+            # must not delete the built-in styles by accident.
+            protected_styles = set(settings.GEOSERVER_PROTECTED_STYLES)
+
+            for style_name in styles_to_check:
+                # If a style I was watching is NOT in the new list of used styles, it's an orphan.
+                if style_name not in all_currently_used_styles:
+                    if style_name in protected_styles:
+                        log.warning(f"Style [{style_name}] is a protected style. Skipping deletion.")
+                        continue
+                    
+                    log.info(f"Style [{style_name}] is now orphaned. Proceeding with deletion.")
+                    # Delete style
+                    self.delete_style(style_name)
+                else:
+                    # If it's still in the list, another layer is using it.
+                    log.info(f"Style [{style_name}] is still in use by another layer. It will be kept.")
+            # --- END: POST-DELETION: CLEANUP STYLES ---
 
         except Exception as e:
             log.error(f'Failed to delete layer: [{layer_name}].  {str(e)}')
             raise
 
+    @handle_http_exceptions(log)
+    def get_used_styles(self) -> set[str]:
+        """
+        Get a set of all style names currently used by any layer.
+        """
+        log.info("Checking all layers to determine which styles are in use...")
+        used_styles = set()
+        
+        # First, get a list of all layers.
+        layers = self.get_layers()
+        if not layers:
+            log.info("No layers found in GeoServer.")
+            return used_styles
+        
+        # Iterate through each layer to get its details.
+        for layer_item in layers:
+            layer_name = layer_item['name']
+            
+            details_data = self.get_layer_details(layer_name)
+            
+            if details_data and 'layer' in details_data:
+                layer = details_data['layer']
+                
+                # Add the layer's default style.
+                if 'defaultStyle' in layer and 'name' in layer['defaultStyle']:
+                    used_styles.add(layer['defaultStyle']['name'])
+                
+                # Also add any alternate styles associated with the layer.
+                if 'styles' in layer and 'style' in layer.get('styles', {}):
+                    for style in layer['styles']['style']:
+                        used_styles.add(style['name'])
+
+        log.info(f"Found {len(used_styles)} styles currently in use.")
+        return used_styles
+
+    @handle_http_exceptions(log)
+    def delete_style(self, style_name: str, purge: bool = True) -> None:
+        """
+        Delete a single style by its name from GeoServer.
+        """
+        # I'm making sure to include `purge=true` to remove the SLD file itself.
+        log.info(f"Deleting style: [{style_name}] from the GeoServer: [{self.service_url}]...")
+        url = f"{self.service_url}/rest/styles/{style_name}?purge={str(purge).lower()}"
+        
+        response = httpx.delete(
+            url=url,
+            auth=self.auth,
+            timeout=120.0
+        )
+        response.raise_for_status()
+        log.info(f"Successfully deleted style: [{style_name}] from the geoserver: [{self.service_url}].")
 
 def geoserver() -> GeoServer:
     """Helper constructor to instantiate GeoServer.

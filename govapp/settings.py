@@ -408,7 +408,7 @@ CATALOGUE_ENTRY_TYPE_TO_DISPLAY = decouple.config("CATALOGUE_ENTRY_TYPE_TO_DISPL
                                                                                                             # SUBSCRIPTION_POSTGIS = 4
                                                                                                             # SUBSCRIPTION_QUERY = 5
 CDDP_USER_PATH = decouple.config("CDDP_USER_PATH", "V:/GIS1-Corporate/Data/")
-ALLOWED_EXTENSIONS_TO_UPLOAD = decouple.config("ALLOWED_EXTENSIONS_TO_UPLOAD", ".zip,.7z,.tar,.rar,.geojson,.json,.tif,.tiff,.gpkg").split(',')
+ALLOWED_EXTENSIONS_TO_UPLOAD = decouple.config("ALLOWED_EXTENSIONS_TO_UPLOAD", default=".zip,.7z,.tar,.rar,.geojson,.json,.tif,.tiff,.gpkg").split(',')
 
 
 if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
@@ -425,3 +425,4 @@ if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
 FILE_UPLOAD_PERMISSIONS = None
 LOG_FILE_FETCHING_INTERVAL_MS = decouple.config("LOG_FILE_FETCHING_INTERVAL_MS", default=3000)
 LOG_FILE_NAMES_TO_DISPLAY = decouple.config("LOG_FILE_NAMES_TO_DISPLAY", default="kaartdijin_boodja.log,email.log,cronjob.log").split(',')
+GEOSERVER_PROTECTED_STYLES = decouple.config("GEOSERVER_PROTECTED_STYLES", default='point,line,polygon,raster,generic,geometry').split(',')
