@@ -438,7 +438,7 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
             style_uploaded = geoserver.upload_style(
                 workspace=self.workspace.name,
                 style_name=symbology.name,
-                sld=symbology.sld,
+                new_sld=symbology.sld,
                 use_raw=symbology.use_raw
             )
             # if style_uploaded:
