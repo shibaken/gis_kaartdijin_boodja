@@ -54,56 +54,6 @@ class GeoServer:
     def headers_json(self):
         return {"content-type": "application/json","Accept": "application/json"}
 
-    # @handle_http_exceptions(log)
-    # def retrieve_cached_layer(self, layer_name):
-    #     # Construct URL
-    #     url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
-    #     log.info(f'Retrieving cached layer... url: [{url}]')
-
-    #     # Perform Request
-    #     response = httpx.get(
-    #         url=url,
-    #         auth=(self.username, self.password),
-    #         headers=self.headers_json,
-    #         timeout=120.0
-    #     )
-
-    #     # Check Response
-    #     response.raise_for_status()
-
-    #     try:
-    #         json_data = response.json()
-    #         formatted_json = json.dumps(json_data, indent=4, sort_keys=True, ensure_ascii=False)
-    #         log.info(f"Cached layer: [{layer_name}] retrieved: [{formatted_json}]")
-    #         return json_data
-    #     except ValueError as e:
-    #         log.error(f"Failed to parse JSON response: {e}")
-
-    # @handle_http_exceptions(log)
-    # def get_list_of_cached_layers(self):
-    #     # Construct URL
-    #     url = f"{self.service_url}/gwc/rest/layers.json"
-    #     log.info(f'Getting the list of cached layers... url: [{url}]')  
-
-    #     # Perform Request
-    #     response = httpx.get(
-    #         url=url,
-    #         auth=(self.username, self.password),
-    #         headers=self.headers_json,
-    #         timeout=120.0
-    #     )
-
-    #     # Check Response
-    #     response.raise_for_status()
-
-    #     try:
-    #         json_data = response.json()
-    #         formatted_json = json.dumps(json_data, indent=4, sort_keys=True, ensure_ascii=False)
-    #         log.info(f"List of the cached layers retrieved: [{formatted_json}]")
-    #         return json_data
-    #     except ValueError as e:
-    #         log.error(f"Failed to parse JSON response: {e}")
-
     @handle_http_exceptions(log)
     def create_or_update_cached_layer(self, layer_name, service_type, create_cached_layer=True, expire_server_cache_after_n_seconds=0, expire_client_cache_after_n_seconds=0):
         from govapp.apps.catalogue.models.catalogue_entries import CatalogueEntryType
@@ -137,41 +87,6 @@ class GeoServer:
             log.error(f"Failed to create/update the cached layer: [{layer_name}] in the geoserver: [{self.service_url}].  {response.status_code} {response.text}")
         # Layer exists, proceed with deletion
     
-    # @handle_http_exceptions(log)
-    # def delete_cached_layer(self, layer_name):
-    #     """Delete a cached layer if it exists.
-        
-    #     Args:
-    #         layer_name (str): Name of the layer to delete
-    #     """
-    #     # Check if layer exists
-    #     check_url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
-    #     log.info(f'Checking if cached layer exists... url: [{check_url}]')
-        
-    #     response = httpx.get(
-    #         url=check_url,
-    #         auth=(self.username, self.password),
-    #         headers=self.headers_json,
-    #         timeout=120.0
-    #     )
-        
-    #     if response.status_code == 404:
-    #         log.info(f"Cached layer: [{layer_name}] does not exist in geoserver: [{self.service_url}].")
-    #         return
-            
-    #     # Layer exists, proceed with deletion
-    #     log.info(f"Cached layer: [{layer_name}] exists in geoserver: [{self.service_url}].")
-    #     log.info(f'Deleting the cached layer... url: [{check_url}]')
-    #     response = httpx.delete(
-    #         url=check_url,
-    #         auth=(self.username, self.password),
-    #         headers=self.headers_json,
-    #         timeout=120.0
-    #     )
-        
-    #     response.raise_for_status()
-    #     log.info(f"Cached layer: [{layer_name}] deleted successfully from the geoserver: [{self.service_url}].")
-
     @handle_http_exceptions(log)
     def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):
         # URL to check the existence of the store
@@ -696,40 +611,6 @@ class GeoServer:
 
         # Return None
         return None
-
-    # @handle_http_exceptions(log)
-    # def set_style_to_layer(
-    #     self,
-    #     layer_name,
-    #     style_name
-    # ):
-    #     try:
-    #         # Log
-    #         log.info(f"Setting style '{style_name}' to the layer: [{layer_name}] in GeoServer: [{self.service_url}]...")
-
-    #         # Set Default Layer Style
-    #         url = f"{self.service_url}/rest/layers/{layer_name}/styles"
-
-    #         # Perform Request
-    #         # This only works with XML (GeoServer is broken)
-    #         response = httpx.post(
-    #             url=url,
-    #             # content=f'{"name": "{style_name}", "filename": "{style_name}.sld"}',
-    #             content=json.dumps({"name": style_name, "filename": f"{style_name}.sld"}),
-    #             # headers={"Content-Type": "application/json"},
-    #             headers={"Content-Type": "application/vnd.ogc.sld+xml"},
-    #             auth=(self.username, self.password),
-    #             timeout=120.0
-    #         )
-
-    #         # Log
-    #         log.info(f"GeoServer response: '{response.status_code}: {response.text}'")
-
-    #         # Check Response
-    #         response.raise_for_status()
-    #     except Exception as e:
-    #         log.error(f"Unable to set the default style: [{style_name}] to the GeoServer: [{self.service_url}]: {e}")
-
 
     @handle_http_exceptions(log)
     def set_default_style_to_layer(
