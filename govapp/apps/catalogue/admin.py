@@ -30,7 +30,7 @@ class CatalogueEntryPermissionInline(admin.TabularInline):
 class EmailNotificationInline(admin.TabularInline):
     """Inline admin for Email Notifications."""
     model = EmailNotification
-    fields = ('name', 'type', 'email', 'active')
+    fields = ('name', 'email', 'type', 'active')
     extra = 0
 
 
