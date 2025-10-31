@@ -60,7 +60,7 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
 
     # Send Emails
     emails.CatalogueEntryUpdateSuccessEmail().send_to(
-        *utils.all_administrators(),  # All administrators
+        # *utils.all_administrators(),  # All administrators
         *editors_list,  # All editors
         *entry.email_notifications(manager="on_new_data").filter(active=True).all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").filter(active=True).all(),  # type: ignore[operator]
@@ -127,7 +127,7 @@ def catalogue_entry_lock(entry: "catalogue_entries.CatalogueEntry") -> None:
 
     # Send Emails
     emails.CatalogueEntryLockedEmail().send_to(
-        *utils.all_administrators(),  # All administrators
+        # *utils.all_administrators(),  # All administrators
         *editors_list,  # All editors
         *entry.email_notifications(manager="on_lock").filter(active=True).all(),  # type: ignore[operator]
         *entry.email_notifications(manager="both").filter(active=True).all(),  # type: ignore[operator]
