@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "django_cron",
     "appmonitor_client",
     "django_extensions",
+    "wagov_utils.components.log_viewer",
 ]
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
@@ -432,6 +433,13 @@ if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
 FILE_UPLOAD_PERMISSIONS = None
 LOG_FILE_FETCHING_INTERVAL_MS = decouple.config("LOG_FILE_FETCHING_INTERVAL_MS", default=3000)
 LOG_FILE_NAMES_TO_DISPLAY = decouple.config("LOG_FILE_NAMES_TO_DISPLAY", default="kaartdijin_boodja.log,email.log,cronjob.log").split(',')
+
+# wagov_utils log_viewer component settings
+LOG_VIEWER_LOG_DIR = PATH_TO_LOGS
+LOG_VIEWER_LOG_FILES = LOG_FILE_NAMES_TO_DISPLAY
+LOG_VIEWER_FETCH_INTERVAL_MS = LOG_FILE_FETCHING_INTERVAL_MS
+LOG_VIEWER_BASE_TEMPLATE = 'govapp/base.html'
+LOG_VIEWER_PERMISSION_FUNC = 'govapp.apps.accounts.utils.user_can_view_logs'
 GEOSERVER_PROTECTED_STYLES = decouple.config("GEOSERVER_PROTECTED_STYLES", default='point,line,polygon,raster,generic,geometry').split(',')
 
 EXPIRE_SERVER_CACHE_AFTER_N_SECONDS_DEFAULT = decouple.config("EXPIRE_SERVER_CACHE_AFTER_N_SECONDS_DEFAULT", default=86400)

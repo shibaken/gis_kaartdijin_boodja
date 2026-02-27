@@ -11,11 +11,8 @@ from django import shortcuts
 from django.views.generic import base
 from django.contrib import auth
 from django.utils.decorators import method_decorator
-from django.http import JsonResponse
 from rest_framework.decorators import permission_classes
 from owslib.wms import WebMapService
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.contrib.auth.decorators import login_required, user_passes_test
 from requests.auth import HTTPBasicAuth
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -630,28 +627,6 @@ class CDDPQueueView(base.TemplateView):
     template_name = "govapp/cddpqueue.html"
 
 
-class LogFileView(UserPassesTestMixin, base.TemplateView):
-    # Template name
-    template_name = "govapp/logfile.html"
-
-    def test_func(self):
-        """
-        Check if the user has permission to access this view.
-        """
-        return utils.user_can_view_logs(self.request.user)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Retrieve all files ending with .log from the PATH_TO_LOGS folder.
-        import os, glob
-        # log_pattern = os.path.join(settings.PATH_TO_LOGS, '*.log')
-        # context['log_files'] = sorted([os.path.basename(f) for f in glob.glob(log_pattern)])
-        context['log_files'] = sorted(settings.LOG_FILE_NAMES_TO_DISPLAY)
-        context['log_file_fetching_interval_ms'] = settings.LOG_FILE_FETCHING_INTERVAL_MS
-
-        return context
-
 class GeoServerGroupsView(base.TemplateView):
     template_name = "govapp/usergroups.html"
 
@@ -678,89 +653,6 @@ class GeoServerGroupView(base.TemplateView):
         }
 
         return shortcuts.render(request, self.template_name, context)
-
-def tail_lines(file_path, lines=1000, block_size=1024):
-    """
-    Efficiently retrieves the last `lines` lines from file_path in binary mode.
-    Returns a list of decoded strings.
-    """
-    with open(file_path, 'rb') as f:
-        f.seek(0, os.SEEK_END)
-        file_size = f.tell()
-        data = b""
-        lines_to_find = lines + 1
-        while file_size > 0 and data.count(b'\n') < lines_to_find:
-            increment = min(block_size, file_size)
-            file_size -= increment
-            f.seek(file_size)
-            data = f.read(increment) + data
-        all_lines = data.splitlines(keepends=True)
-        return [line.decode('utf-8', errors='replace') for line in all_lines[-lines:]]
-
-
-@login_required # Ensures the user is logged in before any other checks.
-@user_passes_test(utils.user_can_view_logs) # Applies custom permission check.
-def get_logs(request):
-    """
-    API endpoint that returns log updates based on the given offset.
-
-    - If the GET parameter 'last_position' is provided:
-      Returns all new log lines from that file offset and the updated file pointer.
-    - If 'last_position' is not provided:
-      Returns the last 1000 lines of the log file and the file's current end position.
-    
-    Returns:
-        JsonResponse: A JSON response containing the log lines and current file position.
-    """
-    log_file_name = request.GET.get('log_file_name', settings.LOG_FILE_NAME)
-    log_file_path = os.path.join(settings.BASE_DIR, 'logs', log_file_name)
-    last_position_param = request.GET.get('last_position', None)
-    MAX_NUM_LINES_TO_READ = 10000
-
-    try:
-        lines_count = int(request.GET.get('lines_count', 1000))
-        lines_count = MAX_NUM_LINES_TO_READ if lines_count > MAX_NUM_LINES_TO_READ else lines_count  # Cap the maximum number of lines to 5000
-    except (TypeError, ValueError):
-        lines_count = 1000
-
-    if last_position_param is not None:
-        # Log is already displayed in the frontend, only return new lines
-        try:
-            last_position = int(last_position_param)
-        except ValueError:
-            last_position = 0
-
-        new_lines = []
-        current_position = last_position
-
-        if os.path.exists(log_file_path):
-            with open(log_file_path, 'r') as log:
-                log.seek(last_position)
-                new_lines = log.readlines()
-                current_position = log.tell()
-        else:
-            logger.warning(f"Log file: '[{log_file_path}]' does not exist.")
-
-        return JsonResponse({
-            'new_lines': new_lines,
-            'current_position': current_position,
-        })
-    else:
-        # Initial load.  Return the last X lines of the log file.
-        last_x_lines = []
-        if os.path.exists(log_file_path):
-            last_x_lines = tail_lines(log_file_path, lines=lines_count)
-        else:
-            logger.warning(f"Log file: '[{log_file_path}]' does not exist.")
-
-        # Get the current file pointer (i.e., file size)
-        current_position = os.path.getsize(log_file_path) if os.path.exists(log_file_path) else 0
-
-        return JsonResponse({
-            'log_lines': last_x_lines,
-            'current_position': current_position,
-        })
-
 
 class PurgeTileCacheAPIView(APIView):
     """

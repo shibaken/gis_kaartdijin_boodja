@@ -98,8 +98,7 @@ urlpatterns = [
     urls.path('api/geoserver-config-files/retrieve-file/', FileDownloadView.as_view(), name='geoserver-retrieve-file'),
     urls.path('api/geoserver-config-files/delete-file/', FileDeleteView.as_view(), name='geoserver-delete-config-file'),
 
-    urls.path('api/logcontents/', views.get_logs, name='get_logs'),
-    urls.path('logfile/', views.LogFileView.as_view(), name='logfile'),
+    urls.path('', urls.include('wagov_utils.components.log_viewer.urls')),
     urls.path('api/publish_entries/<int:publish_entry_pk>/purge_cache/', views.PurgeTileCacheAPIView.as_view(), name='purge-publish-entry-cache'),
 ]
 
