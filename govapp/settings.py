@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "govapp.apps.publisher",
     "govapp.apps.swagger",
     "rest_framework",
+    "rest_framework.authtoken",
     "rest_framework_datatables",
     "drf_spectacular",
     "django_filters",
@@ -174,6 +175,10 @@ VERSION_NO = "2.00"
 # https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
