@@ -89,7 +89,10 @@ class GeoServerManagerViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        qs = self.get_queryset().filter(status=status_int)
+        qs = self.get_queryset().filter(
+            status=status_int,
+            queue_type=geoserver_queues.GeoServerQueueType.PUBLISH,
+        )
         serializer = GeoServerManagerLayerSerializer(qs, many=True)
         return Response(serializer.data)
 
