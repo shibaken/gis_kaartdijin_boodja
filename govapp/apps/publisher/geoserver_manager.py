@@ -84,7 +84,7 @@ class GeoServerQueueExcutor:
         log.info(f"Auto-enqueue process completed. Added {count} entries to queue")
 
     def excute(self) -> None:
-        queue_items = self._retrieve_target_items()
+        queue_items = self._retrieve_publish_items()
         log.info(f"Start publishing for {queue_items.count()} geoserver queue items.")
 
         for queue_item in queue_items:
@@ -128,12 +128,14 @@ class GeoServerQueueExcutor:
                 except Exception as save_error:
                     log.error(f"Failed to save error state for queue item pk={queue_item.pk}: {save_error}", exc_info=True)
 
-    def _retrieve_target_items(self):
-        """ Retrieve items that their status is ready or status is on_publishing & started before 30 minutes from now """
-        query = Q(status=GeoServerQueueStatus.READY) | \
-                Q(status=GeoServerQueueStatus.ON_PUBLISHING, started_at__lte=timezone.now() - timezone.timedelta(minutes=QUEUE_EXPIRED_MINUTES))
-        target_items = geoserver_queues.GeoServerQueue.objects.filter(query).order_by('created_at')
-        return target_items
+    def _retrieve_publish_items(self):
+        """ Retrieve PUBLISH items that are READY or stuck in ON_PUBLISHING. """
+        query = (
+            Q(queue_type=GeoServerQueueType.PUBLISH, status=GeoServerQueueStatus.READY) |
+            Q(queue_type=GeoServerQueueType.PUBLISH, status=GeoServerQueueStatus.ON_PUBLISHING,
+              started_at__lte=timezone.now() - timezone.timedelta(minutes=QUEUE_EXPIRED_MINUTES))
+        )
+        return geoserver_queues.GeoServerQueue.objects.filter(query).order_by('created_at')
 
     def _retrieve_purge_cache_items(self):
         """Retrieve PURGE_CACHE items that are READY or stuck in ON_PUBLISHING."""
