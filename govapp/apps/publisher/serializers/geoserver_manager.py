@@ -12,6 +12,7 @@ from govapp.apps.publisher.models.geoserver_queues import GeoServerQueueStatus
 
 # Valid status strings accepted from kb-geoserver-manager
 GEOSERVER_MANAGER_WRITABLE_STATUSES = {
+    "ready": GeoServerQueueStatus.READY,
     "upload_in_progress": GeoServerQueueStatus.UPLOAD_IN_PROGRESS,
     "upload_failed": GeoServerQueueStatus.UPLOAD_FAILED,
     "ready_to_publish": GeoServerQueueStatus.READY_TO_PUBLISH,
