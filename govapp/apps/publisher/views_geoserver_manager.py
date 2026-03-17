@@ -40,6 +40,9 @@ ALLOWED_TRANSITIONS: dict[int, set[int]] = {
         GeoServerQueueStatus.PUBLISHED,
         GeoServerQueueStatus.PUBLISH_FAILED,
     },
+    # Retry transitions
+    GeoServerQueueStatus.UPLOAD_FAILED: {GeoServerQueueStatus.READY},
+    GeoServerQueueStatus.PUBLISH_FAILED: {GeoServerQueueStatus.READY_TO_PUBLISH},
 }
 
 CHUNK_SIZE = 8 * 1024  # 8 KB
