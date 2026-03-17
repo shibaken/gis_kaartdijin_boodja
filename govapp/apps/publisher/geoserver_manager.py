@@ -134,6 +134,35 @@ class GeoServerQueueExcutor:
                 Q(status=GeoServerQueueStatus.ON_PUBLISHING, started_at__lte=timezone.now() - timezone.timedelta(minutes=QUEUE_EXPIRED_MINUTES))
         target_items = geoserver_queues.GeoServerQueue.objects.filter(query).order_by('created_at')
         return target_items
+
+    def _retrieve_purge_cache_items(self):
+        """Retrieve PURGE_CACHE items that are READY or stuck in ON_PUBLISHING."""
+        query = (
+            Q(queue_type=GeoServerQueueType.PURGE_CACHE, status=GeoServerQueueStatus.READY) |
+            Q(queue_type=GeoServerQueueType.PURGE_CACHE, status=GeoServerQueueStatus.ON_PUBLISHING,
+              started_at__lte=timezone.now() - timezone.timedelta(minutes=QUEUE_EXPIRED_MINUTES))
+        )
+        return geoserver_queues.GeoServerQueue.objects.filter(query).order_by('created_at')
+
+    def excute_purge_cache(self) -> None:
+        """Execute only PURGE_CACHE type queue items."""
+        queue_items = self._retrieve_purge_cache_items()
+        log.info(f"Start purge-cache for {queue_items.count()} geoserver queue items.")
+
+        for queue_item in queue_items:
+            try:
+                self._init_excuting(queue_item=queue_item)
+                self._purge_cache_for_queue_item(queue_item)
+                self._update_result(queue_item=queue_item)
+            except Exception as e:
+                log.error(f"Unexpected error while processing purge-cache queue item pk={queue_item.pk}: {e}", exc_info=True)
+                self.result_status = GeoServerQueueStatus.FAILED
+                self.result_success = False
+                self._add_publishing_log(f"Unexpected error: {e}")
+                try:
+                    self._update_result(queue_item=queue_item)
+                except Exception as save_error:
+                    log.error(f"Failed to save error state for queue item pk={queue_item.pk}: {save_error}", exc_info=True)
     
     def _init_excuting(self, queue_item):
         queue_item.change_status(GeoServerQueueStatus.ON_PUBLISHING)

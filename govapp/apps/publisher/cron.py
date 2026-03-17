@@ -28,6 +28,17 @@ class PublishGeoServerQueueCronJob(django_cron.CronJobBase):
         management.call_command("geoserver_execute_queue")
 
 
+class PurgeCacheQueueCronJob(django_cron.CronJobBase):
+    """Cron Job for processing PURGE_CACHE queue items."""
+    schedule = django_cron.Schedule(run_every_mins=conf.settings.PUBLISH_GEOSERVER_QUEUE_PERIOD_MINS)
+    code = "govapp.publisher.geoserver_purge_cache_queue"
+
+    def do(self) -> None:
+        """Execute PURGE_CACHE items in the geoserver queue."""
+        log.info("Purge cache queue cron job triggered, running...")
+        management.call_command("geoserver_purge_cache_queue")
+
+
 class GeoServerLayerHealthcheckCronJob(django_cron.CronJobBase):
     schedule = django_cron.Schedule(run_every_mins=conf.settings.GEOSERVER_LAYER_HEALTH_CHECK_PERIOD_MINS)
     code = 'geoserver.publisher.geoserver_layer_health_check_cron_job'

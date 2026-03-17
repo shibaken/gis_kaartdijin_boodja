@@ -344,6 +344,7 @@ CRON_CLASSES = [
     "govapp.apps.catalogue.cron.DirectoryScannerCronJob",
     # Disabled: GeoServer publishing is now handled by kb-geoserver-manager
     # "govapp.apps.publisher.cron.PublishGeoServerQueueCronJob",
+    "govapp.apps.publisher.cron.PurgeCacheQueueCronJob",
     "govapp.apps.publisher.cron.GeoServerLayerHealthcheckCronJob",
     "govapp.apps.publisher.cron.GeoServerSyncLayersCronJob", # layers
     "govapp.apps.publisher.cron.GeoServerSyncRulesCronJob", # rules
