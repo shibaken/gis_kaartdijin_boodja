@@ -89,9 +89,9 @@ class GeoServerQueue(mixins.RevisionedMixin):
 
     def change_status(self, status:GeoServerQueueStatus) -> None:
         self.status = status
-        if status == GeoServerQueueStatus.ON_PUBLISHING:
+        if status in (GeoServerQueueStatus.ON_PUBLISHING, GeoServerQueueStatus.UPLOAD_IN_PROGRESS):
             self.started_at = timezone.now()
-        elif status == GeoServerQueueStatus.PUBLISHED:
+        elif status in (GeoServerQueueStatus.PUBLISHED, GeoServerQueueStatus.READY_TO_PUBLISH):
             self.completed_at = timezone.now()
         self.save()
         

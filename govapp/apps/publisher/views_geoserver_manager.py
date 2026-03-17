@@ -66,6 +66,8 @@ class GeoServerManagerViewSet(viewsets.GenericViewSet):
 
     queryset = geoserver_queues.GeoServerQueue.objects.select_related(
         "publish_entry__catalogue_entry"
+    ).prefetch_related(
+        "publish_entry__catalogue_entry__layers"
     )
     serializer_class = GeoServerManagerLayerSerializer
     authentication_classes = [TokenAuthentication]
