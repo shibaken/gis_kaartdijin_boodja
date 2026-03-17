@@ -21,10 +21,16 @@ if TYPE_CHECKING:
 UserModel = auth.get_user_model()
 
 class GeoServerQueueStatus(models.IntegerChoices):
+    # Legacy statuses used by the internal GeoServer queue executor
     READY = 0
     ON_PUBLISHING = 1
     PUBLISHED = 2
     FAILED = 3
+    # Statuses for the kb-geoserver-manager workflow
+    UPLOAD_IN_PROGRESS = 4
+    UPLOAD_FAILED = 5
+    READY_TO_PUBLISH = 6
+    PUBLISH_FAILED = 7
 
 
 class GeoServerQueueType(models.IntegerChoices):
