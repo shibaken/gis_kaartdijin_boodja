@@ -94,6 +94,9 @@ class GeoServerQueue(mixins.RevisionedMixin):
         elif status in (GeoServerQueueStatus.PUBLISHED, GeoServerQueueStatus.READY_TO_PUBLISH):
             self.completed_at = timezone.now()
         self.save()
+        if status == GeoServerQueueStatus.PUBLISHED:
+            self.publish_entry.published_at = timezone.now()
+            self.publish_entry.save(update_fields=["published_at"])
         
     def __str__(self) -> str:
         """Provides a string representation of the object.
