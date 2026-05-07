@@ -315,6 +315,7 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
             "-u", str(username),
             "-p", str(port),
             "-P", str(password),
+            "-s", "7844",
             str(database),
             str(cleaned_sqlquery)
         ]
