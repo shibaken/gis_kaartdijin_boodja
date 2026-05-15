@@ -71,7 +71,9 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
         return file  # Return the original filepath
     log.info(f"Detected compression: [{algorithm}]")
 
-    _gis_tmp = pathlib.Path(decouple.config("GIS_TMP_DIR", default="/app/tmp")) / "gis_processing"
+    # Use local container storage for extraction. Archive tools (py7zr etc.)
+    # call os.utime() after extracting each file, which Azure File Share rejects.
+    _gis_tmp = pathlib.Path(decouple.config("GIS_WORK_DIR", default="/tmp")) / "gis_processing"
     _gis_tmp.mkdir(parents=True, exist_ok=True)
 
     log.info(f"Preparing decompressing the file: [{file}]...")

@@ -167,8 +167,10 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
-        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
-        output_filepath = pathlib.Path(output_dir) / f"{layer}.geojson"
+        # Use local container storage (_WORK_DIR) to avoid Azure File Share
+        # rejecting utime/chmod calls made by ogr2ogr on the output file.
+        work_dir = tempfile.mkdtemp(dir=_WORK_DIR)
+        output_filepath = pathlib.Path(work_dir) / f"{layer}.geojson"
 
         command = [
             "ogr2ogr",
@@ -186,7 +188,13 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
         )
         log.info(f"Success: Converted file: [{filepath}], layer: [{layer}] to GeoJSON successfully.")
 
-        converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
+        # Move converted file from local storage to final destination (Azure).
+        final_dir = tempfile.mkdtemp(dir=_TMP_BASE)
+        final_filepath = pathlib.Path(final_dir) / output_filepath.name
+        shutil.move(str(output_filepath), str(final_filepath), copy_function=shutil.copyfile)
+        log.info(f"Moved converted file to final storage: [{final_filepath}]")
+
+        converted = {"uncompressed_filepath": final_filepath.parent, "full_filepath": final_filepath, "orignal_filepath": filepath}
         log.info(f'converted: [{converted}]')
 
         return converted
@@ -223,9 +231,11 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
+        # Use local container storage (_WORK_DIR) to avoid Azure File Share
+        # rejecting utime/chmod calls made by ogr2ogr on the output file.
         # Here we double up on the `layer.shp` to ensure its in a directory
-        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
-        output_filepath = pathlib.Path(output_dir) / f"{layer}.shp"
+        work_dir = tempfile.mkdtemp(dir=_WORK_DIR)
+        output_filepath = pathlib.Path(work_dir) / f"{layer}.shp"
         output_filepath.mkdir(parents=True, exist_ok=True)
         output_filepath = output_filepath / f"{layer}.shp"
 
@@ -243,9 +253,15 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
         subprocess.check_call(command)
         log.info(f"Success: Converted file [{filepath}], layer: [{layer}] to Shapefile successfully.")
 
-        # Compress!
+        # Compress on local storage, then move the zip to Azure.
+        # shutil.make_archive also sets timestamps; doing it locally avoids Azure utime errors.
         compressed_filepath = compression.compress(output_filepath.parent)
-        converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent}
+        final_dir = tempfile.mkdtemp(dir=_TMP_BASE)
+        final_compressed_filepath = pathlib.Path(final_dir) / compressed_filepath.name
+        shutil.move(str(compressed_filepath), str(final_compressed_filepath), copy_function=shutil.copyfile)
+        log.info(f"Moved compressed file to final storage: [{final_compressed_filepath}]")
+
+        converted = {"compressed_filepath": final_compressed_filepath, "uncompressed_filepath": output_filepath.parent}
         log.info(f'converted: [{converted}]')
 
         return converted
@@ -283,9 +299,11 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
+        # Use local container storage (_WORK_DIR) to avoid Azure File Share
+        # rejecting utime/chmod calls made by ogr2ogr on the output file.
         # Here we double up on the `layer.gdb` to ensure its in a directory
-        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
-        output_filepath = pathlib.Path(output_dir) / f"{layer}.gdb"
+        work_dir = tempfile.mkdtemp(dir=_WORK_DIR)
+        output_filepath = pathlib.Path(work_dir) / f"{layer}.gdb"
         output_filepath.mkdir(parents=True, exist_ok=True)
         output_filepath = output_filepath / f"{layer}.gdb"
 
@@ -306,9 +324,15 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
         subprocess.check_call(command)
         log.info(f"Success: Converted file [{filepath}], layer: [{layer}] to GeoDatabase successfully.")
 
-        # Compress!
+        # Compress on local storage, then move the zip to Azure.
+        # shutil.make_archive also sets timestamps; doing it locally avoids Azure utime errors.
         compressed_filepath = compression.compress(output_filepath.parent)
-        converted = {"compressed_filepath" : compressed_filepath, "uncompressed_filepath": output_filepath.parent, "orignal_filepath": filepath, "filepath_before_flatten": filepath_before_flatten}
+        final_dir = tempfile.mkdtemp(dir=_TMP_BASE)
+        final_compressed_filepath = pathlib.Path(final_dir) / compressed_filepath.name
+        shutil.move(str(compressed_filepath), str(final_compressed_filepath), copy_function=shutil.copyfile)
+        log.info(f"Moved compressed file to final storage: [{final_compressed_filepath}]")
+
+        converted = {"compressed_filepath": final_compressed_filepath, "uncompressed_filepath": output_filepath.parent, "orignal_filepath": filepath, "filepath_before_flatten": filepath_before_flatten}
         log.info(f'converted: [{converted}]')
 
         # Return
@@ -333,7 +357,9 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
 
     try:
         converted = {}
-        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
+        # Use local container storage (_WORK_DIR) to avoid Azure File Share
+        # rejecting utime/chmod calls made by pgsql2shp on the output file.
+        work_dir = tempfile.mkdtemp(dir=_WORK_DIR)
         cleaned_sqlquery = sqlquery.replace('\n', ' ')
 
         command = [
@@ -351,7 +377,7 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
         try:
             subprocess.run(
                 command,
-                cwd=output_dir,
+                cwd=work_dir,
                 check=True,          # Raise an exception for non-zero exit codes (like check_call)
                 capture_output=True, # Capture stdout and stderr into the result object
                 text=True            # Decode stdout/stderr from bytes to text
@@ -374,9 +400,14 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
                 return False  # Return False to indicate unexpected error (e.g., syntax error, connection failure)
 
         log.info(f"Success: Converted custom query for the PostGIS to shapefile successfully.")
-        compressed_filepath = compression.compress(pathlib.Path(output_dir))
-        converted["output_dir"] = output_dir
-        converted["compressed_filepath"] = str(compressed_filepath)
+        # Compress on local storage, then move the zip to Azure.
+        compressed_filepath = compression.compress(pathlib.Path(work_dir))
+        final_dir = tempfile.mkdtemp(dir=_TMP_BASE)
+        final_compressed_filepath = pathlib.Path(final_dir) / compressed_filepath.name
+        shutil.move(str(compressed_filepath), str(final_compressed_filepath), copy_function=shutil.copyfile)
+        log.info(f"Moved compressed file to final storage: [{final_compressed_filepath}]")
+        converted["output_dir"] = work_dir
+        converted["compressed_filepath"] = str(final_compressed_filepath)
         log.info(f'converted: [{converted}]')
 
         return converted 
