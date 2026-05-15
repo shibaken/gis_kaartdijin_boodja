@@ -8,12 +8,15 @@ import subprocess  # noqa: S404
 import tempfile
 from osgeo import gdal
 
+# Third-Party
+import decouple
+
 # Local
 from govapp.gis import compression
 
 
 # Temporary directory base for all conversions
-_TMP_BASE = pathlib.Path("/app/tmp")
+_TMP_BASE = pathlib.Path(decouple.config("GIS_TMP_DIR", default="/app/tmp"))
 _TMP_BASE.mkdir(parents=True, exist_ok=True)
 
 # Logging
