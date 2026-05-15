@@ -8,9 +8,16 @@ import subprocess  # noqa: S404
 import tempfile
 from osgeo import gdal
 
+# Third-Party
+import decouple
+
 # Local
 from govapp.gis import compression
 
+
+# Temporary directory base for all conversions
+_TMP_BASE = pathlib.Path(decouple.config("GIS_TMP_DIR", default="/app/tmp"))
+_TMP_BASE.mkdir(parents=True, exist_ok=True)
 
 # Logging
 log = logging.getLogger(__name__)
@@ -34,7 +41,7 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
-        output_dir = tempfile.mkdtemp()
+        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
         output_filepath = pathlib.Path(output_dir) / f"{layer}.gpkg"
 
         # --- START: NEW LOGIC TO DETECT RASTER/VECTOR ---
@@ -139,7 +146,7 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
-        output_dir = tempfile.mkdtemp()
+        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
         output_filepath = pathlib.Path(output_dir) / f"{layer}.geojson"
 
         command = [
@@ -196,7 +203,7 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
 
         # Construct Output Filepath
         # Here we double up on the `layer.shp` to ensure its in a directory
-        output_dir = tempfile.mkdtemp()
+        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
         output_filepath = pathlib.Path(output_dir) / f"{layer}.shp"
         output_filepath.mkdir(parents=True, exist_ok=True)
         output_filepath = output_filepath / f"{layer}.shp"
@@ -256,7 +263,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 
         # Construct Output Filepath
         # Here we double up on the `layer.gdb` to ensure its in a directory
-        output_dir = tempfile.mkdtemp()
+        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
         output_filepath = pathlib.Path(output_dir) / f"{layer}.gdb"
         output_filepath.mkdir(parents=True, exist_ok=True)
         output_filepath = output_filepath / f"{layer}.gdb"
@@ -305,7 +312,7 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
 
     try:
         converted = {}
-        output_dir = tempfile.mkdtemp()
+        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
         cleaned_sqlquery = sqlquery.replace('\n', ' ')
 
         command = [

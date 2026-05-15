@@ -11,6 +11,7 @@ import datetime
 import os
 
 # Third-Party
+import decouple
 import py7zr
 import pytz
 import rarfile
@@ -70,14 +71,14 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
         return file  # Return the original filepath
     log.info(f"Detected compression: [{algorithm}]")
 
-    if not os.path.exists('/tmp/gis_processing/'):
-        os.makedirs('/tmp/gis_processing/')
+    _gis_tmp = pathlib.Path(decouple.config("GIS_TMP_DIR", default="/app/tmp")) / "gis_processing"
+    _gis_tmp.mkdir(parents=True, exist_ok=True)
 
     log.info(f"Preparing decompressing the file: [{file}]...")
     timestamp_str = datetime.datetime.now(pytz.utc).strftime("%Y%m%dT%H%M%S")
 
     # Construct Path for Extraction
-    extracted_path = pathlib.Path("/tmp/gis_processing/extracted_" + file.stem + "_" + timestamp_str)
+    extracted_path = _gis_tmp / ("extracted_" + file.stem + "_" + timestamp_str)
     log.info(f"Decompressing the file:[{file}] to the folder: [{extracted_path}]...")
 
     # Decompress
