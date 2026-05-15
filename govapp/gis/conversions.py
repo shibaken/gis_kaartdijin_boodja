@@ -4,6 +4,7 @@
 # Standard
 import logging
 import pathlib
+import shutil
 import subprocess  # noqa: S404
 import tempfile
 from osgeo import gdal
@@ -15,9 +16,14 @@ import decouple
 from govapp.gis import compression
 
 
-# Temporary directory base for all conversions
+# Final storage directory for converted files (may be a network/Azure share)
 _TMP_BASE = pathlib.Path(decouple.config("GIS_TMP_DIR", default="/app/tmp"))
 _TMP_BASE.mkdir(parents=True, exist_ok=True)
+
+# Local working directory for GDAL conversion (must be on local container storage,
+# NOT a network share — SQLite/GeoPackage requires local filesystem locking)
+_WORK_DIR = pathlib.Path(decouple.config("GIS_WORK_DIR", default="/tmp"))
+_WORK_DIR.mkdir(parents=True, exist_ok=True)
 
 # Logging
 log = logging.getLogger(__name__)
@@ -41,8 +47,11 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
-        output_dir = tempfile.mkdtemp(dir=_TMP_BASE)
-        output_filepath = pathlib.Path(output_dir) / f"{layer}.gpkg"
+        # Use local container storage (_WORK_DIR) for the GDAL conversion.
+        # SQLite/GeoPackage requires local filesystem locking and does not
+        # work reliably on network shares (e.g. Azure File Share).
+        work_dir = tempfile.mkdtemp(dir=_WORK_DIR)
+        output_filepath = pathlib.Path(work_dir) / f"{layer}.gpkg"
 
         # --- START: NEW LOGIC TO DETECT RASTER/VECTOR ---
         is_raster = filepath.suffix.lower() in ['.tif', '.tiff']
@@ -105,7 +114,16 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
         #     f"Please inspect the generated GeoPackage file at: {output_filepath}"
         # )
 
-        converted = {"uncompressed_filepath": output_filepath.parent, "full_filepath": output_filepath,  "orignal_filepath": filepath}
+        # Move the converted file from local working storage to the final
+        # destination (_TMP_BASE, which may be an Azure/network share).
+        # The move happens only after conversion is fully complete, so
+        # SQLite never operates on a network path.
+        final_dir = tempfile.mkdtemp(dir=_TMP_BASE)
+        final_filepath = pathlib.Path(final_dir) / output_filepath.name
+        shutil.move(str(output_filepath), str(final_filepath))
+        log.info(f"Moved converted file to final storage: [{final_filepath}]")
+
+        converted = {"uncompressed_filepath": final_filepath.parent, "full_filepath": final_filepath, "orignal_filepath": filepath}
         log.info(f'converted: [{converted}]')
 
         return converted
