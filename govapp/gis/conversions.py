@@ -120,10 +120,10 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
         # SQLite never operates on a network path.
         final_dir = tempfile.mkdtemp(dir=_TMP_BASE)
         final_filepath = pathlib.Path(final_dir) / output_filepath.name
-        # Use shutil.copy (not copy2) as the fallback copy function to avoid
-        # attempting to set file timestamps (utime) on the destination, which
-        # Azure File Share does not permit.
-        shutil.move(str(output_filepath), str(final_filepath), copy_function=shutil.copy)
+        # Use shutil.copyfile (not copy2 or copy) as the fallback copy function.
+        # Azure File Share rejects both utime (timestamps) and chmod (permissions),
+        # so we must use copyfile which copies file content only.
+        shutil.move(str(output_filepath), str(final_filepath), copy_function=shutil.copyfile)
         log.info(f"Moved converted file to final storage: [{final_filepath}]")
 
         converted = {"uncompressed_filepath": final_filepath.parent, "full_filepath": final_filepath, "orignal_filepath": filepath}
