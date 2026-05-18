@@ -41,9 +41,14 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
     """
     log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoPackage...")
 
+    work_dir = None
+    decompressed_dir = None
     try:
         # Decompress and Flatten if Required
+        _before_decompress = filepath
         filepath = compression.decompress(filepath)
+        if filepath != _before_decompress and filepath.is_dir():
+            decompressed_dir = filepath
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
@@ -147,6 +152,11 @@ def to_geopackage(filepath: pathlib.Path, layer: str, catalogue_name: str, expor
     except Exception as e:
         log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to GeoPackage: {e}", exc_info=True)
         raise
+    finally:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        if decompressed_dir and decompressed_dir.is_dir():
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
 
 
 def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', export_method: str = '') -> dict:
@@ -161,9 +171,14 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
     """
     log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoJSON...")
 
+    work_dir = None
+    decompressed_dir = None
     try:
         # Decompress and Flatten if Required
+        _before_decompress = filepath
         filepath = compression.decompress(filepath)
+        if filepath != _before_decompress and filepath.is_dir():
+            decompressed_dir = filepath
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
@@ -211,6 +226,11 @@ def to_geojson(filepath: pathlib.Path, layer: str, catalogue_name: str = '', exp
     except Exception as e:
         log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to GeoJSON: {e}")
         raise
+    finally:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        if decompressed_dir and decompressed_dir.is_dir():
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
 
 
 def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> dict:
@@ -225,9 +245,14 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
     """
     log.info(f"Converting file '{filepath}' layer: '{layer}' to ShapeFile...")
 
+    work_dir = None
+    decompressed_dir = None
     try:
         # Decompress and Flatten if Required
+        _before_decompress = filepath
         filepath = compression.decompress(filepath)
+        if filepath != _before_decompress and filepath.is_dir():
+            decompressed_dir = filepath
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
@@ -267,17 +292,28 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
         return converted
 
     except subprocess.TimeoutExpired as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
         log.error(f"The command has reached a 30-minute timeout.  Error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
         raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to Shapefile")
     except subprocess.CalledProcessError as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
         log.error(f"Error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
         raise RuntimeError(f"Error converting file '{filepath}' layer: '{layer}' to Shapefile")
     except FileNotFoundError as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
         log.error(f"FileNotFoundError: Error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
         raise RuntimeError(f"FileNotFoundError converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
     except Exception as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
         log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
         raise
+    finally:
+        if decompressed_dir and decompressed_dir.is_dir():
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
 
 
 def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> dict:
@@ -292,9 +328,14 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
     """
     log.info(f"Converting file '{filepath}' layer: '{layer}' to GeoDatabase...")
 
+    work_dir = None
+    decompressed_dir = None
     try:
         # Decompress and Flatten if Required
+        _before_decompress = filepath
         filepath = compression.decompress(filepath)
+        if filepath != _before_decompress and filepath.is_dir():
+            decompressed_dir = filepath
         filepath_before_flatten = filepath
         filepath = compression.flatten(filepath)
 
@@ -339,15 +380,31 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
         return converted
 
     except subprocess.TimeoutExpired as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        if decompressed_dir and decompressed_dir.is_dir():
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
         log.error(f"The command has reached a 30-minute timeout. Error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
         raise RuntimeError(f"Timeout error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
     except subprocess.CalledProcessError as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        if decompressed_dir and decompressed_dir.is_dir():
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
         log.error(f"CalledProcessError: Error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
         raise RuntimeError(f"CalledProcessError converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
     except FileNotFoundError as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        if decompressed_dir and decompressed_dir.is_dir():
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
         log.error(f"FileNotFoundError: Error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
         raise RuntimeError(f"FileNotFoundError converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
     except Exception as e:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        if decompressed_dir and decompressed_dir.is_dir():
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
         log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to GeoDatabase: {e}")
         raise
 
@@ -355,6 +412,7 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str, sqlquery: str) -> dict: 
     log.info(f"Converting custom query for the PostGIS to shapefile...")
 
+    work_dir = None
     try:
         converted = {}
         # Use local container storage (_WORK_DIR) to avoid Azure File Share
@@ -418,6 +476,9 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
     except Exception as e:
         log.error(f"Unexpected error converting custom query for the PostGIS to shapefile: {e}")
         raise
+    finally:
+        if work_dir:
+            shutil.rmtree(work_dir, ignore_errors=True)
 
 
 def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
