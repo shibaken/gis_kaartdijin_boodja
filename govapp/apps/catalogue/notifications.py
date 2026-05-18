@@ -74,13 +74,15 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
             filepath=filepath,
             layer=entry.metadata.name
         )
-
-        if settings.WEBHOOK_ENABLED:
-            # Send Webhook Posts
-            webhooks.post_geojson(
-                *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-                geojson=geojson['full_filepath'],
-            )
+        try:
+            if settings.WEBHOOK_ENABLED:
+                # Send Webhook Posts
+                webhooks.post_geojson(
+                    *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
+                    geojson=geojson['full_filepath'],
+                )
+        finally:
+            shutil.rmtree(geojson['uncompressed_filepath'], ignore_errors=True)
 
         # Delete local temporary copy of file if we can
         shutil.rmtree(filepath.parent, ignore_errors=True)

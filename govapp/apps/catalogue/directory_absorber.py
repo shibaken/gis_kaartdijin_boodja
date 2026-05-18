@@ -5,6 +5,7 @@ import datetime
 import logging
 import pathlib
 import os
+import shutil
 from typing import Optional
 import uuid
 import zipfile
@@ -556,7 +557,10 @@ class Absorber:
             filepath=pathlib.Path(filepath),
             layer=catalogue_entry.name
         )
-        return self.move_file_to_storage_with_uniquename(path_from['full_filepath'])
+        try:
+            return self.move_file_to_storage_with_uniquename(path_from['full_filepath'])
+        finally:
+            shutil.rmtree(path_from['uncompressed_filepath'], ignore_errors=True)
 
     def move_file_to_storage_with_uniquename(self, path_from:pathlib.Path):
         # Create a new folder hierarchically named to today's date(./yyyy/mm/dd) in the data storage when it dosen't exist

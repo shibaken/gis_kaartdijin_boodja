@@ -562,14 +562,17 @@ class GeoServerPublishChannel(mixins.RevisionedMixin):
                 catalogue_name=self.publish_entry.catalogue_entry.name,
                 export_method='geoserver'
             )
-                
-            # Push Layer to GeoServer
-            geoserver.upload_geopackage(
-                workspace=self.workspace.name,
-                layer=self.publish_entry.catalogue_entry.metadata.name,
-                filepath=geopackage['full_filepath'],
-                memory_map_size=self.gpkg_memory_map_size
-            )
+            geopackage_dir = pathlib.Path(geopackage['full_filepath']).parent
+            try:
+                # Push Layer to GeoServer
+                geoserver.upload_geopackage(
+                    workspace=self.workspace.name,
+                    layer=self.publish_entry.catalogue_entry.metadata.name,
+                    filepath=geopackage['full_filepath'],
+                    memory_map_size=self.gpkg_memory_map_size
+                )
+            finally:
+                shutil.rmtree(geopackage_dir, ignore_errors=True)
         elif self.store_type == StoreType.GEOTIFF:
             workspace_name = self.workspace.name
             layer_name = self.publish_entry.catalogue_entry.metadata.name

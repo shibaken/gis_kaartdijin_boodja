@@ -208,6 +208,7 @@ class Scanner:
                 destination_path = os.path.join(conf.settings.PENDING_IMPORT_PATH, os.path.basename(source_path))
                 shutil.copyfile(source_path, destination_path)
                 os.unlink(source_path)
+                shutil.rmtree(os.path.dirname(source_path), ignore_errors=True)
                 log.info(f'CatalogueEntry: [{catalogue_entry_obj}] has been converted to the shapefile: [{destination_path}].')
             elif co is None:
                 # Case 2: The query returned no results. 'co' is None.

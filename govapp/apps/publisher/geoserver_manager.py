@@ -3,8 +3,10 @@
 # Standard
 import logging
 import pathlib
+import shutil
 
 # Third-Party
+import decouple
 import requests
 from requests.auth import HTTPBasicAuth
 from django.conf import settings
@@ -355,7 +357,9 @@ class GeoServerQueueExcutor:
 
         # The filename on the shared volume matches the basename of the converted file.
         # kb_geoserver_manager places the file at: <VOLUME_PATH>/<workspace>/<name>/<filename>
-        filename = pathlib.Path(queue_item.converted_file_path).name
+        converted_path = pathlib.Path(queue_item.converted_file_path)
+        filename = converted_path.name
+        _tmp_base = pathlib.Path(decouple.config("GIS_TMP_DIR", default="/app/tmp"))
 
         channels = queue_item.publish_entry.geoserver_channels.filter(active=True)
         if not channels.exists():
@@ -368,6 +372,8 @@ class GeoServerQueueExcutor:
                 f"[{queue_item.publish_entry.name}] GeoServer configuration failed: "
                 f"no GeoServerPublishChannel found."
             )
+            if converted_path.parent.is_relative_to(_tmp_base):
+                shutil.rmtree(converted_path.parent, ignore_errors=True)
             return
 
         publish_succeeded_for_any = False
@@ -466,6 +472,8 @@ class GeoServerQueueExcutor:
         if publish_succeeded_for_any:
             queue_item.publish_entry.published_at = timezone.now()
             queue_item.publish_entry.save(update_fields=['published_at'])
+        if converted_path.parent.is_relative_to(_tmp_base):
+            shutil.rmtree(converted_path.parent, ignore_errors=True)
 
     def _update_result(self, queue_item: geoserver_queues.GeoServerQueue):
         queue_item.status = self.result_status
