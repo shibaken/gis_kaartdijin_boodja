@@ -60,9 +60,9 @@ var kbgeoserverweb = {
                         };
                         return map[status] || 'bg-secondary';
                     }}},
-                    {started_at:'text'}, 
+                    {started_at:'datetime'}, 
                     {publishing_result:'text'}, 
-                    {created_at:'text'}
+                    {created_at:'datetime'}
                 ]);
                 if(response.results == 0){
                     table.message_tbody(tbody, "No results found");
