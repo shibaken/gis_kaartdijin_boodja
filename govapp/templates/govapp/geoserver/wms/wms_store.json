@@ -1,16 +1,27 @@
+{% autoescape off %}
 {
     "wmsStore" : {
-        "name":	"{{name|escape}}",
-        "description":	"{{description|escape}}", 
+        "name": "{{ name|escape }}",
+        "description": "{{ description|default:""|escape }}", 
         "type": "WMS",
-        "enabled":	{{ enabled }},    
-        "capabilitiesURL":	"{{capability_url|escape}}",
-        "user":	"{{username|escape}}",
-        "password" :	"{{password|escape}}",    
-        "maxConnections":	"{{geoserver_setting.max_connections}}",    
-        "readTimeout":	"{{geoserver_setting.read_timeout}}",
-        "connectTimeout": "{{geoserver_setting.connect_timeout}}",
-        "metadata": {},
-        "workspace": {},
+        "enabled": {{ enabled|yesno:"true,false" }},    
+        "capabilitiesURL": "{{ capability_url }}",
+        "user": "{{ username|default:""|escape }}",
+        "password": "{{ password|default:""|escape }}",    
+        "maxConnections": "{{ geoserver_setting.max_connections|default:"6" }}",    
+        "readTimeout": "{{ geoserver_setting.read_timeout|default:"10000" }}",
+        "connectTimeout": "{{ geoserver_setting.connect_timeout|default:"10000" }}",
+        "connectionParameters": {
+            "entry": [
+                {"@key": "WMSVERSION", "$": "1.1.1"},
+                {"@key": "WMS_VERSION", "$": "1.1.1"},
+                {"@key": "selectedWmsVersion", "$": "1.1.1"},
+                {"@key": "USE_HTTP_GET_FOR_GET_MAP", "$": "true"}
+            ]
+        },
+        "workspace": {
+            "name": "{{ workspace|escape }}"
+        }
     }
 }
+{% endautoescape %}

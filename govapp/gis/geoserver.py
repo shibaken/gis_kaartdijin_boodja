@@ -774,7 +774,7 @@ class GeoServer:
         # Check response status
         response.raise_for_status()
 
-    def upload_store_wms(self, workspace, store_name, context) -> None:
+    def upload_store_wms_old(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.
 
         Args:
@@ -794,9 +794,39 @@ class GeoServer:
         
         # Check Response
         response.raise_for_status()
+    
+    # geoserver.py
 
     @handle_http_exceptions(log)
-    def upload_layer_wms(
+    def upload_store_wms(self, workspace, store_name, context) -> None:
+        log.info(f"Uploading WMS Store [{store_name}] via XML...")
+        
+        # Use XML template instead of JSON
+        data = render_to_string('govapp/geoserver/wms/wms_store.xml', context)
+        
+        # URL for checking and creating
+        store_get_url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store_name}"
+        
+        with httpx.Client(auth=self.auth) as client:
+            # Check existence
+            response = client.get(store_get_url, headers=self.headers_json)
+            
+            if response.status_code == 404:
+                # POST (Create)
+                url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores"
+                log.info(f"POST url: {url}")
+                # Content-Type must be application/xml
+                resp = client.post(url=url, headers={"Content-Type": "application/xml"}, data=data)
+            else:
+                # PUT (Update)
+                log.info(f"PUT url: {store_get_url}")
+                resp = client.put(url=store_get_url, headers={"Content-Type": "application/xml"}, data=data)
+            
+            log.info(f"GeoServer WMS Store response: [{resp.status_code}]")
+            resp.raise_for_status()
+
+    @handle_http_exceptions(log)
+    def upload_layer_wms_old(
             self,
             workspace,
             store_name,
@@ -860,6 +890,342 @@ class GeoServer:
             
             # Check Response
             response.raise_for_status()        
+
+    @handle_http_exceptions(log)
+    def upload_layer_wms_old2(
+            self,
+            workspace,
+            store_name,
+            layer_name,
+            context
+        ) -> None:
+        """
+        Uploads a WMS Layer configuration to GeoServer. 
+        This method ensures all coordinate values are valid numbers to prevent 
+        JSON syntax errors and forces bounding boxes to bypass GeoServer's 
+        remote discovery process, which often causes 500 errors.
+        """
+        
+        # Helper function to ensure numeric values for the JSON template
+        def force_float(value, default_fallback):
+            """Returns float value if possible, otherwise returns the fallback."""
+            try:
+                if value is None or value == "":
+                    return default_fallback
+                return float(value)
+            except (TypeError, ValueError):
+                return default_fallback
+
+        # Default Bounding Box for Western Australia (Project-safe fallback)
+        WA_BOUNDS = {'minx': 112.9, 'maxx': 129.0, 'miny': -35.2, 'maxy': -13.5}
+
+        # 1. Identity & Basic Properties
+        context['name'] = context.get('name') or layer_name
+        context['description'] = context.get('description') or ""
+        context['abstract'] = context.get('abstract') or ""
+        context['enabled'] = context.get('enabled') if context.get('enabled') is not None else True
+        context['crs'] = context.get('crs') or 'EPSG:4326'
+
+        # 2. Coordinate Sanitization
+        # We MUST provide numeric values. Empty values like "minx": , break GeoServer's JSON parser.
+        
+        # Native Bounding Box
+        nbb = context.get('nativeBoundingBox') or {}
+        context['nativeBoundingBox'] = {
+            'minx': force_float(nbb.get('minx'), WA_BOUNDS['minx']),
+            'maxx': force_float(nbb.get('maxx'), WA_BOUNDS['maxx']),
+            'miny': force_float(nbb.get('miny'), WA_BOUNDS['miny']),
+            'maxy': force_float(nbb.get('maxy'), WA_BOUNDS['maxy']),
+            'crs': nbb.get('crs') or context['crs']
+        }
+
+        # LatLon Bounding Box (Always EPSG:4326 for GeoServer)
+        lbb = context.get('latLonBoundingBox') or {}
+        context['latLonBoundingBox'] = {
+            'minx': force_float(lbb.get('minx'), WA_BOUNDS['minx']),
+            'maxx': force_float(lbb.get('maxx'), WA_BOUNDS['maxx']),
+            'miny': force_float(lbb.get('miny'), WA_BOUNDS['miny']),
+            'maxy': force_float(lbb.get('maxy'), WA_BOUNDS['maxy']),
+            'crs': 'EPSG:4326'
+        }
+
+        # Ensure keywords is a list
+        if 'keywords' not in context or not isinstance(context['keywords'], list):
+            context['keywords'] = []
+
+        # 3. Rendering
+        log.info(f"Uploading WMS Layer [{layer_name}] to workspace [{workspace}]...")
+        xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
+        log.debug(f"Payload for GeoServer: {xml_data}")
+
+        # 4. GeoServer REST Execution
+        # Construct the URL for checking and deleting the layer
+        layer_url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store_name}/wmslayers/{layer_name}"
+
+        # Step A: Check if the layer exists and delete it if it does
+        # Using a fresh client to ensure auth is handled correctly
+        with httpx.Client(auth=self.auth) as client:
+            response = client.get(url=layer_url, headers=self.headers_json, timeout=120.0)
+            
+            if response.status_code == 200:
+                log.info(f"Layer [{layer_name}] already exists. Deleting before re-creation...")
+                del_resp = client.delete(url=layer_url + "?recurse=true", timeout=120.0)
+                del_resp.raise_for_status()
+            elif response.status_code != 404:
+                # Log any unexpected status code other than 'Not Found'
+                log.warning(f"Unexpected status during layer check: {response.status_code}")
+
+            # Step B: Create the layer via POST
+            create_url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store_name}/wmslayers/"
+            log.info(f"Performing POST request to create the WMS layer at: {create_url}")
+            
+            response = client.post(
+                url=create_url,
+                auth=self.auth,
+                data=xml_data,
+                headers=self.headers_json,
+                timeout=300.0
+            )
+
+        # Log Result
+        log.info(f"GeoServer creation response: [{response.status_code}]: {response.text}")
+        
+        # Check for errors
+        response.raise_for_status()
+
+    @handle_http_exceptions(log)
+    def upload_layer_wms_old3(
+            self,
+            workspace,
+            store_name,
+            layer_name,
+            context
+        ) -> None:
+        """
+        Uploads a WMS Layer configuration to GeoServer (Cascaded WMS).
+        Hardened to prevent 500 errors by ensuring valid numeric BBOX values 
+        and bypassing remote discovery.
+        """
+        # --- INTERNAL DATA PREPARATION ---
+        def force_float(value, fallback):
+            """Ensures the returned value is a float. Returns fallback if invalid."""
+            try:
+                if value is None or value == "":
+                    return fallback
+                return float(value)
+            except (TypeError, ValueError):
+                return fallback
+
+        # Identity & Basic metadata
+        context['name'] = context.get('name') or layer_name
+        context['description'] = context.get('description') or ""
+        context['abstract'] = context.get('abstract') or ""
+        context['enabled'] = context.get('enabled') if context.get('enabled') is not None else True
+        
+        # Coordinate System Handling
+        crs = str(context.get('crs', 'EPSG:4326')).upper()
+        context['crs'] = crs
+        context['override_bbox'] = True 
+
+        # Define Western Australia extent fallbacks
+        WA_DEG = {'minx': 112.9, 'maxx': 129.0, 'miny': -35.2, 'maxy': -13.5}
+        WA_MET = {'minx': 12500000.0, 'maxx': 14400000.0, 'miny': -4200000.0, 'maxy': -1500000.0}
+
+        # Determine fallback based on CRS unit (Meter-based check)
+        is_meter = any(m in crs for m in ["3857", "3112", "785", "283", "311"])
+        FB = WA_MET if is_meter else WA_DEG
+
+        # Sanitize nativeBoundingBox
+        nbb = context.get('nativeBoundingBox') or {}
+        context['nativeBoundingBox'] = {
+            'minx': force_float(nbb.get('minx'), FB['minx']),
+            'maxx': force_float(nbb.get('maxx'), FB['maxx']),
+            'miny': force_float(nbb.get('miny'), FB['miny']),
+            'maxy': force_float(nbb.get('maxy'), FB['maxy']),
+            'crs': nbb.get('crs') or crs
+        }
+
+        # Sanitize latLonBoundingBox (Always EPSG:4326)
+        lbb = context.get('latLonBoundingBox') or WA_DEG
+        context['latLonBoundingBox'] = {
+            'minx': force_float(lbb.get('minx'), WA_DEG['minx']),
+            'maxx': force_float(lbb.get('maxx'), WA_DEG['maxx']),
+            'miny': force_float(lbb.get('miny'), WA_DEG['miny']),
+            'maxy': force_float(lbb.get('maxy'), WA_DEG['maxy']),
+            'crs': 'EPSG:4326'
+        }
+
+        if 'keywords' not in context or not isinstance(context['keywords'], list):
+            context['keywords'] = []
+
+        # Rendering
+        log.info(f"Preparing XML for WMS Layer [{layer_name}]")
+        xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
+
+        # --- EXECUTION ---
+        # Properly encode names to handle spaces and special characters in URLs
+        from urllib.parse import quote
+        encoded_workspace = quote(workspace)
+        encoded_store = quote(store_name)
+        encoded_layer = quote(layer_name)
+
+        # Base URL for this specific layer
+        layer_url = f"{self.service_url}/rest/workspaces/{encoded_workspace}/wmsstores/{encoded_store}/wmslayers/{encoded_layer}"
+
+        with httpx.Client(auth=self.auth) as client:
+            # Step 1: Check existence
+            log.info(f"Checking existence of layer: {layer_url}")
+            response = client.get(url=layer_url, headers=self.headers_json, timeout=120.0)
+            
+            if response.status_code == 200:
+                log.info(f"Layer [{layer_name}] exists. Deleting with recurse=true...")
+                # Separate URL and Params to avoid syntax errors and ensure correct encoding
+                del_resp = client.delete(
+                    url=layer_url, 
+                    params={"recurse": "true"}, 
+                    timeout=120.0
+                )
+                del_resp.raise_for_status()
+            
+            # Step 2: Create the layer
+            create_url = f"{self.service_url}/rest/workspaces/{encoded_workspace}/wmsstores/{encoded_store}/wmslayers/"
+            log.info(f"Creating WMS layer via POST at: {create_url}")
+            
+            response = client.post(
+                url=create_url,
+                data=xml_data,
+                headers=self.headers_json,
+                timeout=300.0
+            )
+
+        log.info(f"GeoServer creation response: [{response.status_code}]: {response.text}")
+        response.raise_for_status()
+
+    def reload_store(self, workspace, store_name, store_type='wmsstores'):
+        """
+        Forces GeoServer to reload the store configuration and clear its cache.
+        This is a non-destructive way to ensure new settings (like WMS version) are applied.
+        """
+        from urllib.parse import quote
+        enc_ws = quote(str(workspace))
+        enc_st = quote(str(store_name))
+        
+        # API: POST /rest/workspaces/<ws>/<store_type>/<store>/reload
+        url = f"{self.service_url}/rest/workspaces/{enc_ws}/{store_type}/{enc_st}/reload"
+        log.info(f"Reloading {store_name} to refresh metadata cache...")
+        
+        with httpx.Client(auth=self.auth) as client:
+            response = client.post(url, headers=self.headers_json, timeout=60.0)
+            # 200 or 201 means success. We don't raise for status to avoid crashing if reload is not supported.
+            return response.status_code
+    
+    def reload_catalog(self) -> int:
+        """
+        Forces GeoServer to reload the entire catalog and clear all caches.
+        This is necessary to fix stuck WMS store metadata.
+        """
+        url = f"{self.service_url}/rest/reload"
+        log.info("Performing global GeoServer catalog reload...")
+        with httpx.Client(auth=self.auth) as client:
+            response = client.post(url, headers=self.headers_json, timeout=60.0)
+            return response.status_code
+
+    @handle_http_exceptions(log)
+    def upload_layer_wms(
+            self,
+            workspace,
+            store_name,
+            layer_name,
+            context
+        ) -> None:
+        """
+        Uploads a WMS Layer configuration. 
+        Hardened to prevent JSON syntax errors and handle various coordinate systems.
+        """
+        from urllib.parse import quote
+
+        # 1. Helper function to ensure numeric values (prevents '"minx": ,' syntax error)
+        def f_float(v, fallback):
+            """Ensures the returned value is a float. Returns fallback if invalid."""
+            try:
+                if v is None or v == "":
+                    return fallback
+                return float(v)
+            except (TypeError, ValueError):
+                return fallback
+
+        # 2. Coordinate System & Unit Protection
+        # We must provide correct units (meters vs degrees) to prevent GeoServer 
+        # from attempting remote re-discovery due to "impossible" bounds.
+        crs = str(context.get('crs', 'EPSG:4326')).upper()
+        context['crs'] = crs
+        context['override_bbox'] = True 
+
+        # Default Western Australia bounds (Safe fallbacks for this project)
+        WA_DEG = {'minx': 112.9, 'maxx': 129.0, 'miny': -35.2, 'maxy': -13.5}
+        WA_MET = {'minx': 12500000.0, 'maxx': 14400000.0, 'miny': -4200000.0, 'maxy': -1500000.0}
+
+        # Select fallback based on units (e.g. EPSG:3857 uses meters)
+        is_meter = any(m in crs for m in ["3857", "3112", "785", "283"])
+        FB = WA_MET if is_meter else WA_DEG
+
+        # 3. Sanitize and Force numeric values in context before rendering
+        nbb = context.get('nativeBoundingBox') or {}
+        context['nativeBoundingBox'] = {
+            'minx': f_float(nbb.get('minx'), FB['minx']),
+            'maxx': f_float(nbb.get('maxx'), FB['maxx']),
+            'miny': f_float(nbb.get('miny'), FB['miny']),
+            'maxy': f_float(nbb.get('maxy'), FB['maxy']),
+            'crs': nbb.get('crs') or crs
+        }
+        
+        # latLonBoundingBox is ALWAYS geographic degrees (EPSG:4326)
+        context['latLonBoundingBox'] = {
+            'minx': f_float(None, WA_DEG['minx']),
+            'maxx': f_float(None, WA_DEG['maxx']),
+            'miny': f_float(None, WA_DEG['miny']),
+            'maxy': f_float(None, WA_DEG['maxy']),
+            'crs': 'EPSG:4326'
+        }
+
+        # 4. Identity Consistency
+        context['name'] = str(layer_name)
+        context['enabled'] = context.get('enabled') if context.get('enabled') is not None else True
+
+        # Render XML using the sanitized context
+        log.info(f"Rendering WMS Layer XML for: [{layer_name}]")
+        xml_data = render_to_string('govapp/geoserver/wms/wms_layer.json', context)
+
+        # 5. EXECUTION: Encode identifiers for URL safety (handling spaces/brackets)
+        enc_ws = quote(str(workspace))
+        enc_st = quote(str(store_name))
+        enc_ly = quote(str(layer_name))
+
+        # Endpoint for a specific layer resource
+        layer_url = f"{self.service_url}/rest/workspaces/{enc_ws}/wmsstores/{enc_st}/wmslayers/{enc_ly}"
+
+        with httpx.Client(auth=self.auth) as client:
+            # Step A: Check if the layer exists and delete if it does
+            check_resp = client.get(url=layer_url, headers=self.headers_json, timeout=120.0)
+            if check_resp.status_code == 200:
+                log.info(f"Layer [{layer_name}] exists. Deleting for fresh creation...")
+                client.delete(url=layer_url, params={"recurse": "true"}, timeout=120.0).raise_for_status()
+
+            # Step B: Create the layer via POST to the collection URL
+            create_url = f"{self.service_url}/rest/workspaces/{enc_ws}/wmsstores/{enc_st}/wmslayers/"
+            log.info(f"Creating WMS layer via POST at: {create_url}")
+            
+            response = client.post(
+                url=create_url,
+                data=xml_data,
+                headers=self.headers_json,
+                timeout=300.0
+            )
+
+        # Log Result
+        log.info(f"GeoServer response: [{response.status_code}]: {response.text}")
+        response.raise_for_status()
+
 
     def upload_store_postgis(self, workspace, store_name, context) -> None:
         """Uploads a Geopackage file to the GeoServer.

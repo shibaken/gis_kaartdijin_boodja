@@ -3,6 +3,8 @@
 # Standard
 import logging
 
+import httpx
+
 # Third-Party
 
 # Local
@@ -146,35 +148,151 @@ def _publish_wfs(
     geoserver_obj.upload_layer_wfs(workspace=layer_subscription.workspace.name, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
 
 
-def _publish_wms(
+def _publish_wms(geoserver_publish_channel: "GeoServerPublishChannel"):
+    """Publishes a WMS layer. Works generically for any WMS provider."""
+    catalogue_entry = geoserver_publish_channel.publish_entry.catalogue_entry
+    layer_subscription = catalogue_entry.layer_subscription
+    workspace_name = layer_subscription.workspace.name
+    safe_store_name = layer_subscription.name.replace(" ", "_")
+    
+    # 1. Instantiate GeoServer with all 3 required arguments
+    pool = geoserver_publish_channel.geoserver_pool
+    geoserver_obj = geoserver.geoserverWithCustomCreds(pool.url, pool.username, pool.password)
+
+    # log.info(f"Force deleting old store [{safe_store_name}] to clear bad metadata...")
+    # try:
+    #     delete_url = f"{geoserver_obj.service_url}/rest/workspaces/{workspace_name}/wmsstores/{safe_store_name}?recurse=true"
+    #     with httpx.Client(auth=geoserver_obj.auth) as client:
+    #         client.delete(delete_url, timeout=30.0)
+    # except Exception as e:
+    #     log.debug(f"Delete failed (probably not exists), safe to ignore: {e}")
+    from urllib.parse import quote
+    for name_to_del in [layer_subscription.name, safe_store_name]:
+        try:
+            enc_name = quote(name_to_del)
+            del_url = f"{geoserver_obj.service_url}/rest/workspaces/{workspace_name}/wmsstores/{enc_name}?recurse=true"
+            with httpx.Client(auth=geoserver_obj.auth) as client:
+                client.delete(del_url, timeout=30.0)
+        except Exception:
+            pass
+    
+    # 2. Universal URL Normalization
+    # Clean the URL by removing existing query parameters
+    url = layer_subscription.url.split('?')[0].rstrip('/')
+    
+    # Fix endpoints for specific known strict servers (like DEA)
+    if "ows.dea.ga.gov.au" in url.lower() and not url.lower().endswith("/wms"):
+        url = f"{url}/wms"
+    
+    # Standard OGC parameters: works for both old and new servers.
+    # We use WMS 1.1.1 as the most widely compatible baseline.
+    # url = f"{url}?SERVICE=WMS&VERSION=1.1.1"
+    # url = f"{url}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities"
+
+
+    context_store = {
+        "name": safe_store_name, # Use safe store name with underscores to avoid GeoServer issues
+        "capability_url": url,
+        "workspace": workspace_name,
+        "enabled": layer_subscription.enabled,
+        "username": layer_subscription.username,
+        "password": layer_subscription.userpassword,
+        "geoserver_setting": {
+            "max_connections": layer_subscription.max_connections,
+            "read_timeout": layer_subscription.read_timeout,
+            "connect_timeout": layer_subscription.connection_timeout,
+        }
+    }
+    # Create or Update Store
+    geoserver_obj.upload_store_wms(workspace=workspace_name, store_name=layer_subscription.name, context=context_store)
+
+    # Allow GeoServer catalog to sync
+    import time
+    time.sleep(1)
+    # geoserver_obj.reload_store(workspace=workspace_name, store_name=safe_store_name) 
+    geoserver_obj.reload_catalog()
+    time.sleep(2)
+
+    # 3. Layer Context: Use mapping_name as the safe ID (slug) for ALL systems
+    context_layer = {
+        "name": catalogue_entry.mapping_name, # Slug (e.g. 'ga_s2m_fmc_mosaic')
+        "title": catalogue_entry.name,        # Human readable (e.g. 'Fuel Moisture...')
+        "native_name": catalogue_entry.mapping_name,
+        "crs": geoserver_publish_channel.srs,
+        "native_crs": geoserver_publish_channel.native_crs,
+        "override_bbox": True,
+        "nativeBoundingBox": {
+            "minx": geoserver_publish_channel.nbb_minx,
+            "maxx": geoserver_publish_channel.nbb_maxx,
+            "miny": geoserver_publish_channel.nbb_miny,
+            "maxy": geoserver_publish_channel.nbb_maxy,
+            "crs": geoserver_publish_channel.nbb_crs,
+        },
+        "latLonBoundingBox": {
+            "minx": geoserver_publish_channel.llb_minx,
+            "maxx": geoserver_publish_channel.llb_maxx,
+            "miny": geoserver_publish_channel.llb_miny,
+            "maxy": geoserver_publish_channel.llb_maxy,
+            "crs": geoserver_publish_channel.llb_crs,
+        },
+        "enabled": layer_subscription.enabled,
+    }
+    
+    # Use mapping_name (identifier) for the GeoServer resource name
+    geoserver_obj.upload_layer_wms(
+        workspace=workspace_name,
+        store_name=safe_store_name,
+        layer_name=catalogue_entry.mapping_name,
+        context=context_layer
+    )
+
+
+def _publish_wms_old(
         geoserver_publish_channel:GeoServerPublishChannel
     ):
     catalogue_entry = geoserver_publish_channel.publish_entry.catalogue_entry
     layer_subscription = catalogue_entry.layer_subscription
-    geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
-
-    context = {
-      "name": layer_subscription.name,
-      "description": layer_subscription.description,
-      "enabled": layer_subscription.enabled,
-      "capability_url": layer_subscription.url,
-      "username": layer_subscription.username,
-      "password": layer_subscription.userpassword,
-      "geoserver_setting": {
-          "max_connections": layer_subscription.max_connections,
-          "read_timeout": layer_subscription.read_timeout,
-          "connect_timeout": layer_subscription.connection_timeout,
-      }
-    }
-    geoserver_obj.upload_store_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
     
-    context = {
+    # 1. Universal URL and Version Handling
+    original_url = layer_subscription.url
+    # Extract version from URL if present (e.g., VERSION=1.3.0)
+    import re
+    version_match = re.search(r'VERSION=([\d\.]+)', original_url, re.IGNORECASE)
+    wms_version = version_match.group(1) if version_match else "1.1.1" # Default to 1.1.1 (widely compatible)
+
+    # Base URL: Strip query parameters to let GeoServer manage them
+    base_url = original_url.split('?')[0].rstrip('/')
+    
+    # Domain-specific adjustment (DEA specific fix but safe for others)
+    if "ows.dea.ga.gov.au" in base_url.lower() and not base_url.lower().endswith("/wms"):
+        base_url = f"{base_url}/wms"
+
+    context_store = {
+        "name": layer_subscription.name,
+        "description": layer_subscription.description,
+        "enabled": layer_subscription.enabled,
+        "capability_url": base_url,
+        "wms_version": wms_version, # Pass detected or default version
+        "username": layer_subscription.username,
+        "password": layer_subscription.userpassword,
+        "workspace": layer_subscription.workspace.name,
+        "geoserver_setting": {
+            "max_connections": layer_subscription.max_connections,
+            "read_timeout": layer_subscription.read_timeout,
+            "connect_timeout": layer_subscription.connection_timeout,
+        }
+    }
+    geoserver_obj = geoserver.geoserverWithCustomCreds(...)
+    geoserver_obj.upload_store_wms(workspace=layer_subscription.workspace.name, store_name=layer_subscription.name, context=context_store)
+
+    # 2. Layer metadata passing
+    context_layer = {
         "name": catalogue_entry.name,
-        "description": catalogue_entry.description,
+        "description": catalogue_entry.description or "",
         "native_name": catalogue_entry.mapping_name,
         "title": catalogue_entry.name,
-        "abstract": None,
-        "override_bbox": geoserver_publish_channel.override_bbox,
+        "abstract": "",
+        "override_bbox": True, # Always provide BBOX to avoid GeoServer probing
         "native_crs": geoserver_publish_channel.native_crs,
         "crs": geoserver_publish_channel.srs,
         "nativeBoundingBox": {
@@ -192,9 +310,8 @@ def _publish_wms(
             "crs": geoserver_publish_channel.llb_crs,
         },
         "enabled": layer_subscription.enabled,
-        # "keywords":, #?
     }
-    geoserver_obj.upload_layer_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context)
+    geoserver_obj.upload_layer_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, layer_name=catalogue_entry.name, context=context_layer)
 
 
 def _publish_postgis(
