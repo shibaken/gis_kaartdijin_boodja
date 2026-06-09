@@ -1,0 +1,17 @@
+<!-- govapp/geoserver/wms/wms_store.xml -->
+<wmsStore>
+  <name>{{ name|escape }}</name>
+  <description>{{ description|default:""|escape }}</description>
+  <type>WMS</type>
+  <enabled>{{ enabled|yesno:"true,false" }}</enabled>
+  <capabilitiesURL>{{ capability_url|escape }}</capabilitiesURL>
+  <workspace>{{ workspace|escape }}</workspace>
+  <metadata>
+    <!-- Important: For WMS stores, version must be in metadata, not connectionParameters -->
+    <entry key="selectedWmsVersion">1.1.1</entry>
+    <entry key="useHttp_get_for_get_map">true</entry>
+  </metadata>
+  <maxConnections>{{ geoserver_setting.max_connections|default:"6" }}</maxConnections>
+  <readTimeout>{{ geoserver_setting.read_timeout|default:"60000" }}</readTimeout>
+  <connectTimeout>{{ geoserver_setting.connect_timeout|default:"60000" }}</connectTimeout>
+</wmsStore>
