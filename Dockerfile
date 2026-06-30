@@ -96,20 +96,11 @@ COPY requirements.txt ./
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 
-# 2. Dynamically create a constraints file to override the GDAL version in requirements.txt.
-# This keeps requirements.txt untouched while ensuring the version matches the OS.
-RUN export GDAL_VERSION=$(gdal-config --version) && \
-    echo "GDAL==${GDAL_VERSION}.*" > /tmp/constraints.txt
-
-# 3. Pre-install the matching GDAL version using the same logic as the DBCA 'ledger' project
+# Pre-install the matching GDAL version once to speed up the process
 RUN export GDAL_VERSION=$(gdal-config --version) && \
     pip install --upgrade pip setuptools wheel && \
     pip install "GDAL==${GDAL_VERSION}.*"
 # --- ADD END ---
-
-# 4. Tell pip to respect the constraints file created in step 2.
-# This forces 'pip install -r' to use the pre-installed GDAL version.
-ENV PIP_CONSTRAINT=/tmp/constraints.txt
 
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
