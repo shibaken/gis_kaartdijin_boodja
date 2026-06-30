@@ -1,5 +1,5 @@
 # Prepare the base environment.
-FROM ubuntu:24.04 AS builder_base_gis_kaartdijin_boodja
+FROM ghcr.io/dbca-wa/docker-apps-dev:ubuntu_2604_base_python AS builder_base_gis_kaartdijin_boodja
 MAINTAINER asi@dbca.wa.gov.au
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBUG=True
