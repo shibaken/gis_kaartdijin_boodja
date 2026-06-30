@@ -40,3 +40,4 @@ anyio>=4.4.0
 # GDAL==3.11.4
 GDAL==3.12.2
 setuptools==82.0.1
+legacy-cgi

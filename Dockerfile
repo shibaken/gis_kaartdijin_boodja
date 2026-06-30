@@ -102,8 +102,7 @@ RUN export GDAL_VERSION=$(gdal-config --version) && \
     pip install "GDAL==${GDAL_VERSION}.*"
 # --- ADD END ---
 
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Install the project (ensure that frontend projects have been built prior to this step).
 FROM python_libs_gis_kaartdijin_boodja
