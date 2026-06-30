@@ -1,7 +1,9 @@
 # Prepare the base environment.
-# FROM ghcr.io/dbca-wa/docker-apps-dev:ubuntu_2604_base_python AS builder_base_cols
+# NOTE: Using ubuntu:26.04 for your personal GitHub Actions test. 
+# Switch back to ghcr.io/dbca-wa/docker-apps-dev:ubuntu_2604_base_python for the final PR.
 FROM ubuntu:26.04 AS builder_base_gis_kaartdijin_boodja
-MAINTAINER asi@dbca.wa.gov.au
+LABEL maintainer="asi@dbca.wa.gov.au"
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBUG=True
 ENV TZ=Australia/Perth
@@ -10,8 +12,8 @@ ENV SECRET_KEY="ThisisNotRealKey"
 ENV SITE_DOMAIN='dbca.wa.gov.au'
 ENV BPAY_ALLOWED=False
 
-RUN sed 's/archive.ubuntu.com/en.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list
-RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
+# UPDATE: Ubuntu 24.04+ uses DEB822 format for sources
+RUN sed -i 's/archive.ubuntu.com/en.archive.ubuntu.com/g' /etc/apt/sources.list.d/ubuntu.sources
 
 RUN apt-get clean
 RUN apt-get update
@@ -19,24 +21,22 @@ RUN apt-get upgrade -y
 RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent
 RUN apt-get install --no-install-recommends -y libpq-dev patch virtualenv
 RUN apt-get install --no-install-recommends -y postgresql-client mtr systemd
-RUN apt-get install --no-install-recommends -y vim postgresql-client ssh htop
+RUN apt-get install --no-install-recommends -y vim ssh htop
 RUN apt-get install --no-install-recommends -y software-properties-common 
  
-# ADDED START from bottom
 RUN apt-get install --no-install-recommends -y python3-pil
 RUN apt-get install --no-install-recommends -y postgis 
-# ADDED END from bottom
 
-# Install GDAL
-RUN apt-get install --no-install-recommends -y gdal-bin python3-gdal
-RUN apt-get install --no-install-recommends -y libgdal-dev build-essential
+# Install GDAL (System libraries)
+RUN apt-get install --no-install-recommends -y gdal-bin python3-gdal libgdal-dev build-essential
 
 RUN update-ca-certificates
-RUN touch install_node.sh
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x -o install_node.sh
-RUN chmod +x install_node.sh && ./install_node.sh
+
+# UPDATE: Node.js 18 is EOL in 2026. Upgrading to Node 22 (LTS).
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get install -y nodejs
-# Install Python libs using pyproject.toml and poetry.lock
+
+# Install Python libs stage
 FROM builder_base_gis_kaartdijin_boodja AS python_libs_gis_kaartdijin_boodja
 
 RUN groupadd -g 5000 oim
@@ -62,13 +62,24 @@ USER oim
 RUN virtualenv /app/venv
 ENV PATH=/app/venv/bin:$PATH
 RUN git config --global --add safe.directory /app
+
+# --- GDAL FIX (Ledger Style) ---
+# Set paths for GDAL headers
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
+
+# Pre-install specific GDAL wheel for Ubuntu 26.04 (Python 3.14)
+# This prevents the "Failed to build GDAL" error.
+RUN pip install --upgrade pip setuptools wheel && \
+    wget -O /tmp/GDAL-3.10.1-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl https://github.com/girder/large_image_wheels/raw/wheelhouse/GDAL-3.10.1-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl && \
+    pip install /tmp/GDAL-3.10.1-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+
 COPY requirements.txt ./
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+# IMPORTANT: Ensure GDAL is removed or commented out in your requirements.txt
+RUN pip install -r requirements.txt
 
-# Install the project (ensure that frontend projects have been built prior to this step).
+# Final Stage
 FROM python_libs_gis_kaartdijin_boodja
-
 
 COPY --chown=oim:oim gunicorn.ini manage.py ./
 RUN touch /app/.env
