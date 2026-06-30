@@ -38,6 +38,7 @@ RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
 # RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent
+RUN apt-get install --no-install-recommends -y python3-venv
 RUN apt-get install --no-install-recommends -y gpg-agent
 RUN apt-get install --no-install-recommends -y vim htop
 RUN apt-get install --no-install-recommends -y software-properties-common 
