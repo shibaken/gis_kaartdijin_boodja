@@ -2,7 +2,7 @@ name: Docker Build Test
 
 on:
   push:
-    branches: [ "working" ] # Run whenever you push to your working branch
+    branches: [ "working-ubuntu2604-test" ] # Run whenever you push to your working branch
 
 jobs:
   build:
