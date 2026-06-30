@@ -29,8 +29,8 @@ RUN apt-get install --no-install-recommends -y postgis
 # ADDED END from bottom
 
 # Install GDAL
-RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
-RUN apt update
+# RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+# RUN apt update
 RUN apt-get install --no-install-recommends -y gdal-bin python3-gdal
 RUN apt-get install --no-install-recommends -y libgdal-dev build-essential
 
