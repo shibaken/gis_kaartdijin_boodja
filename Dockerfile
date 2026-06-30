@@ -90,6 +90,18 @@ USER oim
 RUN python3 -m venv $VIRTUAL_ENV
 RUN git config --global --add safe.directory /app
 COPY requirements.txt ./
+
+# --- ADD START ---
+# 1. Explicitly specify the path to C++ headers required for building GDAL
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
+
+# 2. Install the pre-built binary (Wheel) directly, following the same method as the 'ledger' project.
+# This completely avoids complex compilation errors.
+RUN wget -O /tmp/GDAL-3.10.1-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl https://github.com/girder/large_image_wheels/raw/wheelhouse/GDAL-3.10.1-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl && \
+    pip install /tmp/GDAL-3.10.1-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+# --- ADD END ---
+
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
