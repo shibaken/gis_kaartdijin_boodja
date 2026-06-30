@@ -19,6 +19,20 @@ ENV PATH=$VIRTUAL_ENV/bin:$PATH
 RUN sed 's/archive.ubuntu.com/en.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list
 RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
 
+############################
+# 1. Install base packages found in the official base image
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl wget git libmagic-dev gcc g++ make binutils \
+    libproj-dev gdal-bin python3 python3-setuptools python3-dev python3-pip \
+    tzdata rsyslog gunicorn virtualenv libpq-dev patch \
+    postgresql-client mtr htop vim sudo build-essential \
+    && apt-get clean
+
+# 2. Setup environment structures (Mimicking base image)
+# Essential for SSL and Python command compatibility
+RUN update-ca-certificates && \
+    ln -s /usr/bin/python3 /usr/bin/python
+############################
 
 RUN apt-get clean
 RUN apt-get update
