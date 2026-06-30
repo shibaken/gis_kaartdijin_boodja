@@ -13,7 +13,6 @@ ENV BPAY_ALLOWED=False
 RUN sed 's/archive.ubuntu.com/en.archive.ubuntu.com/g' /etc/apt/sources.list > /etc/apt/sourcesau.list
 RUN mv /etc/apt/sourcesau.list /etc/apt/sources.list
 
-
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
@@ -29,21 +28,14 @@ RUN apt-get install --no-install-recommends -y postgis
 # ADDED END from bottom
 
 # Install GDAL
-# RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
-# RUN apt update
 RUN apt-get install --no-install-recommends -y gdal-bin python3-gdal
 RUN apt-get install --no-install-recommends -y libgdal-dev build-essential
 
 RUN update-ca-certificates
-# install node 18
 RUN touch install_node.sh
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x -o install_node.sh
 RUN chmod +x install_node.sh && ./install_node.sh
 RUN apt-get install -y nodejs
-# RUN ln -s /usr/bin/python3.10 /usr/bin/python
-#RUN pip install --upgrade pip
-#RUN wget -O /tmp/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl https://github.com/girder/large_image_wheels/raw/wheelhouse/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=e2fe6cfbab02d535bc52c77cdbe1e860304347f16d30a4708dc342a231412c57
-#RUN pip install /tmp/GDAL-3.8.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 # Install Python libs using pyproject.toml and poetry.lock
 FROM builder_base_gis_kaartdijin_boodja AS python_libs_gis_kaartdijin_boodja
 
@@ -67,19 +59,12 @@ RUN chmod 755 /startup.sh
 
 WORKDIR /app
 USER oim
-#ENV POETRY_VERSION=1.3.2
 RUN virtualenv /app/venv
 ENV PATH=/app/venv/bin:$PATH
 RUN git config --global --add safe.directory /app
-# RUN curl -sSL https://install.python-poetry.org | python -
-#RUN ln -s /root/.local/bin/poetry /usr/bin/poetry
-#RUN poetry config virtualenvs.create false
-#COPY pyproject.toml poetry.lock ./
 COPY requirements.txt ./
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
-#RUN pip install "poetry==$POETRY_VERSION"
-#RUN poetry install 
 
 # Install the project (ensure that frontend projects have been built prior to this step).
 FROM python_libs_gis_kaartdijin_boodja
@@ -90,7 +75,6 @@ RUN touch /app/.env
 COPY .git ./.git
 COPY --chown=oim:oim govapp ./govapp
 COPY python-cron ./
-#RUN pip install GDAL==3.8.4
 RUN python manage.py collectstatic --noinput
 
 USER root
