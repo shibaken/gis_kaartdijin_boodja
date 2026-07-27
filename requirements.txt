@@ -31,7 +31,7 @@ git+https://github.com/dbca-wa/appmonitor_client.git#egg=appmonitor_client
 cryptography>=46.0.5
 pillow==12.2.0
 # pyjwt==2.8.0
-urllib3~=2.6.3
+urllib3~=2.7.0
 wheel~=0.46.1
 oauthlib==3.2.2
 sentry-sdk==2.19.0
