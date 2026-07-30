@@ -27,7 +27,7 @@ from owslib.wfs import WebFeatureService
 import psycopg2
 import json
 import os
-from django.db.models import Q
+from django.db.models import F, Q
 from django.core.exceptions import ObjectDoesNotExist
 
 # Local
@@ -484,6 +484,17 @@ class CustodianViewSet(mixins.ChoicesMixin, viewsets.ReadOnlyModelViewSet):
     filterset_class = filters.CustodianFilter
     search_fields = ["name", "contact_name", "contact_email", "contact_phone"]
 
+def reindex_catalogue_attributes(catalogue_entry):
+    """Re-index all attributes for a given catalogue entry to ensure sequential orders (1, 2, 3...)."""
+    attributes = models.layer_attributes.LayerAttribute.objects.filter(
+        catalogue_entry=catalogue_entry
+    ).order_by('order', 'id')
+
+    with transaction.atomic():
+        for index, att in enumerate(attributes, start=1):
+            if att.order != index:
+                att.order = index
+                att.save(update_fields=['order'])
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Attributes"])
 class LayerAttributeViewSet(
@@ -511,33 +522,93 @@ class LayerAttributeViewSet(
             context['pk'] = self.kwargs['pk']
         return context
 
+    def list(self, request, *args, **kwargs):
+            """Auto-fix and re-index attributes when listing."""
+            catalogue_entry_id = request.query_params.get('catalogue_entry__in') or request.query_params.get('catalogue_entry')
+            if catalogue_entry_id:
+                try:
+                    catalogue_entry = models.catalogue_entries.CatalogueEntry.objects.get(id=catalogue_entry_id)
+                    reindex_catalogue_attributes(catalogue_entry)
+                except models.catalogue_entries.CatalogueEntry.DoesNotExist:
+                    pass
+            return super().list(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         layer_attribute = serializer.save()
-        logs_utils.add_to_actions_log(
-            user=self.request.user,
-            model= layer_attribute.catalogue_entry,
-            action=f"LayerAttribute: [{layer_attribute}] has been created with the data: [{serializer.data}]."
-        )
-        logger.info(f"LayerAttribute: [{layer_attribute}] has been created with the data: [{serializer.data}] from this CatalogueEntry: [{layer_attribute.catalogue_entry}] by the user: [{self.request.user}].")
-
-    def perform_update(self, serializer):
-        layer_attribute = serializer.save()
+        reindex_catalogue_attributes(layer_attribute.catalogue_entry)
+        
         logs_utils.add_to_actions_log(
             user=self.request.user,
             model=layer_attribute.catalogue_entry,
-            action=f"LayerAttribute: [{layer_attribute}] has been updated with the data: [{serializer.data}]."
+            action=f"LayerAttribute: [{layer_attribute}] has been created."
         )
-        logger.info(f"LayerAttribute: [{layer_attribute}] has been updated with the data: [{serializer.data}] from the CatalogueEntry: [{layer_attribute.catalogue_entry}] by the user: [{self.request.user}].")
+
+    def perform_update(self, serializer):
+        layer_attribute = serializer.save()
+        reindex_catalogue_attributes(layer_attribute.catalogue_entry)
+
+        logs_utils.add_to_actions_log(
+            user=self.request.user,
+            model=layer_attribute.catalogue_entry,
+            action=f"LayerAttribute: [{layer_attribute}] has been updated."
+        )
 
     def perform_destroy(self, instance):
         catalogue_entry = instance.catalogue_entry
+        super().perform_destroy(instance)
+        reindex_catalogue_attributes(catalogue_entry)
+
         logs_utils.add_to_actions_log(
             user=self.request.user,
             model=catalogue_entry,
             action=f"LayerAttribute: [{instance}] has been deleted."
         )
-        logger.info(f"LayerAttribute: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
-        return super().perform_destroy(instance)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_200_OK: None})
+    @decorators.action(detail=True, methods=["POST"], url_path="move-up")
+    def move_up(self, request: request.Request, pk: str = None) -> response.Response:
+        """Swap order with the previous attribute."""
+        attribute = self.get_object()
+        
+        prev_attribute = models.layer_attributes.LayerAttribute.objects.filter(
+            catalogue_entry=attribute.catalogue_entry,
+            order__lt=attribute.order
+        ).order_by('-order').first()
+
+        if prev_attribute:
+            with transaction.atomic():
+                temp_order = attribute.order
+                attribute.order = prev_attribute.order
+                prev_attribute.order = temp_order
+                attribute.save()
+                prev_attribute.save()
+                
+            reindex_catalogue_attributes(attribute.catalogue_entry)
+
+        return response.Response(status=status.HTTP_200_OK)
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_200_OK: None})
+    @decorators.action(detail=True, methods=["POST"], url_path="move-down")
+    def move_down(self, request: request.Request, pk: str = None) -> response.Response:
+        """Swap order with the next attribute."""
+        attribute = self.get_object()
+        
+        next_attribute = models.layer_attributes.LayerAttribute.objects.filter(
+            catalogue_entry=attribute.catalogue_entry,
+            order__gt=attribute.order
+        ).order_by('order').first()
+
+        if next_attribute:
+            with transaction.atomic():
+                temp_order = attribute.order
+                attribute.order = next_attribute.order
+                next_attribute.order = temp_order
+                attribute.save()
+                next_attribute.save()
+
+            reindex_catalogue_attributes(attribute.catalogue_entry)
+
+        return response.Response(status=status.HTTP_200_OK)
 
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Attribute Types"])
@@ -1432,14 +1503,30 @@ class EmailNotificationViewSet(
 
     def perform_destroy(self, instance):
         catalogue_entry = instance.catalogue_entry
+
+        with transaction.atomic():
+            # Delete the selected attribute
+            super().perform_destroy(instance)
+
+            # Re-index all remaining attributes sequentially (1, 2, 3...)
+            remaining_attributes = models.layer_attributes.LayerAttribute.objects.filter(
+                catalogue_entry=catalogue_entry
+            ).order_by('order', 'id')
+
+            for index, att in enumerate(remaining_attributes, start=1):
+                if att.order != index:
+                    att.order = index
+                    att.save(update_fields=['order'])
+
         logs_utils.add_to_actions_log(
             user=self.request.user,
             model=catalogue_entry,
-            action=f"EmailNotification: [{instance}] has been deleted."
+            action=f"LayerAttribute: [{instance}] has been deleted."
         )
-        logger.info(f"EmailNotification: [{instance}] has been deleted from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}].")
-        return super().perform_destroy(instance)
-    
+        logger.info(
+            f"LayerAttribute: [{instance}] has been deleted "
+            f"from the CatalogueEntry: [{catalogue_entry}] by the user: [{self.request.user}]."
+        )
 
 @drf_utils.extend_schema(tags=["Catalogue - Notifications (Webhook)"])
 class WebhookNotificationViewSet(

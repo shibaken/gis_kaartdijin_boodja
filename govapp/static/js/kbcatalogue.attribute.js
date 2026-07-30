@@ -72,6 +72,23 @@ var kbcatalogue_attribute = {
                                             success_callback=()=>table.refresh(this.get_catalogue_attribute));
         common_entity_modal.show();
     },
+    move_attribute: function(att_id, direction) {
+        let csrf_token = $("#csrfmiddlewaretoken").val();
+        let url = `${kbcatalogue_attribute.var.catalogue_attribute_url}${att_id}/move-${direction}/`;
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function() {
+                table.refresh(kbcatalogue_attribute.get_catalogue_attribute);
+            },
+            error: function(error) {
+                common_entity_modal.show_alert(`An error occurred while moving attribute ${direction}.`);
+            }
+        });
+    },
     write_catalogue_attribute: function(success_callback, error_callback, name_id, type_id, order_id, att_id) {
         // get & validation check
         let name = utils.validate_empty_input('name', $('#'+name_id).val());
@@ -137,44 +154,59 @@ var kbcatalogue_attribute = {
                         response.results[i].type_str = kbcatalogue_attribute.var.catalogue_attribute_type[response.results[i].type];
                     }
 
-                    table.set_tbody($('#catalogue-attribute-tbody'), response.results,
-                                    columns=[{id:"text"}, {name:"text"}, {type_str:"text"}, {order:"text"}],
-                                    buttons=buttons);
+                    // Render table rows with Up and Down buttons
+                    let $tbody = $('#catalogue-attribute-tbody');
+                    $tbody.empty();
+
+                    let total_count = response.results.length;
+
+                    for (let i = 0; i < total_count; i++) {
+                        let att = response.results[i];
+                        let $row = $("<tr>");
+                        
+                        $row.append(`<td>${att.id}</td>`);
+                        $row.append(`<td>${att.name}</td>`);
+                        $row.append(`<td>${att.type_str || att.type}</td>`);
+                        $row.append(`<td>${att.order}</td>`);
+
+                        if (kbcatalogue_attribute.var.has_edit_access) {
+                            let $actionTd = $("<td>");
+
+                            // Up button
+                            let $btnUp = $("<button class='btn btn-outline-secondary btn-sm me-1' title='Move Up'><i class='bi bi-arrow-up'></i></button>");
+                            $btnUp.click(() => kbcatalogue_attribute.move_attribute(att.id, 'up'));
+                            
+                            // Down button
+                            let $btnDown = $("<button class='btn btn-outline-secondary btn-sm me-1' title='Move Down'><i class='bi bi-arrow-down'></i></button>");
+                            $btnDown.click(() => kbcatalogue_attribute.move_attribute(att.id, 'down'));
+
+                            // Disable Up on first row, Disable Down on last row
+                            if (i === 0 && params && params.order_by === 'order') {
+                                $btnUp.prop('disabled', true);
+                            }
+                            if (i === total_count - 1 && params && params.order_by === 'order') {
+                                $btnDown.prop('disabled', true);
+                            }
+
+                            // Update button
+                            let $btnUpdate = $("<button class='btn btn-primary btn-sm me-1'>Update</button>");
+                            $btnUpdate.click(() => kbcatalogue_attribute.show_update_attribute_modal(att));
+
+                            // Delete button
+                            let $btnDelete = $("<button class='btn btn-danger btn-sm'>Delete</button>");
+                            $btnDelete.click(() => kbcatalogue_attribute.show_delete_attribute_modal(att));
+
+                            $actionTd.append($btnUp, $btnDown, $btnUpdate, $btnDelete);
+                            $row.append($actionTd);
+                        } else {
+                            $row.append("<td></td>");
+                        }
+
+                        $tbody.append($row);
+                    }
 
                     common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, $('#paging_navi'));
 
-                    // $('#catalogue-attribute-tbody').empty();
-                    // if (response.results.length > 0) {
-                    //     for (let i = 0; i < response.results.length; i++) {
-                    //         let att = response.results[i];
-                    //         let btn_update_id = 'btn-update-attribute_'+i;
-                    //         let btn_delete_id = 'btn-delete-attribute_'+i;
-                    //         let row = $("<tr>");
-                    //         row.append("<td>"+att.id+"</td>");
-                    //         row.append("<td>"+att.name+"</td>");
-                    //         row.append("<td>"+att.type+"</td>");
-                    //         row.append("<td>"+att.order+"</td>");
-                    //         if(kbcatalogue_attribute.var.has_edit_access){
-                    //             row.append("<td>" +
-                    //                         "<button class='btn btn-primary btn-sm' id='"+btn_update_id+"'>Update</button> " + 
-                    //                         "<button class='btn btn-primary btn-sm' id='"+btn_delete_id+"'>Delete</button>" +
-                    //                         "</td");
-                    //         } else {
-                    //             row.append("<td></td>");
-                    //         }
-                    //         $('#catalogue-attribute-tbody').append(row);
-                            
-                    //         $('#'+btn_update_id).click(()=> kbcatalogue_attribute.show_update_attribute_modal(att));
-                    //         $('#'+btn_delete_id).click(()=> kbcatalogue_attribute.show_delete_attribute_modal(att));
-                    //     }
-                                           
-                    //     $('.publish-table-button').hide();
-
-                    //     common_pagination.init(response.count, params, kbcatalogue_attribute.get_catalogue_attribute, +params.limit, $('#paging_navi'));
-
-                    // } else {
-                    //     $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
-                    // }
                 } else {
                       $('#catalogue-attribute-tbody').html("<tr><td colspan='7' class='text-center'>No results found</td></tr>");
                 }      
