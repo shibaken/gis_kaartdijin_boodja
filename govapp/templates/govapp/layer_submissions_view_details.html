@@ -46,5 +46,14 @@
                   {% endif %}
                   </div>
             </div>
+            {% if is_declined_due_to_hash_mismatch %}
+            <div class='row'>
+                  <div class='col-3'>Column structure</div>
+                  <div class='col-9 p-1'>
+                        <p>This submission was declined because the column structure of the source query/file changed and no longer matches the catalogue entry's attributes. Accepting it will replace the catalogue entry's attributes with this submission's column structure.</p>
+                        <button id='accept-new-column-structure-btn' class='btn btn-warning btn-sm'>Accept new column structure</button>
+                  </div>
+            </div>
+            {% endif %}
       </div>
 </div>

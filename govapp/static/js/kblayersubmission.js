@@ -48,8 +48,35 @@ var kblayersubmission = {
         $("#log_communication_show").click(kblayersubmission.show_communication_log);
         $("#log_communication_add").click(kblayersubmission.add_communication_log);
         $("#file_download").click(kblayersubmission.download_file);
+        $("#accept-new-column-structure-btn").click(kblayersubmission.accept_new_column_structure);
 
         kblayersubmission.retrieve_communication_types();
+    },
+    accept_new_column_structure: function() {
+        var layer_submission_id = $('#layer_submission_obj_id').val();
+        var csrf_token = $("#csrfmiddlewaretoken").val();
+
+        $('#loadingOverlay').fadeIn();
+        $.ajax({
+            url: kblayersubmission.var.layersubmission_data_url + layer_submission_id + "/accept-new-column-structure/",
+            type: 'POST',
+            headers: {'X-CSRFToken' : csrf_token},
+            contentType: 'application/json',
+            success: function (response, status, xhr) {
+                window.location.reload();
+            },
+            error: function (xhr, status, error) {
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    common_entity_modal.show_alert(errorResponse.error || "An error occurred.");
+                } catch (e) {
+                    common_entity_modal.show_alert("Error accepting new column structure.");
+                }
+            },
+            complete: function(xhr, status){
+                $('#loadingOverlay').fadeOut();
+            }
+        });
     },
     retrieve_communication_types: function(){
         $.ajax({
