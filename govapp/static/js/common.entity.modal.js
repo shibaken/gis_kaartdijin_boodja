@@ -269,10 +269,15 @@ var common_entity_modal = {
             $('#'+id).prop("disabled", common_entity_modal.var.disabilities[id]);
         }
     },
-    show_alert: function (content, title){
+    show_alert: function (content, title, type){
         common_entity_modal.hide_all_modal('alert');
-        if(title){
-            $('#common-alert-modal-label').text(title);
+        var icon = $('#common-alert-modal-icon');
+        if(type === 'warning'){
+            icon.removeClass('bi-x-circle-fill').addClass('bi-exclamation-triangle-fill').css('color', '#ffc107');
+            $('#common-alert-modal-label').text(title || 'Warning');
+        } else {
+            icon.removeClass('bi-exclamation-triangle-fill').addClass('bi-x-circle-fill').css('color', 'red');
+            $('#common-alert-modal-label').text(title || 'Error Message');
         }
         $('#common-alert-modal-content').text(content);
         common_entity_modal.show_modal($('#common-alert-modal'));

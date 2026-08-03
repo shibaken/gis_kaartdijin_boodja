@@ -236,10 +236,14 @@ class CatalogueEntryViewSet(
                 # Return Response
                 return response.Response(status=status.HTTP_204_NO_CONTENT)
             else:
-                # Return Response
-                if not message:
-                    message = "Error locking catalogue entry"
-                return response.Response(message, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                # `message` non-empty means lock() reached a valid, expected
+                # non-locked state (e.g. PENDING due to attribute hash
+                # mismatch) rather than a server error, so return 200 OK
+                if message:
+                    return response.Response(message, status=status.HTTP_200_OK)
+                return response.Response(
+                    "Error locking catalogue entry", status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         except ObjectDoesNotExist as e:
             logger.error(f"Catalogue entry does not exist: {str(e)}")
             return response.Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
