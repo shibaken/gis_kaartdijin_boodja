@@ -3,6 +3,7 @@
 
 # Third-Party
 from django.db import models
+from django.db import transaction
 from django.utils import timezone as django_timezone
 import reversion
 import logging
@@ -13,6 +14,7 @@ from govapp.apps.catalogue.models.permission import CatalogueEntryAccessPermissi
 from govapp.common import mixins
 from govapp.apps.catalogue import utils
 from govapp.apps.catalogue.models import catalogue_entries
+from govapp.apps.catalogue.models import layer_attributes
 from govapp.apps.catalogue.models import layer_metadata
 from govapp.apps.logs import utils as logs_utils
 
@@ -142,6 +144,87 @@ class LayerSubmission(mixins.RevisionedMixin):
         """
         # Check and Return
         return self.status == LayerSubmissionStatus.DECLINED
+
+    def is_declined_due_to_hash_mismatch(self) -> bool:
+        """Determines whether this Layer Submission was declined specifically
+        because its attributes hash no longer matches the Catalogue Entry's
+        current attributes (e.g. after a Subscription Query column change),
+        as opposed to any other decline reason (CRS mismatch, catalogue entry
+        already declined, etc.).
+
+        Returns:
+            bool: Whether `accept_new_column_structure()` may be called on
+                this Layer Submission.
+        """
+        if not self.is_declined():
+            return False
+        if self.catalogue_entry.is_declined():
+            return False
+        if not self.layer_attribute:
+            return False
+        current_attributes_hash = utils.attributes_hash(self.catalogue_entry.attributes.all())
+        return self.hash != current_attributes_hash
+
+    def accept_new_column_structure(self) -> bool:
+        """Accepts this declined Layer Submission's new column structure.
+
+        Replaces the Catalogue Entry's LayerAttribute records with the
+        attribute schema stored in this submission's `layer_attribute` field,
+        then re-attempts `activate()`. This resolves the "Catch-22" where a
+        Subscription Query's column structure change causes both
+        `activate()` and `lock()` to fail against each other's stale hash.
+
+        Returns:
+            bool: Whether the submission was successfully activated
+                afterwards (i.e. is no longer declined).
+
+        Raises:
+            ValueError: If this submission is not eligible (see
+                `is_declined_due_to_hash_mismatch()`), or its
+                `layer_attribute` could not be parsed into any attributes.
+        """
+        if not self.is_declined_due_to_hash_mismatch():
+            raise ValueError(
+                f"LayerSubmission LM{self.pk} is not eligible to accept a new column structure "
+                f"(it is not declined due to an attributes hash mismatch)."
+            )
+
+        parsed_attributes = utils.parse_layer_attribute_string(self.layer_attribute)
+        if not parsed_attributes:
+            raise ValueError(
+                f"LayerSubmission LM{self.pk}'s layer_attribute could not be parsed into any attributes."
+            )
+
+        with transaction.atomic():
+            # Replace the Catalogue Entry's attributes with the new column structure
+            self.catalogue_entry.attributes.all().delete()
+            layer_attributes.LayerAttribute.objects.bulk_create([
+                layer_attributes.LayerAttribute(
+                    name=attribute["name"],
+                    type=attribute["type"],
+                    order=attribute["order"],
+                    catalogue_entry=self.catalogue_entry,
+                )
+                for attribute in parsed_attributes
+            ])
+            log.info(
+                f"Replaced LayerAttributes for CatalogueEntry: [{self.catalogue_entry}] with the new column "
+                f"structure from LayerSubmission: [{self}]."
+            )
+            logs_utils.add_to_actions_log(
+                user=None,
+                model=self.catalogue_entry,
+                action=(
+                    f"Accepted new column structure from LayerSubmission LM{self.pk}: replaced the "
+                    f"CatalogueEntry's attributes to match the updated Subscription Query schema."
+                ),
+                default_to_system=True,
+            )
+
+            # Re-attempt activation now that the attributes hash should match
+            self.activate(raise_err=False)
+
+        return not self.is_declined()
 
     def accept(self) -> None:
         """Accepts the Layer Submission."""
