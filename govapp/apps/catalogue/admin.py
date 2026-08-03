@@ -99,8 +99,10 @@ class CustodianAdmin(reversion.admin.VersionAdmin):
 class LayerAttributeAdmin(reversion.admin.VersionAdmin):
     list_display = ('id', 'name', 'type', 'order', 'catalogue_entry_link')
     list_display_links = ('id', 'name',)
+    list_filter = ('type',)
     ordering = ('id',)
     raw_id_fields = ('catalogue_entry',)
+    search_fields = ('id', 'name', 'catalogue_entry__id', 'catalogue_entry__name')
 
     def catalogue_entry_link(self, obj):
         return construct_catalogue_entry_link(obj.catalogue_entry)
