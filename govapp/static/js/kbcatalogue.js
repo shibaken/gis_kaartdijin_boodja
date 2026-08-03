@@ -251,6 +251,9 @@ var kbcatalogue = {
                 if (response) {
                     // Lock reached a valid non-locked state (e.g. PENDING) with an explanatory message, not an error
                     common_entity_modal.show_alert(response, "Warning", "warning");
+                    $('.modal').one('hidden.bs.modal', function () {
+                        window.location.reload();
+                    });
                 } else {
                     window.location = "/catalogue/entries/"+catalogue_entry_id+"/"+pagetab+"/";
                 }
