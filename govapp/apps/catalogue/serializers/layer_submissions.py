@@ -12,6 +12,7 @@ from govapp.apps.catalogue import models
 class LayerSubmissionSerializer(serializers.ModelSerializer):
     """Layer Submission Model Serializer."""
     submitted_at_str = serializers.SerializerMethodField()
+    is_declined_due_to_hash_mismatch = serializers.SerializerMethodField()
     class Meta:
         """Layer Submission Model Serializer Metadata."""
         model = models.layer_submissions.LayerSubmission
@@ -31,6 +32,7 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "permission_type",
             "permission_type_str",
             "crs",
+            "is_declined_due_to_hash_mismatch",
         )
         read_only_fields = (
             "id",
@@ -48,6 +50,7 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             "permission_type",
             "permission_type_str",
             "crs",
+            "is_declined_due_to_hash_mismatch",
         )
 
     def get_submitted_at_str(self, obj):
@@ -55,3 +58,6 @@ class LayerSubmissionSerializer(serializers.ModelSerializer):
             local_time = obj.submitted_at.astimezone(pytz.timezone('Australia/Perth'))
             return local_time.strftime('%d-%m-%Y %H:%M:%S')
         return None
+
+    def get_is_declined_due_to_hash_mismatch(self, obj):
+        return obj.is_declined_due_to_hash_mismatch()
