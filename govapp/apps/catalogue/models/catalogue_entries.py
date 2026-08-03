@@ -356,7 +356,13 @@ class CatalogueEntry(mixins.RevisionedMixin):
                         # Set Catalogue Entry to Pending
                         self.status = CatalogueEntryStatus.PENDING
                         lock_success = False
-                        message = "The attributes defined here do not match the attributes of the active layer. Please check the attributes and try again."
+                        message = (
+                            "This catalogue entry is now PENDING because its attributes do not match the "
+                            "active layer's column structure (e.g. after a Subscription Query update). This is "
+                            "a valid, expected state: triggering a forced run will regenerate the layer with "
+                            "the new column structure and automatically re-lock this catalogue entry once the "
+                            "attributes match again."
+                        )
                 else:
                     self.status = CatalogueEntryStatus.LOCKED
                     lock_success = True

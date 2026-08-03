@@ -559,6 +559,7 @@ class LayerSubmissionView(base.TemplateView):
         context['CatalogueEntryAccessPermission'] = CatalogueEntryAccessPermission
         context['CatalogueEntryPermissionType'] = catalogue_entries_models.CatalogueEntryPermissionType
         context['id'] = layer_submission.catalogue_entry.id
+        context['is_declined_due_to_hash_mismatch'] = layer_submission.is_declined_due_to_hash_mismatch()
 
         # Render Template and Return
         return shortcuts.render(request, self.template_name, context)   

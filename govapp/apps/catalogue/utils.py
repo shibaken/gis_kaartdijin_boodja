@@ -5,6 +5,7 @@
 import hashlib
 import json
 import logging
+import re
 
 # Third Party
 from functools import wraps
@@ -67,6 +68,45 @@ def attributes_hash(attributes: Optional[Iterable[Any]]) -> str:
 
     # Return
     return hash.hexdigest()
+
+
+# Matches the default dataclass repr of `readers.types.Attribute`, e.g.
+# Attribute(name='OBJECTID', type='Integer64', order=0)
+_LAYER_ATTRIBUTE_LINE_PATTERN = re.compile(r"Attribute\(name='(.*?)', type='(.*?)', order=(\d+)\)")
+
+
+def parse_layer_attribute_string(layer_attribute: Optional[str]) -> list[dict[str, Any]]:
+    """Parses a LayerSubmission's `layer_attribute` text field back into attributes.
+
+    The `layer_attribute` field is populated (see `directory_absorber.py`) by
+    joining the `str()` (dataclass repr) of each `readers.types.Attribute`
+    with newlines, e.g. "Attribute(name='OBJECTID', type='Integer64', order=0)".
+    This is the same format assumed by the `add_newline_before_attribute`
+    template filter, so it must be kept in sync with that convention.
+
+    Args:
+        layer_attribute (Optional[str]): Raw `LayerSubmission.layer_attribute` value.
+
+    Returns:
+        list[dict[str, Any]]: Parsed attributes as dicts with `name`, `type`,
+            `order` keys. Empty list if blank or nothing could be parsed.
+    """
+    if not layer_attribute:
+        return []
+
+    attributes = []
+    for line in layer_attribute.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        match = _LAYER_ATTRIBUTE_LINE_PATTERN.fullmatch(line)
+        if not match:
+            log.warning(f"Could not parse layer_attribute line: [{line}]. Skipping.")
+            continue
+        name, attr_type, order = match.groups()
+        attributes.append({"name": name, "type": attr_type, "order": int(order)})
+
+    return attributes
 
 
 def find_enum_by_value(enum, value):

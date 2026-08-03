@@ -236,10 +236,14 @@ class CatalogueEntryViewSet(
                 # Return Response
                 return response.Response(status=status.HTTP_204_NO_CONTENT)
             else:
-                # Return Response
-                if not message:
-                    message = "Error locking catalogue entry"
-                return response.Response(message, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                # `message` non-empty means lock() reached a valid, expected
+                # non-locked state (e.g. PENDING due to attribute hash
+                # mismatch) rather than a server error, so return 200 OK
+                if message:
+                    return response.Response(message, status=status.HTTP_200_OK)
+                return response.Response(
+                    "Error locking catalogue entry", status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         except ObjectDoesNotExist as e:
             logger.error(f"Catalogue entry does not exist: {str(e)}")
             return response.Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -740,6 +744,47 @@ class LayerSubmissionViewSet(
         res['Content-Disposition'] = f'attachment; filename="{filename}"'
         res['Filename'] = filename
         return res
+
+    @drf_utils.extend_schema(request=None, responses={status.HTTP_204_NO_CONTENT: None})
+    @decorators.action(detail=True, methods=["POST"], url_path="accept-new-column-structure")
+    def accept_new_column_structure(self, request: request.Request, pk: str) -> response.Response:
+        """Accepts a declined Layer Submission's new column structure.
+
+        Replaces the Catalogue Entry's attributes with the schema stored in
+        this Layer Submission's `layer_attribute` field, then re-attempts
+        activation. Only valid for submissions declined due to an attributes
+        hash mismatch (e.g. after a Subscription Query column change).
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Submission.
+
+        Returns:
+            response.Response: Empty response confirming success, or an
+                error response if the submission is not eligible.
+        """
+        try:
+            layer_submission = shortcuts.get_object_or_404(models.layer_submissions.LayerSubmission, id=pk)
+
+            success = layer_submission.accept_new_column_structure()
+
+            if success:
+                logs_utils.add_to_actions_log(
+                    user=request.user,
+                    model=layer_submission.catalogue_entry,
+                    action=f"LayerSubmission: [{layer_submission}]'s new column structure has been accepted."
+                )
+                return response.Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return response.Response(
+                    {"error": "The attributes still do not match after replacing the column structure."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except ValueError as e:
+            return response.Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {str(e)}")
+            return response.Response({"error": "Error accepting new column structure."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
 @drf_utils.extend_schema(tags=["Catalogue - Layer Subscriptions"])
