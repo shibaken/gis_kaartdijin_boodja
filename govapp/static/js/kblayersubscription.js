@@ -390,6 +390,12 @@ var kblayersubscription = {
         $('#subscription-dbtable-table-custom-add').click(function(){
             kblayersubscription.show_custom_query_modal();
         });
+        $('#subscription-dbtable-bulk-force-run-enable').click(function(){
+            kblayersubscription.bulk_force_run_custom_queries(true);
+        });
+        $('#subscription-dbtable-bulk-force-run-disable').click(function(){
+            kblayersubscription.bulk_force_run_custom_queries(false);
+        });
 
         kblayersubscription.retrieve_communication_types();
         kblayersubscription.checkCatalogueEntryInputs();
@@ -1071,23 +1077,44 @@ var kblayersubscription = {
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
             success: (response) => {
+                let has_edit_access = $('#has_edit_access').val() == "True";
+                let colspan = has_edit_access ? 6 : 5;
+
                 thead.empty();
                 let tr = $('<tr>');
+                if(has_edit_access){
+                    tr.append($('<th>').attr('class', 'col-1').append('<input type="checkbox" id="custom-query-select-all">'))
+                }
                 tr.append($('<th>').attr('class', 'col-1').text("ID"))
                 tr.append($('<th>').attr('class', 'col-5').text("Catalogue Entry"))
                 tr.append($('<th>').attr('class', 'col-2').text("Frequency"))
                 tr.append($('<th>').attr('class', 'col-2').text("Force Run"))
                 tr.append($('<th>').attr('class', 'col-2 text-end').text("Action"))
                 thead.append(tr);
+                if(has_edit_access){
+                    $('#custom-query-select-all').change(function(){
+                        $('.custom-query-checkbox').prop('checked', this.checked);
+                        kblayersubscription.update_custom_query_bulk_button();
+                    });
+                }
 
                 if(!response || !response.results.length){
-                    tbody.html("<tr><td colspan='4' class='text-center'>No results found</td></tr>");
+                    tbody.html("<tr><td colspan='" + colspan + "' class='text-center'>No results found</td></tr>");
+                    kblayersubscription.update_custom_query_bulk_button();
                     return;
                 }
 
                 tbody.empty();
                 for(let catalogue_entry of response.results){
                     let row = $('<tr>');
+                    if(has_edit_access){
+                        let checkbox = $(`<input type="checkbox" class="custom-query-checkbox" value="${catalogue_entry.id}">`)
+                        checkbox.change(function(){
+                            kblayersubscription.sync_custom_query_select_all();
+                            kblayersubscription.update_custom_query_bulk_button();
+                        });
+                        row.append($('<td>').append(checkbox))
+                    }
                     row.append($('<td>').append($('<a href="/catalogue/entries/' + catalogue_entry.id + '/details/" style="text-decoration: none;">').text(`CE${catalogue_entry.id}`)))
                     row.append($('<td>').html(`${catalogue_entry.name}`))
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
@@ -1097,7 +1124,7 @@ var kblayersubscription = {
 
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
-                    if($('#has_edit_access').val() == "True"){
+                    if(has_edit_access){
                         let button_edit = $('<button class="btn btn-primary btn-sm mx-1" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-history">Edit</button>')
                         let button_delete = $('<button class="btn btn-danger btn-sm" id="subscription-custom-query-table-tbody-row-' + catalogue_entry.id + '-delete">Delete</button>')
                         button_edit.click(()=>kblayersubscription.show_custom_query_modal(catalogue_entry))
@@ -1108,11 +1135,45 @@ var kblayersubscription = {
                     row.append(td_for_buttons)
                     tbody.append(row);
                 }
+                kblayersubscription.update_custom_query_bulk_button();
             },
             error: (error)=> {
-                tbody.html("<tr><td colspan='4' class='text-center'>" + message + "</td></tr>");
+                tbody.html("<tr><td colspan='6' class='text-center'>" + message + "</td></tr>");
                 common_entity_modal.show_alert("An error occured while getting mappings.");
             },
+        });
+    },
+    sync_custom_query_select_all: function(){
+        let total = $('.custom-query-checkbox').length;
+        let checked = $('.custom-query-checkbox:checked').length;
+        $('#custom-query-select-all').prop('checked', total > 0 && total === checked);
+    },
+    update_custom_query_bulk_button: function(){
+        let any_checked = $('.custom-query-checkbox:checked').length > 0;
+        $('#subscription-dbtable-bulk-force-run-enable').prop('disabled', !any_checked);
+        $('#subscription-dbtable-bulk-force-run-disable').prop('disabled', !any_checked);
+    },
+    bulk_force_run_custom_queries: function(forceRunStatus){
+        let selectedIds = $('.custom-query-checkbox:checked').map(function(){ return +$(this).val(); }).get();
+        if(!selectedIds.length){
+            return;
+        }
+
+        let url = kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/bulk-force-run-query/";
+        $.ajax({
+            url: url,
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
+            data: JSON.stringify({catalogue_entry_ids: selectedIds, force_run: forceRunStatus}),
+            success: (response) => {
+                FeedbackModal.showFeedback(response.message, true);
+                kblayersubscription.get_custom_query_info();
+            },
+            error: (xhr) => {
+                FeedbackModal.showFeedback('Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : xhr.statusText), false);
+            }
         });
     },
     get_custom_query_info_not_working: function() {

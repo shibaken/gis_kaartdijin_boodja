@@ -1485,6 +1485,50 @@ class LayerSubscriptionViewSet(
             
         # Return Response
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @decorators.action(detail=True, methods=["POST"], url_path="bulk-force-run-query")
+    def bulk_force_run_query(self, request: request.Request, pk: str) -> response.Response:
+        """Bulk-set force_run_postgres_scanner on the given custom query catalogue entries.
+
+        Args:
+            request (request.Request): API request.
+            pk (str): Primary key of the Layer Subscription.
+
+        Returns:
+            response.Response: A message and the number of catalogue entries updated.
+        """
+        # Retrieve Layer Subscription
+        # Help `mypy` by casting the resulting object to a Layer Subscription
+        subscription = self.get_object()
+        subscription = cast(models.layer_subscriptions.LayerSubscription, subscription)
+
+        catalogue_entry_ids = request.data.get('catalogue_entry_ids')
+        if not catalogue_entry_ids or not isinstance(catalogue_entry_ids, list):
+            raise ValidationError("catalogue_entry_ids is required and must be a list")
+
+        force_run = request.data.get('force_run', True)
+        if not isinstance(force_run, bool):
+            raise ValidationError("force_run must be a boolean")
+
+        # Only target custom query catalogue entries belonging to this subscription
+        catalogue_entries = models.catalogue_entries.CatalogueEntry.objects.filter(
+            id__in=catalogue_entry_ids,
+            type=models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY,
+            layer_subscription=subscription,
+        )
+        updated_count = catalogue_entries.update(force_run_postgres_scanner=force_run)
+
+        action_label = "enabled" if force_run else "disabled"
+        msg = f'Force run has been {action_label} for {updated_count} custom query catalogue entries from the subscription: [{subscription}].'
+        logger.info(msg)
+        logs_utils.add_to_actions_log(
+            user=request.user,
+            model=subscription,
+            action=msg,
+        )
+
+        # Return Response
+        return response.Response({'message': msg, 'updated_count': updated_count}, status=status.HTTP_200_OK)
     
 @drf_utils.extend_schema(tags=["Catalogue - Layer Symbology"])
 class LayerSymbologyViewSet(
