@@ -390,8 +390,11 @@ var kblayersubscription = {
         $('#subscription-dbtable-table-custom-add').click(function(){
             kblayersubscription.show_custom_query_modal();
         });
-        $('#subscription-dbtable-bulk-force-run').click(function(){
-            kblayersubscription.bulk_force_run_custom_queries();
+        $('#subscription-dbtable-bulk-force-run-enable').click(function(){
+            kblayersubscription.bulk_force_run_custom_queries(true);
+        });
+        $('#subscription-dbtable-bulk-force-run-disable').click(function(){
+            kblayersubscription.bulk_force_run_custom_queries(false);
         });
 
         kblayersubscription.retrieve_communication_types();
@@ -1146,11 +1149,13 @@ var kblayersubscription = {
         $('#custom-query-select-all').prop('checked', total > 0 && total === checked);
     },
     update_custom_query_bulk_button: function(){
-        $('#subscription-dbtable-bulk-force-run').prop('disabled', $('.custom-query-checkbox:checked').length === 0);
+        let any_checked = $('.custom-query-checkbox:checked').length > 0;
+        $('#subscription-dbtable-bulk-force-run-enable').prop('disabled', !any_checked);
+        $('#subscription-dbtable-bulk-force-run-disable').prop('disabled', !any_checked);
     },
-    bulk_force_run_custom_queries: function(){
-        let catalogue_entry_ids = $('.custom-query-checkbox:checked').map(function(){ return +$(this).val(); }).get();
-        if(!catalogue_entry_ids.length){
+    bulk_force_run_custom_queries: function(forceRunStatus){
+        let selectedIds = $('.custom-query-checkbox:checked').map(function(){ return +$(this).val(); }).get();
+        if(!selectedIds.length){
             return;
         }
 
@@ -1161,7 +1166,7 @@ var kblayersubscription = {
             dataType: 'json',
             contentType: 'application/json',
             headers: {'X-CSRFToken' : $("#csrfmiddlewaretoken").val()},
-            data: JSON.stringify({catalogue_entry_ids: catalogue_entry_ids}),
+            data: JSON.stringify({catalogue_entry_ids: selectedIds, force_run: forceRunStatus}),
             success: (response) => {
                 FeedbackModal.showFeedback(response.message, true);
                 kblayersubscription.get_custom_query_info();
