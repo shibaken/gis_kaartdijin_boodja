@@ -392,12 +392,18 @@
                                           </div>
                                     </div>
                                     <div class="card-body collapse show" id="box5-card-body">
-                                          <div class='mb-1 text-end'>
-                                                {% if has_edit_access is True %}
-                                                      <button id="subscription-dbtable-bulk-force-run-enable" class="btn btn-secondary btn-sm" disabled>Enable Force Run</button>
-                                                      <button id="subscription-dbtable-bulk-force-run-disable" class="btn btn-secondary btn-sm" disabled>Clear Force Run</button>
-                                                      <button class="btn btn-primary btn-sm" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
-                                                {% endif %}
+                                          <div class='mb-2 d-flex justify-content-between align-items-center'>
+                                                <div>
+                                                      {% if has_edit_access is True %}
+                                                            <button id="subscription-dbtable-bulk-force-run-enable" class="btn btn-secondary btn-sm" disabled>Enable Force Run</button>
+                                                            <button id="subscription-dbtable-bulk-force-run-disable" class="btn btn-secondary btn-sm" disabled>Disable Force Run</button>
+                                                      {% endif %}
+                                                </div>
+                                                <div>
+                                                      {% if has_edit_access is True %}
+                                                            <button class="btn btn-primary btn-sm" id='subscription-dbtable-table-custom-add' aria-current="page" >Add Custom Layer</button>  
+                                                      {% endif %}
+                                                </div>
                                           </div>
                                           <table id="subscription-custom-query-table" class="table" style="width:100%">
                                                 <thead class='table-dark' id='subscription-custom-query-table-thead'>
