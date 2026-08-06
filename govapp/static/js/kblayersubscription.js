@@ -34,7 +34,8 @@ var kblayersubscription = {
         log_communication_type_url:"/api/logs/communications/type/",
         communication_type: null,
     
-        source_layers: []
+        source_layers: [],
+        source_layer_error: false   // For tracking connection errors when fetching source layers
     },
     init_dashboard: function() { 
 
@@ -159,7 +160,7 @@ var kblayersubscription = {
                     row.append($('<td>').append($('<span>').addClass(kblayersubscription.var.status_map[+layer_subscription.status].class).text(layer_subscription.status_str)))
                     row.append($('<td>').text(layer_subscription.type_str))
                     row.append($('<td>').text(layer_subscription.workspace_str))
-                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'))
+                    row.append($('<td class="text-center">').append(layer_subscription.enabled ? '<i class="bi bi-check-circle-fill text-success fs-5"></i>' : '<i class="bi bi-x-circle-fill text-danger fs-5"></i>'))
                     row.append($('<td>').text(layer_subscription.updated_at))
                     row.append($('<td>').text(layer_subscription.assigned_to_name))
                     
@@ -402,11 +403,12 @@ var kblayersubscription = {
         kblayersubscription.check_connection();
     },
     check_connection: async() => {
-        const $button = $(this);
+        const $button = $('#subscription_check_connection_btn');
         const $spinner = $('#subscription_check_connection_spinner')
 
         $button.prop('disabled', true);
         $spinner.show()
+
         try {
             await kblayersubscription.perform_check_connection();
         } finally {
@@ -415,11 +417,16 @@ var kblayersubscription = {
         }
     },
     updateSourceList: async () => {
-        const $button = $(this);
+        const $button = $('#update_wms_source_list_btn, #update_wfs_source_list_btn, #update_postgis_source_list_btn');
         const $spinner = $('#update_source_list_spinner')
 
         $button.prop('disabled', true);
         $spinner.show()
+
+        // Temporarily replace 'On Server' column badges with a loading spinner
+        $('#catalogue-entries-table td .badge').replaceWith(
+            '<span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>'
+        );
         
         try {
             await kblayersubscription.get_mappings(true);
@@ -708,6 +715,8 @@ var kblayersubscription = {
     },
     get_mappings: async function(force_to_query=false){
         try{
+            kblayersubscription.var.source_layer_error = false; // Reset error flag
+
             const [source_layers, catalogue_entries] = await Promise.all([
                 kblayersubscription.get_mapping_source(force_to_query),
                 kblayersubscription.get_mapping_info()
@@ -718,6 +727,14 @@ var kblayersubscription = {
             kblayersubscription.construct_source_layers_table(catalogue_entries);  // This is displayed in the add/edit modal
         } catch (error){
             console.error('Error', error)
+
+            // Set error flag to true when connection fails
+            kblayersubscription.var.source_layer_error = true;
+
+            // Still render the table so users can see the error status in columns
+            const catalogue_entries = await kblayersubscription.get_mapping_info().catch(() => []);
+            kblayersubscription.construct_catalogue_entries_table(catalogue_entries);
+
             const summaryEl = $('#missing_layers_summary');
             summaryEl.html(`<span class="badge bg-danger">&#10007; Could not retrieve layer list from server</span>`);
             summaryEl.show();
@@ -766,12 +783,27 @@ var kblayersubscription = {
             },
             { 
                 title: 'Mapping Name',
+                data: 'mapping_name'
+            },
+            /* --- ADDED: Server Status Column --- */
+            {
+                title: 'On Server',
                 data: 'mapping_name',
+                className: 'text-center',
                 render: (data, type, row) => {
                     if (type === 'display') {
+                        // Check if there was a server connection error
+                        if (kblayersubscription.var.source_layer_error) {
+                            return '<span class="badge bg-secondary" title="Failed to connect to server">Unknown</span>';
+                        }
+
                         const sourceLayerNames = new Set(kblayersubscription.var.source_layers.map(layer => layer.name));
-                        const isMappingNameInSourceLayers = sourceLayerNames.has(data);
-                        return `<span style="${isMappingNameInSourceLayers ? '' : 'background-color: #ffc107;'}" title="This mapping name does not match any layer name on the server.">${data}</span>`;
+                        const exists = sourceLayerNames.has(data);
+                        if (exists) {
+                            return '<span class="badge bg-success">Found</span>';
+                        } else {
+                            return '<span class="badge bg-warning text-dark">Not Found</span>';
+                        }
                     }
                     return data;
                 }
@@ -825,9 +857,9 @@ var kblayersubscription = {
         const summaryEl = $('#missing_layers_summary');
         if (totalCount > 0) {
             if (missingCount === 0) {
-                summaryEl.html(`<span class="badge bg-success">&#10003; All ${totalCount} layer(s) found on server</span>`);
+                summaryEl.html(`<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>All ${totalCount} layer(s) found on server</span>`);
             } else {
-                summaryEl.html(`<span class="badge bg-warning text-dark">&#9888; ${missingCount} / ${totalCount} layer(s) not found on server</span>`);
+                summaryEl.html(`<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle-fill me-1"></i> ${missingCount} / ${totalCount} layer(s) not found on server</span>`);
             }
             summaryEl.show();
         } else {
@@ -886,12 +918,21 @@ var kblayersubscription = {
         });
     },
     perform_check_connection: function(){
-        $("#subscription_check_connection_results").empty();
-        $("#subscription_check_connection_spinner").show();
+        // $("#subscription_check_connection_results").empty();
+        // $("#subscription_check_connection_spinner").show();
+        // $("#subscription_check_connection_btn").prop("disabled", true);
+
+        // Show loading spinner and text inside the results element immediately
+        $("#subscription_check_connection_results").html(
+            '<div class="d-flex align-items-center text-muted">' +
+            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' +
+            '<span>Checking connection...</span>' +
+            '</div>'
+        );
         $("#subscription_check_connection_btn").prop("disabled", true);
 
         // call GET API
-        $.ajax({
+        return $.ajax({
             url: kblayersubscription.var.layersubscription_data_url + $('#subscription_id').val() + "/check_connection/",
             method: 'GET',
             dataType: 'json',
@@ -901,16 +942,16 @@ var kblayersubscription = {
                 // triggered when the server responds with a status code in the range of 200 to 299 (inclusive) or 304.
                 if (xhr.status === 200) {
                     $("#subscription_check_connection_results").html(
-                        '<div class="mt-2">' +
-                        '<span class="text-success"><img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True"></span> ' +
+                        '<div class="d-flex align-items-center">' +
+                        '<i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>' +
                         '<span>Connection is successful.</span>' +
                         '</div>'
                     );
                 } else {
                     let message = response.results || "Unknown error occurred.";
                     $("#subscription_check_connection_results").html(
-                        '<div class="mt-2">' +
-                        '<span class="text-danger"><img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="True"></span> ' +
+                        '<div class="d-flex align-items-center">' +
+                        '<i class="bi bi-x-circle-fill text-danger fs-5 me-2"></i>' +
                         '<span>Connection failed: ' + message + '</span>' +
                         '</div>'
                     );
@@ -927,15 +968,17 @@ var kblayersubscription = {
                     }
                 }
                 $("#subscription_check_connection_results").html(
-                    '<div class="mt-2">' +
-                    '<span class="text-danger"><img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="True"></span> ' +
+                    '<div class="d-flex align-items-center">' +
+                    '<i class="bi bi-x-circle-fill text-danger fs-5 me-2"></i>' +
                     '<span>Connection failed: ' + errorMessage + '</span>' +
                     '</div>'
                 );
             },
             complete: () => {
-                $("#subscription_check_connection_spinner").hide();
+                // Re-enable the button when request finishes
                 $("#subscription_check_connection_btn").prop("disabled", false);
+                // $("#subscription_check_connection_spinner").hide();
+                // $("#subscription_check_connection_btn").prop("disabled", false);
             }
         });
     },
@@ -1120,7 +1163,7 @@ var kblayersubscription = {
                     let typeLabels = catalogue_entry.frequencies.map(frequency => frequency.type_label).join('<br>');
                     let td = $('<td>').html(typeLabels);
                     row.append(td);
-                    row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<img class="yes-no-icon" src="/static/admin/img/icon-yes.svg" alt="True">' : '<img class="yes-no-icon" src="/static/admin/img/icon-no.svg" alt="False">'))
+                    row.append($('<td>').append(catalogue_entry.force_run_postgres_scanner ? '<i class="bi bi-check-circle-fill text-success fs-5"></i>' : '<i class="bi bi-x-circle-fill text-danger fs-5"></i>'))
 
                     // Buttons
                     let td_for_buttons = $('<td class="text-end">')
