@@ -400,7 +400,7 @@ var kblayersubscription = {
 
         kblayersubscription.retrieve_communication_types();
         kblayersubscription.checkCatalogueEntryInputs();
-        kblayersubscription.check_connection();
+        kblayersubscription.perform_check_connection();
     },
     check_connection: async() => {
         const $button = $('#subscription_check_connection_btn');
