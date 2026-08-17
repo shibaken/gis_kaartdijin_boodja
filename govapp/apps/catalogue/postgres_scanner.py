@@ -46,6 +46,11 @@ class Scanner:
         for catalogue_entry_obj in catalogue_entry_list:
             log.info(f'Scanning postgres queries for the CatalogueEntry: [{catalogue_entry_obj}]...')
 
+            # Add None check to prevent crash if layer_subscription is missing or None
+            if not hasattr(catalogue_entry_obj, 'layer_subscription') or not catalogue_entry_obj.layer_subscription:
+                log.warning(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped because it has no layer_subscription.')
+                continue
+
             if catalogue_entry_obj.layer_subscription.status != layer_subscriptions.LayerSubscriptionStatus.LOCKED:
                 log.warning(f'CatalogueEntry: [{catalogue_entry_obj}] is skipped to process because its layer_subscription is not LOCKED.')
                 continue
