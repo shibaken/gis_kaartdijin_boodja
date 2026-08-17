@@ -1256,6 +1256,16 @@ var kblayersubscription = {
         $('#common-entity-modal-content').append($('<br>'))
         common_entity_modal.add_field(label="Force Run Postgres Scanner", type="switch", prev ? prev.force_run_postgres_scanner : false)
 
+        // Overwrite attribute table definition
+        $('#common-entity-modal-content').append($('<br>'))
+        common_entity_modal.add_field(label="Overwrite Attribute Table Definition", type="switch", prev ? prev.overwrite_attributes : false)
+        $('#common-entity-modal-content').append(
+            $('<small>').attr('class', 'form-text text-muted').text(
+                "If checked, the next run will automatically replace the Catalogue " +
+                "Entry's attribute definition with the columns returned by this query."
+            )
+        )
+
         if(prev && prev.frequencies && prev.frequencies.length > 0){
             for(let i in prev.frequencies){
                 kblayersubscription.create_freq_option(div, prev.frequencies[i].type, prev.frequencies[i], freq_option_ids, div.children().length);
@@ -1394,7 +1404,8 @@ var kblayersubscription = {
             description: '',
             sql_query : utils.validate_empty_input(common_entity_modal.get_label(ids.sql_query_id), $('#'+ids.sql_query_id).val()),
             frequency_type : utils.validate_empty_input(common_entity_modal.get_label(ids.frequency_id), +$('#'+ids.frequency_id).val()),
-            force_run_postgres_scanner: $('#common-entity-modal-force-run-postgres-scanner').prop('checked')
+            force_run_postgres_scanner: $('#common-entity-modal-force-run-postgres-scanner').prop('checked'),
+            overwrite_attributes: $('#common-entity-modal-overwrite-attribute-table-definition').prop('checked')
         };
         if(ids.freq_option_ids == null || ids.freq_option_ids.length == 0){
             throw new Error("At least one frequency option is required");
