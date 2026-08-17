@@ -464,6 +464,14 @@ class Absorber:
             if symbology:
                 self.create_layer_symbology(symbology, catalogue_entry)
 
+        elif catalogue_entry.type == models.catalogue_entries.CatalogueEntryType.SUBSCRIPTION_QUERY and catalogue_entry.overwrite_attributes and attributes:
+            # Bypass the attributes-hash mismatch check by replacing the existing
+            # LayerAttributes with the newly scanned column structure up front, so the
+            # hash comparison inside layer_submission.activate() below matches trivially.
+            self.overwrite_layer_attributes(attributes, catalogue_entry)
+            catalogue_entry.overwrite_attributes = False
+            catalogue_entry.save()
+
         # Attempt to "Activate" this Layer Submission
         layer_submission.activate(False)
         
@@ -545,6 +553,36 @@ class Absorber:
                     catalogue_entry=catalogue_entry,
                 )
                 logger.info(f'LayerMetadata: [{layer_attribute}] has been created for the CatalogueEntry: [{catalogue_entry}].')
+
+    def overwrite_layer_attributes(self, attributes, catalogue_entry):
+        """Replaces all existing LayerAttributes of the catalogue_entry with the newly
+        scanned attributes. Used when overwrite_attributes is enabled on a Subscription
+        Query, to bypass the attributes-hash mismatch check in layer_submission.activate().
+        """
+        catalogue_entry.attributes.all().delete()
+        models.layer_attributes.LayerAttribute.objects.bulk_create([
+            models.layer_attributes.LayerAttribute(
+                name=attribute.name,
+                type=attribute.type,
+                order=attribute.order,
+                catalogue_entry=catalogue_entry,
+            )
+            for attribute in attributes
+        ])
+        logger.info(
+            f"Overwrote LayerAttributes for CatalogueEntry: [{catalogue_entry}] "
+            f"with the newly scanned column structure ({len(attributes)} attributes)."
+        )
+        logs_utils.add_to_actions_log(
+            user=None,
+            model=catalogue_entry,
+            action=(
+                f"CatalogueEntry: [{catalogue_entry}]'s attribute definition was "
+                f"automatically overwritten with the latest Custom Query column "
+                f"structure (overwrite_attributes was enabled)."
+            ),
+            default_to_system=True,
+        )
 
     def create_layer_symbology(self, symbology, catalogue_entry):
         """
