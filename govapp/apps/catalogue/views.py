@@ -1445,6 +1445,7 @@ class LayerSubscriptionViewSet(
                 'sql_query' : catalogue_entry.sql_query,
                 'frequencies' : frequencies,
                 'force_run_postgres_scanner': catalogue_entry.force_run_postgres_scanner,
+                'overwrite_attributes': catalogue_entry.overwrite_attributes,
             })
             
         # Return Response
