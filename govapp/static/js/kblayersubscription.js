@@ -1253,11 +1253,10 @@ var kblayersubscription = {
         const add_freq_btn_id = common_entity_modal.add_field("Add Frequency", "button", null, null, true);
 
         // Force run postgres scanner
-        $('#common-entity-modal-content').append($('<br>'))
+        $('#common-entity-modal-content').append($('<br>')).append($('<br>'))
         common_entity_modal.add_field(label="Force Run Postgres Scanner", type="switch", prev ? prev.force_run_postgres_scanner : false)
 
         // Overwrite attribute table definition
-        $('#common-entity-modal-content').append($('<br>'))
         common_entity_modal.add_field(label="Overwrite Attribute Table Definition", type="switch", prev ? prev.overwrite_attributes : false)
         $('#common-entity-modal-content').append(
             $('<small>').attr('class', 'form-text text-muted').text(
