@@ -146,6 +146,15 @@ class CatalogueEntry(mixins.RevisionedMixin):
     )
     permission_type = models.IntegerField(choices=CatalogueEntryPermissionType.choices, default=CatalogueEntryPermissionType.NOT_RESTRICTED)
     force_run_postgres_scanner = models.BooleanField(default=False)
+    overwrite_attributes = models.BooleanField(
+        default=False,
+        help_text=(
+            "If True, the next scan/absorption of this Subscription Query will "
+            "replace the Catalogue Entry's attribute (column) definition with "
+            "whatever the query currently returns, instead of declining on a "
+            "column structure mismatch. Automatically reset to False once consumed."
+        ),
+    )
     default_crs = models.ForeignKey(
         "catalogue.AllowedCRS",
         null=True,
