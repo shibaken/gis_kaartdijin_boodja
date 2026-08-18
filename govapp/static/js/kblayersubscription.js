@@ -1241,8 +1241,10 @@ var kblayersubscription = {
 
         common_entity_modal.init("Add Custom Table Layer", type="submit");
         const name_id = common_entity_modal.add_field("Catalogue Entry Name", "text", prev ? prev.name : null);
-        // const description_id = common_entity_modal.add_field("Description", "text", prev ? prev.description : null);
+
+        $('#common-entity-modal-content').append($('<div>').attr('class', 'mt-3'));
         const sql_query_id = common_entity_modal.add_field("SQL Query", "text_area", prev ? prev.sql_query : null);
+        $('#common-entity-modal-content').append($('<div>').attr('class', 'mt-3'));
         
         // Frequency
         let frequency_type = (prev && prev.frequencies && prev.frequencies.length > 0) ? prev.frequencies[0].type : null;
@@ -1252,14 +1254,20 @@ var kblayersubscription = {
         common_entity_modal.add_div("Frequency Options", div);
         const add_freq_btn_id = common_entity_modal.add_field("Add Frequency", "button", null, null, true);
 
+        $('#common-entity-modal-content').append($('<div>').attr('class', 'mt-3'));
+
         // Force run postgres scanner
-        $('#common-entity-modal-content').append($('<br>')).append($('<br>'))
         common_entity_modal.add_field(label="Force Run Postgres Scanner", type="switch", prev ? prev.force_run_postgres_scanner : false)
+        $('#common-entity-modal-content').append(
+            $('<div>').attr('class', 'form-text text-muted mb-3').text(
+                "If checked, the next scanner job will run this query immediately without waiting for the scheduled frequency."
+            )
+        );
 
         // Overwrite attribute table definition
         common_entity_modal.add_field(label="Overwrite Attribute Table Definition", type="switch", prev ? prev.overwrite_attributes : false)
         $('#common-entity-modal-content').append(
-            $('<small>').attr('class', 'form-text text-muted').text(
+            $('<div>').attr('class', 'form-text text-muted mb-3').text(
                 "If checked, the next run will automatically replace the Catalogue " +
                 "Entry's attribute definition with the columns returned by this query."
             )
