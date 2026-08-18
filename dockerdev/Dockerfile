@@ -1,5 +1,6 @@
 # Prepare the base environment.
-FROM dbcawa/gis_kaartdijin_boodja:latest as builder_base_gis_kaartdijin_boodjadev
+FROM ghcr.io/dbca-wa/gis_kaartdijin_boodja:latest as builder_base_gis_kaartdijin_boodjadev
+
 USER root
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y patch
