@@ -393,11 +393,11 @@ def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, expo
 def postgres_to_shapefile(layer_name: str, hostname: str, username: str, password: str, database:  str, port: str, sqlquery: str) -> dict: 
     log.info(f"Converting custom query for the PostGIS to shapefile...")
 
+    # Use local container storage (_WORK_DIR) to avoid Azure File Share
+    # rejecting utime/chmod calls made by pgsql2shp on the output file.
+    work_dir = tempfile.mkdtemp(dir=_WORK_DIR)
     try:
         converted = {}
-        # Use local container storage (_WORK_DIR) to avoid Azure File Share
-        # rejecting utime/chmod calls made by pgsql2shp on the output file.
-        work_dir = tempfile.mkdtemp(dir=_WORK_DIR)
         cleaned_sqlquery = sqlquery.replace('\n', ' ')
 
         command = [
@@ -456,6 +456,12 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
     except Exception as e:
         log.error(f"Unexpected error converting custom query for the PostGIS to shapefile: {e}")
         raise
+    finally:
+        # work_dir's contents are archived into compressed_filepath and moved
+        # to _TMP_BASE before this point on the success path, so it is always
+        # safe to remove it here, on every code path (success, empty-result,
+        # unexpected error, or exception).
+        shutil.rmtree(work_dir, ignore_errors=True)
 
 
 def convert_tiff_to_geopackage(input_tiff, output_gpkg, output_layer_name):
