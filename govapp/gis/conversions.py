@@ -245,9 +245,13 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
     """
     log.info(f"Converting file '{filepath}' layer: '{layer}' to ShapeFile...")
 
+    decompressed_dir: pathlib.Path | None = None
     try:
         # Decompress and Flatten if Required
+        original_filepath = filepath
         filepath = compression.decompress(filepath)
+        if filepath != original_filepath:
+            decompressed_dir = filepath
         filepath = compression.flatten(filepath)
 
         # Construct Output Filepath
@@ -298,6 +302,11 @@ def to_shapefile(filepath: pathlib.Path, layer: str, catalogue_name: str, export
     except Exception as e:
         log.error(f"Unexpected error converting file '{filepath}' layer: '{layer}' to Shapefile: {e}")
         raise
+    finally:
+        # work_dir is intentionally left in place: the returned dict's
+        # uncompressed_filepath points inside it, for the caller to use.
+        if decompressed_dir is not None:
+            shutil.rmtree(decompressed_dir, ignore_errors=True)
 
 
 def to_geodatabase(filepath: pathlib.Path, layer: str, catalogue_name: str, export_method: str) -> dict:
