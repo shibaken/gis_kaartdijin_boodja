@@ -53,7 +53,11 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
         file (pathlib.Path): File to be decompressed.
 
     Returns:
-        pathlib.Path: Path to the decompressed directory.
+        pathlib.Path: Path to the decompressed directory. The caller is
+        responsible for the lifecycle of this directory (including deleting
+        it once it is no longer needed) if a new directory was created here;
+        if no decompression was required, the original `file` path is
+        returned unchanged and must not be deleted by the caller.
     """
     # Log
     log.info(f"Attemping to decompress '{file}' if required")
@@ -84,8 +88,13 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
     log.info(f"Decompressing the file:[{file}] to the folder: [{extracted_path}]...")
 
     # Decompress
-    with algorithm(file) as archive:
-        archive.extractall(path=extracted_path)
+    try:
+        with algorithm(file) as archive:
+            archive.extractall(path=extracted_path)
+    except Exception:
+        # Remove any partially-extracted content before propagating the error.
+        shutil.rmtree(extracted_path, ignore_errors=True)
+        raise
 
     return extracted_path  # Return the path to the extracted directory
 
