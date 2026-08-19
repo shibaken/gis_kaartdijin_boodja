@@ -5,6 +5,7 @@ import datetime
 import logging
 import pathlib
 import os
+import shutil
 from typing import Optional
 import uuid
 import zipfile
@@ -106,6 +107,9 @@ class Absorber:
         folder_name = os.path.splitext(os.path.basename(path_to_file))[0]
         temp_dir = os.path.join(folder_path, folder_name)
 
+        # Track whether temp_dir was actually created, so cleanup only ever
+        # targets a directory this method is responsible for.
+        compressed_algorithm = None
         try:
             filepaths_to_process = []
 
@@ -180,7 +184,12 @@ class Absorber:
                 self.process_vector_file(path_to_file)  # For compressed shapefile, compressed gdb file
 
         finally:
-            pass
+            # Only remove temp_dir if this call actually created it (i.e. the source was a compressed archive)
+            # and it still exists. Single uncompressed files must not trigger removal of an existing directory.
+            # ignore_errors=True ensures transient Azure Files/SMB sharing violations during cleanup do not fail the pipeline.
+            if compressed_algorithm and os.path.isdir(temp_dir):
+                shutil.rmtree(temp_dir, ignore_errors=True)
+                logger.info(f"Removed extraction directory: [{temp_dir}]")
 
     def process_tiff_file(self, filepath):
         pathlib_filepath = pathlib.Path(filepath)
