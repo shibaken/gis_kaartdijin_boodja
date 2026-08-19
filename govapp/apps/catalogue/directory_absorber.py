@@ -609,6 +609,12 @@ class Absorber:
 
         # Move the file into a folder named date(ddmmyyyy) in the data storage
         if self.storage.move_to_storage(str(path_from), path_to):
+            # path_from lived inside a scratch directory created solely for this
+            # converted GeoJSON file (see conversions.to_geojson()); now that the
+            # file has been moved out, that directory is empty and safe to remove.
+            scratch_dir = path_from.parent
+            if os.path.isdir(scratch_dir):
+                shutil.rmtree(scratch_dir, ignore_errors=True)
             return path_to
         
         # Raise Exception when it failed for some reasons
