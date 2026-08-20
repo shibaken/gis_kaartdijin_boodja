@@ -66,7 +66,6 @@ def decompress(file: pathlib.Path) -> pathlib.Path:
         log.info(f"File is a directory, no decompression required: [{file}]")
         return file
 
-
     # Check file
     algorithm = get_compressed_algorithm(file)
 
