@@ -444,7 +444,6 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
         final_compressed_filepath = pathlib.Path(final_dir) / compressed_filepath.name
         shutil.move(str(compressed_filepath), str(final_compressed_filepath), copy_function=shutil.copyfile)
         log.info(f"Moved compressed file to final storage: [{final_compressed_filepath}]")
-        converted["output_dir"] = work_dir
         converted["compressed_filepath"] = str(final_compressed_filepath)
         log.info(f'converted: [{converted}]')
 
