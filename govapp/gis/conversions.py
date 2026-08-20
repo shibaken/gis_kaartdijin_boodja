@@ -11,6 +11,7 @@ from osgeo import gdal
 
 # Third-Party
 import decouple
+from django.utils.text import get_valid_filename
 
 # Local
 from govapp.gis import compression
@@ -438,10 +439,15 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
                 return False  # Return False to indicate unexpected error (e.g., syntax error, connection failure)
 
         log.info(f"Success: Converted custom query for the PostGIS to shapefile successfully.")
+
         # Compress on local storage, then move the zip to Azure.
         compressed_filepath = compression.compress(pathlib.Path(work_dir))
         final_dir = tempfile.mkdtemp(dir=_TMP_BASE)
-        final_compressed_filepath = pathlib.Path(final_dir) / compressed_filepath.name
+
+        # Sanitize layer_name to be safe for all filesystems
+        safe_layer_name = get_valid_filename(f"{layer_name}.zip")
+        final_compressed_filepath = pathlib.Path(final_dir) / safe_layer_name
+
         shutil.move(str(compressed_filepath), str(final_compressed_filepath), copy_function=shutil.copyfile)
         log.info(f"Moved compressed file to final storage: [{final_compressed_filepath}]")
         converted["compressed_filepath"] = str(final_compressed_filepath)
