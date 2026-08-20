@@ -75,12 +75,18 @@ def catalogue_entry_update_success(entry: "catalogue_entries.CatalogueEntry") ->
             layer=entry.metadata.name
         )
 
-        if settings.WEBHOOK_ENABLED:
-            # Send Webhook Posts
-            webhooks.post_geojson(
-                *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
-                geojson=geojson['full_filepath'],
-            )
+        try:
+            if settings.WEBHOOK_ENABLED:
+                # Send Webhook Posts
+                webhooks.post_geojson(
+                    *entry.webhook_notifications(manager="on_new_data").all(),  # type: ignore[operator]
+                    geojson=geojson['full_filepath'],
+                )
+        finally:
+            # Remove the to_geojson() scratch directory now that the webhook payload has been sent/read.
+            scratch_dir = geojson['full_filepath'].parent
+            if scratch_dir.is_dir():
+                shutil.rmtree(scratch_dir, ignore_errors=True)
 
         # Delete local temporary copy of file if we can
         shutil.rmtree(filepath.parent, ignore_errors=True)
