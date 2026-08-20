@@ -153,44 +153,51 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             export_method='cddp'
         )
 
-        # # Construct Path
-        output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY + os.path.sep + self.path)
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
+        try:
+            # # Construct Path
+            output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY + os.path.sep + self.path)
+            if not os.path.exists(output_path):
+                os.makedirs(output_path)
 
-        geodb_dir = ""
-        if self.format == CDDPPublishChannelFormat.GEODATABASE:
-            file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
-            if len(file_names_geodb) == 1:
-                geodb_dir = file_names_geodb[0]
-
-        file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath']) + os.path.sep + str(geodb_dir)))
-        for file_name in file_names:            
-            new_output_path = os.path.join(output_path,file_name)
+            geodb_dir = ""
             if self.format == CDDPPublishChannelFormat.GEODATABASE:
-                if len(new_output_path) > 0:
-                    if os.path.isdir(new_output_path):
-                        shutil.rmtree(pathlib.Path(new_output_path))
+                file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
+                if len(file_names_geodb) == 1:
+                    geodb_dir = file_names_geodb[0]
+
+            file_names = os.listdir(pathlib.Path(str(publish_directory['uncompressed_filepath']) + os.path.sep + str(geodb_dir)))
+            for file_name in file_names:            
+                new_output_path = os.path.join(output_path,file_name)
+                if self.format == CDDPPublishChannelFormat.GEODATABASE:
+                    if len(new_output_path) > 0:
+                        if os.path.isdir(new_output_path):
+                            shutil.rmtree(pathlib.Path(new_output_path))
+                        if os.path.isfile(new_output_path):
+                            os.remove(new_output_path)   
+
+                else:
                     if os.path.isfile(new_output_path):
-                        os.remove(new_output_path)   
+                        os.remove(new_output_path)
+                source_path = os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath']) + os.path.sep + str(geodb_dir)), file_name)
+                destination_path = os.path.join(output_path, file_name)
+                shutil.copyfile(source_path, destination_path)
+                os.unlink(source_path)
 
-            else:
-                if os.path.isfile(new_output_path):
-                    os.remove(new_output_path)
-            source_path = os.path.join(pathlib.Path(str(publish_directory['uncompressed_filepath']) + os.path.sep + str(geodb_dir)), file_name)
-            destination_path = os.path.join(output_path, file_name)
-            shutil.copyfile(source_path, destination_path)
-            os.unlink(source_path)
-
-        if self.format == CDDPPublishChannelFormat.GEODATABASE:
-            # Copy XML from orignal spatial archive.
-            xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + os.path.sep + self.name + ".xml")
-            if os.path.isfile(xml_file):
-                xml_output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY)
-                if self.xml_path:
-                    xml_output_path = xml_output_path.joinpath(self.xml_path)
-                log.info(f'Copy xml_file: [{xml_file}] to xml_output_path: [{xml_output_path}].')
-                shutil.copy(xml_file, xml_output_path)
+            if self.format == CDDPPublishChannelFormat.GEODATABASE:
+                # Copy XML from orignal spatial archive.
+                xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + os.path.sep + self.name + ".xml")
+                if os.path.isfile(xml_file):
+                    xml_output_path = pathlib.Path(conf.settings.AZURE_OUTPUT_SYNC_DIRECTORY)
+                    if self.xml_path:
+                        xml_output_path = xml_output_path.joinpath(self.xml_path)
+                    log.info(f'Copy xml_file: [{xml_file}] to xml_output_path: [{xml_output_path}].')
+                    shutil.copy(xml_file, xml_output_path)
+        finally:
+            # uncompressed_filepath is always a scratch directory created by the conversion
+            # function (tempfile.mkdtemp); it is safe to remove once files are copied.
+            scratch_dir = publish_directory.get('uncompressed_filepath')
+            if scratch_dir and os.path.isdir(scratch_dir):
+                shutil.rmtree(scratch_dir, ignore_errors=True)
 
     def publish_sharepoint(self) -> None:
         """Publishes the Catalogue Entry to SharePoint if applicable."""
@@ -219,32 +226,39 @@ class CDDPPublishChannel(mixins.RevisionedMixin):
             export_method='cddp'
         )    
 
-        geodb_dir = ""
-        if self.format == CDDPPublishChannelFormat.GEODATABASE:
-            file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
-            if len(file_names_geodb) == 1:
-                geodb_dir = file_names_geodb[0]
+        try:
+            geodb_dir = ""
+            if self.format == CDDPPublishChannelFormat.GEODATABASE:
+                file_names_geodb = os.listdir(publish_directory['uncompressed_filepath'])
+                if len(file_names_geodb) == 1:
+                    geodb_dir = file_names_geodb[0]
 
-        # Push to Sharepoint
-        file_names = os.listdir(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir))        
-        for file_name in file_names:            
-            new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.path,file_name)            
-            sharepoint.sharepoint_output().put(
-                path=new_output_path,
-                contents=pathlib.Path(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir,file_name)).read_bytes(),
-            )
+            # Push to Sharepoint
+            file_names = os.listdir(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir))        
+            for file_name in file_names:            
+                new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.path,file_name)            
+                sharepoint.sharepoint_output().put(
+                    path=new_output_path,
+                    contents=pathlib.Path(os.path.join(publish_directory['uncompressed_filepath'],geodb_dir,file_name)).read_bytes(),
+                )
 
-        if self.format == CDDPPublishChannelFormat.GEODATABASE:
-            # Copy XML from orignal spatial archive.
-            if len(self.xml_path) > 1:
-                xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + os.path.sep + self.name + ".xml")
-                print (xml_file)
-                if os.path.isfile(xml_file):
-                    new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.xml_path,self.name + ".xml")            
-                    sharepoint.sharepoint_output().put(
-                        path=new_output_path,
-                        contents=pathlib.Path(os.path.join(xml_file)).read_bytes(),
-                    )
+            if self.format == CDDPPublishChannelFormat.GEODATABASE:
+                # Copy XML from orignal spatial archive.
+                if len(self.xml_path) > 1:
+                    xml_file = pathlib.Path(str(publish_directory['filepath_before_flatten']) + os.path.sep + self.name + ".xml")
+                    print (xml_file)
+                    if os.path.isfile(xml_file):
+                        new_output_path = os.path.join(conf.settings.SHAREPOINT_OUTPUT_PUBLISH_AREA,self.xml_path,self.name + ".xml")            
+                        sharepoint.sharepoint_output().put(
+                            path=new_output_path,
+                            contents=pathlib.Path(os.path.join(xml_file)).read_bytes(),
+                        )
+        finally:
+            # uncompressed_filepath is always a scratch directory created by the conversion
+            # function (tempfile.mkdtemp); it is safe to remove once files are copied.
+            scratch_dir = publish_directory.get('uncompressed_filepath')
+            if scratch_dir and os.path.isdir(scratch_dir):
+                shutil.rmtree(scratch_dir, ignore_errors=True)
 
 
 class GeoServerPublishChannelMode(models.IntegerChoices):
@@ -659,12 +673,21 @@ class FTPPublishChannel(mixins.RevisionedMixin):
             export_method='ftp'
         )
         
-        log.info(f"Publishing '{self}' to FTP - Uploading to FTP "+(self.path + os.path.sep + generated_template) + '.zip' )
-        session = ftplib.FTP(self.ftp_server.host,self.ftp_server.username,self.ftp_server.password)
-        file = open(publish_directory['compressed_filepath'],'rb')     
-        session.storbinary('STOR '+str(self.path + os.path.sep + generated_template) + '.zip', file)
-        file.close()  
-        session.quit()
+        try:
+            log.info(f"Publishing '{self}' to FTP - Uploading to FTP "+(self.path + os.path.sep + generated_template) + '.zip' )
+            session = ftplib.FTP(self.ftp_server.host,self.ftp_server.username,self.ftp_server.password)
+            file = open(publish_directory['compressed_filepath'],'rb')     
+            session.storbinary('STOR '+str(self.path + os.path.sep + generated_template) + '.zip', file)
+            file.close()  
+            session.quit()
+        finally:
+            # The compressed archive lives inside its own tempfile.mkdtemp(dir=_TMP_BASE)
+            # scratch directory; safe to remove once the FTP upload attempt is done.
+            compressed_filepath = publish_directory.get('compressed_filepath')
+            if compressed_filepath:
+                scratch_dir = pathlib.Path(compressed_filepath).parent
+                if os.path.isdir(scratch_dir):
+                    shutil.rmtree(scratch_dir, ignore_errors=True)
 
 
 class GeoServerLayerHealthcheck(mixins.RevisionedMixin):
