@@ -1,16 +1,15 @@
 {
     "wmsStore" : {
-        "name":	"{{name|escape}}",
-        "description":	"{{description|escape}}", 
+        "name":	"{{name|escapejs}}",
+        "description":	"{{description|escapejs}}", 
         "type": "WMS",
-        "enabled":	{{ enabled }},    
-        "capabilitiesURL":	"{{capability_url|escape}}",
-        "user":	"{{username|escape}}",
-        "password" :	"{{password|escape}}",    
+        "enabled":	{{ enabled|yesno:"true,false" }},    
+        "capabilitiesURL":	"{{capability_url|escapejs}}",
+        "user":	"{{username|escapejs}}",
+        "password" :	"{{password|escapejs}}",    
         "maxConnections":	"{{geoserver_setting.max_connections}}",    
         "readTimeout":	"{{geoserver_setting.read_timeout}}",
         "connectTimeout": "{{geoserver_setting.connect_timeout}}",
-        "metadata": {},
-        "workspace": {},
+        "metadata": {}
     }
 }

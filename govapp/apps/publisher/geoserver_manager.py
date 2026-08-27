@@ -453,6 +453,15 @@ class GeoServerQueueExcutor:
                     layer_name=layer_name,
                 )
 
+                # Re-apply tile cache config; the pre-flight delete above removes any existing GWC layer config.
+                geoserver_obj.create_or_update_cached_layer(
+                    channel.layer_name_with_workspace,
+                    queue_item.publish_entry.catalogue_entry.type,
+                    channel.create_cached_layer,
+                    channel.expire_server_cache_after_n_seconds,
+                    channel.expire_client_cache_after_n_seconds,
+                )
+
                 publish_time = timezone.now()
                 channel.published_at = publish_time
                 channel.save(update_fields=['published_at'])
