@@ -89,7 +89,22 @@ class GeoServer:
         else:
             log.error(f"Failed to create/update the cached layer: [{layer_name}] in the geoserver: [{self.service_url}].  {response.status_code} {response.text}")
         # Layer exists, proceed with deletion
-    
+
+    @handle_http_exceptions(log)
+    def delete_cached_layer(self, layer_name: str) -> None:
+        """Deletes the GWC tile layer configuration for the layer, if it exists."""
+        url = f"{self.service_url}/gwc/rest/layers/{layer_name}.json"
+        log.info(f'Deleting the cached layer (if it exists)... url: [{url}]')
+
+        response = httpx.delete(url=url, auth=(self.username, self.password))
+
+        if response.status_code == 404:
+            log.info(f'No cached layer to delete for [{layer_name}] (already absent).')
+            return
+
+        response.raise_for_status()
+        log.info(f'Cached layer deleted for [{layer_name}].')
+
     @handle_http_exceptions(log)
     def create_store_if_not_exists(self, workspace_name, store_name, data, datastore_type='datastores'):
         # URL to check the existence of the store

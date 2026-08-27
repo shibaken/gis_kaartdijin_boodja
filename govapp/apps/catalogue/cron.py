@@ -53,3 +53,17 @@ class DirectoryScannerCronJob(django_cron.CronJobBase):
 
         # Run Management Command
         management.call_command("scan_dir")        
+
+
+class PendingImportsCleanupCronJob(django_cron.CronJobBase):
+    """Cron Job to remove stale, abandoned chunked-upload files from pending imports."""
+    schedule = django_cron.Schedule(run_every_mins=conf.settings.PENDING_IMPORTS_CLEANUP_PERIOD_MINS)
+    code = "govapp.catalogue.cleanup_pending_imports"
+
+    def do(self) -> None:
+        """Perform the Cleanup Pending Imports Cron Job."""
+        # Log
+        log.info("Cleanup Pending Imports cron job triggered, running...")
+
+        # Run Management Command
+        management.call_command("cleanup_pending_imports")
