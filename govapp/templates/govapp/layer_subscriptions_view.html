@@ -35,7 +35,15 @@
                                     <div class='p-3 border-bottom'>
                                           <div class="mb-3">
                                                 <strong>Status</strong><br>
-                                                {{ status }}
+                                                {% if subscription_obj.status == 2 %}
+                                                      <span class="badge bg-success">{{ status }}</span>
+                                                {% elif subscription_obj.status == 3 %}
+                                                      <span class="badge bg-danger">{{ status }}</span>
+                                                {% elif subscription_obj.status == 5 %}
+                                                      <span class="badge bg-warning">{{ status }}</span>
+                                                {% else %}
+                                                      <span class="badge bg-secondary">{{ status }}</span>
+                                                {% endif %}
                                           </div>
                                           <div>
                                                 <strong>Currently assigned to</strong>
