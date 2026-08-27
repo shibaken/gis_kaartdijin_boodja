@@ -37,7 +37,15 @@
                                     <div class='p-3 border-bottom'>
                                           <div class="mb-3">
                                                 <strong>Status</strong><br>
-                                                {{ catalogue_entry_obj.get_status_display }}
+                                                {% if catalogue_entry_obj.status == CatalogueEntryStatus.LOCKED.value %}
+                                                      <span class="badge bg-success">{{ catalogue_entry_obj.get_status_display }}</span>
+                                                {% elif catalogue_entry_obj.status == CatalogueEntryStatus.DECLINED.value %}
+                                                      <span class="badge bg-danger">{{ catalogue_entry_obj.get_status_display }}</span>
+                                                {% elif catalogue_entry_obj.status == CatalogueEntryStatus.PENDING.value %}
+                                                      <span class="badge bg-warning">{{ catalogue_entry_obj.get_status_display }}</span>
+                                                {% else %}
+                                                      <span class="badge bg-secondary">{{ catalogue_entry_obj.get_status_display }}</span>
+                                                {% endif %}
                                           </div>
                                           <div>
                                                 <strong>Currently assigned to</strong>
