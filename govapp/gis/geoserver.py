@@ -102,6 +102,12 @@ class GeoServer:
             log.info(f'No cached layer to delete for [{layer_name}] (already absent).')
             return
 
+        # Some GeoServer/GWC versions return 500 with an "Unknown layer" message
+        # instead of 404 when the tile layer configuration does not exist.
+        if response.status_code == 500 and 'unknown layer' in response.text.lower():
+            log.info(f'No cached layer to delete for [{layer_name}] (already absent - GeoServer returned 500 Unknown layer).')
+            return
+
         response.raise_for_status()
         log.info(f'Cached layer deleted for [{layer_name}].')
 
