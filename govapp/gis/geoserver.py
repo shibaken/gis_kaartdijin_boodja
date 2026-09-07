@@ -501,6 +501,10 @@ class GeoServer:
             f"{self.service_url}/rest/workspaces/{workspace}"
             f"/datastores/{layer}?recurse=true"
         )
+        coverage_store_delete_url = (
+            f"{self.service_url}/rest/workspaces/{workspace}"
+            f"/coveragestores/{layer}?recurse=true"
+        )
 
         try:
             with requests.Session() as session:
@@ -523,6 +527,17 @@ class GeoServer:
                     log.info(f"Datastore '{layer}' did not exist; nothing to delete.")
                 else:
                     store_del.raise_for_status()
+
+                # GeoServer store names are unique per workspace across all store types, so a
+                # leftover coveragestore from a prior GeoTIFF publication must also be removed.
+                log.info(f"Attempting to delete coverage store (if it exists): {coverage_store_delete_url}")
+                coverage_store_del = session.delete(coverage_store_delete_url, timeout=(15, 120))
+                if coverage_store_del.status_code == 200:
+                    log.info(f"Deleted coverage store '{layer}'.")
+                elif coverage_store_del.status_code == 404:
+                    log.info(f"Coverage store '{layer}' did not exist; nothing to delete.")
+                else:
+                    coverage_store_del.raise_for_status()
 
                 log.info(f"Pre-flight cleanup complete for resource '{layer}'.")
         except requests.exceptions.RequestException as e:
@@ -645,6 +660,10 @@ class GeoServer:
             f"{self.service_url}/rest/workspaces/{workspace}"
             f"/coveragestores/{layer}?recurse=true"
         )
+        data_store_delete_url = (
+            f"{self.service_url}/rest/workspaces/{workspace}"
+            f"/datastores/{layer}?recurse=true"
+        )
 
         try:
             with requests.Session() as session:
@@ -667,6 +686,17 @@ class GeoServer:
                     log.info(f"Coverage store '{layer}' did not exist; nothing to delete.")
                 else:
                     store_del.raise_for_status()
+
+                # GeoServer store names are unique per workspace across all store types, so a
+                # leftover datastore from a prior GeoPackage publication must also be removed.
+                log.info(f"Attempting to delete datastore (if it exists): {data_store_delete_url}")
+                data_store_del = session.delete(data_store_delete_url, timeout=(15, 120))
+                if data_store_del.status_code == 200:
+                    log.info(f"Deleted datastore '{layer}'.")
+                elif data_store_del.status_code == 404:
+                    log.info(f"Datastore '{layer}' did not exist; nothing to delete.")
+                else:
+                    data_store_del.raise_for_status()
 
                 log.info(f"Pre-flight cleanup complete for resource '{layer}'.")
         except requests.exceptions.RequestException as e:
