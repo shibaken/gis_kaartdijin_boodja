@@ -120,9 +120,15 @@ class GeoServerQueueExcutor:
                     else:
                         catalogue_entry_type = queue_item.publish_entry.catalogue_entry.type
                         if catalogue_entry_type in [CatalogueEntryType.SPATIAL_FILE, CatalogueEntryType.SUBSCRIPTION_QUERY]:
-                            # Phase 1: convert file only; kb_geoserver_manager will transfer it to the shared volume
-                            self.result_status = GeoServerQueueStatus.CONVERTED
-                            self._convert_publish_queue_item(queue_item)
+                            if queue_item.publish_entry.geoserver_channels.filter(active=True).exists():
+                                # Case B (or fully-active): Phase 1 convert file only; kb_geoserver_manager
+                                # will transfer it to the shared volume.
+                                self.result_status = GeoServerQueueStatus.CONVERTED
+                                self._convert_publish_queue_item(queue_item)
+                            else:
+                                # Case A: every channel is inactive. Skip conversion/transfer and remove
+                                # the layer from GeoServer everywhere, then hand off file deletion.
+                                self._unpublish_all_channels_for_queue_item(queue_item)
                         else:
                             # Subscription types (WMS/WFS/PostGIS): no file needed, publish directly to GeoServer
                             for geoserver_publish_channel in queue_item.publish_entry.geoserver_channels.all():
@@ -295,6 +301,62 @@ class GeoServerQueueExcutor:
             self._add_publishing_log(f"[{queue_item.publish_entry.name}] Conversion failed: {e}")
             log.error(f"Conversion failed for queue item pk={queue_item.pk}: {e}", exc_info=True)
 
+    def _unpublish_all_channels_for_queue_item(self, queue_item: geoserver_queues.GeoServerQueue) -> None:
+        """Case A: all GeoServerPublishChannels for this entry are inactive.
+
+        No conversion or file transfer is needed. Remove the layer and its cached tile
+        layer from every configured GeoServer pool first, then hand off to
+        kb_geoserver_manager (via AWAITING_FILE_DELETION) to delete the now-orphaned file
+        from the shared volume. GeoServer must be unbound from the file before the file
+        itself is deleted.
+        """
+        channels = queue_item.publish_entry.geoserver_channels.all()
+        layer_name = queue_item.publish_entry.catalogue_entry.name
+
+        if not channels.exists():
+            self.result_status = GeoServerQueueStatus.FAILED
+            self.result_success = False
+            self._add_publishing_log(
+                f"[{queue_item.publish_entry.name}] Unpublish failed: no GeoServerPublishChannel found."
+            )
+            return
+
+        for channel in channels:
+            pool = channel.geoserver_pool
+            if not pool:
+                self._add_publishing_log(
+                    f"[{queue_item.publish_entry.name}] Skipped channel pk={channel.pk}: no geoserver_pool."
+                )
+                continue
+            if not pool.enabled:
+                self._add_publishing_log(
+                    f"[{queue_item.publish_entry.name} - {pool.name}] Skipped: GeoServer pool is disabled."
+                )
+                continue
+
+            geoserver_obj = geoserver.geoserverWithCustomCreds(pool.url, pool.username, pool.password)
+            try:
+                geoserver_obj.delete_layer(layer_name)
+                geoserver_obj.delete_cached_layer(channel.layer_name_with_workspace)
+                self._add_publishing_log(
+                    f"[{queue_item.publish_entry.name} - {pool.url}] Channel is inactive; layer removed from GeoServer."
+                )
+            except Exception as e:
+                self.result_status = GeoServerQueueStatus.PUBLISH_FAILED
+                self.result_success = False
+                self._add_publishing_log(
+                    f"[{queue_item.publish_entry.name} - {pool.url}] Failed to remove layer: {e}"
+                )
+                log.error(
+                    f"Failed to unpublish channel pk={channel.pk} for queue item pk={queue_item.pk}: {e}",
+                    exc_info=True,
+                )
+
+        # Only hand off to kb_geoserver_manager for file deletion if GeoServer removal
+        # succeeded for every pool above; otherwise leave the file untouched.
+        if self.result_success:
+            self.result_status = GeoServerQueueStatus.AWAITING_FILE_DELETION
+
     def excute_ready_to_publish(self) -> None:
         """Phase 2: Configure GeoServer for READY_TO_PUBLISH items.
 
@@ -348,9 +410,10 @@ class GeoServerQueueExcutor:
     def _configure_geoserver_for_queue_item(self, queue_item: geoserver_queues.GeoServerQueue) -> None:
         """Configure GeoServer using the file placed on the shared volume by kb_geoserver_manager.
 
-        For each active GeoServerPublishChannel of the publish entry, calls the appropriate
-        path-based GeoServer configuration method (configure_geopackage_from_path or
-        configure_geotiff_from_path) then publishes symbology and sets the default style.
+        For each GeoServerPublishChannel of the publish entry, active channels are configured
+        via the appropriate path-based GeoServer configuration method (configure_geopackage_from_path
+        or configure_geotiff_from_path) then have symbology published and the default style set.
+        Inactive channels have their layer and cached layer removed from GeoServer instead.
         """
         from govapp.apps.publisher.models.publish_channels import StoreType
 
@@ -367,9 +430,7 @@ class GeoServerQueueExcutor:
         # kb_geoserver_manager places the file at: <VOLUME_PATH>/<workspace>/<name>/<filename>
         filename = pathlib.Path(queue_item.converted_file_path).name
 
-        channels = queue_item.publish_entry.geoserver_channels.filter(active=True)
-        if not channels.exists():
-            channels = queue_item.publish_entry.geoserver_channels.all()
+        channels = queue_item.publish_entry.geoserver_channels.all()
 
         if not channels.exists():
             self.result_status = GeoServerQueueStatus.PUBLISH_FAILED
@@ -400,6 +461,29 @@ class GeoServerQueueExcutor:
             geoserver_obj = geoserver.geoserverWithCustomCreds(
                 pool.url, pool.username, pool.password
             )
+
+            if not channel.active:
+                # Inactive channel in a mixed (Case B) publish entry: the file on the shared
+                # volume is still needed by the active channel(s), so it is NOT deleted here.
+                # Only ensure GeoServer no longer serves this layer for this channel/pool.
+                try:
+                    geoserver_obj.delete_layer(queue_item.publish_entry.catalogue_entry.name)
+                    geoserver_obj.delete_cached_layer(channel.layer_name_with_workspace)
+                    self._add_publishing_log(
+                        f"[{queue_item.publish_entry.name} - {pool.url}] Channel is inactive; layer removed from GeoServer."
+                    )
+                except Exception as e:
+                    self.result_status = GeoServerQueueStatus.PUBLISH_FAILED
+                    self.result_success = False
+                    self._add_publishing_log(
+                        f"[{queue_item.publish_entry.name} - {pool.url}] Failed to remove inactive channel layer: {e}"
+                    )
+                    log.error(
+                        f"Failed to remove inactive channel pk={channel.pk} for queue item pk={queue_item.pk}: {e}",
+                        exc_info=True,
+                    )
+                continue
+
             workspace_name = channel.workspace.name
             layer_name = queue_item.publish_entry.catalogue_entry.metadata.name
 
