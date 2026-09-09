@@ -66,6 +66,8 @@ _VALID_PREDECESSORS = {
     GeoServerQueueStatus.UPLOAD_IN_PROGRESS: {GeoServerQueueStatus.CONVERTED},
     GeoServerQueueStatus.UPLOAD_FAILED: {GeoServerQueueStatus.UPLOAD_IN_PROGRESS},
     GeoServerQueueStatus.READY_TO_PUBLISH: {GeoServerQueueStatus.UPLOAD_IN_PROGRESS},
+    GeoServerQueueStatus.PUBLISHED: {GeoServerQueueStatus.AWAITING_FILE_DELETION},
+    GeoServerQueueStatus.PUBLISH_FAILED: {GeoServerQueueStatus.AWAITING_FILE_DELETION},
 }
 
 

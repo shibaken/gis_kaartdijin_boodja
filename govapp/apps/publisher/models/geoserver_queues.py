@@ -30,6 +30,7 @@ class GeoServerQueueStatus(models.IntegerChoices):
     UPLOAD_FAILED = 6, "Transfer Failed"
     READY_TO_PUBLISH = 7, "Awaiting Publishing"
     PUBLISH_FAILED = 8, "Publishing Failed"
+    AWAITING_FILE_DELETION = 9, "Awaiting File Deletion"
 
 
 class GeoServerQueueType(models.IntegerChoices):
@@ -89,6 +90,7 @@ class GeoServerQueue(mixins.RevisionedMixin):
                 GeoServerQueueStatus.CONVERTED,
                 GeoServerQueueStatus.UPLOAD_IN_PROGRESS,
                 GeoServerQueueStatus.READY_TO_PUBLISH,
+                GeoServerQueueStatus.AWAITING_FILE_DELETION,
             ]
         ).exists()
         return existing

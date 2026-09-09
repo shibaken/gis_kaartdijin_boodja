@@ -19,11 +19,13 @@ class GeoServerManagerQueueSerializer(serializers.ModelSerializer):
     file_name = serializers.SerializerMethodField()
     # Workspace name from the first active GeoServerPublishChannel
     workspace = serializers.SerializerMethodField()
+    # Distinct workspace names across all channels, used to locate directories to delete
+    workspaces = serializers.SerializerMethodField()
 
     class Meta:
         model = GeoServerQueue
-        fields = ["id", "name", "status", "file_name", "workspace"]
-        read_only_fields = ["id", "name", "file_name", "workspace"]
+        fields = ["id", "name", "status", "file_name", "workspace", "workspaces"]
+        read_only_fields = ["id", "name", "file_name", "workspace", "workspaces"]
 
     def get_file_name(self, obj: GeoServerQueue) -> str | None:
         if obj.converted_file_path:
@@ -40,6 +42,20 @@ class GeoServerManagerQueueSerializer(serializers.ModelSerializer):
             return channel.workspace.name
         return None
 
+    def get_workspaces(self, obj: GeoServerQueue) -> list[str]:
+        """Distinct workspace names across every channel of this publish entry.
+
+        Used by kb_geoserver_manager to resolve directories to delete for
+        AWAITING_FILE_DELETION items. Harmless (but unused) for other statuses.
+        """
+        names = (
+            obj.publish_entry.geoserver_channels
+            .exclude(workspace__isnull=True)
+            .values_list("workspace__name", flat=True)
+            .distinct()
+        )
+        return list(names)
+
 
 class GeoServerManagerStatusUpdateSerializer(serializers.Serializer):
     """Validates the status PATCH payload sent by kb_geoserver_manager.
@@ -52,6 +68,8 @@ class GeoServerManagerStatusUpdateSerializer(serializers.Serializer):
         GeoServerQueueStatus.UPLOAD_IN_PROGRESS,
         GeoServerQueueStatus.UPLOAD_FAILED,
         GeoServerQueueStatus.READY_TO_PUBLISH,
+        GeoServerQueueStatus.PUBLISHED,
+        GeoServerQueueStatus.PUBLISH_FAILED,
     }
 
     status = serializers.IntegerField()
@@ -62,6 +80,8 @@ class GeoServerManagerStatusUpdateSerializer(serializers.Serializer):
                 GeoServerQueueStatus.UPLOAD_IN_PROGRESS: "upload_in_progress",
                 GeoServerQueueStatus.UPLOAD_FAILED: "upload_failed",
                 GeoServerQueueStatus.READY_TO_PUBLISH: "ready_to_publish",
+                GeoServerQueueStatus.PUBLISHED: "published",
+                GeoServerQueueStatus.PUBLISH_FAILED: "publish_failed",
             }
             raise serializers.ValidationError(
                 f"Invalid status '{value}'. kb_geoserver_manager may only set: "
