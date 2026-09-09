@@ -143,6 +143,34 @@
 
                                           </div>
 
+                                          <!-- Deactivate / Unpublish -->
+                                          <hr class="my-2">
+                                          <div class="fw-semibold mb-2 text-secondary small text-uppercase">Deactivate / Unpublish &mdash; Status Flow</div>
+                                          <div class="d-flex flex-wrap align-items-start gap-0">
+                                                <div class="d-flex align-items-start">
+                                                      <div class="text-center" style="width:115px;">
+                                                            <span class="badge bg-primary w-100 mb-1">Queued</span>
+                                                            <div class="text-muted">Queued; awaiting unpublish.</div>
+                                                      </div>
+                                                      <div class="d-flex align-items-start pt-1 px-1 text-muted fw-bold">&rarr;</div>
+                                                </div>
+                                                <div class="d-flex align-items-start">
+                                                      <div class="text-center" style="width:160px;">
+                                                            <span class="badge bg-info text-dark w-100 mb-1">Awaiting File Deletion</span>
+                                                            <div class="text-muted">Layer removed from GeoServer; awaiting volume directory deletion.</div>
+                                                            <div class="text-muted my-1">&darr;</div>
+                                                            <span class="badge bg-danger w-100 mb-1">Publishing Failed</span>
+                                                            <div class="text-muted">GeoServer or volume deletion failed.</div>
+                                                      </div>
+                                                      <div class="d-flex align-items-start pt-1 px-1 text-muted fw-bold">&rarr;</div>
+                                                </div>
+                                                <div class="text-center" style="width:115px;">
+                                                      <span class="badge bg-success w-100 mb-1">Published</span>
+                                                      <div class="text-muted">Volume files deleted; layer unpublish complete.</div>
+                                                </div>
+                                          </div>
+                                          <!-- /Deactivate / Unpublish -->
+
                                     </div>
                               </div>
                         </div>

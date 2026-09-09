@@ -55,6 +55,7 @@ var kbgeoserverweb = {
                             'Transfer Failed':      'bg-danger',
                             'Awaiting Publishing': 'bg-info text-dark',
                             'Publishing Failed':   'bg-danger',
+                            'Awaiting File Deletion': 'bg-info text-dark',
                             'READY':                'bg-primary',
                             'PROCESSING':           'bg-warning text-dark',
                             'PURGED':               'bg-success',
