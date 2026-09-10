@@ -2,9 +2,9 @@
 
 ## Layer Permission Types
 
-Each layer can be either **Public** or **Restricted**.
+Each layer can be either **Not-Restricted** or **Restricted**.
 
-### Public Layers
+### Not-Restricted Layers
 - Anyone with an account can view and download
 - No special permission needed
 
@@ -31,7 +31,7 @@ Each layer can be either **Public** or **Restricted**.
 - ✅ Upload new versions
 
 ### Administrator
-- ✅ Full access to all layers (public and restricted)
+- ✅ Full access to all layers (Not-Restricted and Restricted)
 
 ## How to Request Access
 
