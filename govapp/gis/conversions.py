@@ -3,6 +3,7 @@
 
 # Standard
 import logging
+import os
 import pathlib
 import shutil
 import subprocess  # noqa: S404
@@ -407,16 +408,20 @@ def postgres_to_shapefile(layer_name: str, hostname: str, username: str, passwor
             "-h", str(hostname),
             "-u", str(username),
             "-p", str(port),
-            "-P", str(password),
             str(database),
             str(cleaned_sqlquery)
         ]
         log.info(f"Running command: [{' '.join(command)}]")
 
+        # Pass the password via the environment (read by libpq), so that it is
+        # neither logged nor visible in the process list.
+        env = {**os.environ, "PGPASSWORD": str(password)}
+
         try:
             subprocess.run(
                 command,
                 cwd=work_dir,
+                env=env,
                 check=True,          # Raise an exception for non-zero exit codes (like check_call)
                 capture_output=True, # Capture stdout and stderr into the result object
                 text=True            # Decode stdout/stderr from bytes to text
