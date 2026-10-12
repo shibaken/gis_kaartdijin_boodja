@@ -223,21 +223,20 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose2',
         },
+        # Log files are rotated by /bin/log_rotate.sh (python-cron), not by Django.
+        # WatchedFileHandler reopens the file after it has been moved and never
+        # renames it, so many processes (and pods) can share the same file.
         'file': {
             'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE_PATH,
             'formatter': 'verbose2',
-            'maxBytes': 5242880,  # 5MB per log file
-            'backupCount': 10,     # Keep up to 5 rotated backup files
         },
         'file_for_sql': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.WatchedFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'kaartdijin_boodja_sql.log'),
             'formatter': 'verbose2',
-            'maxBytes': 5242880,  # 5MB per log file
-            'backupCount': 10,     # Keep up to 10 rotated backup files
         },
     },
     'loggers': {
