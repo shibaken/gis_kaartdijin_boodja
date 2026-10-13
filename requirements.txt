@@ -39,6 +39,5 @@ requests>=2.33.1
 anyio>=4.4.0
 # GDAL version must match the system library version in Ubuntu 26.04.
 # This is pre-installed in the Dockerfile using gdal-config to avoid build errors.
-GDAL==3.12.2
 setuptools==82.0.1
 legacy-cgi

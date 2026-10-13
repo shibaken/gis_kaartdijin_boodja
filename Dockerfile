@@ -26,20 +26,20 @@ RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
 # RUN apt-get install --no-install-recommends -y curl wget git libmagic-dev gcc binutils python3 python3-setuptools python3-dev python3-pip tzdata cron gpg-agent
-RUN apt-get install --no-install-recommends -y python3-venv
-RUN apt-get install --no-install-recommends -y gpg-agent
-RUN apt-get install --no-install-recommends -y vim htop
-RUN apt-get install --no-install-recommends -y software-properties-common 
+# RUN apt-get install --no-install-recommends -y python3-venv
+# RUN apt-get install --no-install-recommends -y gpg-agent
+# RUN apt-get install --no-install-recommends -y vim htop
+# RUN apt-get install --no-install-recommends -y software-properties-common 
  
-# ADDED START from bottom
-RUN apt-get install --no-install-recommends -y python3-pil postgis
-# ADDED END from bottom
+# RUN apt-get install --no-install-recommends -y python3-pil postgis
+# Keep only postgis for CLI tools such as pgsql2shp / shp2pgsql
+RUN apt-get install --no-install-recommends -y postgis
 
 # Install GDAL
 # RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 # RUN apt update
-RUN apt-get install --no-install-recommends -y gdal-bin python3-gdal
-RUN apt-get install --no-install-recommends -y libgdal-dev build-essential
+# RUN apt-get install --no-install-recommends -y gdal-bin python3-gdal
+# RUN apt-get install --no-install-recommends -y libgdal-dev build-essential
 
 RUN update-ca-certificates
 # install node 18
@@ -83,8 +83,8 @@ COPY requirements.txt ./
 # In newer Ubuntu 26.04 / Python 3.14+ environments, the build system often fails 
 # to automatically locate 'gdal.h'. These environment variables ensure the Python 
 # wrapper can find the underlying C++ headers required for compilation.
-ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
-ENV C_INCLUDE_PATH=/usr/include/gdal
+# ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+# ENV C_INCLUDE_PATH=/usr/include/gdal
 
 # 2. Synchronize and pre-install the Python GDAL package with the system library version.
 # GDAL's Python bindings are extremely sensitive to version mismatches with the 
