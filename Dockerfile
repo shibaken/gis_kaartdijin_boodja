@@ -83,8 +83,8 @@ COPY requirements.txt ./
 # In newer Ubuntu 26.04 / Python 3.14+ environments, the build system often fails 
 # to automatically locate 'gdal.h'. These environment variables ensure the Python 
 # wrapper can find the underlying C++ headers required for compilation.
-ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
-ENV C_INCLUDE_PATH=/usr/include/gdal
+# ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+# ENV C_INCLUDE_PATH=/usr/include/gdal
 
 # 2. Synchronize and pre-install the Python GDAL package with the system library version.
 # GDAL's Python bindings are extremely sensitive to version mismatches with the 
