@@ -1,21 +1,21 @@
 {
     "dataStore": {
-      "name": "{{name|escape}}",
-      "description":	"{{description|escape}}", 
-      "enabled":	{% if enabled %}{{ enabled }}{% else %}True{% endif %},   
+      "name": "{{name|escapejs}}",
+      "description":	"{{description|escapejs}}", 
+      "enabled":	true,   
       "type": "Web Feature Server (NG)",
       "connectionParameters": {
         "entry": [
-            {"@key":"WFSDataStoreFactory:GET_CAPABILITIES_URL","$":"{{capability_url|escape}}"},
+            {"@key":"WFSDataStoreFactory:GET_CAPABILITIES_URL","$":"{{capability_url|escapejs}}"},
             {"@key":"WFSDataStoreFactory:TRY_GZIP","$":"true"},         
             {"@key":"WFSDataStoreFactory:GML_COMPATIBLE_TYPENAMES","$":"false"},
             {"@key":"WFSDataStoreFactory:LENIENT","$":"false"},
             {"@key":"usedefaultsrs","$":"false"},
             {"@key":"WFSDataStoreFactory:AXIS_ORDER","$":"Compliant"},
             {"@key":"WFSDataStoreFactory:PROTOCOL","$":"false"},
-            {"@key":"WFSDataStoreFactory:USERNAME","$":"{{username|escape}}"},
+            {"@key":"WFSDataStoreFactory:USERNAME","$":"{{username|escapejs}}"},
             {"@key":"WFSDataStoreFactory:GML_COMPLIANCE_LEVEL","$":"0"},
-            {"@key":"WFSDataStoreFactory:PASSWORD","$":"{{password|escape}}"},
+            {"@key":"WFSDataStoreFactory:PASSWORD","$":"{{password|escapejs}}"},
             {"@key":"WFSDataStoreFactory:MAX_CONNECTION_POOL_SIZE","$":"6"},
             {"@key":"WFSDataStoreFactory:MAXFEATURES","$":"0"},
             {"@key":"WFSDataStoreFactory:FILTER_COMPLIANCE","$":"0"},
