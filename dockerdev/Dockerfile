@@ -3,12 +3,12 @@ FROM ghcr.io/dbca-wa/gis_kaartdijin_boodja:latest as builder_base_gis_kaartdijin
 
 USER root
 RUN apt-get update
-RUN apt-get install --no-install-recommends -y patch
-RUN apt-get install --no-install-recommends -y libpq-dev git ssh sudo 
+# RUN apt-get install --no-install-recommends -y patch
+# RUN apt-get install --no-install-recommends -y libpq-dev git ssh sudo 
 RUN apt-get install --no-install-recommends -y screen
-RUN apt-get install --no-install-recommends -y virtualenv
-RUN apt-get install --no-install-recommends -y graphviz
-RUN apt-get install --no-install-recommends -y python3-pydot
+# RUN apt-get install --no-install-recommends -y virtualenv
+# RUN apt-get install --no-install-recommends -y graphviz
+# RUN apt-get install --no-install-recommends -y python3-pydot
 
 RUN openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj  "/C=AU/ST=Western Australia/L=Perth/O=Development Environment/OU=IT Department/CN=example.com"  -keyout /etc/ssl/private/selfsignedssl.key -out /etc/ssl/private/selfsignedssl.crt
 
