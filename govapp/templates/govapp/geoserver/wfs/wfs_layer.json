@@ -1,20 +1,20 @@
 { 
     "featureType": {
-        "name": "{{ name|escape }}",
-        "description": "{{ description|default:""|escape }}",
-        {% if native_name %}"nativeName": "{{ native_name|escape }}",{% endif %}
-        {% if title %}"title": "{{ title|escape }}",{% endif %}
-        {% if abstract %}"abstract": "{{ abstract|escape }}",{% endif %}
+        "name": "{{ name|escapejs }}",
+        "description": "{{ description|default:""|escapejs }}",
+        {% if native_name %}"nativeName": "{{ native_name|escapejs }}",{% endif %}
+        {% if title %}"title": "{{ title|escapejs }}",{% endif %}
+        {% if abstract %}"abstract": "{{ abstract|escapejs }}",{% endif %}
         
         {% if override_bbox %}
-        "nativeCRS": "{{ native_crs|escape }}",
-        "srs": "{{ crs|escape }}",
+        "nativeCRS": "{{ native_crs|escapejs }}",
+        "srs": "{{ crs|escapejs }}",
         "nativeBoundingBox": {
             "minx": {{ nativeBoundingBox.minx }},
             "maxx": {{ nativeBoundingBox.maxx }},
             "miny": {{ nativeBoundingBox.miny }},
             "maxy": {{ nativeBoundingBox.maxy }},
-            "crs": "{{ nativeBoundingBox.crs|escape }}"
+            "crs": "{{ nativeBoundingBox.crs|escapejs }}"
         },
         "latLonBoundingBox": {
             "minx": {{ latLonBoundingBox.minx }},
@@ -29,7 +29,7 @@
         "keywords": [
             {% for k in keywords %}
                 {
-                    "string": "{{ k|escape }}"
+                    "string": "{{ k|escapejs }}"
                 }{% if not forloop.last %},{% endif %}
             {% endfor %}
         ]

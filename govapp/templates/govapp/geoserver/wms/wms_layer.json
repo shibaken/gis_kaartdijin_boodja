@@ -1,33 +1,33 @@
 { 
     "wmsLayer": {
-        "name":	"{{name|escape}}",
-        "description":	"{{description|escape}}",
-        {% if native_name %}"nativeName": "{{native_name|escape}}",{% endif %}
-        {% if title %}"title": "{{title|escape}}",{% endif %}
-        {% if abstract %}"abstract": "{{abstract|escape}}",{% endif %}
+        "name":	"{{name|escapejs}}",
+        "description":	"{{description|escapejs}}",
+        {% if native_name %}"nativeName": "{{native_name|escapejs}}",{% endif %}
+        {% if title %}"title": "{{title|escapejs}}",{% endif %}
+        {% if abstract %}"abstract": "{{abstract|escapejs}}",{% endif %}
         {% if override_bbox %}
-        "nativeCRS": "{{native_crs|escape}}",
-        "srs": "{{crs|escape}}",
+        "nativeCRS": "{{native_crs|escapejs}}",
+        "srs": "{{crs|escapejs}}",
         "nativeBoundingBox": {
             "minx": {{ nativeBoundingBox.minx }},
             "maxx": {{ nativeBoundingBox.maxx }},
             "miny": {{ nativeBoundingBox.miny }},
             "maxy": {{ nativeBoundingBox.maxy }},
-            "crs": "{{ nativeBoundingBox.crs }}"
+            "crs": "{{ nativeBoundingBox.crs|escapejs }}"
           },
           "latLonBoundingBox": {
             "minx": {{ latLonBoundingBox.minx }},
             "maxx": {{ latLonBoundingBox.maxx }},
             "miny": {{ latLonBoundingBox.miny }},
             "maxy": {{ latLonBoundingBox.maxy }},
-            "crs": "{{ latLonBoundingBox.crs }}"
+            "crs": "{{ latLonBoundingBox.crs|escapejs }}"
           },
         {% endif %}
-        "enabled": {{enabled|escape}},
+        "enabled": {{ enabled|yesno:"true,false" }},
         "keywords": [
             {% for k in keywords %}
                 {
-                    "string": "{{ k }}"
+                    "string": "{{ k|escapejs }}"
                 }
             {% endfor %}
         ]
