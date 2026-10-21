@@ -56,13 +56,34 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     get_status.short_description = 'Status'
 
 
+class GeoserverClusterPoolInlineFormSet(forms.BaseInlineFormSet):
+    """Rejects two cluster nodes with the same name in one pool.
+
+    The inline formset does not check the conditional unique constraint, so
+    without this a duplicate name would fail with a database error on save.
+    """
+    def clean(self):
+        super().clean()
+        names = set()
+        for form in self.forms:
+            if not form.cleaned_data or form.cleaned_data.get('DELETE'):
+                continue
+            name = form.cleaned_data.get('name')
+            if not name:
+                continue
+            if name in names:
+                raise forms.ValidationError(f'Cluster node name "{name}" is used more than once.')
+            names.add(name)
+
+
 class GeoserverClusterPoolInline(admin.TabularInline):
     """
     Defines the inline admin options for GeoserverClusterPool.
     This will be displayed within the GeoServerPool admin page.
     """
     model = GeoserverClusterPool
-    fields = ('server_url', 'username', 'password', 'enabled')
+    formset = GeoserverClusterPoolInlineFormSet
+    fields = ('name', 'server_url', 'username', 'password', 'enabled')
     extra = 0
     verbose_name_plural = "Cluster Nodes"
 

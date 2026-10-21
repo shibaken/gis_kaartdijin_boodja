@@ -736,9 +736,28 @@ class GeoserverClusterPool(models.Model):
     password = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
 
+    # A node with a name is one geocluster; a node with a blank name is only used for tile cache purge.
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        help_text=(
+            "Geocluster name, e.g. prod1. Must match KB_CLUSTER_CODE of that geocluster's "
+            "geoserver manager. Leave blank for a node used only for tile cache purge."
+        ),
+    )
+
     def __str__(self):
         return f"Node for {self.geoserver_pool.name} at {self.server_url}"
 
     class Meta:
         verbose_name = "GeoServer Cluster Pool Node"
         verbose_name_plural = "GeoServer Cluster Pool Nodes"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["geoserver_pool", "name"],
+                condition=~Q(name=""),
+                name="unique_cluster_node_name_per_pool",
+                violation_error_message="A cluster node with this name already exists in this GeoServer pool.",
+            ),
+        ]
