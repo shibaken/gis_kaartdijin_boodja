@@ -681,7 +681,7 @@ class GeoServerSyncExcutor:
         log.info(f'Roles in KB: [{geoserver_role_names}]')
 
         # List of the active geoservers in the KB
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             geoserver_info.synchronize_roles(geoserver_role_names)
@@ -694,7 +694,7 @@ class GeoServerSyncExcutor:
         log.info(f'Groups in KB: [{geoserver_group_names}]')
 
         # List of the active geoservers in the KB
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             geoserver_info.synchronize_groups(geoserver_group_names)
@@ -703,7 +703,7 @@ class GeoServerSyncExcutor:
         log.info(f"Sync geoserver rules...")
 
         # List of the active geoservers in the KB
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
         new_rules = geoserver_roles_groups.GeoServerRolePermission.get_rules()
         workspaces_in_kb = set(list(Workspace.objects.all().values_list('name', flat=True)))
 
@@ -728,7 +728,7 @@ class GeoServerSyncExcutor:
     def sync_deleted_layers(self):
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")
         
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
         for geoserver_info in geoserver_pool:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
             

@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = 'Synchronize users, roles, and groups with GeoServer.'
 
     def handle(self, *args, **options):
-        geoservers = GeoServerPool.objects.filter(enabled=True)
+        geoservers = GeoServerPool.enabled_targets()
         for geoserver in geoservers:
             # Sync relations between users and groups, and users and roles
             geoserver.sync_users_groups_users_roles()
