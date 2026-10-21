@@ -63,6 +63,8 @@ class GeoServerQueue(mixins.RevisionedMixin):
     completed_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     converted_file_path = models.TextField(null=True, blank=True)
+    # Geocluster this item is for (name of a cluster node). Blank when the pool has no named cluster nodes.
+    cluster_name = models.CharField(max_length=100, blank=True, default="")
     
     class Meta:
         """Geoserver Queue Model Metadata."""
@@ -70,20 +72,22 @@ class GeoServerQueue(mixins.RevisionedMixin):
         verbose_name_plural = "Geoserver Queues"
 
     @classmethod
-    def is_publish_entry_queued(cls, publish_entry: "PublishEntry", queue_type: "GeoServerQueueType" = GeoServerQueueType.PUBLISH) -> bool:
-        """Checks if a publish entry is already queued for the given queue type.
+    def is_publish_entry_queued(cls, publish_entry: "PublishEntry", queue_type: "GeoServerQueueType" = GeoServerQueueType.PUBLISH, cluster_name: str = "") -> bool:
+        """Checks if a publish entry is already queued for the given queue type and geocluster.
 
         Args:
             publish_entry (PublishEntry): The publish entry to check.
             queue_type (GeoServerQueueType): The type of queue to check. Defaults to PUBLISH.
+            cluster_name (str): The geocluster to check. Defaults to "" (no named cluster nodes).
 
         Returns:
             bool: True if the publish entry is already queued to be processed, False otherwise.
         """
-        # Check if the publish entry is already queued for this specific queue type
+        # Check if the publish entry is already queued for this specific queue type and geocluster
         existing = cls.objects.filter(
             publish_entry=publish_entry,
             queue_type=queue_type,
+            cluster_name=cluster_name,
             status__in=[
                 GeoServerQueueStatus.READY,
                 GeoServerQueueStatus.PROCESSING,

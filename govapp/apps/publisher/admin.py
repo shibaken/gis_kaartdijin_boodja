@@ -205,7 +205,7 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     search_fields = ('id', 'publish_entry__catalogue_entry__name', 'submitter__email',)
-    list_display = ('id', 'publish_entry_link', 'symbology_only', 'coloured_status', 'get_success', 'submitter_link','started_at', 'completed_at', 'created_at')
+    list_display = ('id', 'publish_entry_link', 'cluster_name', 'symbology_only', 'coloured_status', 'get_success', 'submitter_link','started_at', 'completed_at', 'created_at')
     list_filter = ('symbology_only', 'status', 'success',)
     ordering = ('-id',)
     raw_id_fields = ('submitter', 'publish_entry')
