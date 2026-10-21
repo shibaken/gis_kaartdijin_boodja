@@ -45,13 +45,17 @@ class GeoServerQueueExcutor:
         self.result_success = True
         self.publishing_log = ""
 
-    def auto_enqueue(self) -> None:
+    def auto_enqueue(self, cluster_name: str | None = None) -> None:
         """Automatically identify and enqueue eligible publish entries to GeoServer Queue.
         
         This method finds publish entries that meet the following criteria and adds them to the queue:
         1. The entry is registered as a ForeignKey in a GeoServerPublishChannel
         2. The GeoServerPublishChannel.active is True
         3. The GeoServerPublishChannel.geoserver_pool exists and is enabled (geoserver_pool.enabled == True)
+
+        Args:
+            cluster_name (str | None): Only queue items for this geocluster, e.g. to fill a new
+                geocluster with every layer. None queues items for every geocluster.
         """
         from govapp.apps.publisher.models.publish_entries import PublishEntry
         from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
@@ -72,10 +76,13 @@ class GeoServerQueueExcutor:
         count = 0
         for entry in eligible_entries:
             # One queue item per geocluster
-            for cluster_name in _cluster_names(entry):
+            for entry_cluster_name in _cluster_names(entry):
+                if cluster_name is not None and entry_cluster_name != cluster_name:
+                    continue
+
                 # Check if there's already a queue item for this entry that's not completed
                 already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(
-                    entry, queue_type=GeoServerQueueType.PUBLISH, cluster_name=cluster_name
+                    entry, queue_type=GeoServerQueueType.PUBLISH, cluster_name=entry_cluster_name
                 )
 
                 if not already_queued:
@@ -84,10 +91,10 @@ class GeoServerQueueExcutor:
                         publish_entry=entry,
                         queue_type=GeoServerQueueType.PUBLISH,
                         symbology_only=False,  # Full publish by default
-                        cluster_name=cluster_name,
+                        cluster_name=entry_cluster_name,
                     )
                     count += 1
-                    log.info(f"{count}: Auto-enqueued publish entry: [{entry}] [{cluster_name}]")
+                    log.info(f"{count}: Auto-enqueued publish entry: [{entry}] [{entry_cluster_name}]")
         
         log.info(f"Auto-enqueue process completed. Added {count} entries to queue")
 
@@ -686,11 +693,16 @@ def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserMod
 
     # One queue item per geocluster
     for cluster_name in _cluster_names(publish_entry):
-        already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(
+        queued_items = geoserver_queues.GeoServerQueue.queued_items(
             publish_entry, queue_type=GeoServerQueueType.PUBLISH, cluster_name=cluster_name
         )
 
-        if not already_queued:
+        if queued_items.exists():
+            # An item that has already started would miss this change (it can wait long,
+            # e.g. while its geocluster is down), so publish again when it finishes.
+            # An item that has not started yet will pick up the change itself.
+            queued_items.exclude(status=GeoServerQueueStatus.READY).update(requeue_requested=True)
+        else:
             geoserver_queues.GeoServerQueue.objects.create(
                 publish_entry=publish_entry,
                 queue_type=GeoServerQueueType.PUBLISH,
