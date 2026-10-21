@@ -95,8 +95,12 @@ class GeoServerManagerQueueViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny] if settings.DEBUG else [IsApiUser]
 
     def list(self, request):
-        """Return PUBLISH queue items, optionally filtered by ``?status=<int>``."""
-        queryset = self.get_queryset()
+        """Return PUBLISH queue items, optionally filtered by ``?status=<int>``.
+
+        Only items of the manager's geocluster are returned: ``?cluster=<name>`` (the
+        manager's KB_CLUSTER_CODE). Without it, items without a geocluster are returned.
+        """
+        queryset = self.get_queryset().filter(cluster_name=request.query_params.get("cluster", ""))
         status_param = request.query_params.get("status")
         if status_param is not None:
             try:

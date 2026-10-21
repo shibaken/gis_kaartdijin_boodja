@@ -11,6 +11,7 @@ import logging
 import httpx
 import json
 import urllib
+import copy
 
 # Local
 from govapp import settings
@@ -38,6 +39,10 @@ class GeoServerPool(mixins.RevisionedMixin):
     password = models.TextField()
     enabled = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Set on the unsaved copies returned by targets()
+    cluster_name = ""
+    is_target_copy = False
     
     class Meta:
         """Geoserver Pool Model Metadata."""
@@ -51,7 +56,41 @@ class GeoServerPool(mixins.RevisionedMixin):
             str: Human readable string representation of the object.
         """
         # Generate String and Return
-        return f"{self.id}: {self.name}" if self.name else f'{self.id}'
+        text = f"{self.id}: {self.name}" if self.name else f'{self.id}'
+        return f"{text} [{self.cluster_name}]" if self.cluster_name else text
+
+    def save(self, *args, **kwargs):
+        if self.is_target_copy:
+            raise RuntimeError("A GeoServer pool target copy must not be saved.")
+        super().save(*args, **kwargs)
+
+    def targets(self) -> list["GeoServerPool"]:
+        """Returns the GeoServers that GeoServer calls for this pool must reach.
+
+        If the pool has cluster nodes with a name, each enabled named node is one
+        geocluster, and a copy of the pool with that node's URL and credentials is
+        returned for each. The list is empty when all named nodes are disabled.
+        Otherwise the pool itself is returned, as before.
+        """
+        named_nodes = self.cluster_nodes.exclude(name="")
+        if not named_nodes.exists():
+            return [self]
+
+        targets = []
+        for node in named_nodes.filter(enabled=True).order_by("name"):
+            target = copy.copy(self)
+            target.url = node.server_url
+            target.username = node.username
+            target.password = node.password
+            target.cluster_name = node.name
+            target.is_target_copy = True
+            targets.append(target)
+        return targets
+
+    @classmethod
+    def enabled_targets(cls) -> list["GeoServerPool"]:
+        """Returns the targets of every enabled pool."""
+        return [target for pool in cls.objects.filter(enabled=True) for target in pool.targets()]
     
     @property
     def base_url_security(self):
@@ -736,9 +775,28 @@ class GeoserverClusterPool(models.Model):
     password = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
 
+    # A node with a name is one geocluster; a node with a blank name is only used for tile cache purge.
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        help_text=(
+            "Geocluster name, e.g. prod1. Must match KB_CLUSTER_CODE of that geocluster's "
+            "geoserver manager. Leave blank for a node used only for tile cache purge."
+        ),
+    )
+
     def __str__(self):
         return f"Node for {self.geoserver_pool.name} at {self.server_url}"
 
     class Meta:
         verbose_name = "GeoServer Cluster Pool Node"
         verbose_name_plural = "GeoServer Cluster Pool Nodes"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["geoserver_pool", "name"],
+                condition=~Q(name=""),
+                name="unique_cluster_node_name_per_pool",
+                violation_error_message="A cluster node with this name already exists in this GeoServer pool.",
+            ),
+        ]

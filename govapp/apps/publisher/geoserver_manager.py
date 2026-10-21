@@ -45,13 +45,17 @@ class GeoServerQueueExcutor:
         self.result_success = True
         self.publishing_log = ""
 
-    def auto_enqueue(self) -> None:
+    def auto_enqueue(self, cluster_name: str | None = None) -> None:
         """Automatically identify and enqueue eligible publish entries to GeoServer Queue.
         
         This method finds publish entries that meet the following criteria and adds them to the queue:
         1. The entry is registered as a ForeignKey in a GeoServerPublishChannel
         2. The GeoServerPublishChannel.active is True
         3. The GeoServerPublishChannel.geoserver_pool exists and is enabled (geoserver_pool.enabled == True)
+
+        Args:
+            cluster_name (str | None): Only queue items for this geocluster, e.g. to fill a new
+                geocluster with every layer. None queues items for every geocluster.
         """
         from govapp.apps.publisher.models.publish_entries import PublishEntry
         from govapp.apps.publisher.models.publish_channels import GeoServerPublishChannel
@@ -71,20 +75,26 @@ class GeoServerQueueExcutor:
         
         count = 0
         for entry in eligible_entries:
-            # Check if there's already a queue item for this entry that's not completed
-            already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(
-                entry, queue_type=GeoServerQueueType.PUBLISH
-            )
+            # One queue item per geocluster
+            for entry_cluster_name in _cluster_names(entry):
+                if cluster_name is not None and entry_cluster_name != cluster_name:
+                    continue
 
-            if not already_queued:
-                # Create new queue item
-                geoserver_queues.GeoServerQueue.objects.create(
-                    publish_entry=entry,
-                    queue_type=GeoServerQueueType.PUBLISH,
-                    symbology_only=False,  # Full publish by default
+                # Check if there's already a queue item for this entry that's not completed
+                already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(
+                    entry, queue_type=GeoServerQueueType.PUBLISH, cluster_name=entry_cluster_name
                 )
-                count += 1
-                log.info(f"{count}: Auto-enqueued publish entry: [{entry}]")
+
+                if not already_queued:
+                    # Create new queue item
+                    geoserver_queues.GeoServerQueue.objects.create(
+                        publish_entry=entry,
+                        queue_type=GeoServerQueueType.PUBLISH,
+                        symbology_only=False,  # Full publish by default
+                        cluster_name=entry_cluster_name,
+                    )
+                    count += 1
+                    log.info(f"{count}: Auto-enqueued publish entry: [{entry}] [{entry_cluster_name}]")
         
         log.info(f"Auto-enqueue process completed. Added {count} entries to queue")
 
@@ -112,6 +122,9 @@ class GeoServerQueueExcutor:
                                 self.result_status = GeoServerQueueStatus.FAILED
                                 self.result_success = False
                                 self._add_publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_pool.url}] Publishing failed.  Geoserver_pool is not enabled.")
+                                continue
+                            geoserver_pool = self._target_for_channel(queue_item, geoserver_publish_channel)
+                            if not geoserver_pool:
                                 continue
                             workspaces_in_kb = Workspace.objects.all()
                             for workspace in workspaces_in_kb:
@@ -142,6 +155,9 @@ class GeoServerQueueExcutor:
                                     self.result_status = GeoServerQueueStatus.FAILED
                                     self.result_success = False
                                     self._add_publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_pool.url}] Publishing failed. Geoserver_pool is not enabled.")
+                                    continue
+                                geoserver_pool = self._target_for_channel(queue_item, geoserver_publish_channel)
+                                if not geoserver_pool:
                                     continue
                                 workspaces_in_kb = Workspace.objects.all()
                                 for workspace in workspaces_in_kb:
@@ -180,6 +196,20 @@ class GeoServerQueueExcutor:
         # log.info(log_msg)
         self.publishing_log += log_msg
         return log_msg
+
+    def _target_for_channel(self, queue_item, geoserver_publish_channel):
+        """Returns the GeoServer of the queue item's geocluster for this channel, or None to skip it.
+
+        The channel's geoserver_pool is replaced by that target, so code that reads
+        channel.geoserver_pool talks to this geocluster only.
+        """
+        geoserver_pool = geoserver_publish_channel.geoserver_pool
+        target = next((t for t in geoserver_pool.targets() if t.cluster_name == queue_item.cluster_name), None)
+        if target is None:
+            self._add_publishing_log(f"[{queue_item.publish_entry.name} - {geoserver_pool}] Skipped: no GeoServer for geocluster [{queue_item.cluster_name}].")
+            return None
+        geoserver_publish_channel.geoserver_pool = target
+        return target
     
     def _publish_to_a_geoserver(self, geoserver_publish_channel: GeoServerPublishChannel):
         # Publish here
@@ -226,9 +256,13 @@ class GeoServerQueueExcutor:
             workspace_name = channel.workspace.name
             full_layer_name = f"{workspace_name}:{layer_name}"
 
-            # Use cluster nodes if available, otherwise fall back to the pool's own URL.
+            # Named cluster nodes are geoclusters: purge only this queue item's geocluster.
+            # Otherwise use cluster nodes if available, or fall back to the pool's own URL.
             cluster_nodes = geoserver_pool.cluster_nodes.filter(enabled=True)
-            if cluster_nodes.exists():
+            if geoserver_pool.cluster_nodes.exclude(name="").exists():
+                target = self._target_for_channel(queue_item, channel)
+                targets = [(target.url, target.username, target.password, str(target))] if target else []
+            elif cluster_nodes.exists():
                 targets = [
                     (node.server_url, node.username, node.password, f"{geoserver_pool.name} / node {node.server_url}")
                     for node in cluster_nodes
@@ -332,6 +366,9 @@ class GeoServerQueueExcutor:
                 self._add_publishing_log(
                     f"[{queue_item.publish_entry.name} - {pool.name}] Skipped: GeoServer pool is disabled."
                 )
+                continue
+            pool = self._target_for_channel(queue_item, channel)
+            if not pool:
                 continue
 
             geoserver_obj = geoserver.geoserverWithCustomCreds(pool.url, pool.username, pool.password)
@@ -456,6 +493,9 @@ class GeoServerQueueExcutor:
                 self._add_publishing_log(
                     f"[{queue_item.publish_entry.name} - {pool.name}] Skipped: GeoServer pool is disabled."
                 )
+                continue
+            pool = self._target_for_channel(queue_item, channel)
+            if not pool:
                 continue
 
             geoserver_obj = geoserver.geoserverWithCustomCreds(
@@ -634,42 +674,66 @@ class GeoServerQueueExcutor:
                 queue_item.pk, db_err,
             )
 
+def _cluster_names(publish_entry: "PublishEntry") -> list[str]:
+    """Returns the geoclusters to queue items for: the target names of the entry's GeoServer pools.
+
+    A pool without named cluster nodes gives "" (one item, as before). Returns [""] when no
+    channel has a pool, so the item fails as before, and [] when every named node is disabled.
+    """
+    pools = {channel.geoserver_pool for channel in publish_entry.geoserver_channels.exclude(geoserver_pool__isnull=True)}
+    if not pools:
+        return [""]
+    return sorted({target.cluster_name for pool in pools for target in pool.targets()})
+
+
 def push(publish_entry: "PublishEntry", symbology_only: bool, submitter: UserModel=None) -> bool:
     if not publish_entry.geoserver_channels.exists():
         log.info(f"'{publish_entry}' has no GeoServer Publish Channel")
         return False
 
-    already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(
-        publish_entry, queue_type=GeoServerQueueType.PUBLISH
-    )
+    # One queue item per geocluster
+    for cluster_name in _cluster_names(publish_entry):
+        queued_items = geoserver_queues.GeoServerQueue.queued_items(
+            publish_entry, queue_type=GeoServerQueueType.PUBLISH, cluster_name=cluster_name
+        )
 
-    if not already_queued:
-        geoserver_queues.GeoServerQueue.objects.create(
-            publish_entry=publish_entry,
-            queue_type=GeoServerQueueType.PUBLISH,
-            symbology_only=symbology_only,
-            submitter=submitter)
+        if queued_items.exists():
+            # An item that has already started would miss this change (it can wait long,
+            # e.g. while its geocluster is down), so publish again when it finishes.
+            # An item that has not started yet will pick up the change itself.
+            queued_items.exclude(status=GeoServerQueueStatus.READY).update(requeue_requested=True)
+        else:
+            geoserver_queues.GeoServerQueue.objects.create(
+                publish_entry=publish_entry,
+                queue_type=GeoServerQueueType.PUBLISH,
+                symbology_only=symbology_only,
+                submitter=submitter,
+                cluster_name=cluster_name)
     return True
 
 
 def push_purge_cache(publish_entry: "PublishEntry", submitter: UserModel=None) -> bool:
-    """Enqueue a purge tile cache job for the given publish entry."""
-    already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(
-        publish_entry, queue_type=GeoServerQueueType.PURGE_CACHE
-    )
+    """Enqueue a purge tile cache job for the given publish entry, one per geocluster."""
+    enqueued = False
+    for cluster_name in _cluster_names(publish_entry):
+        already_queued = geoserver_queues.GeoServerQueue.is_publish_entry_queued(
+            publish_entry, queue_type=GeoServerQueueType.PURGE_CACHE, cluster_name=cluster_name
+        )
 
-    if already_queued:
-        log.info(f"'{publish_entry}' purge cache is already queued. Skipping.")
-        return False
+        if already_queued:
+            log.info(f"'{publish_entry}' purge cache is already queued [{cluster_name}]. Skipping.")
+            continue
 
-    geoserver_queues.GeoServerQueue.objects.create(
-        publish_entry=publish_entry,
-        queue_type=GeoServerQueueType.PURGE_CACHE,
-        symbology_only=False,
-        submitter=submitter,
-    )
-    log.info(f"'{publish_entry}' purge cache enqueued.")
-    return True
+        geoserver_queues.GeoServerQueue.objects.create(
+            publish_entry=publish_entry,
+            queue_type=GeoServerQueueType.PURGE_CACHE,
+            symbology_only=False,
+            submitter=submitter,
+            cluster_name=cluster_name,
+        )
+        log.info(f"'{publish_entry}' purge cache enqueued [{cluster_name}].")
+        enqueued = True
+    return enqueued
 
 
 class GeoServerSyncExcutor:
@@ -681,7 +745,7 @@ class GeoServerSyncExcutor:
         log.info(f'Roles in KB: [{geoserver_role_names}]')
 
         # List of the active geoservers in the KB
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             geoserver_info.synchronize_roles(geoserver_role_names)
@@ -694,7 +758,7 @@ class GeoServerSyncExcutor:
         log.info(f'Groups in KB: [{geoserver_group_names}]')
 
         # List of the active geoservers in the KB
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
 
         for geoserver_info in geoserver_pool:  # Perform per geoserver
             geoserver_info.synchronize_groups(geoserver_group_names)
@@ -703,7 +767,7 @@ class GeoServerSyncExcutor:
         log.info(f"Sync geoserver rules...")
 
         # List of the active geoservers in the KB
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
         new_rules = geoserver_roles_groups.GeoServerRolePermission.get_rules()
         workspaces_in_kb = set(list(Workspace.objects.all().values_list('name', flat=True)))
 
@@ -728,7 +792,7 @@ class GeoServerSyncExcutor:
     def sync_deleted_layers(self):
         log.info(f"Remove all layers on Geoservers that have been removed from KB...")
         
-        geoserver_pool = geoserver_pools.GeoServerPool.objects.filter(enabled=True)
+        geoserver_pool = geoserver_pools.GeoServerPool.enabled_targets()
         for geoserver_info in geoserver_pool:
             geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_info.url, geoserver_info.username, geoserver_info.password)
             
