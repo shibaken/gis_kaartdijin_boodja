@@ -1,18 +1,18 @@
 {
   "dataStore": {
     "name": "{{name|escapejs}}",
-    "description":"{{description|escapejs}}", 
+    "description":"{{description}}", 
     "enabled":"{% if enabled %}{{ enabled }}{% else %}true{% endif %}",
     "type":"PostGIS",
     "connectionParameters": {
       "entry": [
-        {"@key":"namespace","$":"{{ namespace|escapejs }}"},
-        {"@key":"host","$":"{{ database.host|escapejs }}"},
+        {"@key":"namespace","$":"{{ namespace }}"},
+        {"@key":"host","$":"{{ database.host }}"},
         {"@key":"port","$":"{{ database.port }}"},
-        {"@key":"database","$":"{{ database.database|escapejs }}"},
-        {"@key":"schema","$":"{{ database.schema|escapejs }}"},
-        {"@key":"user","$":"{{ database.username|escapejs }}"},
-        {"@key":"passwd","$":"{{ database.password|escapejs }}"},
+        {"@key":"database","$":"{{ database.database }}"},
+        {"@key":"schema","$":"{{ database.schema }}"},
+        {"@key":"user","$":"{{ database.username }}"},
+        {"@key":"passwd","$":"{{ database.password }}"},
         {"@key":"dbtype","$":"postgis"},
         {"@key":"fetch size","$":"{% if database.fetch_size %}{{ database.fetch_size|escape }}{% else %}1000{% endif %}"},
         {"@key":"encode functions","$":"false"},
