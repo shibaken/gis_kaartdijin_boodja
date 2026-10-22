@@ -1,12 +1,13 @@
+{% load json_filters %}
 {
     "wmsStore" : {
-        "name":	"{{name|escapejs}}",
-        "description":	{{description}}, 
+        "name":	{{ name|json_string }},
+        "description":	{{ description|json_string }}, 
         "type": "WMS",
         "enabled":	{{ enabled|yesno:"true,false" }},    
-        "capabilitiesURL":	"{{capability_url|escapejs}}",
-        {% if username %}"user":	"{{username|escapejs}}",{% endif %}
-        {% if password %}"password" :	"{{password|escapejs}}",{% endif %}
+        "capabilitiesURL":	{{ capability_url|json_string }},
+        {% if username %}"user":	{{ username|json_string }},{% endif %}
+        {% if password %}"password" :	{{ password|json_string }},{% endif %}
         "maxConnections":	"{{geoserver_setting.max_connections}}",    
         "readTimeout":	"{{geoserver_setting.read_timeout}}",
         "connectTimeout": "{{geoserver_setting.connect_timeout}}",

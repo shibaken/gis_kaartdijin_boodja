@@ -1,33 +1,34 @@
+{% load json_filters %}
 { 
     "wmsLayer": {
-        "name":	"{{name|escape}}",
-        "description":	{{description}},
-        {% if native_name %}"nativeName": "{{native_name|escape}}",{% endif %}
-        {% if title %}"title": "{{title|escape}}",{% endif %}
-        {% if abstract %}"abstract": "{{abstract|escape}}",{% endif %}
+        "name":	{{ name|json_string }},
+        "description":	{{ description|json_string }},
+        {% if native_name %}"nativeName": {{ native_name|json_string }},{% endif %}
+        {% if title %}"title": {{ title|json_string }},{% endif %}
+        {% if abstract %}"abstract": {{ abstract|json_string }},{% endif %}
         {% if override_bbox %}
-        "nativeCRS": "{{native_crs|escape}}",
-        "srs": "{{crs|escape}}",
+        "nativeCRS": {{ native_crs|json_string }},
+        "srs": {{ crs|json_string }},
         "nativeBoundingBox": {
             "minx": {{ nativeBoundingBox.minx }},
             "maxx": {{ nativeBoundingBox.maxx }},
             "miny": {{ nativeBoundingBox.miny }},
             "maxy": {{ nativeBoundingBox.maxy }},
-            "crs": "{{ nativeBoundingBox.crs|escape }}"
+            "crs": {{ nativeBoundingBox.crs|json_string }}
           },
           "latLonBoundingBox": {
             "minx": {{ latLonBoundingBox.minx }},
             "maxx": {{ latLonBoundingBox.maxx }},
             "miny": {{ latLonBoundingBox.miny }},
             "maxy": {{ latLonBoundingBox.maxy }},
-            "crs": "{{ latLonBoundingBox.crs|escape }}"
+            "crs": {{ latLonBoundingBox.crs|json_string }}
           },
         {% endif %}
         "enabled": {{ enabled|yesno:"true,false" }},
         "keywords": [
             {% for k in keywords %}
                 {
-                    "string": "{{ k }}"
+                    "string": {{ k|json_string }}
                 }
             {% endfor %}
         ]

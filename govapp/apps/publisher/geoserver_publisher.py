@@ -1,7 +1,6 @@
 """Kaartdijin Boodja Publisher GeoServer Queue Excutor."""
 
 # Standard
-import json
 import logging
 
 # Third-Party
@@ -101,12 +100,9 @@ def _publish_wfs(
     layer_subscription = catalogue_entry.layer_subscription
     geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
 
-    ls_description_json_friendly = json.dumps(layer_subscription.description, indent=4, ensure_ascii=False)
-    ls_description_cleaned = ls_description_json_friendly.strip("{}")
-
     context = {
       "name": layer_subscription.name,
-      "description": ls_description_cleaned,
+      "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
       "username": layer_subscription.username,
@@ -114,11 +110,9 @@ def _publish_wfs(
     }
     geoserver_obj.upload_store_wfs(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
 
-    ce_description_json_friendly = json.dumps(catalogue_entry.description, indent=4, ensure_ascii=False)
-    ce_description_cleaned = ce_description_json_friendly.strip("{}")
     context = {
         "name": catalogue_entry.name,
-        "description": ce_description_cleaned,
+        "description": catalogue_entry.description,
         "native_name":catalogue_entry.mapping_name,
         "title":catalogue_entry.name,
         "abstract": None,
@@ -152,12 +146,9 @@ def _publish_wms(
     layer_subscription = catalogue_entry.layer_subscription
     geoserver_obj = geoserver.geoserverWithCustomCreds(geoserver_publish_channel.geoserver_pool.url, geoserver_publish_channel.geoserver_pool.username, geoserver_publish_channel.geoserver_pool.password)
 
-    ls_description_json_friendly = json.dumps(layer_subscription.description, indent=4, ensure_ascii=False)
-    ls_description_cleaned = ls_description_json_friendly.strip("{}")
-
     context = {
       "name": layer_subscription.name,
-      "description": ls_description_cleaned,
+      "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
       "username": layer_subscription.username,
@@ -170,12 +161,9 @@ def _publish_wms(
     }
     geoserver_obj.upload_store_wms(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
     
-    ce_description_json_friendly = json.dumps(catalogue_entry.description, indent=4, ensure_ascii=False)
-    ce_description_cleaned = ce_description_json_friendly.strip("{}")
-
     context = {
         "name": catalogue_entry.name,
-        "description": ce_description_cleaned,
+        "description": catalogue_entry.description,
         "native_name": catalogue_entry.mapping_name,
         "title": catalogue_entry.name,
         "abstract": None,
@@ -212,13 +200,10 @@ def _publish_postgis(
     # Publish Symbology
     geoserver_publish_channel.publish_geoserver_symbology(geoserver=geoserver_obj)
 
-    ls_description_json_friendly = json.dumps(layer_subscription.description, indent=4, ensure_ascii=False)
-    ls_description_cleaned = ls_description_json_friendly.strip("{}")
-
     context = {
       "name": layer_subscription.name,
       "namespace": f'http://{layer_subscription.workspace.name}',
-      "description": ls_description_cleaned,
+      "description": layer_subscription.description,
       "enabled": layer_subscription.enabled,
       "capability_url": layer_subscription.url,
       "username": layer_subscription.username,
@@ -238,13 +223,10 @@ def _publish_postgis(
       }
     }
     geoserver_obj.upload_store_postgis(workspace=layer_subscription.workspace, store_name=layer_subscription.name, context=context)
-
-    ce_description_json_friendly = json.dumps(catalogue_entry.description, indent=4, ensure_ascii=False)
-    ce_description_cleaned = ce_description_json_friendly.strip("{}")
         
     context = {
         "name": catalogue_entry.name,
-        "description": ce_description_cleaned,
+        "description": catalogue_entry.description,
         "title": catalogue_entry.name,
         "abstract": None,
         "native_name": catalogue_entry.mapping_name,

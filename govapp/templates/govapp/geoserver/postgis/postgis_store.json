@@ -1,18 +1,19 @@
+{% load json_filters %}
 {
   "dataStore": {
-    "name": "{{name|escapejs}}",
-    "description":{{description}}, 
+    "name": {{ name|json_string }},
+    "description":{{ description|json_string }}, 
     "enabled":"{% if enabled %}{{ enabled }}{% else %}true{% endif %}",
     "type":"PostGIS",
     "connectionParameters": {
       "entry": [
-        {"@key":"namespace","$":"{{ namespace }}"},
-        {"@key":"host","$":"{{ database.host }}"},
+        {"@key":"namespace","$":{{ namespace|json_string }}},
+        {"@key":"host","$":{{ database.host|json_string }}},
         {"@key":"port","$":"{{ database.port }}"},
-        {"@key":"database","$":"{{ database.database }}"},
-        {"@key":"schema","$":"{{ database.schema }}"},
-        {"@key":"user","$":"{{ database.username }}"},
-        {"@key":"passwd","$":"{{ database.password }}"},
+        {"@key":"database","$":{{ database.database|json_string }}},
+        {"@key":"schema","$":{{ database.schema|json_string }}},
+        {"@key":"user","$":{{ database.username|json_string }}},
+        {"@key":"passwd","$":{{ database.password|json_string }}},
         {"@key":"dbtype","$":"postgis"},
         {"@key":"fetch size","$":"{% if database.fetch_size %}{{ database.fetch_size|escape }}{% else %}1000{% endif %}"},
         {"@key":"encode functions","$":"false"},
