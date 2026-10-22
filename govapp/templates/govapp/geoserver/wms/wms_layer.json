@@ -1,7 +1,7 @@
 { 
     "wmsLayer": {
         "name":	"{{name|escape}}",
-        "description":	"{{description}}",
+        "description":	{{description}},
         {% if native_name %}"nativeName": "{{native_name|escape}}",{% endif %}
         {% if title %}"title": "{{title|escape}}",{% endif %}
         {% if abstract %}"abstract": "{{abstract|escape}}",{% endif %}

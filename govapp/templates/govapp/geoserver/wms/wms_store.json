@@ -1,7 +1,7 @@
 {
     "wmsStore" : {
         "name":	"{{name|escapejs}}",
-        "description":	"{{description|escapejs}}", 
+        "description":	{{description}}, 
         "type": "WMS",
         "enabled":	{{ enabled|yesno:"true,false" }},    
         "capabilitiesURL":	"{{capability_url|escapejs}}",
