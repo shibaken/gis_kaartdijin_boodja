@@ -41,3 +41,4 @@ anyio>=4.4.0
 # This is pre-installed in the Dockerfile using gdal-config to avoid build errors.
 setuptools==82.0.1
 legacy-cgi
+GDAL>=3.13.3
