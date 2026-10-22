@@ -1,7 +1,7 @@
 {
     "dataStore": {
       "name": "{{name|escape}}",
-      "description":	"{{description}}", 
+      "description":	{{description}}, 
       "enabled":	true,   
       "type": "Web Feature Server (NG)",
       "connectionParameters": {

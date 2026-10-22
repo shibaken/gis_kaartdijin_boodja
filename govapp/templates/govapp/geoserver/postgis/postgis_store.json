@@ -1,7 +1,7 @@
 {
   "dataStore": {
     "name": "{{name|escapejs}}",
-    "description":"{{description}}", 
+    "description":{{description}}, 
     "enabled":"{% if enabled %}{{ enabled }}{% else %}true{% endif %}",
     "type":"PostGIS",
     "connectionParameters": {
