@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = 'Randomize passwords for all GeoServer user accounts.'
 
     def handle(self, *args, **options):
-        geoservers = GeoServerPool.objects.filter(enabled=True)
+        geoservers = GeoServerPool.enabled_targets()
         for geoserver in geoservers:
             self.randomize_passwords(geoserver)
 

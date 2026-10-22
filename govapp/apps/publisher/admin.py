@@ -56,13 +56,34 @@ class PublishEntryAdmin(reversion.admin.VersionAdmin):
     get_status.short_description = 'Status'
 
 
+class GeoserverClusterPoolInlineFormSet(forms.BaseInlineFormSet):
+    """Rejects two cluster nodes with the same name in one pool.
+
+    The inline formset does not check the conditional unique constraint, so
+    without this a duplicate name would fail with a database error on save.
+    """
+    def clean(self):
+        super().clean()
+        names = set()
+        for form in self.forms:
+            if not form.cleaned_data or form.cleaned_data.get('DELETE'):
+                continue
+            name = form.cleaned_data.get('name')
+            if not name:
+                continue
+            if name in names:
+                raise forms.ValidationError(f'Cluster node name "{name}" is used more than once.')
+            names.add(name)
+
+
 class GeoserverClusterPoolInline(admin.TabularInline):
     """
     Defines the inline admin options for GeoserverClusterPool.
     This will be displayed within the GeoServerPool admin page.
     """
     model = GeoserverClusterPool
-    fields = ('server_url', 'username', 'password', 'enabled')
+    formset = GeoserverClusterPoolInlineFormSet
+    fields = ('name', 'server_url', 'username', 'password', 'enabled')
     extra = 0
     verbose_name_plural = "Cluster Nodes"
 
@@ -184,7 +205,7 @@ class GeoServerQueueAdmin(reversion.admin.VersionAdmin):
     # This provides a better interface for `ManyToMany` fields
     # See: https://stackoverflow.com/questions/5385933/a-better-django-admin-manytomany-field-widget
     search_fields = ('id', 'publish_entry__catalogue_entry__name', 'submitter__email',)
-    list_display = ('id', 'publish_entry_link', 'symbology_only', 'coloured_status', 'get_success', 'submitter_link','started_at', 'completed_at', 'created_at')
+    list_display = ('id', 'publish_entry_link', 'cluster_name', 'symbology_only', 'coloured_status', 'get_success', 'submitter_link','started_at', 'completed_at', 'created_at')
     list_filter = ('symbology_only', 'status', 'success',)
     ordering = ('-id',)
     raw_id_fields = ('submitter', 'publish_entry')

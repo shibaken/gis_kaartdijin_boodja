@@ -16,10 +16,17 @@ class Command(base.BaseCommand):
     # Help string
     help = "Automatically enqueue eligible items to the GeoServer Queue for processing."
 
+    def add_arguments(self, parser: base.CommandParser) -> None:
+        """Adds arguments to the management command."""
+        parser.add_argument(
+            "--cluster",
+            help="Only queue items for this geocluster (cluster node name), e.g. to fill a new geocluster.",
+        )
+
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """Handles the management command functionality."""
         # Display information
         self.stdout.write("Starting automatic enqueue process for GeoServer queue")
 
         # Go!
-        geoserver_manager.GeoServerQueueExcutor().auto_enqueue()
+        geoserver_manager.GeoServerQueueExcutor().auto_enqueue(cluster_name=kwargs.get("cluster"))

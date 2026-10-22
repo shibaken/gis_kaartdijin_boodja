@@ -36,6 +36,10 @@ var kbgeoserverweb = {
                 };
                 for(let i in response.results){
                     response.results[i].queue_type_label = queue_type_label[response.results[i].queue_type] || response.results[i].queue_type;
+                    // Show the geocluster when the item is for one, e.g. "Publish [prod2]"
+                    if (response.results[i].cluster_name) {
+                        response.results[i].queue_type_label += ` [${response.results[i].cluster_name}]`;
+                    }
                 }
 
                 const tbody = $('#geoserver-queue-tbody');
