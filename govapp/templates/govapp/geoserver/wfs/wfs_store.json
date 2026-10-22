@@ -13,9 +13,9 @@
             {"@key":"usedefaultsrs","$":"false"},
             {"@key":"WFSDataStoreFactory:AXIS_ORDER","$":"Compliant"},
             {"@key":"WFSDataStoreFactory:PROTOCOL","$":"false"},
-            {"@key":"WFSDataStoreFactory:USERNAME","$":"{{username|escapejs}}"},
+            {% if username %}{"@key":"WFSDataStoreFactory:USERNAME","$":"{{username|escapejs}}"},{% endif %}
             {"@key":"WFSDataStoreFactory:GML_COMPLIANCE_LEVEL","$":"0"},
-            {"@key":"WFSDataStoreFactory:PASSWORD","$":"{{password|escapejs}}"},
+            {% if password %}{"@key":"WFSDataStoreFactory:PASSWORD","$":"{{password|escapejs}}"},{% endif %}
             {"@key":"WFSDataStoreFactory:MAX_CONNECTION_POOL_SIZE","$":"6"},
             {"@key":"WFSDataStoreFactory:MAXFEATURES","$":"0"},
             {"@key":"WFSDataStoreFactory:FILTER_COMPLIANCE","$":"0"},

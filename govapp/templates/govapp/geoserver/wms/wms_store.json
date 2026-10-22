@@ -5,8 +5,8 @@
         "type": "WMS",
         "enabled":	{{ enabled|yesno:"true,false" }},    
         "capabilitiesURL":	"{{capability_url|escapejs}}",
-        "user":	"{{username|escapejs}}",
-        "password" :	"{{password|escapejs}}",    
+        {% if username %}"user":	"{{username|escapejs}}",{% endif %}
+        {% if password %}"password" :	"{{password|escapejs}}",{% endif %}
         "maxConnections":	"{{geoserver_setting.max_connections}}",    
         "readTimeout":	"{{geoserver_setting.read_timeout}}",
         "connectTimeout": "{{geoserver_setting.connect_timeout}}",
