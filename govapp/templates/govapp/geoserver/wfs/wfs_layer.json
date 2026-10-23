@@ -1,20 +1,21 @@
+{% load json_filters %}
 { 
     "featureType": {
-        "name": "{{ name|escape }}",
-        "description": "{{ description }}",
-        {% if native_name %}"nativeName": "{{ native_name|escape }}",{% endif %}
-        {% if title %}"title": "{{ title|escape }}",{% endif %}
-        {% if abstract %}"abstract": "{{ abstract|escape }}",{% endif %}
+        "name": {{ name|json_string }},
+        "description": {{ description|json_string }},
+        {% if native_name %}"nativeName": {{ native_name|json_string }},{% endif %}
+        {% if title %}"title": {{ title|json_string }},{% endif %}
+        {% if abstract %}"abstract": {{ abstract|json_string }},{% endif %}
         
         {% if override_bbox %}
-        "nativeCRS": "{{ native_crs|escape }}",
-        "srs": "{{ crs|escape }}",
+        "nativeCRS": {{ native_crs|json_string }},
+        "srs": {{ crs|json_string }},
         "nativeBoundingBox": {
             "minx": {{ nativeBoundingBox.minx }},
             "maxx": {{ nativeBoundingBox.maxx }},
             "miny": {{ nativeBoundingBox.miny }},
             "maxy": {{ nativeBoundingBox.maxy }},
-            "crs": "{{ nativeBoundingBox.crs|escape }}"
+            "crs": {{ nativeBoundingBox.crs|json_string }}
         },
         "latLonBoundingBox": {
             "minx": {{ latLonBoundingBox.minx }},
@@ -29,7 +30,7 @@
         "keywords": [
             {% for k in keywords %}
                 {
-                    "string": "{{ k|escape }}"
+                    "string": {{ k|json_string }}
                 }{% if not forloop.last %},{% endif %}
             {% endfor %}
         ]

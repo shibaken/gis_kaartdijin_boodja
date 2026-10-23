@@ -1385,7 +1385,14 @@ class GeoServer:
             # --- PRE-DELETION: IDENTIFY STYLES TO WATCH ---
             # First, get the layer details before it's gone.
             log.info(f"Preparing to delete layer: [{layer_name}]. Fetching details first...")
-            layer_details_response = self.get_layer_details(layer_name)
+            try:
+                layer_details_response = self.get_layer_details(layer_name)
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    # The layer is already gone, which is the result we want.
+                    log.info(f"Layer [{layer_name}] does not exist in the geoserver: [{self.service_url}]. Nothing to delete.")
+                    return
+                raise
 
             if not layer_details_response or 'layer' not in layer_details_response:
                 log.warning(f"Could not retrieve details for layer [{layer_name}]. It might already be deleted. Skipping style cleanup.")
