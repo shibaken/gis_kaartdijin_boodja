@@ -24,6 +24,36 @@ import xml.etree.ElementTree as ET # Import the XML parser
 # Logging
 log = logging.getLogger(__name__)
 
+# Keys whose values are masked when a store request body is logged.
+_SECRET_KEYS = {"password", "passwd", "WFSDataStoreFactory:PASSWORD"}
+
+
+def _mask_secrets(obj: Any) -> None:
+    """Replaces secret values in a parsed store JSON with '***', in place."""
+    if isinstance(obj, dict):
+        # Connection parameter entries look like {"@key": "passwd", "$": "..."}
+        if obj.get("@key") in _SECRET_KEYS and "$" in obj:
+            obj["$"] = "***"
+        for key, value in obj.items():
+            if key in _SECRET_KEYS and isinstance(value, str):
+                obj[key] = "***"
+            else:
+                _mask_secrets(value)
+    elif isinstance(obj, list):
+        for item in obj:
+            _mask_secrets(item)
+
+
+def _data_for_log(data: str) -> str:
+    """Returns a store request body for logging, with secret values masked."""
+    try:
+        obj = json.loads(data)
+    except ValueError:
+        # Not parsable, so secrets cannot be masked: do not log the body.
+        return "(not shown: not valid JSON)"
+    _mask_secrets(obj)
+    return json.dumps(obj)
+
 
 class GeoServer:
     """GeoServer Abstraction."""
@@ -130,14 +160,14 @@ class GeoServer:
 
             log.info(f'Store: [{store_name}] does not exist. Performing POST request to create the store.')
             log.info(f'POST url: {url}')
-            log.info(f'data: {data}')
+            log.info(f'data: {_data_for_log(data)}')
             with httpx.Client(auth=(self.username, self.password)) as client:
                 response = client.post(url=url, headers=self.headers_json, data=data)
         else:
             # Store exists, perform a PUT request
             log.info(f'Store: [{store_name}] exists. Performing PUT request to update the store.')
             log.info(f'PUT url: {store_get_url}')
-            log.info(f'data: {data}')
+            log.info(f'data: {_data_for_log(data)}')
             with httpx.Client(auth=(self.username, self.password)) as client:
                 response = client.put(url=store_get_url, headers=self.headers_json, data=data)
             
