@@ -154,7 +154,10 @@ class CatalogueEntry(mixins.RevisionedMixin):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="catalogue_entries",
-        help_text="Expected CRS for uploaded spatial files. If set, uploads with a different CRS will be declined.",
+        help_text=(
+            "Expected CRS for uploaded spatial files. If set, uploads with a different CRS will be declined, "
+            "and GeoTIFFs whose CRS GeoServer cannot identify are published with this CRS."
+        ),
     )
     # objects = CatalogueEntryManager()
 

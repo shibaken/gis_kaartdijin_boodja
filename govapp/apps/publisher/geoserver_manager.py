@@ -546,11 +546,13 @@ class GeoServerQueueExcutor:
                         geoserver_data_dir=geoserver_data_dir,
                     )
                 elif channel.store_type == StoreType.GEOTIFF:
+                    default_crs = queue_item.publish_entry.catalogue_entry.default_crs
                     geoserver_obj.configure_geotiff_from_path(
                         workspace=workspace_name,
                         layer=layer_name,
                         file_path_on_volume=volume_file_path,
                         geoserver_data_dir=geoserver_data_dir,
+                        fallback_srs=default_crs.epsg_code if default_crs else None,
                     )
                 else:
                     self.result_status = GeoServerQueueStatus.PUBLISH_FAILED
