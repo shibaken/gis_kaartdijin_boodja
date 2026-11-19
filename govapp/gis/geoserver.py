@@ -661,6 +661,7 @@ class GeoServer:
         layer: str,
         file_path_on_volume: pathlib.Path,
         geoserver_data_dir: Optional[pathlib.Path] = None,
+        fallback_srs: Optional[str] = None,
     ) -> None:
         """Configures a GeoTIFF coveragestore in GeoServer using a file already present on the
         shared Docker volume (no HTTP file upload).
@@ -677,6 +678,10 @@ class GeoServer:
             geoserver_data_dir: GeoServer data directory root. When provided and the file
                 is under this directory, uses ``file:data/<relative>`` URL format to bypass
                 the GeoServer 2.23+ filesystem sandbox canonical-path check on SMB mounts.
+            fallback_srs: CRS (e.g. 'EPSG:3577') to declare when GeoServer cannot identify
+                the CRS of the file. If GeoServer cannot identify it and no fallback is
+                given, the layer and store are removed and an error is raised, because a
+                layer without a CRS breaks the WMS GetCapabilities document.
         """
         log.info(
             f"Configuring GeoTIFF store '{layer}' in workspace '{workspace}' "
@@ -800,6 +805,46 @@ class GeoServer:
                 raise requests.HTTPError(
                     f"{resp_coverage.status_code} {resp_coverage.reason} at {coverage_url}: {resp_coverage.text}",
                     response=resp_coverage,
+                )
+
+            # Step 3: make sure the coverage has a CRS. GeoServer leaves "srs" empty when it
+            # cannot identify the CRS of the file (e.g. a WKT without an EPSG code).
+            resource_url = (
+                f"{self.service_url}/rest/workspaces/{workspace}"
+                f"/coveragestores/{layer}/coverages/{layer}.json"
+            )
+            resp_resource = session.get(resource_url, timeout=(15, 60.0))
+            resp_resource.raise_for_status()
+            if resp_resource.json().get("coverage", {}).get("srs"):
+                return
+
+            if not fallback_srs:
+                log.error(
+                    f"GeoServer cannot identify the CRS of GeoTIFF '{layer}' and no Default CRS "
+                    f"is set. Removing the layer and coverage store."
+                )
+                session.delete(layer_delete_url, timeout=(15, 120))
+                session.delete(store_delete_url, timeout=(15, 120))
+                raise ValueError(
+                    f"GeoServer cannot identify the CRS of GeoTIFF '{layer}'. Set a Default CRS "
+                    f"on the catalogue entry or fix the CRS in the file."
+                )
+
+            log.warning(
+                f"GeoServer cannot identify the CRS of GeoTIFF '{layer}'. "
+                f"Declaring the Default CRS '{fallback_srs}' (Force declared)."
+            )
+            resp_srs = session.put(
+                url=resource_url,
+                params={"recalculate": "nativebbox,latlonbbox"},
+                json={"coverage": {"srs": fallback_srs, "projectionPolicy": "FORCE_DECLARED"}},
+                timeout=(15, 3000.0),
+            )
+            log.info(f"Declared SRS response: '{resp_srs.status_code}: {resp_srs.text}'")
+            if not resp_srs.ok:
+                raise requests.HTTPError(
+                    f"{resp_srs.status_code} {resp_srs.reason} at {resource_url}: {resp_srs.text}",
+                    response=resp_srs,
                 )
 
     @handle_http_exceptions(log)
